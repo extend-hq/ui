@@ -44,7 +44,7 @@ export function HighlightedCodeBlock({
               node.properties["data-language"] = "tsx"
               node.properties["style"] = ""
               node.properties["class"] = cn(
-                "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto !bg-transparent p-4 outline-none",
+                "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto px-4 py-3.5 outline-none has-[[data-line-numbers]]:px-0 !bg-transparent",
                 showCopy && "pr-20",
                 maxHeightClassName
               )
@@ -87,7 +87,7 @@ export function HighlightedCodeBlock({
       ) : (
         <pre
           className={cn(
-            "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto p-4 text-[0.8rem] leading-relaxed outline-none",
+            "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto px-4 py-3.5 text-[0.8rem] leading-relaxed outline-none has-[[data-line-numbers]]:px-0",
             showCopy && "pr-20",
             maxHeightClassName
           )}

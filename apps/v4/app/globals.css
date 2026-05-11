@@ -350,15 +350,10 @@
     background-color: var(--color-code);
     position: sticky;
     left: 0;
-    z-index: 1;
-    box-shadow: calc(var(--spacing) * -4) 0 0 calc(var(--spacing) * 4)
-      var(--color-code);
   }
 
   [data-line-numbers] [data-highlighted-line][data-line]::before {
     background-color: var(--color-code-highlight);
-    box-shadow: calc(var(--spacing) * -4) 0 0 calc(var(--spacing) * 4)
-      var(--color-code-highlight);
   }
 
   [data-line] {
