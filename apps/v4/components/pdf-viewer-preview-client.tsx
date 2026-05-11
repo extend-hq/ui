@@ -44,6 +44,7 @@ const PAGE_RENDER_BUFFER = 2
 const PAGE_BASE_WIDTH = 612
 const PAGE_BASE_HEIGHT = 792
 const MAX_DEVICE_PIXEL_RATIO = 2
+const THUMBNAIL_WIDTH = 92
 
 function createSearchStore() {
   let draftValue = ""
@@ -408,6 +409,16 @@ export function PdfViewerPreviewClient() {
   const pageNumbers = React.useMemo(() => {
     return Array.from({ length: numPages ?? 0 }, (_, index) => index + 1)
   }, [numPages])
+  const thumbnailIsRotated = Math.abs(Math.round(rotation / 90)) % 2 === 1
+  const thumbnailSize = {
+    width: THUMBNAIL_WIDTH,
+    height: Math.round(
+      THUMBNAIL_WIDTH *
+        (thumbnailIsRotated
+          ? PAGE_BASE_WIDTH / PAGE_BASE_HEIGHT
+          : PAGE_BASE_HEIGHT / PAGE_BASE_WIDTH)
+    ),
+  }
   const isViewerLoading = isDocumentLoading || isPageRendering
   const controlsDisabled = isViewerLoading || loadError || !numPages
 
@@ -716,7 +727,7 @@ export function PdfViewerPreviewClient() {
                       size="sm"
                       key={pageNumber}
                       className={cn(
-                        "h-auto w-full flex-col items-center gap-2 p-2 text-xs text-muted-foreground shadow-none hover:bg-sidebar-accent",
+                        "!h-auto w-full flex-col items-center gap-2 p-2 text-xs text-muted-foreground shadow-none hover:bg-sidebar-accent",
                         pageNumber === currentPage && "bg-sidebar-accent"
                       )}
                       onFocus={(event) => event.currentTarget.blur()}
@@ -724,12 +735,17 @@ export function PdfViewerPreviewClient() {
                       onPointerDown={preserveThumbnailClickScroll}
                       onClick={() => scrollToPage(pageNumber)}
                     >
-                      <Thumbnail
-                        pageNumber={pageNumber}
-                        className="overflow-hidden rounded-sm border bg-background shadow-xs"
-                        width={92}
-                        rotate={rotation}
-                      />
+                      <div
+                        className="shrink-0 overflow-hidden rounded-sm border bg-background shadow-xs"
+                        style={thumbnailSize}
+                      >
+                        <Thumbnail
+                          pageNumber={pageNumber}
+                          className="block size-full [&_.react-pdf__Thumbnail__page]:size-full [&_canvas]:size-full"
+                          width={THUMBNAIL_WIDTH}
+                          rotate={rotation}
+                        />
+                      </div>
                       {pageNumber}
                     </Button>
                   ))}
