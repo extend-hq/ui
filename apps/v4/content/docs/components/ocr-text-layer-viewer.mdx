@@ -1,0 +1,23 @@
+---
+title: OCR Layer
+description: Display selectable and searchable OCR text over scanned pages, receipts, forms, and image documents.
+component: true
+featured: true
+---
+
+The OCR Layer turns scanned documents into searchable review surfaces while preserving the image underneath.
+
+## Useful behaviors
+
+- Position OCR words, lines, and blocks over image coordinates.
+- Toggle text visibility, confidence colors, and region boundaries.
+- Search and select text from scanned documents.
+- Highlight low-confidence words for correction workflows.
+
+## Common slots
+
+| Slot | Purpose |
+| --- | --- |
+| `word` | Selectable OCR token with confidence metadata. |
+| `region` | Paragraph, field, table, or detected block boundary. |
+| `correctionPanel` | Optional OCR review and correction UI. |

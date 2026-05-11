@@ -1,0 +1,97 @@
+{
+  "name": "v4",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack --port 4000",
+    "build": "next build",
+    "start": "next start --port 4000",
+    "preview": "next build && next start --port 4000",
+    "lint": "eslint . --cache --cache-location .eslintcache",
+    "lint:fix": "eslint --fix . --cache --cache-location .eslintcache",
+    "typecheck": "tsc --noEmit",
+    "format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
+    "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
+    "postinstall": "fumadocs-mdx"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.4.1",
+    "@hugeicons/core-free-icons": "^4.1.1",
+    "@hugeicons/react": "^1.1.6",
+    "@tabler/icons-react": "^3.31.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "fumadocs-core": "16.0.5",
+    "fumadocs-mdx": "13.0.2",
+    "jotai": "^2.15.0",
+    "lru-cache": "^11.2.4",
+    "next": "16.2.6",
+    "next-themes": "0.4.6",
+    "nuqs": "^2.8.9",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-pdf": "^10.4.1",
+    "rehype-pretty-code": "^0.14.1",
+    "shiki": "^1.10.1",
+    "sonner": "^2.0.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^20",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "^5",
+    "typescript-eslint": "^8.59.1"
+  },
+  "prettier": {
+    "endOfLine": "lf",
+    "semi": false,
+    "singleQuote": false,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "importOrder": [
+      "^(react/(.*)$)|^(react$)",
+      "^(next/(.*)$)|^(next$)",
+      "<THIRD_PARTY_MODULES>",
+      "",
+      "^types$",
+      "^@/types/(.*)$",
+      "^@/config/(.*)$",
+      "^@/lib/(.*)$",
+      "^@/hooks/(.*)$",
+      "^@/components/ui/(.*)$",
+      "^@/components/(.*)$",
+      "^@/registry/(.*)$",
+      "^@/styles/(.*)$",
+      "^@/app/(.*)$",
+      "^@/www/(.*)$",
+      "",
+      "^[./]"
+    ],
+    "importOrderParserPlugins": [
+      "typescript",
+      "jsx",
+      "decorators-legacy"
+    ],
+    "tailwindStylesheet": "./app/globals.css",
+    "tailwindFunctions": [
+      "cn",
+      "cva"
+    ],
+    "plugins": [
+      "@ianvs/prettier-plugin-sort-imports",
+      "prettier-plugin-tailwindcss"
+    ]
+  }
+}

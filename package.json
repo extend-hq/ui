@@ -1,0 +1,36 @@
+{
+  "name": "document-ui",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "author": {
+    "name": "Document UI"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "v4:dev": "pnpm --filter=v4 dev",
+    "v4:build": "pnpm --filter=v4 build",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "preview": "turbo run preview",
+    "typecheck": "turbo run typecheck",
+    "format:write": "turbo run format:write",
+    "format:check": "turbo run format:check",
+    "check": "turbo run lint typecheck format:check"
+  },
+  "packageManager": "pnpm@9.0.6",
+  "devDependencies": {
+    "turbo": "^1.9.9"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.2",
+      "@types/react-dom": "19.2.2"
+    }
+  }
+}

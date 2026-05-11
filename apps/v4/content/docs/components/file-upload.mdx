@@ -1,0 +1,25 @@
+---
+title: File Upload
+description: Upload, validate, and queue documents with drag-and-drop, file type rules, progress states, and retry handling.
+component: true
+featured: true
+---
+
+File Upload is the starting point for document processing workflows. It should help users get files into the system quickly while making validation, progress, and failure states clear.
+
+## Useful behaviors
+
+- Drag-and-drop and file picker entrypoints.
+- File type, size, page count, and duplicate validation.
+- Upload progress, cancel, retry, and queued states.
+- Batch upload summaries for mixed PDFs, DOCX files, Excel workbooks, images, and CSVs.
+- Hooks for parsing, extraction, review, or routing once files are accepted.
+
+## Common slots
+
+| Slot | Purpose |
+| --- | --- |
+| `dropzone` | Primary drag-and-drop and browse surface. |
+| `fileItem` | Individual file row with name, type, size, progress, and status. |
+| `validationMessage` | File-level or batch-level errors and warnings. |
+| `actions` | Retry, cancel, remove, or continue controls. |

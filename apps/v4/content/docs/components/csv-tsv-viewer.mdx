@@ -1,0 +1,22 @@
+---
+title: CSV Viewer
+description: Spreadsheet-like previews for delimited files with sorting, filtering, typing, and large-file virtualization.
+component: true
+---
+
+The CSV Viewer covers exports, imports, tabular logs, and datasets that do not need full spreadsheet rendering.
+
+## Useful behaviors
+
+- Encoding and delimiter detection.
+- Virtualized rows and columns for large files.
+- Sort, filter, resize, pin, and copy selected ranges.
+- Column type inference for dates, numbers, booleans, and empty values.
+
+## Common slots
+
+| Slot | Purpose |
+| --- | --- |
+| `columnHeader` | Sort, filter, type, and resize controls. |
+| `statusBar` | Row count, selected range, and parse warnings. |
+| `parseErrors` | Malformed rows, encoding issues, and delimiter mismatches. |

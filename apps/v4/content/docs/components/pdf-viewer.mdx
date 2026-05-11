@@ -1,0 +1,69 @@
+---
+title: PDF Viewer
+description: Render PDFs with page controls, zoom, search, text selection, and responsive layout support.
+component: true
+featured: true
+---
+
+The PDF Viewer is the core page-based document surface. It should support dense documents, scanned documents, selectable text, and page-level navigation.
+
+<PdfViewerDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add pdf-viewer
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-pdf @hugeicons/react @hugeicons/core-free-icons
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<PdfViewerSource />
+
+<Step>Add the React PDF text layer styles.</Step>
+
+```tsx
+import "react-pdf/dist/Page/TextLayer.css"
+```
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Useful behaviors
+
+- Zoom, fit width, fit page, rotate, and print/download actions.
+- Virtualized page rendering for long PDFs.
+- Optional thumbnail tab switcher, outline panel, search highlights, and annotation layer.
+- Text layer support for selection, copy, search, and accessibility.
+
+## Common slots
+
+| Slot      | Purpose                                               |
+| --------- | ----------------------------------------------------- |
+| `toolbar` | Page navigation, zoom, rotate, and download controls. |
+| `sidebar` | Thumbnail tabs, outline, search results, or metadata. |
+| `overlay` | Annotations, pins, comments, and OCR alignment.       |

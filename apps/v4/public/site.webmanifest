@@ -1,0 +1,12 @@
+{
+  "name": "",
+  "short_name": "",
+  "icons": [
+    {
+      "src": "/extend.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "display": "standalone"
+}
