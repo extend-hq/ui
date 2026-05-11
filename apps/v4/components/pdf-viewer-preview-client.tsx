@@ -38,7 +38,7 @@ import {
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`
 
 const ZOOM_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2]
-const SAMPLE_PDF_URL = "https://arxiv.org/pdf/1706.03762"
+const SAMPLE_PDF_URL = "/samples/attention.pdf"
 const PAGE_RENDER_BUFFER = 2
 const PAGE_BASE_WIDTH = 612
 const PAGE_BASE_HEIGHT = 792

@@ -212,6 +212,7 @@ pdfjs.GlobalWorkerOptions.workerSrc =
   "/legacy/build/pdf.worker.min.mjs";
 
 const ZOOM_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const DEFAULT_PDF_URL = "/path/to/document.pdf";
 const PAGE_RENDER_BUFFER = 2;
 const PAGE_BASE_WIDTH = 612;
 const PAGE_BASE_HEIGHT = 792;
@@ -538,7 +539,7 @@ const PdfPages = memo(function PdfPages({
   );
 });
 
-function Component({ url }: { url: string }) {
+function Component({ url = DEFAULT_PDF_URL }: { url?: string }) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(0.5);
