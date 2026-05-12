@@ -7,6 +7,46 @@ featured: true
 
 File Upload is the starting point for document processing workflows. It should help users get files into the system quickly while making validation, progress, and failure states clear.
 
+<FileUploadDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add file-upload
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install border-beam
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<FileUploadSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
 ## Useful behaviors
 
 - Drag-and-drop and file picker entrypoints.
@@ -17,9 +57,9 @@ File Upload is the starting point for document processing workflows. It should h
 
 ## Common slots
 
-| Slot | Purpose |
-| --- | --- |
-| `dropzone` | Primary drag-and-drop and browse surface. |
-| `fileItem` | Individual file row with name, type, size, progress, and status. |
-| `validationMessage` | File-level or batch-level errors and warnings. |
-| `actions` | Retry, cancel, remove, or continue controls. |
+| Slot                | Purpose                                                          |
+| ------------------- | ---------------------------------------------------------------- |
+| `dropzone`          | Primary drag-and-drop and browse surface.                        |
+| `fileItem`          | Individual file row with name, type, size, progress, and status. |
+| `validationMessage` | File-level or batch-level errors and warnings.                   |
+| `actions`           | Retry, cancel, remove, or continue controls.                     |

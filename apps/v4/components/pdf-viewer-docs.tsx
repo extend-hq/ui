@@ -13,13 +13,14 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { Button } from "@/components/ui/button"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
-import { Button } from "@/registry/new-york-v4/ui/button"
 import {
   Select,
   SelectTrigger,
   SelectValue,
 } from "@/registry/new-york-v4/ui/select"
+import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
   TooltipContent,
@@ -94,6 +95,10 @@ function PdfViewerLoadingShell() {
                 <HugeiconsIcon icon={RotateClockwiseIcon} className="size-4" />
               </Button>
             </ToolbarTooltip>
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
             <ToolbarTooltip label="Zoom out">
               <Button
                 variant="ghost"
@@ -121,6 +126,10 @@ function PdfViewerLoadingShell() {
                 <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
               </Button>
             </ToolbarTooltip>
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
             <ToolbarTooltip label="Search text">
               <Button
                 variant="ghost"
@@ -178,6 +187,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -441,7 +451,7 @@ const PdfPage = memo(function PdfPage({
         <>
           <Page
             pageNumber={pageNumber}
-            className="overflow-hidden rounded-sm border bg-background shadow-xs"
+            className="overflow-hidden border bg-background shadow-xs"
             renderAnnotationLayer={false}
             renderTextLayer={hasSearchQuery}
             devicePixelRatio={devicePixelRatio}
@@ -488,7 +498,7 @@ const PdfPage = memo(function PdfPage({
           ) : null}
         </>
       ) : (
-        <div className="size-full rounded-sm border bg-muted/30 shadow-xs" />
+        <div className="size-full border bg-muted/30 shadow-xs" />
       )}
     </div>
   );
@@ -777,6 +787,10 @@ function Component({ url = DEFAULT_PDF_URL }: { url?: string }) {
               <HugeiconsIcon icon={RotateClockwiseIcon} className="size-4" />
             </Button>
           </ToolbarTooltip>
+          <Separator
+            orientation="vertical"
+            className="mx-1 h-4 self-center"
+          />
           <ToolbarTooltip label="Zoom out">
             <Button
               variant="ghost"
@@ -820,6 +834,10 @@ function Component({ url = DEFAULT_PDF_URL }: { url?: string }) {
               <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
             </Button>
           </ToolbarTooltip>
+          <Separator
+            orientation="vertical"
+            className="mx-1 h-4 self-center"
+          />
           <Popover>
             <ToolbarTooltip label="Search text">
               <PopoverTrigger asChild>
@@ -902,7 +920,7 @@ function Component({ url = DEFAULT_PDF_URL }: { url?: string }) {
                     onClick={() => scrollToPage(pageNumber)}
                   >
                     <div
-                      className="shrink-0 overflow-hidden rounded-sm border bg-background shadow-xs"
+                      className="shrink-0 overflow-hidden border bg-background shadow-xs"
                       style={thumbnailSize}
                     >
                       <Thumbnail

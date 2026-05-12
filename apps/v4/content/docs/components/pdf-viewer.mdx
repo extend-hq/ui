@@ -57,13 +57,13 @@ import "react-pdf/dist/Page/TextLayer.css"
 
 - Zoom, fit width, fit page, rotate, and print/download actions.
 - Virtualized page rendering for long PDFs.
-- Optional thumbnail tab switcher, outline panel, search highlights, and annotation layer.
+- Optional citation anchors, OCR block overlays, e-signature fields, search highlights, and annotation layer.
 - Text layer support for selection, copy, search, and accessibility.
 
 ## Common slots
 
-| Slot      | Purpose                                               |
-| --------- | ----------------------------------------------------- |
-| `toolbar` | Page navigation, zoom, rotate, and download controls. |
-| `sidebar` | Thumbnail tabs, outline, search results, or metadata. |
-| `overlay` | Annotations, pins, comments, and OCR alignment.       |
+| Slot      | Purpose                                                  |
+| --------- | -------------------------------------------------------- |
+| `toolbar` | Page navigation, zoom, rotate, and download controls.    |
+| `sidebar` | Citations, OCR results, signing status, or search.       |
+| `overlay` | Citations, OCR blocks, signing fields, and search marks. |

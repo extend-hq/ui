@@ -14,7 +14,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Document, Page, pdfjs, Thumbnail } from "react-pdf"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/registry/new-york-v4/ui/input"
 import {
   Popover,
@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/registry/new-york-v4/ui/select"
+import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
   TooltipContent,
@@ -263,7 +264,7 @@ const PdfPage = React.memo(function PdfPage({
         <>
           <Page
             pageNumber={pageNumber}
-            className="overflow-hidden rounded-sm border bg-background shadow-xs"
+            className="overflow-hidden border bg-background shadow-xs"
             renderAnnotationLayer={false}
             renderTextLayer={hasSearchQuery}
             devicePixelRatio={devicePixelRatio}
@@ -310,7 +311,7 @@ const PdfPage = React.memo(function PdfPage({
           ) : null}
         </>
       ) : (
-        <div className="size-full rounded-sm border bg-muted/30 shadow-xs" />
+        <div className="size-full border bg-muted/30 shadow-xs" />
       )}
     </div>
   )
@@ -605,6 +606,10 @@ export function PdfViewerPreviewClient() {
                 <HugeiconsIcon icon={RotateClockwiseIcon} className="size-4" />
               </Button>
             </ToolbarTooltip>
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
             <ToolbarTooltip label="Zoom out">
               <Button
                 variant="ghost"
@@ -648,6 +653,10 @@ export function PdfViewerPreviewClient() {
                 <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
               </Button>
             </ToolbarTooltip>
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
             <Popover>
               <ToolbarTooltip label="Search text">
                 <PopoverTrigger asChild>
@@ -732,7 +741,7 @@ export function PdfViewerPreviewClient() {
                       onClick={() => scrollToPage(pageNumber)}
                     >
                       <div
-                        className="shrink-0 overflow-hidden rounded-sm border bg-background shadow-xs"
+                        className="shrink-0 overflow-hidden border bg-background shadow-xs"
                         style={thumbnailSize}
                       >
                         <Thumbnail

@@ -6,13 +6,21 @@ import { type PageTreeFolder } from "@/lib/page-tree"
 import { source } from "@/lib/source"
 import { cn } from "@/lib/utils"
 import { Callout } from "@/components/callout"
+import { CitationsDemo, CitationsSource } from "@/components/citations-docs"
 import { CodeBlockCommand } from "@/components/code-block-command"
 import { CodeCollapsibleWrapper } from "@/components/code-collapsible-wrapper"
 import { CodeTabs } from "@/components/code-tabs"
 import { ComponentsList } from "@/components/components-list"
 import { CopyButton } from "@/components/copy-button"
 import { CsvViewerDemo, CsvViewerSource } from "@/components/csv-viewer-docs"
+import { ESignatureDemo, ESignatureSource } from "@/components/e-signature-docs"
+import {
+  FileThumbnailDemo,
+  FileThumbnailSource,
+} from "@/components/file-thumbnail-docs"
+import { FileUploadDemo, FileUploadSource } from "@/components/file-upload-docs"
 import { getIconForLanguageExtension } from "@/components/icons"
+import { OcrBlocksDemo, OcrBlocksSource } from "@/components/ocr-blocks-docs"
 import { PdfViewerDemo, PdfViewerSource } from "@/components/pdf-viewer-docs"
 import {
   Accordion,
@@ -353,8 +361,18 @@ export const mdxComponents = {
   CodeTabs,
   CodeCollapsibleWrapper,
   ComponentsList: ComponentsListWrapper,
+  CitationsDemo,
+  CitationsSource,
   CsvViewerDemo,
   CsvViewerSource,
+  ESignatureDemo,
+  ESignatureSource,
+  FileThumbnailDemo,
+  FileThumbnailSource,
+  FileUploadDemo,
+  FileUploadSource,
+  OcrBlocksDemo,
+  OcrBlocksSource,
   PdfViewerDemo,
   PdfViewerSource,
   Link: ({ className, ...props }: React.ComponentProps<typeof Link>) => (

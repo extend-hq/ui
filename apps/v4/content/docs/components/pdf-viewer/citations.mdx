@@ -1,0 +1,61 @@
+---
+title: Citations
+description: Link extracted answers, review notes, and model outputs back to exact PDF pages and regions.
+component: true
+---
+
+Citations connect document answers to their source evidence. They should make it easy to jump from an extracted value, comment, or answer back to the PDF page that supports it.
+
+<CitationsDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add citations
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-pdf pdfjs-dist
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<CitationsSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Useful behaviors
+
+- Page and bounding-box anchors for source evidence.
+- Highlighted citation regions that can be focused from outside the viewer.
+- Citation lists grouped by answer, field, or reviewer note.
+- Empty and unresolved states when the cited page or region is unavailable.
+
+## Common slots
+
+| Slot       | Purpose                                       |
+| ---------- | --------------------------------------------- |
+| `citation` | Source page, label, confidence, and snippet.  |
+| `anchor`   | Page region or text range highlighted in PDF. |

@@ -3,7 +3,7 @@ import Link from "next/link"
 import { ArrowRightIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import { Announcement } from "@/components/announcement"
+import { Button } from "@/components/ui/button"
 import {
   PageActions,
   PageHeader,
@@ -11,7 +11,6 @@ import {
   PageHeaderHeading,
 } from "@/components/page-header"
 import { Badge } from "@/registry/new-york-v4/ui/badge"
-import { Button } from "@/registry/new-york-v4/ui/button"
 import {
   Card,
   CardContent,
@@ -39,7 +38,10 @@ const featuredComponents = [
     "File Upload",
     "Drag-and-drop intake with validation, progress, queues, and retry states.",
   ],
-  ["Annotation Layer", "Highlights, pins, rectangles, notes, and anchored review comments."],
+  [
+    "Annotation Layer",
+    "Highlights, pins, rectangles, notes, and anchored review comments.",
+  ],
 ]
 
 export const dynamic = "force-static"
@@ -73,7 +75,6 @@ export default function IndexPage() {
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader>
-        <Announcement />
         <PageHeaderHeading className="max-w-4xl">{title}</PageHeaderHeading>
         <PageHeaderDescription>{description}</PageHeaderDescription>
         <PageActions>

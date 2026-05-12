@@ -7,7 +7,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { trackEvent } from "@/lib/events"
 import { cn } from "@/lib/utils"
 import { useLayout } from "@/hooks/use-layout"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
 
 export function SiteConfig({ className }: React.ComponentProps<typeof Button>) {
   const { layout, setLayout } = useLayout()

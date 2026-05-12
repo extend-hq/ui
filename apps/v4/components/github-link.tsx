@@ -1,8 +1,8 @@
 import Link from "next/link"
 
 import { siteConfig } from "@/lib/config"
+import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/icons"
-import { Button } from "@/registry/new-york-v4/ui/button"
 
 export function GitHubLink() {
   return (

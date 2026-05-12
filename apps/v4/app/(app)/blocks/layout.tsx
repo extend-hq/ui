@@ -1,7 +1,7 @@
 import { type Metadata } from "next"
 import Link from "next/link"
 
-import { Announcement } from "@/components/announcement"
+import { Button } from "@/components/ui/button"
 import { BlocksNav } from "@/components/blocks-nav"
 import {
   PageActions,
@@ -10,7 +10,6 @@ import {
   PageHeaderHeading,
 } from "@/components/page-header"
 import { PageNav } from "@/components/page-nav"
-import { Button } from "@/registry/new-york-v4/ui/button"
 
 const title = "Document Blocks"
 const description =
@@ -48,7 +47,6 @@ export default function BlocksLayout({
   return (
     <>
       <PageHeader>
-        <Announcement />
         <PageHeaderHeading>{title}</PageHeaderHeading>
         <PageHeaderDescription>{description}</PageHeaderDescription>
         <PageActions>

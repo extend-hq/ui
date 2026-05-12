@@ -6,7 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { trackEvent, type Event } from "@/lib/events"
 import { cn } from "@/lib/utils"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
 
 function legacyCopyToClipboard(value: string) {
   const textArea = document.createElement("textarea")
@@ -75,7 +75,10 @@ export function CopyButtonIcon({
   return (
     <span
       aria-hidden="true"
-      className={cn("relative inline-flex size-4 items-center justify-center", className)}
+      className={cn(
+        "relative inline-flex size-4 items-center justify-center",
+        className
+      )}
     >
       <span
         className={cn(
@@ -131,7 +134,7 @@ export function CopyButton({
       size="icon"
       variant={variant}
       className={cn(
-        "absolute top-3 right-2 z-10 size-7 bg-code transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-100 focus-visible:opacity-100 disabled:opacity-100",
+        "absolute top-3 right-2 z-10 size-7 bg-code transition-all duration-200 ease-out hover:opacity-100 focus-visible:opacity-100 active:scale-[0.97] disabled:opacity-100",
         className
       )}
       onClick={async () => {

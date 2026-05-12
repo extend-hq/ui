@@ -43,15 +43,43 @@ export function getPagesFromFolder(
       }
     }
 
-    // Fallback: return all pages from nested folders.
-    return getAllPagesFromFolder(folder).filter(
-      (page) => !page.url.endsWith("/components")
+    // Fallback: return direct component pages. Nested folders are rendered as
+    // contextual subpages in the sidebar instead of top-level component links.
+    return folder.children.filter(
+      (child): child is PageTreePage =>
+        child.type === "page" && !child.url.endsWith("/components")
     )
   }
 
   // For other folders, return direct page children.
   return folder.children.filter(
-    (child): child is PageTreePage => child.type === "page"
+    (child): child is PageTreePage =>
+      child.type === "page" && !child.url.endsWith("/components")
+  )
+}
+
+export function getNestedPagesFromFolder(
+  folder: PageTreeFolder,
+  folderId: string
+): PageTreePage[] {
+  const nestedFolder = folder.children.find(
+    (child): child is PageTreeFolder =>
+      child.type === "folder" &&
+      (child.$id === folderId ||
+        child.$id?.endsWith(`/${folderId}`) ||
+        (typeof child.name === "string" &&
+          child.name.toLowerCase().replaceAll(" ", "-") === folderId) ||
+        getAllPagesFromFolder(child).some((page) =>
+          page.url.includes(`/components/${folderId}/`)
+        ))
+  )
+
+  if (!nestedFolder) {
+    return []
+  }
+
+  return getAllPagesFromFolder(nestedFolder).filter(
+    (page) => !page.url.endsWith("/components")
   )
 }
 

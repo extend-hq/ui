@@ -18,8 +18,8 @@ import { type source } from "@/lib/source"
 import { cn } from "@/lib/utils"
 import { useConfig } from "@/hooks/use-config"
 import { useMutationObserver } from "@/hooks/use-mutation-observer"
+import { Button } from "@/components/ui/button"
 import { copyToClipboardWithMeta } from "@/components/copy-button"
-import { Button } from "@/registry/new-york-v4/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -29,8 +29,8 @@ import {
   CommandList,
 } from "@/registry/new-york-v4/ui/command"
 import {
-  Dialog,
   DialogContent as BaseDialogContent,
+  Dialog,
   DialogDescription,
   DialogHeader,
   DialogTitle,

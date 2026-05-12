@@ -6,7 +6,7 @@ import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
 import { useMetaColor } from "@/hooks/use-meta-color"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
 
 export const DARK_MODE_FORWARD_TYPE = "dark-mode-forward"
 

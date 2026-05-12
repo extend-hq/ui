@@ -7,10 +7,10 @@ import { findNeighbour } from "fumadocs-core/page-tree"
 
 import { source } from "@/lib/source"
 import { absoluteUrl } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { DocsCopyPage } from "@/components/docs-copy-page"
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { ExtendDeployCta } from "@/components/extend-deploy-cta"
-import { Button } from "@/registry/new-york-v4/ui/button"
 
 export const revalidate = false
 export const dynamic = "force-static"

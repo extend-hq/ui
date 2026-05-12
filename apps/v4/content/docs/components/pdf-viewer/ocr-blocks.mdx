@@ -1,0 +1,61 @@
+---
+title: OCR Blocks
+description: Inspect OCR text blocks, lines, words, and confidence overlays on top of PDF pages.
+component: true
+---
+
+OCR Blocks help users debug and review the text layer behind scanned or image-heavy PDFs. They should show document structure without replacing the original page image.
+
+<OcrBlocksDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add ocr-blocks
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-pdf pdfjs-dist
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<OcrBlocksSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Useful behaviors
+
+- Toggleable block, line, and word overlays.
+- Confidence coloring for low-quality OCR regions.
+- Hover and selection states that reveal text and geometry.
+- Region navigation from OCR results to the rendered PDF page.
+
+## Common slots
+
+| Slot      | Purpose                                      |
+| --------- | -------------------------------------------- |
+| `overlay` | OCR boxes positioned over the rendered page. |
+| `details` | Selected text, confidence, and coordinates.  |

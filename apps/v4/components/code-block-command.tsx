@@ -4,11 +4,11 @@ import * as React from "react"
 import { IconTerminal } from "@tabler/icons-react"
 
 import { useConfig } from "@/hooks/use-config"
+import { Button } from "@/components/ui/button"
 import {
   CopyButtonIcon,
   copyToClipboardWithMeta,
 } from "@/components/copy-button"
-import { Button } from "@/registry/new-york-v4/ui/button"
 import {
   Tabs,
   TabsContent,
@@ -123,7 +123,7 @@ export function CodeBlockCommand({
         disabled={hasCopied}
         size="icon"
         variant="ghost"
-        className="absolute top-2 right-2 z-10 size-7 opacity-70 transition-all duration-200 ease-out active:scale-[0.97] hover:opacity-100 focus-visible:opacity-100 disabled:opacity-100"
+        className="absolute top-2 right-2 z-10 size-7 opacity-70 transition-all duration-200 ease-out hover:opacity-100 focus-visible:opacity-100 active:scale-[0.97] disabled:opacity-100"
         onClick={copyCommand}
       >
         <span className="sr-only">{hasCopied ? "Copied" : "Copy"}</span>

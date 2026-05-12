@@ -1,11 +1,17 @@
 "use client"
 
+import { Fragment } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { showMcpDocs } from "@/lib/flags"
-import { getCurrentBase, getPagesFromFolder } from "@/lib/page-tree"
+import {
+  getCurrentBase,
+  getNestedPagesFromFolder,
+  getPagesFromFolder,
+} from "@/lib/page-tree"
 import type { source } from "@/lib/source"
+import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
@@ -26,6 +32,12 @@ const TOP_LEVEL_SECTIONS = [
 ]
 const EXCLUDED_SECTIONS: string[] = []
 const EXCLUDED_PAGES = ["/docs"]
+const PDF_VIEWER_URL = "/docs/components/pdf-viewer"
+const PDF_VIEWER_SUBPAGES = [
+  { name: "Citations", url: "/docs/components/pdf-viewer/citations" },
+  { name: "OCR Blocks", url: "/docs/components/pdf-viewer/ocr-blocks" },
+  { name: "E-Signature", url: "/docs/components/pdf-viewer/e-signature" },
+]
 
 export function DocsSidebar({
   tree,
@@ -81,6 +93,36 @@ export function DocsSidebar({
             return null
           }
 
+          const pages =
+            item.type === "folder"
+              ? getPagesFromFolder(item, currentBase).filter((page) => {
+                  if (!showMcpDocs && page.url.includes("/mcp")) {
+                    return false
+                  }
+
+                  return !EXCLUDED_PAGES.includes(page.url)
+                })
+              : []
+
+          if (pages.length === 0) {
+            return null
+          }
+
+          const pdfViewerSubpages =
+            item.type === "folder"
+              ? getNestedPagesFromFolder(item, "pdf-viewer").filter((page) => {
+                  if (!showMcpDocs && page.url.includes("/mcp")) {
+                    return false
+                  }
+
+                  return !EXCLUDED_PAGES.includes(page.url)
+                })
+              : []
+          const pdfViewerSidebarSubpages =
+            pdfViewerSubpages.length > 0
+              ? pdfViewerSubpages
+              : PDF_VIEWER_SUBPAGES
+
           return (
             <SidebarGroup key={item.$id}>
               <SidebarGroupLabel className="font-medium text-muted-foreground">
@@ -89,28 +131,53 @@ export function DocsSidebar({
               <SidebarGroupContent>
                 {item.type === "folder" && (
                   <SidebarMenu className="gap-0.5">
-                    {getPagesFromFolder(item, currentBase).map((page) => {
-                      if (!showMcpDocs && page.url.includes("/mcp")) {
-                        return null
-                      }
-
-                      if (EXCLUDED_PAGES.includes(page.url)) {
-                        return null
-                      }
+                    {pages.map((page) => {
+                      const isPdfViewer = page.url === PDF_VIEWER_URL
+                      const isPdfSubpage =
+                        isPdfViewer && pathname.startsWith(`${page.url}/`)
 
                       return (
-                        <SidebarMenuItem key={page.url}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={page.url === pathname}
-                            className="relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48"
-                          >
-                            <Link href={page.url}>
-                              <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
-                              {page.name}
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        <Fragment key={page.url}>
+                          <SidebarMenuItem>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={page.url === pathname || isPdfSubpage}
+                              className="relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48"
+                            >
+                              <Link href={page.url}>
+                                <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
+                                {page.name}
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                          {isPdfViewer &&
+                          pdfViewerSidebarSubpages.length > 0 ? (
+                            <>
+                              {pdfViewerSidebarSubpages.map(
+                                (subpage, index) => (
+                                  <SidebarMenuItem
+                                    key={subpage.url}
+                                    className={cn(
+                                      "ml-5 border-l border-border/70",
+                                      index === 0 && "mt-1"
+                                    )}
+                                  >
+                                    <SidebarMenuButton
+                                      asChild
+                                      isActive={subpage.url === pathname}
+                                      className="relative h-7 w-fit overflow-visible border border-transparent text-[0.78rem] font-medium text-muted-foreground after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent data-[active=true]:text-foreground 3xl:fixed:w-full 3xl:fixed:max-w-44"
+                                    >
+                                      <Link href={subpage.url}>
+                                        <span className="absolute inset-0 flex w-[calc(var(--sidebar-menu-width)-1.25rem)] bg-transparent" />
+                                        {subpage.name}
+                                      </Link>
+                                    </SidebarMenuButton>
+                                  </SidebarMenuItem>
+                                )
+                              )}
+                            </>
+                          ) : null}
+                        </Fragment>
                       )
                     })}
                   </SidebarMenu>

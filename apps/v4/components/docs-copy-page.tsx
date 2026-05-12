@@ -4,9 +4,9 @@ import * as React from "react"
 import { ChevronDown } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import { CopyButtonIcon } from "@/components/copy-button"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
+import { CopyButtonIcon } from "@/components/copy-button"
 import {
   DropdownMenu,
   DropdownMenuContent,

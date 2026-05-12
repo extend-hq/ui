@@ -6,14 +6,7 @@
     "docx-viewer",
     "xlsx-viewer",
     "csv-tsv-viewer",
-    "file-upload",
-    "document-thumbnail-strip",
-    "document-outline-toc",
-    "document-search",
-    "document-annotation-layer",
-    "redline-review-panel",
-    "document-comparison-viewer",
-    "ocr-text-layer-viewer",
-    "document-metadata-panel"
+    "file-thumbnail",
+    "file-upload"
   ]
 }

@@ -1,0 +1,62 @@
+---
+title: E-Signature
+description: Place, review, and complete signature fields on PDF documents.
+component: true
+---
+
+E-Signature extends a PDF viewer with signature, initials, date, and approval fields. It should keep field placement precise while making signing status clear.
+
+<ESignatureDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add e-signature
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-pdf pdfjs-dist signature_pad pdf-lib
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ESignatureSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Useful behaviors
+
+- Signature, initials, date, checkbox, and text field placement.
+- Recipient-specific field ownership and completion state.
+- Required-field validation before submit.
+- Audit-friendly signed, pending, and declined states.
+
+## Common slots
+
+| Slot       | Purpose                                      |
+| ---------- | -------------------------------------------- |
+| `field`    | Signature or form field positioned on a PDF. |
+| `status`   | Recipient and completion state.              |
+| `controls` | Review, clear, decline, or submit actions.   |

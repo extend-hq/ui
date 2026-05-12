@@ -1,8 +1,8 @@
 "use client"
 
-import { CopyButtonIcon } from "@/components/copy-button"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
+import { CopyButtonIcon } from "@/components/copy-button"
 
 function getPromptUrl(baseURL: string, url: string) {
   return `${baseURL}?q=${encodeURIComponent(

@@ -1,0 +1,62 @@
+---
+title: File Thumbnail
+description: Render a compact first-page preview for PDFs and direct image previews for image files.
+component: true
+---
+
+File Thumbnail gives document lists, upload queues, and attachment trays a fast visual preview without mounting a full viewer.
+
+<FileThumbnailDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add file-thumbnail
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-pdf
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<FileThumbnailSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Useful behaviors
+
+- Uses `react-pdf` `Thumbnail` for the first page instead of mounting a full PDF page viewer.
+- Lazily mounts PDF rendering when the thumbnail approaches the viewport.
+- Uses a native `img` tag for image files with browser-level lazy loading and async decoding.
+- Shows a shimmering file-preview state while PDF thumbnails render.
+- Falls back to a compact file icon when the preview cannot render.
+
+## Common slots
+
+| Slot       | Purpose                                                    |
+| ---------- | ---------------------------------------------------------- |
+| `preview`  | First-page PDF thumbnail, image preview, or fallback icon. |
+| `metadata` | File name, type, size, page count, or processing status.   |

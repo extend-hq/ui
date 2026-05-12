@@ -10,6 +10,7 @@ import type {
   Theme,
 } from "@glideapps/glide-data-grid"
 import {
+  Loading03Icon,
   MinusSignCircleIcon,
   PlusSignCircleIcon,
   TableIcon,
@@ -18,8 +19,8 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import Papa from "papaparse"
 
+import { Button } from "@/components/ui/button"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
-import { Button } from "@/registry/new-york-v4/ui/button"
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/registry/new-york-v4/ui/select"
+import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
   TooltipContent,
@@ -174,7 +176,9 @@ function CsvViewerPreviewClient() {
   const [glide, setGlide] = React.useState<GlideDataGridModule | null>(null)
   const [fileName, setFileName] = React.useState("invoice-review.csv")
   const [zoom, setZoom] = React.useState<(typeof ZOOM_OPTIONS)[number]>(1)
-  const [parsed, setParsed] = React.useState(() => parseDelimitedText(SAMPLE_CSV))
+  const [parsed, setParsed] = React.useState(() =>
+    parseDelimitedText(SAMPLE_CSV)
+  )
   const [isPending, setIsPending] = React.useState(false)
 
   React.useEffect(() => {
@@ -192,9 +196,10 @@ function CsvViewerPreviewClient() {
   }, [])
 
   const columnCount = Math.max(1, parsed.headers.length)
-  const scale = React.useCallback((value: number) => Math.round(value * zoom), [
-    zoom,
-  ])
+  const scale = React.useCallback(
+    (value: number) => Math.round(value * zoom),
+    [zoom]
+  )
 
   const theme = React.useMemo<Partial<Theme>>(
     () => ({
@@ -214,8 +219,14 @@ function CsvViewerPreviewClient() {
       bgHeaderHovered: isDark ? "#262626" : "#f5f5f5",
       borderColor: isDark ? "#262626" : "#e5e5e5",
       horizontalBorderColor: isDark ? "#262626" : "#e5e5e5",
-      baseFontStyle: `${scale(13)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
-      headerFontStyle: `600 ${scale(13)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
+      cellHorizontalPadding: scale(8),
+      cellVerticalPadding: Math.max(2, scale(3)),
+      headerIconSize: scale(18),
+      baseFontStyle: `${scale(13)}px`,
+      headerFontStyle: `600 ${scale(13)}px`,
+      markerFontStyle: `${scale(11)}px`,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      editorFontSize: `${scale(13)}px`,
     }),
     [isDark, scale]
   )
@@ -339,6 +350,10 @@ function CsvViewerPreviewClient() {
                 <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
               </Button>
             </ToolbarTooltip>
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
             <input
               ref={inputRef}
               type="file"
@@ -366,8 +381,11 @@ function CsvViewerPreviewClient() {
             {parsed.error}
           </div>
         ) : !glide ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Loading grid...
+          <div className="grid h-full place-items-center bg-background">
+            <HugeiconsIcon
+              icon={Loading03Icon}
+              className="size-4 animate-spin"
+            />
           </div>
         ) : (
           <glide.DataEditor
@@ -405,6 +423,7 @@ import type {
   Theme,
 } from "@glideapps/glide-data-grid";
 import {
+  Loading03Icon,
   MinusSignCircleIcon,
   PlusSignCircleIcon,
   TableIcon,
@@ -422,6 +441,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -610,12 +630,14 @@ export function CsvViewer({
       bgHeaderHovered: isDark ? "#262626" : "#f5f5f5",
       borderColor: isDark ? "#262626" : "#e5e5e5",
       horizontalBorderColor: isDark ? "#262626" : "#e5e5e5",
-      baseFontStyle:
-        scale(13) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      headerFontStyle:
-        "600 " +
-        scale(13) +
-        'px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      cellHorizontalPadding: scale(8),
+      cellVerticalPadding: Math.max(2, scale(3)),
+      headerIconSize: scale(18),
+      baseFontStyle: scale(13) + "px",
+      headerFontStyle: "600 " + scale(13) + "px",
+      markerFontStyle: scale(11) + "px",
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      editorFontSize: scale(13) + "px",
     }),
     [isDark, scale],
   );
@@ -744,6 +766,10 @@ export function CsvViewer({
                 <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
               </Button>
             </ToolbarTooltip>
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
             <input
               ref={inputRef}
               type="file"
@@ -771,8 +797,8 @@ export function CsvViewer({
             {parsed.error}
           </div>
         ) : !glide ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Loading grid...
+          <div className="grid h-full place-items-center bg-background">
+            <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
           </div>
         ) : (
           <glide.DataEditor
