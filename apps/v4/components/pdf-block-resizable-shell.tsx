@@ -46,7 +46,7 @@ export function PdfBlockResizableShell({
       autoSaveId={`${autoSaveId}-${direction}`}
       className={cn(
         heightClassName,
-        "max-h-[calc(100vh-8rem)] min-h-[420px] overflow-hidden bg-background",
+        "relative max-h-[calc(100vh-8rem)] min-h-[420px] overflow-hidden bg-background",
         className
       )}
     >
@@ -57,7 +57,7 @@ export function PdfBlockResizableShell({
       >
         {left}
       </ResizablePanel>
-      <ResizableHandle className="group z-10" withHandle />
+      <ResizableHandle className="group z-[1000]" withHandle />
       <ResizablePanel
         defaultSize={isDesktop ? rightDefaultSize : 38}
         minSize={isDesktop ? rightMinSize : 24}

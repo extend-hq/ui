@@ -8,7 +8,7 @@
       "type": "registry:lib",
       "title": "Utils",
       "description": "Shared class name helper used by Extend UI registry components.",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": ["clsx@^2.1.1", "tailwind-merge@^3.3.1"],
       "files": [
         {
           "path": "registry/new-york-v4/lib/utils.ts",
@@ -36,9 +36,9 @@
       "title": "Accordion",
       "description": "A vertically stacked set of expandable content panels.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
       ],
       "registryDependencies": ["utils"],
       "files": [
@@ -54,7 +54,7 @@
       "type": "registry:ui",
       "title": "Alert",
       "description": "A callout for displaying contextual messages.",
-      "dependencies": ["class-variance-authority"],
+      "dependencies": ["class-variance-authority@^0.7.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -83,9 +83,9 @@
       "title": "Autocomplete",
       "description": "An autocomplete input built on Base UI primitives.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
       ],
       "registryDependencies": ["input", "scroll-area", "utils"],
       "files": [
@@ -101,7 +101,10 @@
       "type": "registry:ui",
       "title": "Badge",
       "description": "A compact label for status, metadata, and categorization.",
-      "dependencies": ["@base-ui/react", "class-variance-authority"],
+      "dependencies": [
+        "@base-ui/react@^1.4.1",
+        "class-variance-authority@^0.7.1"
+      ],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -117,9 +120,9 @@
       "title": "Breadcrumb",
       "description": "Navigation breadcrumbs for page hierarchy.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
       ],
       "registryDependencies": ["utils"],
       "files": [
@@ -135,7 +138,10 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "A polymorphic button primitive with variants, sizes, and loading state.",
-      "dependencies": ["@base-ui/react", "class-variance-authority"],
+      "dependencies": [
+        "@base-ui/react@^1.4.1",
+        "class-variance-authority@^0.7.1"
+      ],
       "registryDependencies": ["spinner", "utils"],
       "files": [
         {
@@ -150,7 +156,7 @@
       "type": "registry:ui",
       "title": "Card",
       "description": "A flexible container primitive for grouped content.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -165,7 +171,7 @@
       "type": "registry:ui",
       "title": "Collapsible",
       "description": "A disclosure primitive for expandable content.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -181,9 +187,9 @@
       "title": "Command",
       "description": "A command menu surface powered by cmdk.",
       "dependencies": [
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "cmdk"
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "cmdk@^1.1.1"
       ],
       "registryDependencies": ["dialog", "utils"],
       "files": [
@@ -200,9 +206,9 @@
       "title": "Dialog",
       "description": "An accessible modal dialog built on Base UI.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
       ],
       "registryDependencies": ["button", "scroll-area", "utils"],
       "files": [
@@ -219,9 +225,9 @@
       "title": "Dropdown Menu",
       "description": "A dropdown menu built on Base UI menu primitives.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
       ],
       "registryDependencies": ["utils"],
       "files": [
@@ -237,7 +243,7 @@
       "type": "registry:ui",
       "title": "Input",
       "description": "A styled text input built on Base UI.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -266,7 +272,7 @@
       "type": "registry:ui",
       "title": "Popover",
       "description": "A floating popover built on Base UI.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -281,7 +287,7 @@
       "type": "registry:ui",
       "title": "Scroll Area",
       "description": "A custom scroll area built on Base UI.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -297,10 +303,10 @@
       "title": "Select",
       "description": "A select control built on Base UI.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "class-variance-authority"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "class-variance-authority@^0.7.1"
       ],
       "registryDependencies": ["utils"],
       "files": [
@@ -316,7 +322,7 @@
       "type": "registry:ui",
       "title": "Separator",
       "description": "A visual separator built on Base UI.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -332,9 +338,9 @@
       "title": "Sheet",
       "description": "A side sheet built on Base UI dialog primitives.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
       ],
       "registryDependencies": ["button", "scroll-area", "utils"],
       "files": [
@@ -351,10 +357,10 @@
       "title": "Sidebar",
       "description": "A responsive application sidebar with menu, rail, and provider primitives.",
       "dependencies": [
-        "@base-ui/react",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "class-variance-authority"
+        "@base-ui/react@^1.4.1",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "class-variance-authority@^0.7.1"
       ],
       "registryDependencies": [
         "button",
@@ -393,10 +399,10 @@
       "title": "Sonner",
       "description": "A themed toast provider for Sonner.",
       "dependencies": [
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "next-themes",
-        "sonner"
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "next-themes@0.4.6",
+        "sonner@^2.0.0"
       ],
       "files": [
         {
@@ -411,7 +417,10 @@
       "type": "registry:ui",
       "title": "Spinner",
       "description": "A compact loading spinner using Hugeicons.",
-      "dependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
+      "dependencies": [
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
+      ],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -426,7 +435,7 @@
       "type": "registry:ui",
       "title": "Tabs",
       "description": "A tabs primitive built on Base UI.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -441,7 +450,7 @@
       "type": "registry:ui",
       "title": "Tooltip",
       "description": "A tooltip primitive built on Base UI.",
-      "dependencies": ["@base-ui/react"],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -457,9 +466,9 @@
       "title": "Resizable",
       "description": "Resizable panel primitives using react-resizable-panels.",
       "dependencies": [
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "react-resizable-panels"
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "react-resizable-panels@^3.0.5"
       ],
       "registryDependencies": ["utils"],
       "files": [
@@ -471,12 +480,36 @@
       ]
     },
     {
+      "name": "pdf-block-resizable-shell",
+      "type": "registry:component",
+      "title": "PDF Block Resizable Shell",
+      "description": "A reusable resizable left document viewer and right review panel shell for PDF-style blocks.",
+      "registryDependencies": ["resizable", "utils"],
+      "categories": ["documents", "blocks"],
+      "files": [
+        {
+          "path": "components/pdf-block-resizable-shell.tsx",
+          "type": "registry:component",
+          "target": "@components/pdf-block-resizable-shell.tsx"
+        },
+        {
+          "path": "hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
+        }
+      ]
+    },
+    {
       "name": "file-upload",
       "type": "registry:ui",
       "title": "File Upload",
       "description": "A drag-and-drop file upload surface with accepted file type icons and a compact file list.",
-      "dependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
-      "registryDependencies": ["file-thumbnail", "utils"],
+      "dependencies": [
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "border-beam@^1.0.1"
+      ],
+      "registryDependencies": ["card", "file-thumbnail", "utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -490,8 +523,15 @@
       "name": "file-thumbnail",
       "type": "registry:ui",
       "title": "File Thumbnail",
-      "description": "A compact file preview thumbnail with loading, image preview, metadata, and fallback states.",
-      "dependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
+      "description": "A compact file preview thumbnail with built-in image, PDF, DOCX, and XLSX first-page thumbnail generation.",
+      "dependencies": [
+        "@extend-ai/react-docx@^0.6.5",
+        "@extend-ai/react-xlsx@^0.8.7",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "pdfjs-dist@5.4.296",
+        "react-pdf@^10.4.1"
+      ],
       "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
@@ -508,10 +548,10 @@
       "title": "PDF Viewer",
       "description": "A PDF viewer with page virtualization, thumbnails, search, zoom, rotation, upload, and page overlay hooks.",
       "dependencies": [
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "pdfjs-dist",
-        "react-pdf"
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "pdfjs-dist@5.4.296",
+        "react-pdf@^10.4.1"
       ],
       "registryDependencies": [
         "button",
@@ -538,12 +578,18 @@
       "title": "DOCX Viewer",
       "description": "A DOCX viewer with upload, zoom, theme controls, cached source loading, and read-only rendering.",
       "dependencies": [
-        "@extend-ai/react-docx",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "next-themes"
+        "@extend-ai/react-docx@^0.6.5",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "next-themes@0.4.6"
       ],
-      "registryDependencies": ["button", "select", "separator", "tooltip", "utils"],
+      "registryDependencies": [
+        "button",
+        "select",
+        "separator",
+        "tooltip",
+        "utils"
+      ],
       "categories": ["documents"],
       "files": [
         {
@@ -559,10 +605,10 @@
       "title": "Excel Viewer",
       "description": "An XLSX viewer with workbook loading, thumbnails, sheet tabs, upload, zoom, and theme controls.",
       "dependencies": [
-        "@extend-ai/react-xlsx",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "next-themes"
+        "@extend-ai/react-xlsx@^0.8.7",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "next-themes@0.4.6"
       ],
       "registryDependencies": [
         "button",
@@ -590,13 +636,14 @@
       "description": "A CSV and TSV viewer with parsing, upload, zoom, theme-aware grid rendering, and Glide Data Grid.",
       "dependencies": [
         "@glideapps/glide-data-grid@6.0.4-alpha24",
-        "@hugeicons/core-free-icons",
-        "@hugeicons/react",
-        "papaparse"
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "papaparse@^5.5.3"
       ],
+      "devDependencies": ["@types/papaparse@^5.5.2"],
       "registryDependencies": ["button", "select", "separator", "tooltip"],
       "categories": ["documents"],
-      "docs": "Import @glideapps/glide-data-grid/dist/index.css from your app's global stylesheet or root layout so the grid renders correctly.",
+      "docs": "The component includes the critical Glide Data Grid layout CSS. For full editor/search overlay styling, also import @glideapps/glide-data-grid/dist/index.css from your app's global stylesheet or root layout.",
       "files": [
         {
           "path": "components/ui/csv-viewer.tsx",
@@ -610,6 +657,7 @@
       "type": "registry:block",
       "title": "PDF Dropzone",
       "description": "A PDF-only upload dropzone that opens the dropped file in the shared PDF viewer.",
+      "dependencies": ["@hugeicons/core-free-icons@^4.1.1"],
       "registryDependencies": ["file-upload", "pdf-viewer"],
       "categories": ["documents", "blocks"],
       "files": [
@@ -625,7 +673,12 @@
       "type": "registry:block",
       "title": "Citations",
       "description": "A PDF evidence review block with citation cards that focus page regions.",
-      "registryDependencies": ["pdf-viewer", "scroll-area", "utils"],
+      "registryDependencies": [
+        "pdf-block-resizable-shell",
+        "pdf-viewer",
+        "scroll-area",
+        "utils"
+      ],
       "categories": ["documents", "blocks"],
       "files": [
         {
@@ -640,8 +693,16 @@
       "type": "registry:block",
       "title": "OCR Blocks",
       "description": "A structured OCR review block with confidence cards and PDF region overlays.",
-      "dependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
-      "registryDependencies": ["pdf-viewer", "scroll-area", "utils"],
+      "dependencies": [
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
+      ],
+      "registryDependencies": [
+        "pdf-block-resizable-shell",
+        "pdf-viewer",
+        "scroll-area",
+        "utils"
+      ],
       "categories": ["documents", "blocks"],
       "files": [
         {
@@ -656,8 +717,20 @@
       "type": "registry:block",
       "title": "E-Signature",
       "description": "A PDF signature review block with field overlays and signing actions.",
-      "dependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
-      "registryDependencies": ["button", "pdf-viewer", "scroll-area", "utils"],
+      "dependencies": [
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "pdf-lib@^1.17.1",
+        "signature_pad@^5.1.3"
+      ],
+      "registryDependencies": [
+        "button",
+        "dialog",
+        "pdf-block-resizable-shell",
+        "pdf-viewer",
+        "scroll-area",
+        "utils"
+      ],
       "categories": ["documents", "blocks"],
       "files": [
         {
@@ -672,12 +745,19 @@
       "type": "registry:block",
       "title": "Human Review",
       "description": "A human-in-the-loop extraction review block linked to source PDF evidence.",
-      "dependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
+      "dependencies": [
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "@pierre/diffs@^1.1.22"
+      ],
       "registryDependencies": [
-        "badge",
         "button",
+        "input",
+        "pdf-block-resizable-shell",
         "pdf-viewer",
         "scroll-area",
+        "tabs",
+        "tooltip",
         "utils"
       ],
       "categories": ["documents", "blocks"],
@@ -694,10 +774,18 @@
       "type": "registry:block",
       "title": "Document Splits",
       "description": "A split-group review block for organizing pages into output documents.",
-      "dependencies": ["@hugeicons/core-free-icons", "@hugeicons/react"],
+      "dependencies": [
+        "@dnd-kit/core@^6.3.1",
+        "@dnd-kit/sortable@^10.0.0",
+        "@dnd-kit/utilities@^3.2.2",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6"
+      ],
       "registryDependencies": [
         "button",
         "file-thumbnail",
+        "pdf-block-resizable-shell",
+        "pdf-viewer",
         "scroll-area",
         "utils"
       ],
@@ -717,6 +805,7 @@
       "description": "A workbook review block with sheet groups and the shared XLSX viewer.",
       "registryDependencies": [
         "file-thumbnail",
+        "pdf-block-resizable-shell",
         "scroll-area",
         "utils",
         "xlsx-viewer"

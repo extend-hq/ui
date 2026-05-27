@@ -8,9 +8,11 @@ import {
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { BorderBeam } from "border-beam"
 
 import { cn } from "@/lib/utils"
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
+import { Card } from "@/registry/new-york-v4/ui/card"
 
 type FileUploadItem = {
   id: string
@@ -28,11 +30,13 @@ type AcceptedFileType = {
 type FileUploadProps = {
   accept?: string
   acceptedFileTypes?: AcceptedFileType[]
+  borderBeamTheme?: React.ComponentProps<typeof BorderBeam>["theme"]
   browseLabel?: string
   className?: string
   description?: string
   draggingLabel?: string
   multiple?: boolean
+  showBorderBeam?: boolean
   showFileList?: boolean
   title?: string
   onFilesAccepted?: (files: File[]) => void
@@ -43,6 +47,20 @@ const ACCEPTED_FILE_TYPES: AcceptedFileType[] = [
   { label: "Image", icon: FileImageIcon },
   { label: "PDF", icon: FileUploadIcon },
   { label: "Sheet", icon: FileSpreadsheetIcon },
+]
+const ICON_TRANSFORMS = [
+  {
+    idle: "translate(-78%, -50%) rotate(-8deg)",
+    active: "translate(-114%, -50%) rotate(-12deg) scale(1.08)",
+  },
+  {
+    idle: "translate(-50%, -50%) rotate(0deg)",
+    active: "translate(-50%, -50%) rotate(0deg) scale(1.18)",
+  },
+  {
+    idle: "translate(-22%, -50%) rotate(8deg)",
+    active: "translate(14%, -50%) rotate(12deg) scale(1.08)",
+  },
 ]
 
 function formatBytes(bytes: number) {
@@ -85,14 +103,51 @@ function toUploadItems(files: FileList | File[]): FileUploadItem[] {
   }))
 }
 
+function UploadIconCluster({
+  acceptedFileTypes,
+  isDragging,
+}: {
+  acceptedFileTypes: AcceptedFileType[]
+  isDragging: boolean
+}) {
+  const singleIcon = acceptedFileTypes.length === 1
+
+  return (
+    <div className="relative h-14 w-36">
+      {acceptedFileTypes.map((item, index) => (
+        <Card
+          key={item.label}
+          className={cn(
+            "absolute top-1/2 left-1/2 grid size-12 place-items-center rounded-xl bg-background text-muted-foreground transition-[transform,color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] before:rounded-[calc(var(--radius-xl)-1px)]",
+            "motion-reduce:transition-none",
+            index === 1 && "z-10",
+            isDragging && "bg-accent text-foreground"
+          )}
+          style={{
+            transform: singleIcon
+              ? `translate(-50%, -50%) scale(${isDragging ? 1.14 : 1})`
+              : isDragging
+                ? ICON_TRANSFORMS[index]?.active
+                : ICON_TRANSFORMS[index]?.idle,
+          }}
+        >
+          <HugeiconsIcon icon={item.icon} className="size-5" />
+        </Card>
+      ))}
+    </div>
+  )
+}
+
 export function FileUpload({
   accept,
   acceptedFileTypes = ACCEPTED_FILE_TYPES,
+  borderBeamTheme = "light",
   browseLabel = "Browse files",
   className,
   description = "PDF, DOCX, XLSX, CSV, PNG, or JPG",
   draggingLabel = "Drop to add",
   multiple = true,
+  showBorderBeam = true,
   showFileList = true,
   title = "Click to upload or drop files",
   onFilesAccepted,
@@ -135,72 +190,84 @@ export function FileUpload({
     }
   }, [files])
 
-  return (
-    <div className={cn("space-y-3", className)}>
-      <label
-        className={cn(
-          "relative flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border border-dashed bg-background px-6 py-10 text-center transition-colors",
-          isDragging
-            ? "border-foreground/40 bg-accent/35"
-            : "border-border hover:border-foreground/30 hover:bg-muted/35"
-        )}
-        onDragEnter={(event) => {
-          event.preventDefault()
-          dragDepthRef.current += 1
-          setIsDragging(true)
-        }}
-        onDragLeave={(event) => {
-          event.preventDefault()
-          dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
-          if (dragDepthRef.current === 0) setIsDragging(false)
-        }}
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => {
-          event.preventDefault()
-          dragDepthRef.current = 0
-          setIsDragging(false)
-          if (event.dataTransfer.files.length > 0) {
-            commitFiles(event.dataTransfer.files)
+  const dropzone = (
+    <label
+      className={cn(
+        "relative flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 overflow-hidden rounded-[1.125rem] border border-dashed bg-background px-6 py-10 text-center transition-[border-color,background-color] duration-200 ease-out",
+        "motion-reduce:transition-none",
+        isDragging
+          ? "border-foreground/40 bg-accent/35"
+          : "border-border hover:border-foreground/30 hover:bg-muted/35"
+      )}
+      onDragEnter={(event) => {
+        event.preventDefault()
+        dragDepthRef.current += 1
+        setIsDragging(true)
+      }}
+      onDragLeave={(event) => {
+        event.preventDefault()
+        dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+        if (dragDepthRef.current === 0) setIsDragging(false)
+      }}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => {
+        event.preventDefault()
+        dragDepthRef.current = 0
+        setIsDragging(false)
+        if (event.dataTransfer.files.length > 0) {
+          commitFiles(event.dataTransfer.files)
+        }
+      }}
+    >
+      <UploadIconCluster
+        acceptedFileTypes={acceptedFileTypes}
+        isDragging={isDragging}
+      />
+      <div className="space-y-1">
+        <div className="text-sm font-medium">{title}</div>
+        <div className="text-xs text-muted-foreground">{description}</div>
+        {rejectionMessage ? (
+          <div className="text-xs text-destructive">{rejectionMessage}</div>
+        ) : null}
+      </div>
+      <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
+        <HugeiconsIcon icon={Upload01Icon} className="size-3.5" />
+        <span>{isDragging ? draggingLabel : browseLabel}</span>
+      </div>
+      <input
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        className="sr-only"
+        onChange={(event) => {
+          if (event.target.files) {
+            commitFiles(event.target.files)
+            event.currentTarget.value = ""
           }
         }}
-      >
-        <div className="flex items-center justify-center gap-2">
-          {acceptedFileTypes.map((item) => (
-            <div
-              key={item.label}
-              className={cn(
-                "grid size-12 place-items-center rounded-xl border bg-background text-muted-foreground transition-colors",
-                isDragging && "bg-accent text-foreground"
-              )}
-            >
-              <HugeiconsIcon icon={item.icon} className="size-5" />
-            </div>
-          ))}
-        </div>
-        <div className="space-y-1">
-          <div className="text-sm font-medium">{title}</div>
-          <div className="text-xs text-muted-foreground">{description}</div>
-          {rejectionMessage ? (
-            <div className="text-xs text-destructive">{rejectionMessage}</div>
-          ) : null}
-        </div>
-        <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
-          <HugeiconsIcon icon={Upload01Icon} className="size-3.5" />
-          <span>{isDragging ? draggingLabel : browseLabel}</span>
-        </div>
-        <input
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          className="sr-only"
-          onChange={(event) => {
-            if (event.target.files) {
-              commitFiles(event.target.files)
-              event.currentTarget.value = ""
-            }
-          }}
-        />
-      </label>
+      />
+    </label>
+  )
+
+  return (
+    <div className={cn("space-y-3", className)}>
+      {showBorderBeam ? (
+        <BorderBeam
+          active={isDragging}
+          borderRadius={18}
+          brightness={2.4}
+          className="rounded-[1.125rem]"
+          colorVariant="ocean"
+          duration={2.4}
+          size="md"
+          strength={1}
+          theme={borderBeamTheme}
+        >
+          {dropzone}
+        </BorderBeam>
+      ) : (
+        dropzone
+      )}
       {showFileList && files.length > 0 ? (
         <div className="rounded-xl border bg-background">
           {files.map((file) => (

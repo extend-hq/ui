@@ -98,6 +98,7 @@ function getThumbnailFile(file: DemoFile): ThumbnailFile {
     name: file.name,
     size: file.size,
     type: file.type,
+    url: file.url,
   }
 }
 
@@ -178,58 +179,12 @@ export function DocumentAwareFileThumbnail({
   generationDelayMs?: number
   showMetadata?: boolean
 }) {
-  const isActive = useThumbnailActivation(generationDelayMs)
-
-  if (isImageFile(file)) {
-    return (
-      <FileThumbnail
-        file={getThumbnailFile(file)}
-        previewImageUrl={file.url}
-        className={className}
-        showMetadata={showMetadata}
-      />
-    )
-  }
-
-  if (isPdfFile(file)) {
-    return (
-      <PdfFileThumbnail
-        file={file}
-        isActive={isActive}
-        className={className}
-        showMetadata={showMetadata}
-        thumbnailWidth={520}
-      />
-    )
-  }
-
-  if (isDocxFile(file)) {
-    return (
-      <DocxFileThumbnail
-        file={file}
-        isActive={isActive}
-        className={className}
-        showMetadata={showMetadata}
-        thumbnailWidth={520}
-      />
-    )
-  }
-
-  if (isXlsxFile(file)) {
-    return (
-      <XlsxFileThumbnail
-        file={file}
-        isActive={isActive}
-        className={className}
-        showMetadata={showMetadata}
-        thumbnailWidth={680}
-      />
-    )
-  }
-
   return (
     <FileThumbnail
       file={getThumbnailFile(file)}
+      source={file.url}
+      generationDelayMs={generationDelayMs}
+      thumbnailWidth={isXlsxFile(file) ? 680 : 520}
       className={className}
       showMetadata={showMetadata}
     />

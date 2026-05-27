@@ -98,17 +98,42 @@ const ZOOM_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 const MAX_DEVICE_PIXEL_RATIO = 2
 const DEFAULT_PAGE_RENDER_BUFFER = 2
 const THUMBNAIL_WIDTH = 92
-const PDF_WORKER_URL = new URL(
-  "pdfjs-dist/legacy/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString()
-
 type SearchHighlight = {
   id: string
   left: number
   top: number
   width: number
   height: number
+}
+
+function getPdfWorkerUrl(pdfjsVersion: string) {
+  return `//unpkg.com/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`
+}
+
+function PDFViewerLoadingSkeleton() {
+  return (
+    <div className="absolute inset-0 z-20 flex bg-muted/30">
+      <div className="hidden w-40 shrink-0 border-r bg-sidebar p-4 md:block">
+        <div className="mx-auto h-28 w-20 rounded-sm border bg-background shadow-xs">
+          <div className="h-full animate-pulse bg-muted" />
+        </div>
+        <div className="mx-auto mt-3 h-3 w-10 rounded-full bg-muted" />
+      </div>
+      <div className="relative grid min-w-0 flex-1 place-items-center p-6">
+        <div className="w-full max-w-[360px] overflow-hidden rounded-sm border bg-background shadow-xs">
+          <div className="aspect-[8.5/11] animate-pulse bg-muted" />
+        </div>
+        <div className="absolute inset-0 grid place-items-center">
+          <div className="grid size-10 place-items-center rounded-full border bg-background/90 shadow-sm">
+            <HugeiconsIcon
+              icon={Loading03Icon}
+              className="size-4 animate-spin"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function ToolbarTooltip({
@@ -409,7 +434,9 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
 
       void import("react-pdf")
         .then((module) => {
-          module.pdfjs.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL
+          module.pdfjs.GlobalWorkerOptions.workerSrc = getPdfWorkerUrl(
+            module.pdfjs.version
+          )
 
           if (mounted) {
             setReactPdf(module)
@@ -876,14 +903,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
               </div>
             </div>
           ) : null}
-          {isLoading && !loadError ? (
-            <div className="absolute inset-0 z-20 grid place-items-center bg-background">
-              <HugeiconsIcon
-                icon={Loading03Icon}
-                className="size-4 animate-spin"
-              />
-            </div>
-          ) : null}
+          {isLoading && !loadError ? <PDFViewerLoadingSkeleton /> : null}
           {loadError ? (
             <div className="absolute inset-0 z-20 grid place-items-center bg-background p-6 text-sm text-muted-foreground">
               Unable to load the PDF preview.

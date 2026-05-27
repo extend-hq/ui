@@ -1,62 +1,21 @@
 "use client"
 
 import * as React from "react"
-import dynamic from "next/dynamic"
 import Link from "next/link"
 import { ArrowUpRight01Icon, Refresh01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { siteConfig } from "@/lib/config"
 import { Button } from "@/components/ui/button"
-
-const PreviewLoading = () => (
-  <div className="grid h-[420px] place-items-center bg-muted/20 text-sm text-muted-foreground">
-    Loading preview...
-  </div>
-)
-
-const PdfDropzoneBlock = dynamic(
-  () =>
-    import("@/components/pdf-dropzone-block").then(
-      (mod) => mod.PdfDropzoneBlock
-    ),
-  { loading: PreviewLoading, ssr: false }
-)
-const CitationsBlock = dynamic(
-  () => import("@/components/citations-docs").then((mod) => mod.CitationsBlock),
-  { loading: PreviewLoading, ssr: false }
-)
-const OcrBlocksBlock = dynamic(
-  () =>
-    import("@/components/ocr-blocks-docs").then((mod) => mod.OcrBlocksBlock),
-  { loading: PreviewLoading, ssr: false }
-)
-const ESignatureBlock = dynamic(
-  () =>
-    import("@/components/e-signature-docs").then((mod) => mod.ESignatureBlock),
-  { loading: PreviewLoading, ssr: false }
-)
-const HumanReviewBlock = dynamic(
-  () =>
-    import("@/components/human-review-docs").then(
-      (mod) => mod.HumanReviewBlock
-    ),
-  { loading: PreviewLoading, ssr: false }
-)
-const DocumentSplitsBlock = dynamic(
-  () =>
-    import("@/components/document-splitter-docs").then(
-      (mod) => mod.DocumentSplitsBlock
-    ),
-  { loading: PreviewLoading, ssr: false }
-)
-const XlsxDocumentSplitsBlock = dynamic(
-  () =>
-    import("@/components/document-splitter-docs").then(
-      (mod) => mod.XlsxDocumentSplitsBlock
-    ),
-  { loading: PreviewLoading, ssr: false }
-)
+import { CitationsBlock } from "@/components/citations-docs"
+import {
+  DocumentSplitsBlock,
+  XlsxDocumentSplitsBlock,
+} from "@/components/document-splitter-docs"
+import { ESignatureBlock } from "@/components/e-signature-docs"
+import { HumanReviewBlock } from "@/components/human-review-docs"
+import { OcrBlocksBlock } from "@/components/ocr-blocks-docs"
+import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
 function getRegistryAddCommand(name: string) {
   return `npx shadcn@latest add ${siteConfig.url}/r/${name}.json`
@@ -145,37 +104,11 @@ function PdfViewerBlockPreview({
 }: {
   block: (typeof pdfViewerBlocks)[number]
 }) {
-  const rootRef = React.useRef<HTMLElement | null>(null)
-  const [isPreviewVisible, setIsPreviewVisible] = React.useState(false)
   const [previewKey, setPreviewKey] = React.useState(0)
   const Preview = block.component
 
-  React.useEffect(() => {
-    const root = rootRef.current
-    if (!root || isPreviewVisible) return
-
-    if (!("IntersectionObserver" in window)) {
-      setIsPreviewVisible(true)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setIsPreviewVisible(true)
-          observer.disconnect()
-        }
-      },
-      { rootMargin: "700px" }
-    )
-
-    observer.observe(root)
-
-    return () => observer.disconnect()
-  }, [isPreviewVisible])
-
   return (
-    <article ref={rootRef} id={block.id} className="space-y-3">
+    <article id={block.id} className="space-y-3">
       <div
         className={[
           "flex flex-col gap-3 sm:flex-row sm:items-end",
@@ -223,7 +156,7 @@ function PdfViewerBlockPreview({
           </div>
         </div>
         <div className="bg-background">
-          {isPreviewVisible ? <Preview key={previewKey} /> : <PreviewLoading />}
+          <Preview key={previewKey} />
         </div>
       </div>
     </article>

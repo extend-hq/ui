@@ -9,7 +9,6 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { BorderBeam } from "border-beam"
-import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -33,6 +32,7 @@ type AcceptedFileType = {
 type FileUploadProps = {
   accept?: string
   acceptedFileTypes?: AcceptedFileType[]
+  borderBeamTheme?: React.ComponentProps<typeof BorderBeam>["theme"]
   browseLabel?: string
   className?: string
   description?: string
@@ -145,6 +145,7 @@ function UploadIconCluster({
 export function FileUpload({
   accept,
   acceptedFileTypes = ACCEPTED_FILE_TYPES,
+  borderBeamTheme = "light",
   browseLabel = "Browse files",
   className,
   description = "PDF, DOCX, XLSX, CSV, PNG, or JPG",
@@ -157,21 +158,11 @@ export function FileUpload({
   onFilesChange,
 }: FileUploadProps) {
   const dragDepthRef = React.useRef(0)
-  const { resolvedTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
   const [isDragging, setIsDragging] = React.useState(false)
   const [files, setFiles] = React.useState<FileUploadItem[]>([])
   const [rejectionMessage, setRejectionMessage] = React.useState<string | null>(
     null
   )
-  const borderBeamTheme: React.ComponentProps<typeof BorderBeam>["theme"] =
-    !mounted
-      ? "auto"
-      : resolvedTheme === "dark"
-        ? "dark"
-        : resolvedTheme === "light"
-          ? "light"
-          : "auto"
 
   const commitFiles = React.useCallback(
     (nextFiles: FileList | File[]) => {
@@ -196,10 +187,6 @@ export function FileUpload({
     },
     [accept, multiple, onFilesAccepted, onFilesChange]
   )
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
 
   React.useEffect(() => {
     return () => {
@@ -394,7 +381,6 @@ export function FileUploadExample() {
 const fileUploadUsageCode = `"use client";
 
 import * as React from "react";
-import { useTheme } from "next-themes";
 import { BorderBeam } from "border-beam";
 import {
   FileImageIcon,
@@ -417,6 +403,7 @@ type FileUploadItem = {
 };
 
 type FileUploadProps = {
+  borderBeamTheme?: React.ComponentProps<typeof BorderBeam>["theme"];
   className?: string;
   onFilesChange?: (files: FileUploadItem[]) => void;
 };
@@ -488,17 +475,14 @@ function UploadIconCluster({ isDragging }: { isDragging: boolean }) {
   );
 }
 
-export function FileUpload({ className, onFilesChange }: FileUploadProps) {
+export function FileUpload({
+  borderBeamTheme = "light",
+  className,
+  onFilesChange,
+}: FileUploadProps) {
   const dragDepthRef = React.useRef(0);
-  const { resolvedTheme } = useTheme();
   const [isDragging, setIsDragging] = React.useState(false);
   const [files, setFiles] = React.useState<FileUploadItem[]>([]);
-  const borderBeamTheme: React.ComponentProps<typeof BorderBeam>["theme"] =
-    resolvedTheme === "dark"
-      ? "dark"
-      : resolvedTheme === "light"
-        ? "light"
-        : "auto";
 
   const commitFiles = React.useCallback(
     (nextFiles: FileList | File[]) => {

@@ -36,10 +36,27 @@ import {
 } from "@/registry/new-york-v4/ui/tooltip"
 
 const ZOOM_OPTIONS = [0.75, 1, 1.25, 1.5, 2] as const
+const GLIDE_DATA_GRID_CRITICAL_CSS = `
+.gdg-wmyidgi{position:relative;min-width:10px;min-height:10px;max-width:100%;max-height:100%;width:var(--wmyidgi-0);height:var(--wmyidgi-1);overflow:hidden;overflow:clip;direction:ltr;}
+.gdg-wmyidgi>:first-child{position:absolute;left:0;top:0;width:100%;height:100%;}
+.gdg-s1dgczr6 .dvn-scroller{overflow:var(--s1dgczr6-0);transform:translate3d(0,0,0);}
+.gdg-s1dgczr6 .dvn-hidden{visibility:hidden;}
+.gdg-s1dgczr6 .dvn-scroll-inner{display:flex;pointer-events:none;}
+.gdg-s1dgczr6 .dvn-scroll-inner>*{flex-shrink:0;}
+.gdg-s1dgczr6 .dvn-scroll-inner .dvn-spacer{flex-grow:1;}
+.gdg-s1dgczr6 .dvn-scroll-inner .dvn-stack{display:flex;flex-direction:column;}
+.gdg-s1dgczr6 .dvn-underlay>*{position:absolute;left:0;top:0;}
+.gdg-s1dgczr6 canvas{outline:none;}
+`
+
 type GlideDataGridModule = typeof GlideDataGrid
 type CsvViewerProps = {
   className?: string
   data?: string
+}
+
+function GlideDataGridCriticalStyles() {
+  return <style>{GLIDE_DATA_GRID_CRITICAL_CSS}</style>
 }
 
 function toDisplayString(value: unknown): string {
@@ -290,6 +307,7 @@ export function CsvViewer({ className, data }: CsvViewerProps) {
         className
       )}
     >
+      <GlideDataGridCriticalStyles />
       <div className="flex min-h-12 items-center justify-end gap-3 border-b px-3">
         <TooltipProvider>
           <div className="ml-auto flex shrink-0 items-center gap-1">
