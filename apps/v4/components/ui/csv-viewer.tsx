@@ -18,6 +18,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import Papa from "papaparse"
 
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -34,20 +35,12 @@ import {
   TooltipTrigger,
 } from "@/registry/new-york-v4/ui/tooltip"
 
-const SAMPLE_CSV = `Invoice,Customer,Status,Amount,Submitted
-INV-1001,Northstar Supply,Approved,4280.50,2026-04-28
-INV-1002,Bluebird Medical,Needs review,1190.00,2026-04-29
-INV-1003,Aster Logistics,Approved,845.75,2026-04-30
-INV-1004,Juniper Foods,Exception,3499.99,2026-05-01
-INV-1005,Keystone Labs,Approved,920.10,2026-05-02
-INV-1006,Monarch Studio,Processing,1510.45,2026-05-03
-INV-1007,Orchard Bank,Approved,7820.00,2026-05-04
-INV-1008,Riverstone Energy,Needs review,632.25,2026-05-05
-INV-1009,Summit Health,Approved,2730.00,2026-05-06
-INV-1010,Westhaven Legal,Processing,410.80,2026-05-07`
-
 const ZOOM_OPTIONS = [0.75, 1, 1.25, 1.5, 2] as const
 type GlideDataGridModule = typeof GlideDataGrid
+type CsvViewerProps = {
+  className?: string
+  data?: string
+}
 
 function toDisplayString(value: unknown): string {
   return value === null || value === undefined ? "" : String(value)
@@ -168,15 +161,21 @@ function ToolbarTooltip({
   )
 }
 
-export function CsvViewer() {
+export function CsvViewer({ className, data }: CsvViewerProps) {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const isDark = useIsDarkTheme()
   const [glide, setGlide] = React.useState<GlideDataGridModule | null>(null)
   const [zoom, setZoom] = React.useState<(typeof ZOOM_OPTIONS)[number]>(1)
   const [parsed, setParsed] = React.useState(() =>
-    parseDelimitedText(SAMPLE_CSV)
+    data ? parseDelimitedText(data) : { headers: [], rows: [], error: null }
   )
   const [isPending, setIsPending] = React.useState(false)
+
+  React.useEffect(() => {
+    if (data) {
+      setParsed(parseDelimitedText(data))
+    }
+  }, [data])
 
   React.useEffect(() => {
     let mounted = true
@@ -285,7 +284,12 @@ export function CsvViewer() {
   }
 
   return (
-    <div className="flex h-[560px] w-full flex-col overflow-hidden bg-background">
+    <div
+      className={cn(
+        "flex h-[560px] w-full flex-col overflow-hidden bg-background",
+        className
+      )}
+    >
       <div className="flex min-h-12 items-center justify-end gap-3 border-b px-3">
         <TooltipProvider>
           <div className="ml-auto flex shrink-0 items-center gap-1">
@@ -361,6 +365,27 @@ export function CsvViewer() {
         {parsed.error ? (
           <div className="flex h-full items-center justify-center px-4 text-center text-sm text-destructive">
             {parsed.error}
+          </div>
+        ) : parsed.rows.length === 0 ? (
+          <div className="grid h-full place-items-center bg-muted/30 p-4">
+            <div className="max-w-md rounded-lg border bg-background p-4 text-center text-sm shadow-xs">
+              <p className="font-medium">Upload a CSV to preview</p>
+              <p className="mt-1 text-muted-foreground">
+                Pass delimited text with the <code>data</code> prop or upload a
+                CSV file.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                loading={isPending}
+                onClick={() => inputRef.current?.click()}
+              >
+                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                Upload CSV
+              </Button>
+            </div>
           </div>
         ) : !glide ? (
           <div className="grid h-full place-items-center bg-background">

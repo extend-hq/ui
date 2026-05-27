@@ -50,7 +50,6 @@ import {
   TooltipTrigger,
 } from "@/registry/new-york-v4/ui/tooltip"
 
-const SAMPLE_XLSX_URL = "/samples/crazy-chart-zoo.xlsx"
 const XLSX_SOURCE_CACHE_LIMIT = 3
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-[100010]"
@@ -704,7 +703,7 @@ export function XlsxViewerPreview({
   className,
   fileName,
   rounded = false,
-  src = SAMPLE_XLSX_URL,
+  src,
 }: {
   className?: string
   fileName?: string
@@ -771,23 +770,31 @@ function XlsxViewerContent({
   rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
-  url: string
+  url?: string
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
-  const displayFileName = React.useMemo(
-    () => formatWorkbookName(fileName, url),
+  const [uploadedWorkbook, setUploadedWorkbook] =
+    React.useState<UploadedWorkbook | null>(null)
+  const sourceFileName = React.useMemo(
+    () => (url ? formatWorkbookName(fileName, url) : fileName ?? "workbook.xlsx"),
     [fileName, url]
   )
+  const sourceCacheKey = React.useMemo(
+    () => (url ? getWorkbookCacheKey(url, sourceFileName) : "xlsx-empty"),
+    [sourceFileName, url]
+  )
+  const displayFileName = React.useMemo(
+    () => uploadedWorkbook?.fileName ?? sourceFileName,
+    [sourceFileName, uploadedWorkbook?.fileName]
+  )
   const cacheKey = React.useMemo(
-    () => getWorkbookCacheKey(url, displayFileName),
-    [displayFileName, url]
+    () => uploadedWorkbook?.identity ?? sourceCacheKey,
+    [sourceCacheKey, uploadedWorkbook?.identity]
   )
   const [workbookBuffer, setWorkbookBuffer] =
     React.useState<ArrayBuffer | null>(
       () => xlsxWorkbookBufferCache.get(cacheKey) ?? null
     )
-  const [uploadedWorkbook, setUploadedWorkbook] =
-    React.useState<UploadedWorkbook | null>(null)
   const [loadError, setLoadError] = React.useState<string>()
   const shouldShowLoadingSpinner = useDelayedLoadingIndicator(
     !workbookBuffer && !loadError && !uploadedWorkbook,
@@ -796,14 +803,25 @@ function XlsxViewerContent({
 
   React.useEffect(() => {
     let isCurrent = true
-    setUploadedWorkbook(null)
+    if (url) {
+      setUploadedWorkbook(null)
+    }
 
     async function loadWorkbook(): Promise<void> {
-      setWorkbookBuffer(xlsxWorkbookBufferCache.get(cacheKey) ?? null)
+      if (!url) {
+        setWorkbookBuffer(null)
+        setLoadError(undefined)
+        return
+      }
+
+      setWorkbookBuffer(xlsxWorkbookBufferCache.get(sourceCacheKey) ?? null)
       setLoadError(undefined)
 
       try {
-        const nextWorkbookBuffer = await loadCachedWorkbookBuffer(url, cacheKey)
+        const nextWorkbookBuffer = await loadCachedWorkbookBuffer(
+          url,
+          sourceCacheKey
+        )
         if (!isCurrent) return
 
         setWorkbookBuffer(nextWorkbookBuffer)
@@ -821,7 +839,7 @@ function XlsxViewerContent({
     return () => {
       isCurrent = false
     }
-  }, [cacheKey, url])
+  }, [sourceCacheKey, url])
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -841,6 +859,43 @@ function XlsxViewerContent({
   const activeBuffer = uploadedWorkbook?.buffer ?? workbookBuffer
   const activeFileName = uploadedWorkbook?.fileName ?? displayFileName
   const activeIdentity = uploadedWorkbook?.identity ?? cacheKey
+
+  if (!url && !uploadedWorkbook) {
+    return (
+      <div
+        className={cn(
+          "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
+          className
+        )}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          className="hidden"
+          onChange={handleUpload}
+        />
+        <div className="grid min-h-0 flex-1 place-items-center bg-muted/30 p-4">
+          <div className="max-w-md rounded-lg border bg-background p-4 text-center text-sm shadow-xs">
+            <p className="font-medium">Upload a workbook to preview</p>
+            <p className="mt-1 text-muted-foreground">
+              Pass an XLSX URL with the <code>src</code> prop or upload a file.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              Upload XLSX
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (loadError && !activeBuffer) {
     return (

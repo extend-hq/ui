@@ -70,8 +70,8 @@ export default function IndexPage() {
           </Button>
         </PageActions>
       </PageHeader>
-      <div className="container-wrapper flex-1 pb-6">
-        <div className="container overflow-hidden">
+      <div className="flex-1 overflow-hidden px-4 pb-6 md:px-6 lg:px-8">
+        <div className="w-full overflow-hidden">
           <section className="-mx-4 w-[158vw] overflow-hidden rounded-lg md:hidden">
             <MobileRootPreview />
           </section>

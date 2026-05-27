@@ -34,7 +34,6 @@ import {
   TooltipTrigger,
 } from "@/registry/new-york-v4/ui/tooltip"
 
-const SAMPLE_DOCX_URL = "/samples/demo.docx"
 const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 const DOCX_SOURCE_CACHE_LIMIT = 3
@@ -360,7 +359,7 @@ export function DocxViewerPreview({
   className,
   fileName,
   rounded = false,
-  src = SAMPLE_DOCX_URL,
+  src,
 }: {
   className?: string
   fileName?: string
@@ -430,17 +429,23 @@ function DocxViewerContent({
   rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
-  url: string
+  url?: string
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const [uploadedDocxFile, setUploadedDocxFile] =
+    React.useState<UploadedDocxFile | null>(null)
   const viewerBackgroundColor = "color-mix(in oklab, var(--muted) 40%, transparent)"
   const displayFileName = React.useMemo(
-    () => formatDocumentName(fileName, url),
-    [fileName, url]
+    () =>
+      uploadedDocxFile?.file.name ??
+      (url ? formatDocumentName(fileName, url) : fileName ?? "document.docx"),
+    [fileName, uploadedDocxFile?.file.name, url]
   )
   const cacheKey = React.useMemo(
-    () => getDocumentCacheKey(url, displayFileName),
-    [displayFileName, url]
+    () =>
+      uploadedDocxFile?.identity ??
+      (url ? getDocumentCacheKey(url, displayFileName) : "docx-empty"),
+    [displayFileName, uploadedDocxFile?.identity, url]
   )
   const [initialDocumentTheme] = React.useState<DocxDocumentTheme>(() =>
     effectiveIsDark ? "dark" : "light"
@@ -457,8 +462,6 @@ function DocxViewerContent({
   const [zoomScale, setZoomScale] = React.useState(50)
   const [loadError, setLoadError] = React.useState<string>()
   const [isLoadingDocument, setIsLoadingDocument] = React.useState(true)
-  const [uploadedDocxFile, setUploadedDocxFile] =
-    React.useState<UploadedDocxFile | null>(null)
   const shouldShowDocumentSpinner = useDelayedLoadingIndicator(
     isLoadingDocument,
     DOCX_LOADING_INDICATOR_DELAY_MS
@@ -491,13 +494,22 @@ function DocxViewerContent({
     let isCurrent = true
 
     async function load() {
+      if (!uploadedDocxFile && !url) {
+        setIsLoadingDocument(false)
+        setLoadError(undefined)
+        return
+      }
+
       setIsLoadingDocument(true)
       setLoadError(undefined)
 
       try {
         const docxFile =
           uploadedDocxFile?.file ??
-          (await loadCachedDocxFile(url, displayFileName, cacheKey))
+          (url
+            ? await loadCachedDocxFile(url, displayFileName, cacheKey)
+            : null)
+        if (!docxFile) return
         await importDocxFile(docxFile)
 
         if (isCurrent) {
@@ -521,7 +533,9 @@ function DocxViewerContent({
   }, [cacheKey, displayFileName, importDocxFile, uploadedDocxFile, url])
 
   React.useEffect(() => {
-    setUploadedDocxFile(null)
+    if (url) {
+      setUploadedDocxFile(null)
+    }
   }, [url])
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -566,7 +580,26 @@ function DocxViewerContent({
         )}
         style={{ backgroundColor: viewerBackgroundColor }}
       >
-        {loadError ? (
+        {!url && !uploadedDocxFile ? (
+          <div className="grid h-full min-h-96 place-items-center p-6 text-center">
+            <div className="max-w-md rounded-lg border bg-background p-4 text-sm shadow-xs">
+              <div className="font-medium">Upload a DOCX to preview</div>
+              <div className="mt-1 text-muted-foreground">
+                Pass a DOCX URL with the <code>src</code> prop or upload a file.
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                Upload DOCX
+              </Button>
+            </div>
+          </div>
+        ) : loadError ? (
           <div className="grid h-full min-h-96 place-items-center p-6 text-center">
             <div className="max-w-md rounded-lg border bg-background p-4 text-sm text-destructive shadow-xs">
               <div className="font-medium">Unable to display DOCX</div>

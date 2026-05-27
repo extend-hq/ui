@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ArrowUpRight01Icon, Refresh01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { siteConfig } from "@/lib/config"
 import { Button } from "@/components/ui/button"
 
 const PreviewLoading = () => (
@@ -57,13 +58,17 @@ const XlsxDocumentSplitsBlock = dynamic(
   { loading: PreviewLoading, ssr: false }
 )
 
+function getRegistryAddCommand(name: string) {
+  return `npx shadcn@latest add ${siteConfig.url}/r/${name}.json`
+}
+
 const pdfViewerBlocks = [
   {
     id: "pdf-dropzone",
     title: "PDF Dropzone",
     description:
       "A PDF-only upload dropzone that opens the dropped file in the shared viewer.",
-    command: "npx shadcn@latest add pdf-viewer file-upload",
+    command: getRegistryAddCommand("pdf-dropzone"),
     docsHref: "/docs/components/file-upload",
     component: PdfDropzoneBlock,
   },
@@ -72,7 +77,7 @@ const pdfViewerBlocks = [
     title: "Citations",
     description:
       "Evidence cards that scroll the PDF viewer to source bounding boxes.",
-    command: "npx shadcn@latest add citations",
+    command: getRegistryAddCommand("citations"),
     docsHref: "/docs/components/pdf-viewer/citations",
     component: CitationsBlock,
   },
@@ -82,7 +87,7 @@ const pdfViewerBlocks = [
     description:
       "Structured OCR review with typed blocks, confidence, and page overlays.",
     hideHeader: true,
-    command: "npx shadcn@latest add ocr-blocks",
+    command: getRegistryAddCommand("ocr-blocks"),
     docsHref: "/docs/components/pdf-viewer/ocr-blocks",
     component: OcrBlocksBlock,
   },
@@ -92,7 +97,7 @@ const pdfViewerBlocks = [
     description:
       "Signature fields connected to the PDF canvas and signed PDF export.",
     hideHeader: true,
-    command: "npx shadcn@latest add e-signature",
+    command: getRegistryAddCommand("e-signature"),
     docsHref: "/docs/components/pdf-viewer/e-signature",
     component: ESignatureBlock,
   },
@@ -101,7 +106,7 @@ const pdfViewerBlocks = [
     title: "Human Review",
     description:
       "Extraction review cards connected to source evidence in the PDF viewer.",
-    command: "npx shadcn@latest add human-review pdf-viewer",
+    command: getRegistryAddCommand("human-review"),
     docsHref: "/docs/components/pdf-viewer/human-review",
     component: HumanReviewBlock,
   },
@@ -110,7 +115,7 @@ const pdfViewerBlocks = [
     title: "Document Splits",
     description:
       "Lazy page thumbnails, draggable split groups, and PDF navigation.",
-    command: "npx shadcn@latest add document-splits",
+    command: getRegistryAddCommand("document-splits"),
     docsHref: "/docs/components/pdf-viewer/document-splits",
     component: DocumentSplitsBlock,
   },
@@ -119,7 +124,7 @@ const pdfViewerBlocks = [
     title: "Excel Document Splits",
     description:
       "Workbook sheets split into draggable groups with thumbnails from the XLSX viewer.",
-    command: "npx shadcn@latest add xlsx-viewer document-splits",
+    command: getRegistryAddCommand("excel-document-splits"),
     docsHref: "/docs/components/xlsx-viewer",
     component: XlsxDocumentSplitsBlock,
   },

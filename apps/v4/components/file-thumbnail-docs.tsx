@@ -21,13 +21,13 @@ import {
 } from "@/components/ui/file-thumbnail"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
 
-type DemoFile = ThumbnailFile & {
+export type DemoFile = ThumbnailFile & {
   url: string
 }
 
 type ReactPdfModule = typeof ReactPdf
 
-const SAMPLE_FILES: DemoFile[] = [
+export const SAMPLE_FILES: DemoFile[] = [
   {
     name: "attention.pdf",
     type: "application/pdf",
@@ -84,7 +84,7 @@ function isXlsxFile(file: DemoFile) {
   )
 }
 
-function getFileKindLabel(file: DemoFile) {
+export function getFileKindLabel(file: DemoFile) {
   if (isPdfFile(file)) return "PDF"
   if (isImageFile(file)) return "Image"
   if (isDocxFile(file)) return "DOCX"
@@ -167,7 +167,7 @@ function canvasToBlob(canvas: HTMLCanvasElement | null) {
   })
 }
 
-function DocumentAwareFileThumbnail({
+export function DocumentAwareFileThumbnail({
   file,
   className,
   generationDelayMs = 0,
@@ -398,9 +398,19 @@ function DocxFileThumbnailContent({
   const firstThumbnail = thumbnails[0]
   const [hasError, setHasError] = React.useState(false)
   const [isReady, setIsReady] = React.useState(false)
+  const editorRef = React.useRef(editor)
+  const importedDocxKeyRef = React.useRef<string | null>(null)
+  editorRef.current = editor
 
   React.useEffect(() => {
+    const docxKey = `${file.name}:${file.url}`
+
+    if (importedDocxKeyRef.current === docxKey) return
+
     let isCurrent = true
+    importedDocxKeyRef.current = docxKey
+    setHasError(false)
+    setIsReady(false)
 
     async function loadDocx() {
       try {
@@ -415,9 +425,11 @@ function DocxFileThumbnailContent({
             blob.type ||
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         })
-        await editor.importDocxFile(docxFile)
+        await editorRef.current.importDocxFile(docxFile)
       } catch {
-        if (isCurrent) setHasError(true)
+        if (isCurrent && importedDocxKeyRef.current === docxKey) {
+          setHasError(true)
+        }
       }
     }
 
@@ -426,7 +438,7 @@ function DocxFileThumbnailContent({
     return () => {
       isCurrent = false
     }
-  }, [editor, file.name, file.url])
+  }, [file.name, file.url])
 
   React.useEffect(() => {
     if (firstThumbnail?.status === "ready") {
@@ -456,7 +468,7 @@ function DocxFileThumbnailContent({
         previewClassName="bg-white"
         showMetadata={showMetadata}
       />
-      {!hasError ? (
+      {!hasError && !isReady ? (
         <div
           aria-hidden="true"
           className="pointer-events-none fixed top-0 left-[-10000px] w-[816px] overflow-hidden bg-white"
@@ -807,21 +819,39 @@ function DocxThumbnail({ file }: { file: DemoFile }) {
   const firstThumbnail = thumbnails[0]
   const [isLoading, setIsLoading] = React.useState(true)
   const [hasError, setHasError] = React.useState(false)
+  const editorRef = React.useRef(editor)
+  const importedDocxKeyRef = React.useRef<string | null>(null)
+  editorRef.current = editor
 
   React.useEffect(() => {
+    const docxKey = \`\${file.name}:\${file.url}\`
+
+    if (importedDocxKeyRef.current === docxKey) return
+
+    let isCurrent = true
+    importedDocxKeyRef.current = docxKey
+    setIsLoading(true)
+    setHasError(false)
+
     async function loadDocx() {
       try {
         const response = await fetch(file.url)
         const blob = await response.blob()
-        await editor.importDocxFile(new File([blob], file.name))
+        await editorRef.current.importDocxFile(new File([blob], file.name))
       } catch {
-        setHasError(true)
-        setIsLoading(false)
+        if (isCurrent && importedDocxKeyRef.current === docxKey) {
+          setHasError(true)
+          setIsLoading(false)
+        }
       }
     }
 
     void loadDocx()
-  }, [editor, file.name, file.url])
+
+    return () => {
+      isCurrent = false
+    }
+  }, [file.name, file.url])
 
   React.useEffect(() => {
     if (firstThumbnail?.status === "ready") {

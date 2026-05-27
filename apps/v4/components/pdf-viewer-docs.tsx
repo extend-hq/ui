@@ -176,7 +176,7 @@ const pdfViewerUsageCode = `"use client";
 import { PDFViewer } from "@/components/ui/pdf-viewer";
 
 export function PdfViewerExample() {
-  return <PDFViewer className="h-[640px]" />;
+  return <PDFViewer file="/path/to/document.pdf" className="h-[640px]" />;
 }`
 
 const pdfViewerSourceCode = `"use client"

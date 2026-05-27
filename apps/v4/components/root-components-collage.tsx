@@ -15,6 +15,11 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Button } from "@/components/ui/button"
 import { CsvViewerPreviewClient } from "@/components/csv-viewer-docs"
+import {
+  DocumentAwareFileThumbnail,
+  getFileKindLabel,
+  SAMPLE_FILES,
+} from "@/components/file-thumbnail-docs"
 import { FileUpload } from "@/components/file-upload-docs"
 import { OcrBlocks } from "@/components/ocr-blocks-docs"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
@@ -52,26 +57,49 @@ export function RootComponentsCollage() {
         <ComponentCrop className="h-[560px] border bg-background">
           <RootPdfPreview />
         </ComponentCrop>
-        <ComponentCrop className="h-[560px] border bg-background">
-          <DocxViewerPreview className="h-full" />
+        <ComponentCrop className="h-[400px] border bg-background">
+          <CsvViewerPreviewClient />
         </ComponentCrop>
       </div>
       <div className="flex flex-col gap-4">
         <ComponentCrop className="h-[280px]">
           <FileUpload className="p-4" />
         </ComponentCrop>
-        <ComponentCrop className="h-[400px] border bg-background">
-          <CsvViewerPreviewClient />
+        <ComponentCrop className="h-[540px] border bg-background">
+          <RootFileThumbnailGrid />
+        </ComponentCrop>
+        <ComponentCrop className="h-[560px] border bg-background">
+          <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
         </ComponentCrop>
       </div>
       <div className="flex flex-col gap-4">
         <ComponentCrop className="h-[560px] border bg-background">
-          <XlsxViewerPreview className="h-full" />
+          <XlsxViewerPreview
+            className="h-full"
+            src="/samples/crazy-chart-zoo.xlsx"
+          />
         </ComponentCrop>
         <ComponentCrop className="h-[430px]">
           <OcrBlocks />
         </ComponentCrop>
       </div>
+    </div>
+  )
+}
+
+function RootFileThumbnailGrid() {
+  return (
+    <div className="grid h-full gap-4 bg-background p-4 sm:grid-cols-2">
+      {SAMPLE_FILES.map((file, index) => (
+        <div key={file.url} className="min-w-0 space-y-2">
+          <div className="text-sm font-medium">{getFileKindLabel(file)}</div>
+          <DocumentAwareFileThumbnail
+            file={file}
+            generationDelayMs={250 + index * 220}
+            className="w-full"
+          />
+        </div>
+      ))}
     </div>
   )
 }

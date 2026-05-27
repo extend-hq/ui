@@ -30,7 +30,7 @@ export function XlsxViewerDemo() {
       data-slot="component-preview"
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
-      <XlsxViewerPreview />
+      <XlsxViewerPreview src="/samples/crazy-chart-zoo.xlsx" />
       <div
         data-slot="code"
         data-mobile-code-visible={isCodeVisible}
@@ -80,7 +80,7 @@ const xlsxViewerUsageCode = `"use client";
 import { XlsxViewerPreview } from "@/components/ui/xlsx-viewer";
 
 export function XlsxViewerExample() {
-  return <XlsxViewerPreview />;
+  return <XlsxViewerPreview src="/path/to/workbook.xlsx" />;
 }`
 
 const xlsxViewerSourceCode = `"use client"

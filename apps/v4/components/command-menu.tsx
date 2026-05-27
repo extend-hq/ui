@@ -11,6 +11,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { useDocsSearch } from "fumadocs-core/search/client"
 
 import { type ColorPalette } from "@/lib/colors"
+import { siteConfig } from "@/lib/config"
 import { trackEvent } from "@/lib/events"
 import { showMcpDocs } from "@/lib/flags"
 import { getCurrentBase, getPagesFromFolder } from "@/lib/page-tree"
@@ -38,6 +39,22 @@ import {
 } from "@/registry/new-york-v4/ui/dialog"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import { Spinner } from "@/registry/new-york-v4/ui/spinner"
+
+function getRegistryItemUrl(name: string) {
+  return `${siteConfig.url}/r/${name}.json`
+}
+
+function getShadcnAddCommand(
+  packageManager: "npm" | "yarn" | "pnpm" | "bun",
+  itemName: string
+) {
+  const itemUrl = getRegistryItemUrl(itemName)
+
+  if (packageManager === "npm") return `npx shadcn@latest add ${itemUrl}`
+  if (packageManager === "bun") return `bunx --bun shadcn@latest add ${itemUrl}`
+
+  return `${packageManager} dlx shadcn@latest add ${itemUrl}`
+}
 
 export function CommandMenu({
   tree,
@@ -145,7 +162,7 @@ export function CommandMenu({
         const componentName = item.url.split("/").pop()
         setSelectedType("component")
         setCopyPayload(
-          `${packageManager} dlx shadcn@latest add ${componentName}`
+          componentName ? getShadcnAddCommand(packageManager, componentName) : ""
         )
       } else {
         setSelectedType("page")
@@ -158,7 +175,7 @@ export function CommandMenu({
   const handleBlockHighlight = React.useCallback(
     (block: { name: string; description: string; categories: string[] }) => {
       setSelectedType("block")
-      setCopyPayload(`${packageManager} dlx shadcn@latest add ${block.name}`)
+      setCopyPayload(getShadcnAddCommand(packageManager, block.name))
     },
     [setSelectedType, setCopyPayload, packageManager]
   )

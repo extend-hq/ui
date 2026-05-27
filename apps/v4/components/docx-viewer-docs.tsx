@@ -30,7 +30,7 @@ export function DocxViewerDemo() {
       data-slot="component-preview"
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
-      <DocxViewerPreview />
+      <DocxViewerPreview src="/samples/demo.docx" />
       <div
         data-slot="code"
         data-mobile-code-visible={isCodeVisible}
@@ -80,7 +80,7 @@ const docxViewerUsageCode = `"use client";
 import { DocxViewerPreview } from "@/components/ui/docx-viewer";
 
 export function DocxViewerExample() {
-  return <DocxViewerPreview />;
+  return <DocxViewerPreview src="/path/to/document.docx" />;
 }`
 
 const docxViewerSourceCode = `"use client"

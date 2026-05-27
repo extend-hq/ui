@@ -91,7 +91,6 @@ export type PDFViewerProps = {
   ) => void
 }
 
-const DEFAULT_FILE = "/samples/attention.pdf"
 const DEFAULT_PAGE_WIDTH = 612
 const DEFAULT_PAGE_HEIGHT = 792
 const DEFAULT_ZOOM = 0.75
@@ -356,7 +355,7 @@ function PDFViewerPage({
 export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
   function PDFViewer(
     {
-      file = DEFAULT_FILE,
+      file,
       className,
       defaultZoom = DEFAULT_ZOOM,
       pageWidth = DEFAULT_PAGE_WIDTH,
@@ -379,7 +378,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     ref
   ) {
     const [reactPdf, setReactPdf] = React.useState<ReactPdfModule | null>(null)
-    const [pdfFile, setPdfFile] = React.useState(file)
+    const [pdfFile, setPdfFile] = React.useState(file ?? "")
     const [uploadedPdfUrl, setUploadedPdfUrl] = React.useState<string | null>(
       null
     )
@@ -397,7 +396,12 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     const thumbnailClickScrollYRef = React.useRef<number | null>(null)
 
     React.useEffect(() => {
-      setPdfFile(file)
+      setPdfFile(file ?? "")
+      setLoadError(false)
+      setIsDocumentLoading(Boolean(file))
+      setIsFirstPageRendering(Boolean(file))
+      setNumPages(0)
+      setActivePage(1)
     }, [file])
 
     React.useEffect(() => {
@@ -442,8 +446,10 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     const isRotated = Math.abs(Math.round(rotation / 90)) % 2 === 1
     const renderedPageWidth = (isRotated ? pageHeight : pageWidth) * zoom
     const renderedPageHeight = (isRotated ? pageWidth : pageHeight) * zoom
-    const controlsDisabled = !reactPdf || !numPages
-    const isLoading = !reactPdf || isDocumentLoading || isFirstPageRendering
+    const hasPdfFile = Boolean(pdfFile)
+    const controlsDisabled = !hasPdfFile || !reactPdf || !numPages
+    const isLoading =
+      hasPdfFile && (!reactPdf || isDocumentLoading || isFirstPageRendering)
     const thumbnailIsRotated = Math.abs(Math.round(rotation / 90)) % 2 === 1
     const thumbnailSize = {
       width: THUMBNAIL_WIDTH,
@@ -857,6 +863,19 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
           </TooltipProvider>
         </div>
         <div className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30">
+          {!hasPdfFile ? (
+            <div className="absolute inset-0 z-20 grid place-items-center bg-background p-6 text-center text-sm text-muted-foreground">
+              <div className="max-w-sm space-y-3">
+                <div className="font-medium text-foreground">
+                  Upload a PDF to preview
+                </div>
+                <div>
+                  Pass a PDF URL with the <code>file</code> prop or use the
+                  upload control.
+                </div>
+              </div>
+            </div>
+          ) : null}
           {isLoading && !loadError ? (
             <div className="absolute inset-0 z-20 grid place-items-center bg-background">
               <HugeiconsIcon
@@ -870,7 +889,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
               Unable to load the PDF preview.
             </div>
           ) : null}
-          {reactPdf ? (
+          {reactPdf && hasPdfFile ? (
             <reactPdf.Document
               file={pdfFile}
               className={cn(
