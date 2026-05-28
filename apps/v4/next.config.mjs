@@ -28,6 +28,10 @@ const nextConfig = {
   },
   turbopack: {
     root: path.resolve(import.meta.dirname, "../.."),
+    resolveAlias: {
+      "@dukelib/sheets-wasm/duke_sheets_wasm_bg.wasm":
+        "./lib/turbopack-duke-sheets-wasm-url.ts",
+    },
   },
   experimental: {
     turbopackFileSystemCacheForDev: true,

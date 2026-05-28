@@ -591,15 +591,15 @@ function DocxFileThumbnail({
   const firstThumbnail = thumbnails[0]
   const [hasError, setHasError] = React.useState(false)
   const [isReady, setIsReady] = React.useState(false)
-  const [thumbnailCanvasRef, setThumbnailCanvasRef] = React.useState<
-    ((canvas: HTMLCanvasElement | null) => void) | null
-  >(null)
   const [thumbnailSize, setThumbnailSize] = React.useState<{
     height: number
     width: number
   } | null>(null)
+  const [thumbnailCanvas, setThumbnailCanvas] =
+    React.useState<HTMLCanvasElement | null>(null)
   const editorRef = React.useRef(editor)
   const importedDocxKeyRef = React.useRef<string | null>(null)
+  const hiddenDocxViewerRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     editorRef.current = editor
@@ -639,27 +639,116 @@ function DocxFileThumbnail({
   }, [file, isActive, source])
 
   React.useEffect(() => {
-    if (firstThumbnail?.status === "ready") {
-      setThumbnailCanvasRef(() => firstThumbnail.canvasRef)
-      setThumbnailSize({
+    if (!firstThumbnail) {
+      setThumbnailSize(null)
+      return
+    }
+
+    setThumbnailSize((currentSize) => {
+      if (
+        currentSize?.height === firstThumbnail.pixelHeightPx &&
+        currentSize.width === firstThumbnail.pixelWidthPx
+      ) {
+        return currentSize
+      }
+
+      return {
         height: firstThumbnail.pixelHeightPx,
         width: firstThumbnail.pixelWidthPx,
-      })
-      setIsReady(true)
-    } else if (firstThumbnail?.status === "error") {
+      }
+    })
+
+    if (firstThumbnail?.status === "error") {
       setHasError(true)
-    } else if (!firstThumbnail) {
-      setThumbnailCanvasRef(null)
-      setThumbnailSize(null)
     }
-  }, [firstThumbnail])
+  }, [
+    firstThumbnail,
+    firstThumbnail?.pixelHeightPx,
+    firstThumbnail?.pixelWidthPx,
+    firstThumbnail?.status,
+  ])
 
   const attachThumbnailCanvas = React.useCallback(
     (canvas: HTMLCanvasElement | null) => {
-      thumbnailCanvasRef?.(canvas)
+      setThumbnailCanvas(canvas)
     },
-    [thumbnailCanvasRef]
+    []
   )
+
+  React.useEffect(() => {
+    if (
+      !isActive ||
+      !firstThumbnail ||
+      !thumbnailCanvas ||
+      isReady ||
+      hasError
+    ) {
+      return
+    }
+
+    let isCurrent = true
+    let timeoutId: number | undefined
+    let animationFrameId: number | undefined
+    let nestedAnimationFrameId: number | undefined
+    let attempts = 0
+
+    const getRenderedPageSurface = () => {
+      const pageSurface = hiddenDocxViewerRef.current?.querySelector(
+        '[data-docx-page-surface="true"]'
+      )
+
+      if (!pageSurface) return null
+
+      const hasText = Boolean(pageSurface.textContent?.trim())
+      const hasEmbeddedContent = Boolean(
+        pageSurface.querySelector("canvas,img,svg,table")
+      )
+
+      return hasText || hasEmbeddedContent ? pageSurface : null
+    }
+
+    const renderThumbnail = () => {
+      if (!isCurrent) return
+
+      if (!getRenderedPageSurface()) {
+        attempts += 1
+
+        if (attempts > 50) {
+          setHasError(true)
+          return
+        }
+
+        timeoutId = window.setTimeout(renderThumbnail, 100)
+        return
+      }
+
+      animationFrameId = window.requestAnimationFrame(() => {
+        nestedAnimationFrameId = window.requestAnimationFrame(() => {
+          void firstThumbnail
+            .renderToCanvas(thumbnailCanvas)
+            .then(() => {
+              if (isCurrent) setIsReady(true)
+            })
+            .catch(() => {
+              if (isCurrent) setHasError(true)
+            })
+        })
+      })
+    }
+
+    renderThumbnail()
+
+    return () => {
+      isCurrent = false
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId)
+      if (animationFrameId !== undefined) {
+        window.cancelAnimationFrame(animationFrameId)
+      }
+      if (nestedAnimationFrameId !== undefined) {
+        window.cancelAnimationFrame(nestedAnimationFrameId)
+      }
+    }
+  }, [firstThumbnail, hasError, isActive, isReady, thumbnailCanvas])
 
   const previewContent = thumbnailSize ? (
     <canvas
@@ -683,6 +772,7 @@ function DocxFileThumbnail({
       />
       {isActive && !hasError && !isReady ? (
         <div
+          ref={hiddenDocxViewerRef}
           aria-hidden="true"
           className="pointer-events-none fixed top-0 left-[-10000px] w-[816px] overflow-hidden bg-white"
         >
