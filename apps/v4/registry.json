@@ -555,6 +555,7 @@
       ],
       "registryDependencies": [
         "button",
+        "file-thumbnail",
         "input",
         "popover",
         "scroll-area",
@@ -585,6 +586,8 @@
       ],
       "registryDependencies": [
         "button",
+        "file-thumbnail",
+        "scroll-area",
         "select",
         "separator",
         "tooltip",

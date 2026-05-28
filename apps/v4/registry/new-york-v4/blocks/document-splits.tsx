@@ -9,6 +9,7 @@ import {
   useDroppable,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -47,6 +48,34 @@ type SplitGroup = DocumentSplit
 
 const THUMBNAIL_WIDTH = 72
 const THUMBNAIL_HEIGHT = 92
+const DRAG_OVERLAY_DROP_ANIMATION = null
+
+const splitterCollisionDetection: CollisionDetection = (args) => {
+  const dragType = args.active.data.current?.type
+
+  if (dragType === "page") {
+    return closestCenter({
+      ...args,
+      droppableContainers: args.droppableContainers.filter(
+        (container) =>
+          container.data.current?.type === "page" ||
+          (container.data.current?.type === "page-dropzone" &&
+            container.data.current?.isEmpty)
+      ),
+    })
+  }
+
+  if (dragType === "split") {
+    return closestCenter({
+      ...args,
+      droppableContainers: args.droppableContainers.filter(
+        (container) => container.data.current?.type === "split"
+      ),
+    })
+  }
+
+  return closestCenter(args)
+}
 
 const INITIAL_SPLITS: DocumentSplit[] = [
   {
@@ -398,6 +427,31 @@ function SortableSplitGroupCard({
   )
 }
 
+function SplitGroupDragOverlay({
+  activePage,
+  group,
+  thumbnailImages,
+  onSelectPage,
+}: {
+  activePage: number
+  group: SplitGroup
+  thumbnailImages: Record<PageId, string>
+  onSelectPage: (pageNumber: number) => void
+}) {
+  return (
+    <div className="relative z-[1000] w-[min(360px,calc(100vw-2rem))]">
+      <SplitGroupCard
+        activePage={activePage}
+        canRemove={false}
+        group={group}
+        thumbnailImages={thumbnailImages}
+        onRemove={() => {}}
+        onSelectPage={onSelectPage}
+      />
+    </div>
+  )
+}
+
 export function DocumentSplits({
   activePage,
   className,
@@ -416,6 +470,9 @@ export function DocumentSplits({
   onSplitsChange: (splits: SplitGroup[]) => void
 }) {
   const [activePageId, setActivePageId] = React.useState<PageId | null>(null)
+  const [activeSplitGroupId, setActiveSplitGroupId] = React.useState<
+    string | null
+  >(null)
   const dragStartGroupIdRef = React.useRef<string | null>(null)
   const dragStartSplitsRef = React.useRef<SplitGroup[] | null>(null)
   const sensors = useSensors(
@@ -424,10 +481,23 @@ export function DocumentSplits({
 
   const handleDragStart = React.useCallback(
     (event: DragStartEvent) => {
-      if (event.active.data.current?.type !== "page") {
+      const dragType = event.active.data.current?.type
+
+      if (dragType === "split") {
         dragStartGroupIdRef.current = null
         dragStartSplitsRef.current = null
         setActivePageId(null)
+        setActiveSplitGroupId(
+          (event.active.data.current?.groupId as string | undefined) ?? null
+        )
+        return
+      }
+
+      if (dragType !== "page") {
+        dragStartGroupIdRef.current = null
+        dragStartSplitsRef.current = null
+        setActivePageId(null)
+        setActiveSplitGroupId(null)
         return
       }
 
@@ -435,6 +505,7 @@ export function DocumentSplits({
       dragStartGroupIdRef.current = findGroupId(splits, pageId)
       dragStartSplitsRef.current = splits
       setActivePageId(pageId)
+      setActiveSplitGroupId(null)
     },
     [splits]
   )
@@ -487,6 +558,7 @@ export function DocumentSplits({
         dragStartGroupIdRef.current = null
         dragStartSplitsRef.current = null
         setActivePageId(null)
+        setActiveSplitGroupId(null)
         return
       }
 
@@ -494,6 +566,7 @@ export function DocumentSplits({
         dragStartGroupIdRef.current = null
         dragStartSplitsRef.current = null
         setActivePageId(null)
+        setActiveSplitGroupId(null)
         return
       }
 
@@ -514,6 +587,7 @@ export function DocumentSplits({
       dragStartGroupIdRef.current = null
       dragStartSplitsRef.current = null
       setActivePageId(null)
+      setActiveSplitGroupId(null)
     },
     [onSplitsChange, splits]
   )
@@ -526,7 +600,12 @@ export function DocumentSplits({
     dragStartSplitsRef.current = null
     dragStartGroupIdRef.current = null
     setActivePageId(null)
+    setActiveSplitGroupId(null)
   }, [onSplitsChange])
+
+  const activeSplitGroup = activeSplitGroupId
+    ? splits.find((group) => group.id === activeSplitGroupId)
+    : null
 
   return (
     <aside
@@ -559,7 +638,7 @@ export function DocumentSplits({
       <DndContext
         id="document-splits-dnd"
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={splitterCollisionDetection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -592,7 +671,10 @@ export function DocumentSplits({
             </div>
           </SortableContext>
         </ScrollArea>
-        <DragOverlay>
+        <DragOverlay
+          dropAnimation={DRAG_OVERLAY_DROP_ANIMATION}
+          zIndex={1000}
+        >
           {activePageId ? (
             <div
               className="relative overflow-hidden rounded-md border bg-background shadow-lg shadow-black/10"
@@ -607,6 +689,13 @@ export function DocumentSplits({
                 className="size-full rounded-[inherit] border-0"
               />
             </div>
+          ) : activeSplitGroup ? (
+            <SplitGroupDragOverlay
+              activePage={activePage}
+              group={activeSplitGroup}
+              thumbnailImages={thumbnailImages}
+              onSelectPage={onSelectPage}
+            />
           ) : null}
         </DragOverlay>
       </DndContext>

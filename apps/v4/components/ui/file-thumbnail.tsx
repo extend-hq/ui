@@ -31,6 +31,7 @@ export type ThumbnailFile = {
 export type FileThumbnailProps = {
   file: ThumbnailFile | File
   className?: string
+  previewAspectRatio?: number
   previewClassName?: string
   previewContent?: React.ReactNode
   previewImageUrl?: string | null
@@ -253,28 +254,12 @@ function canvasToBlob(canvas: HTMLCanvasElement | null) {
 
 export function FileThumbnailLoadingOverlay() {
   return (
-    <div className="absolute inset-0 z-10 overflow-hidden bg-muted">
-      <style>{`
-        @keyframes file-thumbnail-preview-shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .file-thumbnail-preview-shimmer {
-            animation: none !important;
-            transform: translateX(0);
-            opacity: 0.55;
-          }
-        }
-      `}</style>
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 z-10 overflow-hidden bg-muted"
+    >
       <div className="absolute inset-0 bg-muted" />
-      <div
-        className="file-thumbnail-preview-shimmer absolute inset-0 bg-linear-to-r from-transparent via-background/65 to-transparent"
-        style={{
-          animation:
-            "file-thumbnail-preview-shimmer 1.25s ease-in-out infinite",
-        }}
-      />
+      <div className="absolute inset-0 animate-pulse bg-background/55 motion-reduce:animate-none" />
     </div>
   )
 }
@@ -282,6 +267,7 @@ export function FileThumbnailLoadingOverlay() {
 function FileThumbnailShell({
   file,
   className,
+  previewAspectRatio,
   previewClassName,
   previewContent,
   previewImageUrl,
@@ -291,6 +277,7 @@ function FileThumbnailShell({
 }: {
   file: NormalizedThumbnailFile
   className?: string
+  previewAspectRatio?: number
   previewClassName?: string
   previewContent?: React.ReactNode
   previewImageUrl?: string | null
@@ -341,6 +328,11 @@ function FileThumbnailShell({
           "relative aspect-square overflow-hidden bg-muted",
           previewClassName
         )}
+        style={
+          previewAspectRatio
+            ? { aspectRatio: String(previewAspectRatio) }
+            : undefined
+        }
       >
         {previewImageUrl ? (
           <img
@@ -407,6 +399,7 @@ function ImageFileThumbnail({
   hasError,
   isLoading,
   previewClassName,
+  previewAspectRatio,
   showMetadata,
   source,
 }: {
@@ -414,6 +407,7 @@ function ImageFileThumbnail({
   file: NormalizedThumbnailFile
   hasError?: boolean
   isLoading?: boolean
+  previewAspectRatio?: number
   previewClassName?: string
   showMetadata?: boolean
   source: ThumbnailSource
@@ -427,6 +421,7 @@ function ImageFileThumbnail({
       isLoading={isLoading || !imageUrl}
       hasError={hasError}
       className={className}
+      previewAspectRatio={previewAspectRatio}
       previewClassName={previewClassName}
       showMetadata={showMetadata}
     />
@@ -440,6 +435,7 @@ function PdfFileThumbnail({
   isActive,
   isLoading: externalIsLoading,
   previewClassName,
+  previewAspectRatio,
   showMetadata,
   source,
   thumbnailWidth,
@@ -449,6 +445,7 @@ function PdfFileThumbnail({
   hasError?: boolean
   isActive: boolean
   isLoading?: boolean
+  previewAspectRatio?: number
   previewClassName?: string
   showMetadata: boolean
   source: ThumbnailSource
@@ -515,6 +512,7 @@ function PdfFileThumbnail({
         isLoading={Boolean(externalIsLoading || (isLoading && !objectUrl))}
         hasError={Boolean(externalHasError || hasError)}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
         showMetadata={showMetadata}
       />
@@ -563,6 +561,7 @@ function DocxFileThumbnail({
   isActive,
   isLoading: externalIsLoading,
   previewClassName,
+  previewAspectRatio,
   showMetadata,
   source,
   thumbnailWidth,
@@ -572,6 +571,7 @@ function DocxFileThumbnail({
   hasError?: boolean
   isActive: boolean
   isLoading?: boolean
+  previewAspectRatio?: number
   previewClassName?: string
   showMetadata: boolean
   source: ThumbnailSource
@@ -581,13 +581,17 @@ function DocxFileThumbnail({
     initialDocumentTheme: "light",
     initialFileName: file.name,
   })
-  const { thumbnails } = useDocxViewerThumbnails(editor, {
-    pixelRatio: 2,
-    resolution: {
-      maxHeight: thumbnailWidth,
-      maxWidth: thumbnailWidth,
-    },
-  })
+  const thumbnailOptions = React.useMemo(
+    () => ({
+      pixelRatio: 2,
+      resolution: {
+        maxHeight: thumbnailWidth,
+        maxWidth: thumbnailWidth,
+      },
+    }),
+    [thumbnailWidth]
+  )
+  const { thumbnails } = useDocxViewerThumbnails(editor, thumbnailOptions)
   const firstThumbnail = thumbnails[0]
   const [hasError, setHasError] = React.useState(false)
   const [isReady, setIsReady] = React.useState(false)
@@ -767,6 +771,7 @@ function DocxFileThumbnail({
         isLoading={Boolean(externalIsLoading || (!isReady && !hasError))}
         hasError={Boolean(externalHasError || hasError)}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={cn("bg-white", previewClassName)}
         showMetadata={showMetadata}
       />
@@ -800,6 +805,7 @@ function XlsxFileThumbnail({
   isActive,
   isLoading: externalIsLoading,
   previewClassName,
+  previewAspectRatio,
   showMetadata,
   source,
   thumbnailWidth,
@@ -809,6 +815,7 @@ function XlsxFileThumbnail({
   hasError?: boolean
   isActive: boolean
   isLoading?: boolean
+  previewAspectRatio?: number
   previewClassName?: string
   showMetadata: boolean
   source: ThumbnailSource
@@ -833,6 +840,7 @@ function XlsxFileThumbnail({
         )}
         hasError={Boolean(externalHasError || hasError)}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={cn(
           "bg-white [&>img]:object-left-top",
           previewClassName
@@ -928,6 +936,7 @@ function XlsxThumbnailGeneratorContent({
 export function FileThumbnail({
   file: rawFile,
   className,
+  previewAspectRatio,
   previewClassName,
   previewContent,
   previewImageUrl,
@@ -952,6 +961,7 @@ export function FileThumbnail({
         isLoading={isLoading}
         hasError={hasError}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
         showMetadata={showMetadata}
       />
@@ -966,6 +976,7 @@ export function FileThumbnail({
         isLoading={isLoading}
         hasError={hasError}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
         showMetadata={showMetadata}
       />
@@ -981,6 +992,7 @@ export function FileThumbnail({
         isLoading={isLoading}
         hasError={hasError}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
         showMetadata={showMetadata}
         thumbnailWidth={thumbnailWidth ?? 520}
@@ -997,6 +1009,7 @@ export function FileThumbnail({
         isLoading={isLoading}
         hasError={hasError}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
         showMetadata={showMetadata}
         thumbnailWidth={thumbnailWidth ?? 520}
@@ -1013,6 +1026,7 @@ export function FileThumbnail({
         isLoading={isLoading}
         hasError={hasError}
         className={className}
+        previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
         showMetadata={showMetadata}
         thumbnailWidth={thumbnailWidth ?? 680}
@@ -1026,6 +1040,7 @@ export function FileThumbnail({
       isLoading={isLoading}
       hasError={hasError}
       className={className}
+      previewAspectRatio={previewAspectRatio}
       previewClassName={previewClassName}
       showMetadata={showMetadata}
     />

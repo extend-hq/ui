@@ -586,6 +586,24 @@ function PageDragOverlay({
   )
 }
 
+function SplitGroupDragOverlay(
+  props: Omit<
+    React.ComponentProps<typeof SplitGroupCard>,
+    "canRemove" | "canReorder" | "dragHandleProps" | "onRemove"
+  >
+) {
+  return (
+    <div className="relative z-[1000] w-[min(360px,calc(100vw-2rem))]">
+      <SplitGroupCard
+        {...props}
+        canRemove={false}
+        canReorder={false}
+        onRemove={() => {}}
+      />
+    </div>
+  )
+}
+
 function findGroupId(groups: SplitGroup[], id: string) {
   if (groups.some((group) => group.id === id)) return id
 
@@ -725,6 +743,9 @@ export function DocumentSplits({
   onRemoveSplit?: (groupId: string) => void
 }) {
   const [activePageId, setActivePageId] = React.useState<PageId | null>(null)
+  const [activeSplitGroupId, setActiveSplitGroupId] = React.useState<
+    string | null
+  >(null)
   const dragStartGroupIdRef = React.useRef<string | null>(null)
   const dragStartGroupsRef = React.useRef<SplitGroup[] | null>(null)
   const sensors = useSensors(
@@ -825,12 +846,24 @@ export function DocumentSplits({
         dragStartGroupIdRef.current = findGroupId(splits, pageId)
         dragStartGroupsRef.current = splits
         setActivePageId(pageId)
+        setActiveSplitGroupId(null)
+        return
+      }
+
+      if (dragType === "split") {
+        dragStartGroupIdRef.current = null
+        dragStartGroupsRef.current = null
+        setActivePageId(null)
+        setActiveSplitGroupId(
+          (event.active.data.current?.groupId as string | undefined) ?? null
+        )
         return
       }
 
       dragStartGroupIdRef.current = null
       dragStartGroupsRef.current = null
       setActivePageId(null)
+      setActiveSplitGroupId(null)
     },
     [splits]
   )
@@ -930,6 +963,7 @@ export function DocumentSplits({
       dragStartGroupIdRef.current = null
       dragStartGroupsRef.current = null
       setActivePageId(null)
+      setActiveSplitGroupId(null)
     },
     [updateSplits]
   )
@@ -942,9 +976,13 @@ export function DocumentSplits({
     dragStartGroupIdRef.current = null
     dragStartGroupsRef.current = null
     setActivePageId(null)
+    setActiveSplitGroupId(null)
   }, [onSplitsChange])
 
   const isPageDragging = activePageId !== null
+  const activeSplitGroup = activeSplitGroupId
+    ? splits.find((group) => group.id === activeSplitGroupId)
+    : null
 
   return (
     <aside
@@ -1002,7 +1040,7 @@ export function DocumentSplits({
             </div>
           </SortableContext>
         </ScrollArea>
-        <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION}>
+        <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION} zIndex={1000}>
           {activePageId ? (
             <PageDragOverlay
               getItemFile={resolvedGetItemFile}
@@ -1011,6 +1049,24 @@ export function DocumentSplits({
               pageId={activePageId}
               imageUrl={thumbnailImages[activePageId]}
               thumbnailSize={thumbnailSize}
+            />
+          ) : activeSplitGroup ? (
+            <SplitGroupDragOverlay
+              activeItemId={resolvedActiveItemId}
+              emptyLabel={emptyLabel}
+              getItemFile={resolvedGetItemFile}
+              getItemLabel={resolvedGetItemLabel}
+              group={activeSplitGroup}
+              labelPlacement={labelPlacement}
+              pageRangeLabel={
+                getSplitLabel?.(activeSplitGroup) ??
+                pageRangeLabels[activeSplitGroup.id] ??
+                "No pages"
+              }
+              isPageDragging={false}
+              thumbnailImages={thumbnailImages}
+              thumbnailSize={thumbnailSize}
+              onSelectItem={selectItem}
             />
           ) : null}
         </DragOverlay>

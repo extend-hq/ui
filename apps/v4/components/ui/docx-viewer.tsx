@@ -4,13 +4,15 @@ import * as React from "react"
 import {
   DocxEditorViewer,
   useDocxEditor,
+  useDocxViewerThumbnails,
   type DocxDocumentTheme,
 } from "@extend-ai/react-docx"
 import {
   Loading03Icon,
-  Moon02Icon,
   MinusSignCircleIcon,
+  Moon02Icon,
   PlusSignCircleIcon,
+  SidebarLeftIcon,
   Sun03Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
@@ -19,6 +21,8 @@ import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { FileThumbnail } from "@/components/ui/file-thumbnail"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
@@ -38,6 +42,7 @@ const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 const DOCX_SOURCE_CACHE_LIMIT = 3
 const DOCX_LOADING_INDICATOR_DELAY_MS = 300
+const DOCX_THUMBNAIL_WIDTH = 92
 const ZOOM_OPTIONS = [10, 25, 50, 75, 100, 125, 150, 175, 200, 400] as const
 const DOCX_PADDING_WARNING_TEXT = "a style property during rerender"
 
@@ -120,9 +125,7 @@ function getNextZoomScale(currentZoomScale: number, direction: 1 | -1) {
   let fallbackIndex = -1
 
   if (direction > 0) {
-    fallbackIndex = ZOOM_OPTIONS.findIndex(
-      (value) => value > currentZoomScale
-    )
+    fallbackIndex = ZOOM_OPTIONS.findIndex((value) => value > currentZoomScale)
   } else {
     for (let index = ZOOM_OPTIONS.length - 1; index >= 0; index -= 1) {
       if (ZOOM_OPTIONS[index] < currentZoomScale) {
@@ -227,7 +230,11 @@ function ToolbarTooltip({
   )
 }
 
-function ViewerLoadingSurface({ showSpinner = true }: { showSpinner?: boolean }) {
+function ViewerLoadingSurface({
+  showSpinner = true,
+}: {
+  showSpinner?: boolean
+}) {
   return (
     <div className="grid h-full min-h-52 place-items-center bg-transparent">
       {showSpinner ? (
@@ -238,16 +245,24 @@ function ViewerLoadingSurface({ showSpinner = true }: { showSpinner?: boolean })
 }
 
 function DocxToolbar({
+  activePage,
+  controlsDisabled,
   isDark,
   onIsDarkChange,
+  onToggleSidebar,
   onUploadClick,
+  pageCount,
   setZoomScale,
   showNightRenderToggle,
   zoomScale,
 }: {
+  activePage: number
+  controlsDisabled: boolean
   isDark: boolean
   onIsDarkChange: (checked: boolean) => void
+  onToggleSidebar: () => void
   onUploadClick: () => void
+  pageCount: number
   setZoomScale: React.Dispatch<React.SetStateAction<number>>
   showNightRenderToggle: boolean
   zoomScale: number
@@ -256,8 +271,25 @@ function DocxToolbar({
   const canZoomOut = zoomScale > ZOOM_OPTIONS[0]
 
   return (
-    <div className="flex min-h-12 items-center justify-end gap-3 overflow-x-auto overflow-y-hidden border-b bg-background px-3">
+    <div className="flex min-h-12 items-center justify-between gap-3 overflow-x-auto overflow-y-hidden border-b bg-background px-3">
       <TooltipProvider>
+        <div className="flex items-center gap-2">
+          <ToolbarTooltip label="Toggle thumbnails">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Toggle thumbnails"
+              disabled={controlsDisabled}
+              onClick={onToggleSidebar}
+            >
+              <HugeiconsIcon icon={SidebarLeftIcon} className="size-4" />
+            </Button>
+          </ToolbarTooltip>
+          <div className="text-sm whitespace-nowrap text-primary">
+            Page {pageCount ? activePage : 1} of {pageCount || "-"}
+          </div>
+        </div>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {showNightRenderToggle ? (
             <>
@@ -272,6 +304,7 @@ function DocxToolbar({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
+                  disabled={controlsDisabled}
                   aria-label={
                     isDark ? "Use light document" : "Use dark document"
                   }
@@ -291,7 +324,7 @@ function DocxToolbar({
               type="button"
               variant="ghost"
               size="icon-sm"
-              disabled={!canZoomOut}
+              disabled={controlsDisabled || !canZoomOut}
               aria-label="Zoom out"
               onClick={() =>
                 setZoomScale((currentZoomScale) =>
@@ -305,6 +338,7 @@ function DocxToolbar({
           <Select
             value={zoomScale.toString()}
             onValueChange={(value) => setZoomScale(Number(value))}
+            disabled={controlsDisabled}
           >
             <SelectTrigger
               size="sm"
@@ -326,7 +360,7 @@ function DocxToolbar({
               type="button"
               variant="ghost"
               size="icon-sm"
-              disabled={!canZoomIn}
+              disabled={controlsDisabled || !canZoomIn}
               aria-label="Zoom in"
               onClick={() =>
                 setZoomScale((currentZoomScale) =>
@@ -355,6 +389,55 @@ function DocxToolbar({
   )
 }
 
+function DocxSidebarThumbnail({
+  canvasRef,
+  displayFileName,
+  hasError,
+  isActive,
+  isLoading,
+  pageNumber,
+  pixelHeightPx,
+  pixelWidthPx,
+  previewAspectRatio,
+}: {
+  canvasRef: React.RefCallback<HTMLCanvasElement>
+  displayFileName: string
+  hasError: boolean
+  isActive: boolean
+  isLoading: boolean
+  pageNumber: number
+  pixelHeightPx: number
+  pixelWidthPx: number
+  previewAspectRatio: number
+}) {
+  return (
+    <FileThumbnail
+      file={{
+        name: `${displayFileName} page ${pageNumber}`,
+        type: DOCX_MIME_TYPE,
+      }}
+      previewAspectRatio={previewAspectRatio}
+      previewClassName="bg-white"
+      previewContent={
+        <canvas
+          ref={canvasRef}
+          width={pixelWidthPx}
+          height={pixelHeightPx}
+          className="!size-full bg-white object-cover object-top"
+        />
+      }
+      renderDocumentPreview={false}
+      isLoading={isLoading}
+      hasError={hasError}
+      showMetadata={false}
+      className={cn(
+        "w-full rounded-sm border shadow-xs transition-[border-color,box-shadow] duration-150",
+        isActive && "border-primary shadow-sm"
+      )}
+    />
+  )
+}
+
 export function DocxViewerPreview({
   className,
   fileName,
@@ -367,11 +450,8 @@ export function DocxViewerPreview({
   src?: string
 }) {
   const { resolvedTheme } = useTheme()
-  const {
-    nightRenderEnabled,
-    nightRenderPrefLoaded,
-    setNightRenderEnabled,
-  } = useDocumentNightRenderPreference()
+  const { nightRenderEnabled, nightRenderPrefLoaded, setNightRenderEnabled } =
+    useDocumentNightRenderPreference()
   const isViewerHydrated = resolvedTheme !== undefined && nightRenderPrefLoaded
   const shouldShowHydrationSpinner = useDelayedLoadingIndicator(
     !isViewerHydrated,
@@ -432,13 +512,17 @@ function DocxViewerContent({
   url?: string
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const viewportRef = React.useRef<HTMLDivElement | null>(null)
   const [uploadedDocxFile, setUploadedDocxFile] =
     React.useState<UploadedDocxFile | null>(null)
-  const viewerBackgroundColor = "color-mix(in oklab, var(--muted) 40%, transparent)"
+  const [activePage, setActivePage] = React.useState(1)
+  const [sidebarOpen, setSidebarOpen] = React.useState(true)
+  const viewerBackgroundColor =
+    "color-mix(in oklab, var(--muted) 40%, transparent)"
   const displayFileName = React.useMemo(
     () =>
       uploadedDocxFile?.file.name ??
-      (url ? formatDocumentName(fileName, url) : fileName ?? "document.docx"),
+      (url ? formatDocumentName(fileName, url) : (fileName ?? "document.docx")),
     [fileName, uploadedDocxFile?.file.name, url]
   )
   const cacheKey = React.useMemo(
@@ -459,6 +543,17 @@ function DocxViewerContent({
   )
   const editor = useDocxEditor(editorOptions)
   const { importDocxFile, setDocumentTheme, status } = editor
+  const thumbnailOptions = React.useMemo(
+    () => ({
+      pixelRatio: 2,
+      resolution: {
+        maxHeight: DOCX_THUMBNAIL_WIDTH * 1.35,
+        maxWidth: DOCX_THUMBNAIL_WIDTH,
+      },
+    }),
+    []
+  )
+  const { thumbnails } = useDocxViewerThumbnails(editor, thumbnailOptions)
   const [zoomScale, setZoomScale] = React.useState(50)
   const [loadError, setLoadError] = React.useState<string>()
   const [isLoadingDocument, setIsLoadingDocument] = React.useState(true)
@@ -469,11 +564,20 @@ function DocxViewerContent({
   const loadingState = (
     <ViewerLoadingSurface showSpinner={shouldShowDocumentSpinner} />
   )
+  const hasDocument = Boolean(url || uploadedDocxFile)
+  const pageCount =
+    hasDocument && !isLoadingDocument && !loadError
+      ? Math.max(1, editor.totalPages)
+      : 0
+  const controlsDisabled =
+    !hasDocument || isLoadingDocument || Boolean(loadError)
 
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
   React.useEffect(() => {
     setZoomScale(50)
+    setActivePage(1)
+    viewportRef.current?.scrollTo({ top: 0, left: 0 })
   }, [url])
 
   React.useEffect(() => {
@@ -514,6 +618,8 @@ function DocxViewerContent({
 
         if (isCurrent) {
           setIsLoadingDocument(false)
+          setActivePage(1)
+          viewportRef.current?.scrollTo({ top: 0, left: 0 })
         }
       } catch (error) {
         if (isCurrent) {
@@ -538,6 +644,78 @@ function DocxViewerContent({
     }
   }, [url])
 
+  const updateActivePageFromViewport = React.useCallback(() => {
+    const viewport = viewportRef.current
+    if (!viewport || !pageCount) return
+
+    const viewportRect = viewport.getBoundingClientRect()
+    const viewportCenter = viewportRect.top + viewportRect.height / 2
+    let closestPage = 1
+    let closestDistance = Number.POSITIVE_INFINITY
+
+    viewport
+      .querySelectorAll<HTMLElement>(
+        '[data-docx-page-wrapper="true"][data-index]'
+      )
+      .forEach((page) => {
+        const pageIndex = Number(page.dataset.index)
+        if (!Number.isFinite(pageIndex)) return
+
+        const pageRect = page.getBoundingClientRect()
+        const pageCenter = pageRect.top + pageRect.height / 2
+        const distance = Math.abs(pageCenter - viewportCenter)
+
+        if (distance < closestDistance) {
+          closestDistance = distance
+          closestPage = pageIndex + 1
+        }
+      })
+
+    setActivePage((currentPage) =>
+      currentPage === closestPage ? currentPage : closestPage
+    )
+  }, [pageCount])
+
+  React.useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport || !pageCount) return
+
+    let frameId = 0
+    const handleScroll = () => {
+      window.cancelAnimationFrame(frameId)
+      frameId = window.requestAnimationFrame(updateActivePageFromViewport)
+    }
+
+    frameId = window.requestAnimationFrame(updateActivePageFromViewport)
+    viewport.addEventListener("scroll", handleScroll, { passive: true })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+      viewport.removeEventListener("scroll", handleScroll)
+    }
+  }, [pageCount, updateActivePageFromViewport])
+
+  const scrollToPage = React.useCallback((pageNumber: number) => {
+    const viewport = viewportRef.current
+    const targetPageIndex = pageNumber - 1
+    const page = viewport?.querySelector<HTMLElement>(
+      `[data-docx-page-wrapper="true"][data-index="${targetPageIndex}"]`
+    )
+
+    setActivePage(pageNumber)
+
+    if (!viewport || !page) return
+
+    viewport.scrollTo({
+      top:
+        page.getBoundingClientRect().top -
+        viewport.getBoundingClientRect().top +
+        viewport.scrollTop -
+        24,
+      behavior: "auto",
+    })
+  }, [])
+
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ""
@@ -545,6 +723,7 @@ function DocxViewerContent({
     if (!file) return
 
     setZoomScale(50)
+    setActivePage(1)
     setUploadedDocxFile({
       file,
       identity: `${file.name}-${file.size}-${file.lastModified}`,
@@ -566,68 +745,121 @@ function DocxViewerContent({
         onChange={handleUpload}
       />
       <DocxToolbar
+        activePage={activePage}
+        controlsDisabled={controlsDisabled}
         isDark={effectiveIsDark}
         onIsDarkChange={setNightRenderEnabled}
+        onToggleSidebar={() => setSidebarOpen((open) => !open)}
         onUploadClick={() => fileInputRef.current?.click()}
+        pageCount={pageCount}
         setZoomScale={setZoomScale}
         showNightRenderToggle={shouldRenderNightMode}
         zoomScale={zoomScale}
       />
-      <div
-        className={cn(
-          "min-h-0 flex-1 overflow-auto p-4",
-          rounded && "rounded-b-lg"
-        )}
-        style={{ backgroundColor: viewerBackgroundColor }}
-      >
-        {!url && !uploadedDocxFile ? (
-          <div className="grid h-full min-h-96 place-items-center p-6 text-center">
-            <div className="max-w-md rounded-lg border bg-background p-4 text-sm shadow-xs">
-              <div className="font-medium">Upload a DOCX to preview</div>
-              <div className="mt-1 text-muted-foreground">
-                Pass a DOCX URL with the <code>src</code> prop or upload a file.
+      <div className="flex min-h-0 flex-1 overflow-hidden bg-muted/30">
+        <aside
+          className={cn(
+            "hidden w-40 shrink-0 overflow-hidden border-r bg-sidebar transition-[margin-left,border-color] duration-200 ease-out md:block",
+            sidebarOpen && pageCount ? "ml-0" : "-ml-40 border-r-0"
+          )}
+        >
+          <ScrollArea className="h-full" scrollFade>
+            <div className="p-4">
+              <div className="flex flex-col items-center gap-3">
+                {thumbnails.slice(0, pageCount || 0).map((thumbnail) => (
+                  <Button
+                    key={thumbnail.pageIndex}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "!h-auto w-full flex-col items-center gap-2 p-2 text-xs text-muted-foreground shadow-none hover:bg-sidebar-accent",
+                      thumbnail.pageNumber === activePage && "bg-sidebar-accent"
+                    )}
+                    onFocus={(event) => event.currentTarget.blur()}
+                    onClick={() => scrollToPage(thumbnail.pageNumber)}
+                  >
+                    <DocxSidebarThumbnail
+                      canvasRef={thumbnail.canvasRef}
+                      displayFileName={displayFileName}
+                      hasError={thumbnail.status === "error"}
+                      isActive={thumbnail.pageNumber === activePage}
+                      isLoading={
+                        !thumbnail.isMounted &&
+                        thumbnail.status !== "ready" &&
+                        thumbnail.status !== "error"
+                      }
+                      pageNumber={thumbnail.pageNumber}
+                      pixelHeightPx={thumbnail.pixelHeightPx}
+                      pixelWidthPx={thumbnail.pixelWidthPx}
+                      previewAspectRatio={thumbnail.aspectRatio}
+                    />
+                    {thumbnail.pageNumber}
+                  </Button>
+                ))}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-4"
-                onClick={() => fileInputRef.current?.click()}
+            </div>
+          </ScrollArea>
+        </aside>
+        <div
+          ref={viewportRef}
+          className={cn(
+            "min-h-0 flex-1 overflow-auto p-4",
+            rounded && "rounded-b-lg"
+          )}
+          style={{ backgroundColor: viewerBackgroundColor }}
+        >
+          {!url && !uploadedDocxFile ? (
+            <div className="grid h-full min-h-96 place-items-center p-6 text-center">
+              <div className="max-w-md rounded-lg border bg-background p-4 text-sm shadow-xs">
+                <div className="font-medium">Upload a DOCX to preview</div>
+                <div className="mt-1 text-muted-foreground">
+                  Pass a DOCX URL with the <code>src</code> prop or upload a
+                  file.
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                  Upload DOCX
+                </Button>
+              </div>
+            </div>
+          ) : loadError ? (
+            <div className="grid h-full min-h-96 place-items-center p-6 text-center">
+              <div className="max-w-md rounded-lg border bg-background p-4 text-sm text-destructive shadow-xs">
+                <div className="font-medium">Unable to display DOCX</div>
+                <div className="mt-1 text-muted-foreground">{loadError}</div>
+              </div>
+            </div>
+          ) : isLoadingDocument ? (
+            loadingState
+          ) : (
+            <div className="mx-auto flex min-h-full justify-center">
+              <div
+                className={cn(
+                  "origin-top",
+                  effectiveIsDark && "docx-night-reader-shell"
+                )}
+                style={{ zoom: zoomScale / 100 }}
               >
-                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-                Upload DOCX
-              </Button>
+                <DocxEditorViewer
+                  editor={editor}
+                  mode="read-only"
+                  loadingState={loadingState}
+                  pageBackgroundColor={effectiveIsDark ? "#0a0a0a" : undefined}
+                  pageGapBackgroundColor={viewerBackgroundColor}
+                  pageVirtualization={{ enabled: false }}
+                  deferInitialPaginationPaint={false}
+                />
+              </div>
             </div>
-          </div>
-        ) : loadError ? (
-          <div className="grid h-full min-h-96 place-items-center p-6 text-center">
-            <div className="max-w-md rounded-lg border bg-background p-4 text-sm text-destructive shadow-xs">
-              <div className="font-medium">Unable to display DOCX</div>
-              <div className="mt-1 text-muted-foreground">{loadError}</div>
-            </div>
-          </div>
-        ) : isLoadingDocument ? (
-          loadingState
-        ) : (
-          <div className="mx-auto flex min-h-full justify-center">
-            <div
-              className={cn(
-                "origin-top",
-                effectiveIsDark && "docx-night-reader-shell"
-              )}
-              style={{ zoom: zoomScale / 100 }}
-            >
-              <DocxEditorViewer
-                editor={editor}
-                mode="read-only"
-                loadingState={loadingState}
-                pageBackgroundColor={effectiveIsDark ? "#0a0a0a" : undefined}
-                pageGapBackgroundColor={viewerBackgroundColor}
-                deferInitialPaginationPaint={false}
-              />
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

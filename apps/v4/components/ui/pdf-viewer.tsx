@@ -15,6 +15,7 @@ import type * as ReactPdf from "react-pdf"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { FileThumbnail } from "@/components/ui/file-thumbnail"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/registry/new-york-v4/ui/input"
 import {
@@ -187,6 +188,43 @@ function SearchInput({
         </Button>
       </div>
     </div>
+  )
+}
+
+function PDFSidebarThumbnail({
+  file,
+  pageNumber,
+  reactPdf,
+  rotation,
+  thumbnailAspectRatio,
+}: {
+  file: string
+  pageNumber: number
+  reactPdf: ReactPdfModule
+  rotation: number
+  thumbnailAspectRatio: number
+}) {
+  return (
+    <FileThumbnail
+      file={{
+        name: `Page ${pageNumber}.pdf`,
+        type: "application/pdf",
+        source: file,
+      }}
+      previewAspectRatio={thumbnailAspectRatio}
+      previewClassName="bg-background"
+      previewContent={
+        <reactPdf.Thumbnail
+          pageNumber={pageNumber}
+          width={THUMBNAIL_WIDTH}
+          rotate={rotation}
+          className="flex size-full items-center justify-center [&_.react-pdf__Thumbnail__page]:!m-0 [&_.react-pdf__Thumbnail__page]:!h-auto [&_.react-pdf__Thumbnail__page]:!w-full [&_.react-pdf__Thumbnail__page]:overflow-hidden [&_canvas]:!h-auto [&_canvas]:!w-full"
+        />
+      }
+      renderDocumentPreview={false}
+      showMetadata={false}
+      className="w-full rounded-sm border shadow-xs"
+    />
   )
 }
 
@@ -485,6 +523,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
           (thumbnailIsRotated ? pageWidth / pageHeight : pageHeight / pageWidth)
       ),
     }
+    const thumbnailAspectRatio = thumbnailSize.width / thumbnailSize.height
 
     const updateActivePageFromViewport = React.useCallback(() => {
       const viewport = viewportRef.current
@@ -949,18 +988,13 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                             onPointerDown={preserveThumbnailClickScroll}
                             onClick={() => scrollToPage(pageNumber)}
                           >
-                            <div
-                              className="shrink-0 overflow-hidden border bg-background shadow-xs"
-                              style={thumbnailSize}
-                            >
-                              <reactPdf.Thumbnail
-                                pageNumber={pageNumber}
-                                width={THUMBNAIL_WIDTH}
-                                rotate={rotation}
-                                className="flex size-full items-center justify-center [&_.react-pdf__Thumbnail__page]:!m-0 [&_.react-pdf__Thumbnail__page]:!h-auto [&_.react-pdf__Thumbnail__page]:!w-full [&_.react-pdf__Thumbnail__page]:overflow-hidden [&_canvas]:!h-auto [&_canvas]:!w-full"
-                                onItemClick={() => scrollToPage(pageNumber)}
-                              />
-                            </div>
+                            <PDFSidebarThumbnail
+                              file={pdfFile}
+                              pageNumber={pageNumber}
+                              reactPdf={reactPdf}
+                              rotation={rotation}
+                              thumbnailAspectRatio={thumbnailAspectRatio}
+                            />
                             {pageNumber}
                           </Button>
                         ))}
