@@ -15,7 +15,6 @@ import {
   Add01Icon,
   Delete02Icon,
   Download01Icon,
-  Loading03Icon,
   MinusSignCircleIcon,
   Moon02Icon,
   PlusSignCircleIcon,
@@ -32,17 +31,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
-  useWorkbookNightRenderPreference,
-  WorkbookSheetTabs,
-  WorkbookTableHeaderMenu,
-} from "@/components/ui/xlsx-viewer"
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/new-york-v4/ui/select"
+} from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
+import {
+  useWorkbookNightRenderPreference,
+  WorkbookSheetTabs,
+  WorkbookTableHeaderMenu,
+} from "@/components/ui/xlsx-viewer"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
@@ -122,9 +122,7 @@ function EditorLoadingSurface({
 }) {
   return (
     <div className="grid h-full min-h-52 w-full min-w-full place-items-center bg-transparent">
-      {showSpinner ? (
-        <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
-      ) : null}
+      {showSpinner ? <Spinner className="size-4" /> : null}
     </div>
   )
 }

@@ -173,18 +173,20 @@ export function DocumentAwareFileThumbnail({
   className,
   generationDelayMs = 0,
   showMetadata = false,
+  thumbnailWidth,
 }: {
   file: DemoFile
   className?: string
   generationDelayMs?: number
   showMetadata?: boolean
+  thumbnailWidth?: number
 }) {
   return (
     <FileThumbnail
       file={getThumbnailFile(file)}
       source={file.url}
       generationDelayMs={generationDelayMs}
-      thumbnailWidth={isXlsxFile(file) ? 680 : 520}
+      thumbnailWidth={thumbnailWidth ?? (isXlsxFile(file) ? 680 : 520)}
       className={className}
       showMetadata={showMetadata}
     />

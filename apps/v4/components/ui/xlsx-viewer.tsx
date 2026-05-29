@@ -11,7 +11,6 @@ import {
   type XlsxTableHeaderMenuRenderProps,
 } from "@extend-ai/react-xlsx"
 import {
-  Loading03Icon,
   MinusSignCircleIcon,
   Moon02Icon,
   MoreHorizontalIcon,
@@ -26,6 +25,14 @@ import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   DropdownMenu,
@@ -35,13 +42,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/registry/new-york-v4/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/registry/new-york-v4/ui/select"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
@@ -189,9 +189,7 @@ function ViewerLoadingSurface({
 }) {
   return (
     <div className="grid h-full min-h-52 w-full min-w-full place-items-center bg-transparent">
-      {showSpinner ? (
-        <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
-      ) : null}
+      {showSpinner ? <Spinner className="size-4" /> : null}
     </div>
   )
 }
@@ -555,25 +553,28 @@ export function WorkbookSheetTabs({
       >
         <ScrollArea
           orientation="horizontal"
-          className="h-8 w-full"
+          scrollbarGutter
+          className="h-10 w-full has-[[data-slot=scroll-area-viewport][data-has-overflow-x]]:h-[50px]"
           viewportClassName="overflow-y-hidden"
           viewportRef={scrollRef}
         >
-          <TabsList className="rounded-none bg-transparent p-0">
-            {sheets.map((sheet, index) => (
-              <TabsTrigger
-                key={`${sheet.workbookSheetIndex}-${sheet.name}`}
-                ref={(node) => {
-                  itemRefs.current[index] = node
-                }}
-                value={String(index)}
-                className="h-8 max-w-48 flex-none rounded-md border border-transparent px-3 shadow-none data-active:border-input data-active:bg-background"
-                onMouseEnter={() => handleItemEnter(index)}
-              >
-                <span className="truncate">{sheet.name}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="flex h-full items-center">
+            <TabsList className="shrink-0">
+              {sheets.map((sheet, index) => (
+                <TabsTrigger
+                  key={`${sheet.workbookSheetIndex}-${sheet.name}`}
+                  ref={(node) => {
+                    itemRefs.current[index] = node
+                  }}
+                  value={String(index)}
+                  className="max-w-48 flex-none"
+                  onMouseEnter={() => handleItemEnter(index)}
+                >
+                  <span className="truncate">{sheet.name}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </ScrollArea>
       </Tabs>
       {typeof document !== "undefined" && previewSheet
@@ -601,10 +602,7 @@ export function WorkbookSheetTabs({
                   />
                 ) : (
                   <div className="grid size-full place-items-center">
-                    <HugeiconsIcon
-                      icon={Loading03Icon}
-                      className="size-4 animate-spin text-muted-foreground"
-                    />
+                    <Spinner className="size-4 text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -776,7 +774,8 @@ function XlsxViewerContent({
   const [uploadedWorkbook, setUploadedWorkbook] =
     React.useState<UploadedWorkbook | null>(null)
   const sourceFileName = React.useMemo(
-    () => (url ? formatWorkbookName(fileName, url) : fileName ?? "workbook.xlsx"),
+    () =>
+      url ? formatWorkbookName(fileName, url) : (fileName ?? "workbook.xlsx"),
     [fileName, url]
   )
   const sourceCacheKey = React.useMemo(

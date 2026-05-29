@@ -108,7 +108,8 @@ export function DocsSidebar({
                   <SidebarMenu className="gap-0.5">
                     {pages.map((page) => {
                       const isExperimental =
-                        page.url === "/docs/components/xlsx-editor"
+                        page.url === "/docs/components/xlsx-editor" ||
+                        page.url === "/docs/components/docx-editor"
 
                       return (
                         <SidebarMenuItem key={page.url} className="relative">

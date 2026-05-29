@@ -10,7 +10,6 @@ import type {
   Theme,
 } from "@glideapps/glide-data-grid"
 import {
-  Loading03Icon,
   MinusSignCircleIcon,
   PlusSignCircleIcon,
   Upload01Icon,
@@ -26,7 +25,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/new-york-v4/ui/select"
+} from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
@@ -407,10 +407,7 @@ export function CsvViewer({ className, data }: CsvViewerProps) {
           </div>
         ) : !glide ? (
           <div className="grid h-full place-items-center bg-background">
-            <HugeiconsIcon
-              icon={Loading03Icon}
-              className="size-4 animate-spin"
-            />
+            <Spinner className="size-4" />
           </div>
         ) : (
           <glide.DataEditor

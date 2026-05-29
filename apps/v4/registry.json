@@ -543,6 +543,21 @@
       ]
     },
     {
+      "name": "document-viewer-sidebar",
+      "type": "registry:ui",
+      "title": "Document Viewer Sidebar",
+      "description": "Shared thumbnail sidebar behavior for document viewers, including viewer-width responsive overlay and inline modes.",
+      "registryDependencies": ["utils"],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/ui/document-viewer-sidebar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/document-viewer-sidebar.tsx"
+        }
+      ]
+    },
+    {
       "name": "pdf-viewer",
       "type": "registry:ui",
       "title": "PDF Viewer",
@@ -555,12 +570,14 @@
       ],
       "registryDependencies": [
         "button",
+        "document-viewer-sidebar",
         "file-thumbnail",
         "input",
         "popover",
         "scroll-area",
         "select",
         "separator",
+        "spinner",
         "tooltip",
         "utils"
       ],
@@ -586,10 +603,12 @@
       ],
       "registryDependencies": [
         "button",
+        "document-viewer-sidebar",
         "file-thumbnail",
         "scroll-area",
         "select",
         "separator",
+        "spinner",
         "tooltip",
         "utils"
       ],
@@ -599,6 +618,39 @@
           "path": "components/ui/docx-viewer.tsx",
           "type": "registry:ui",
           "target": "@ui/docx-viewer.tsx"
+        }
+      ]
+    },
+    {
+      "name": "docx-editor",
+      "type": "registry:ui",
+      "title": "DOCX Editor",
+      "description": "An experimental DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
+      "dependencies": [
+        "@extend-ai/react-docx@^0.6.5",
+        "@hugeicons/core-free-icons@^4.1.1",
+        "@hugeicons/react@^1.1.6",
+        "next-themes@0.4.6"
+      ],
+      "registryDependencies": [
+        "button",
+        "document-viewer-sidebar",
+        "dropdown-menu",
+        "file-thumbnail",
+        "input",
+        "scroll-area",
+        "select",
+        "separator",
+        "spinner",
+        "tooltip",
+        "utils"
+      ],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/ui/docx-editor.tsx",
+          "type": "registry:ui",
+          "target": "@ui/docx-editor.tsx"
         }
       ]
     },
@@ -619,6 +671,7 @@
         "scroll-area",
         "select",
         "separator",
+        "spinner",
         "tabs",
         "tooltip",
         "utils"
@@ -649,6 +702,7 @@
         "scroll-area",
         "select",
         "separator",
+        "spinner",
         "tooltip",
         "utils",
         "xlsx-viewer"
@@ -674,7 +728,13 @@
         "papaparse@^5.5.3"
       ],
       "devDependencies": ["@types/papaparse@^5.5.2"],
-      "registryDependencies": ["button", "select", "separator", "tooltip"],
+      "registryDependencies": [
+        "button",
+        "select",
+        "separator",
+        "spinner",
+        "tooltip"
+      ],
       "categories": ["documents"],
       "docs": "The component includes the critical Glide Data Grid layout CSS. For full editor/search overlay styling, also import @glideapps/glide-data-grid/dist/index.css from your app's global stylesheet or root layout.",
       "files": [
@@ -850,6 +910,21 @@
           "path": "registry/new-york-v4/blocks/excel-document-splits.tsx",
           "type": "registry:component",
           "target": "@components/blocks/excel-document-splits.tsx"
+        }
+      ]
+    },
+    {
+      "name": "docx-editor-block",
+      "type": "registry:block",
+      "title": "DOCX Editor",
+      "description": "A full DOCX editor block with a Word-style toolbar, page thumbnails, and export controls.",
+      "registryDependencies": ["docx-editor"],
+      "categories": ["documents", "blocks"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/blocks/docx-editor.tsx",
+          "type": "registry:component",
+          "target": "@components/blocks/docx-editor.tsx"
         }
       ]
     }

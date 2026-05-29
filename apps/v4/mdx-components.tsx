@@ -17,6 +17,7 @@ import {
   DocumentSplitsDemo,
   DocumentSplitsSource,
 } from "@/components/document-splitter-docs"
+import { DocxEditorDemo, DocxEditorSource } from "@/components/docx-editor-docs"
 import { DocxViewerDemo, DocxViewerSource } from "@/components/docx-viewer-docs"
 import { ESignatureDemo, ESignatureSource } from "@/components/e-signature-docs"
 import {
@@ -378,6 +379,8 @@ export const mdxComponents = {
   CsvViewerSource,
   DocumentSplitsDemo,
   DocumentSplitsSource,
+  DocxEditorDemo,
+  DocxEditorSource,
   DocxViewerDemo,
   DocxViewerSource,
   ESignatureDemo,

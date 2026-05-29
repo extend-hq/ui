@@ -169,6 +169,25 @@ function movePageToGroup({
   })
 }
 
+function areSplitGroupsEqual(left: SplitGroup[], right: SplitGroup[]) {
+  if (left === right) return true
+  if (left.length !== right.length) return false
+
+  return left.every((leftGroup, groupIndex) => {
+    const rightGroup = right[groupIndex]
+    if (!rightGroup) return false
+
+    return (
+      leftGroup.id === rightGroup.id &&
+      leftGroup.title === rightGroup.title &&
+      leftGroup.pages.length === rightGroup.pages.length &&
+      leftGroup.pages.every(
+        (pageId, pageIndex) => pageId === rightGroup.pages[pageIndex]
+      )
+    )
+  })
+}
+
 function reorderPageInGroup({
   activePageId,
   groups,
@@ -539,14 +558,16 @@ export function DocumentSplits({
       const overIndex = targetPages.indexOf(overId as PageId)
       const insertIndex = overIndex === -1 ? targetPages.length : overIndex
 
-      onSplitsChange(
-        movePageToGroup({
-          activePageId: pageId,
-          groups: splits,
-          insertIndex,
-          targetGroupId,
-        })
-      )
+      const nextSplits = movePageToGroup({
+        activePageId: pageId,
+        groups: splits,
+        insertIndex,
+        targetGroupId,
+      })
+
+      if (!areSplitGroupsEqual(splits, nextSplits)) {
+        onSplitsChange(nextSplits)
+      }
     },
     [onSplitsChange, splits]
   )
@@ -563,7 +584,11 @@ export function DocumentSplits({
         const overIndex = splits.findIndex((group) => group.id === overGroupId)
 
         if (activeIndex !== -1 && overIndex !== -1) {
-          onSplitsChange(arrayMove(splits, activeIndex, overIndex))
+          const nextSplits = arrayMove(splits, activeIndex, overIndex)
+
+          if (!areSplitGroupsEqual(splits, nextSplits)) {
+            onSplitsChange(nextSplits)
+          }
         }
 
         dragStartGroupIdRef.current = null
@@ -588,13 +613,15 @@ export function DocumentSplits({
       const overGroupId = findGroupId(splits, overId)
 
       if (dragStartGroupIdRef.current === overGroupId) {
-        onSplitsChange(
-          reorderPageInGroup({
-            activePageId: pageId,
-            groups: splits,
-            overPageId: overId,
-          })
-        )
+        const nextSplits = reorderPageInGroup({
+          activePageId: pageId,
+          groups: splits,
+          overPageId: overId,
+        })
+
+        if (!areSplitGroupsEqual(splits, nextSplits)) {
+          onSplitsChange(nextSplits)
+        }
       }
 
       dragStartGroupIdRef.current = null

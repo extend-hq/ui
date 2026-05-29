@@ -1,0 +1,77 @@
+---
+title: DOCX Editor
+description: Edit Word documents with a Word-style toolbar, import and export, formatting controls, page thumbnails, links, images, tables, and tracked changes.
+component: true
+featured: true
+---
+
+The DOCX Editor is an experimental document editing surface built on top of `@extend-ai/react-docx`. It keeps the viewer shell familiar while enabling direct DOCX mutations through the package editor API.
+
+<DocxEditorDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add http://localhost:4000/r/docx-editor.json
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install @extend-ai/react-docx next-themes
+```
+
+<Step>
+  Install the File Thumbnail component because the editor reuses it for the page
+  thumbnail rail.
+</Step>
+
+```bash
+npx shadcn@latest add http://localhost:4000/r/file-thumbnail.json
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<DocxEditorSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Useful behaviors
+
+- Toolbar controls cover import, export, undo, redo, zoom, theme, read-only mode, tracked changes, text styles, color, highlight, links, alignment, lists, borders, images, and tables.
+- Page thumbnails stay in the left rail and scroll the editor viewport to the selected page.
+- The editor uses `useDocxEditor` and `DocxEditorViewer`, so mutations flow through the public `react-docx` controller API.
+- Uploaded files replace the current document while URL-loaded DOCX files are cached across mounts.
+
+## API Reference
+
+### DocxEditorPreview
+
+The DocxEditorPreview component renders an editable DOCX file with upload, toolbar, thumbnails, zoom, and export controls.
+
+| Prop        | Type      | Default | Required |
+| ----------- | --------- | ------- | -------- |
+| `className` | `string`  | `-`     | No       |
+| `fileName`  | `string`  | `-`     | No       |
+| `rounded`   | `boolean` | `false` | No       |
+| `src`       | `string`  | `-`     | No       |

@@ -8,7 +8,6 @@ import {
   type DocxDocumentTheme,
 } from "@extend-ai/react-docx"
 import {
-  Loading03Icon,
   MinusSignCircleIcon,
   Moon02Icon,
   PlusSignCircleIcon,
@@ -21,6 +20,11 @@ import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import {
+  DocumentViewerThumbnailSidebar,
+  useElementWidth,
+  useInlineThumbnailSidebar,
+} from "@/components/ui/document-viewer-sidebar"
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
@@ -29,7 +33,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/new-york-v4/ui/select"
+} from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
@@ -237,9 +242,7 @@ function ViewerLoadingSurface({
 }) {
   return (
     <div className="grid h-full min-h-52 place-items-center bg-transparent">
-      {showSpinner ? (
-        <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
-      ) : null}
+      {showSpinner ? <Spinner className="size-4" /> : null}
     </div>
   )
 }
@@ -440,11 +443,13 @@ function DocxSidebarThumbnail({
 
 export function DocxViewerPreview({
   className,
+  defaultThumbnailSidebarOpen = true,
   fileName,
   rounded = false,
   src,
 }: {
   className?: string
+  defaultThumbnailSidebarOpen?: boolean
   fileName?: string
   rounded?: boolean
   src?: string
@@ -484,6 +489,7 @@ export function DocxViewerPreview({
   return (
     <DocxViewerContent
       className={className}
+      defaultThumbnailSidebarOpen={defaultThumbnailSidebarOpen}
       effectiveIsDark={effectiveIsDark}
       fileName={fileName}
       rounded={rounded}
@@ -496,6 +502,7 @@ export function DocxViewerPreview({
 
 function DocxViewerContent({
   className,
+  defaultThumbnailSidebarOpen,
   effectiveIsDark,
   fileName,
   rounded,
@@ -504,6 +511,7 @@ function DocxViewerContent({
   url,
 }: {
   className?: string
+  defaultThumbnailSidebarOpen: boolean
   effectiveIsDark: boolean
   fileName?: string
   rounded: boolean
@@ -513,10 +521,14 @@ function DocxViewerContent({
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const [viewerShellRef, viewerShellWidth] = useElementWidth<HTMLDivElement>()
   const [uploadedDocxFile, setUploadedDocxFile] =
     React.useState<UploadedDocxFile | null>(null)
   const [activePage, setActivePage] = React.useState(1)
-  const [sidebarOpen, setSidebarOpen] = React.useState(true)
+  const [sidebarOpen, setSidebarOpen] = React.useState(
+    defaultThumbnailSidebarOpen
+  )
+  const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
   const viewerBackgroundColor =
     "color-mix(in oklab, var(--muted) 40%, transparent)"
   const displayFileName = React.useMemo(
@@ -756,14 +768,13 @@ function DocxViewerContent({
         showNightRenderToggle={shouldRenderNightMode}
         zoomScale={zoomScale}
       />
-      <div className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30">
-        <aside
-          className={cn(
-            "absolute inset-y-0 left-0 z-30 w-40 shrink-0 overflow-hidden border-r bg-sidebar shadow-lg transition-[translate,border-color] duration-200 ease-out md:relative md:z-auto md:translate-x-0 md:shadow-none md:transition-[margin-left,border-color]",
-            sidebarOpen && (pageCount || isLoadingDocument)
-              ? "translate-x-0 md:ml-0"
-              : "pointer-events-none -translate-x-full border-r-0 md:pointer-events-auto md:-ml-40"
-          )}
+      <div
+        ref={viewerShellRef}
+        className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30"
+      >
+        <DocumentViewerThumbnailSidebar
+          inline={sidebarInline}
+          open={Boolean(sidebarOpen && (pageCount || isLoadingDocument))}
         >
           <ScrollArea className="h-full" scrollFade>
             <div className="p-4">
@@ -812,7 +823,7 @@ function DocxViewerContent({
               )}
             </div>
           </ScrollArea>
-        </aside>
+        </DocumentViewerThumbnailSidebar>
         <div
           ref={viewportRef}
           className={cn(

@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import {
-  Loading03Icon,
   MinusSignCircleIcon,
   PlusSignCircleIcon,
   RotateClockwiseIcon,
@@ -15,21 +14,28 @@ import type * as ReactPdf from "react-pdf"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import {
+  DocumentViewerSidebarSkeleton,
+  DocumentViewerThumbnailSidebar,
+  useElementWidth,
+  useInlineThumbnailSidebar,
+} from "@/components/ui/document-viewer-sidebar"
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Input } from "@/registry/new-york-v4/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/registry/new-york-v4/ui/popover"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/new-york-v4/ui/select"
+} from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
+import { Input } from "@/registry/new-york-v4/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/registry/new-york-v4/ui/popover"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
@@ -61,6 +67,7 @@ export type PDFViewerHandle = {
 export type PDFViewerProps = {
   file?: string
   className?: string
+  defaultThumbnailSidebarOpen?: boolean
   defaultZoom?: number
   pageWidth?: number
   pageHeight?: number
@@ -111,17 +118,20 @@ function getPdfWorkerUrl(pdfjsVersion: string) {
   return `//unpkg.com/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`
 }
 
-function PDFViewerLoadingSkeleton() {
+function PDFViewerLoadingSkeleton({
+  sidebarOpen,
+  sidebarInline,
+}: {
+  sidebarOpen: boolean
+  sidebarInline: boolean
+}) {
   return (
     <div className="absolute inset-0 z-20 flex bg-muted/30">
-      <div className="hidden w-40 shrink-0 border-r bg-sidebar p-4 md:block">
-        <div className="mx-auto h-28 w-20 rounded-sm border bg-background shadow-xs">
-          <div className="h-full animate-pulse bg-muted" />
-        </div>
-        <div className="mx-auto mt-3 h-3 w-10 rounded-full bg-muted" />
-      </div>
+      {sidebarOpen ? (
+        <DocumentViewerSidebarSkeleton inline={sidebarInline} />
+      ) : null}
       <div className="grid min-w-0 flex-1 place-items-center">
-        <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
+        <Spinner className="size-4" />
       </div>
     </div>
   )
@@ -362,10 +372,7 @@ function PDFViewerPage({
             }
             loading={
               <div className="grid place-items-center" style={pageStyle}>
-                <HugeiconsIcon
-                  icon={Loading03Icon}
-                  className="size-4 animate-spin"
-                />
+                <Spinner className="size-4" />
               </div>
             }
             onRenderSuccess={
@@ -410,6 +417,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     {
       file,
       className,
+      defaultThumbnailSidebarOpen = true,
       defaultZoom = DEFAULT_ZOOM,
       pageWidth = DEFAULT_PAGE_WIDTH,
       pageHeight = DEFAULT_PAGE_HEIGHT,
@@ -439,13 +447,16 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     const [activePage, setActivePage] = React.useState(1)
     const [zoom, setZoom] = React.useState(defaultZoom)
     const [rotation, setRotation] = React.useState(0)
-    const [sidebarOpen, setSidebarOpen] = React.useState(true)
+    const [sidebarOpen, setSidebarOpen] = React.useState(
+      defaultThumbnailSidebarOpen
+    )
     const [searchDraft, setSearchDraft] = React.useState("")
     const [searchQuery, setSearchQuery] = React.useState("")
     const [isDocumentLoading, setIsDocumentLoading] = React.useState(true)
     const [isFirstPageRendering, setIsFirstPageRendering] = React.useState(true)
     const [loadError, setLoadError] = React.useState(false)
     const viewportRef = React.useRef<HTMLDivElement>(null)
+    const [viewerShellRef, viewerShellWidth] = useElementWidth<HTMLDivElement>()
     const thumbnailClickScrollYRef = React.useRef<number | null>(null)
 
     React.useEffect(() => {
@@ -505,6 +516,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     const controlsDisabled = !hasPdfFile || !reactPdf || !numPages
     const isLoading =
       hasPdfFile && (!reactPdf || isDocumentLoading || isFirstPageRendering)
+    const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
     const thumbnailIsRotated = Math.abs(Math.round(rotation / 90)) % 2 === 1
     const thumbnailSize = {
       width: THUMBNAIL_WIDTH,
@@ -918,7 +930,10 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
             </div>
           </TooltipProvider>
         </div>
-        <div className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30">
+        <div
+          ref={viewerShellRef}
+          className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30"
+        >
           {!hasPdfFile ? (
             <div className="absolute inset-0 z-20 grid place-items-center bg-background p-6 text-center text-sm text-muted-foreground">
               <div className="max-w-sm space-y-3">
@@ -932,7 +947,12 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
               </div>
             </div>
           ) : null}
-          {isLoading && !loadError ? <PDFViewerLoadingSkeleton /> : null}
+          {isLoading && !loadError ? (
+            <PDFViewerLoadingSkeleton
+              sidebarInline={sidebarInline}
+              sidebarOpen={sidebarOpen}
+            />
+          ) : null}
           {loadError ? (
             <div className="absolute inset-0 z-20 grid place-items-center bg-background p-6 text-sm text-muted-foreground">
               Unable to load the PDF preview.
@@ -952,13 +972,9 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
               onLoadError={handleLoadError}
             >
               <div className="flex h-full max-h-full min-h-0 w-full flex-1 overflow-hidden">
-                <aside
-                  className={cn(
-                    "absolute inset-y-0 left-0 z-30 w-40 shrink-0 overflow-hidden border-r bg-sidebar shadow-lg transition-[translate,border-color] duration-200 ease-out md:relative md:z-auto md:translate-x-0 md:shadow-none md:transition-[margin-left,border-color]",
-                    sidebarOpen && !isLoading && !loadError
-                      ? "translate-x-0 md:ml-0"
-                      : "pointer-events-none -translate-x-full border-r-0 md:pointer-events-auto md:-ml-40"
-                  )}
+                <DocumentViewerThumbnailSidebar
+                  inline={sidebarInline}
+                  open={Boolean(sidebarOpen && !isLoading && !loadError)}
                 >
                   <ScrollArea className="h-full" scrollFade>
                     <div className="p-4">
@@ -991,7 +1007,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                       </div>
                     </div>
                   </ScrollArea>
-                </aside>
+                </DocumentViewerThumbnailSidebar>
                 <ScrollArea
                   className="h-full max-h-full min-h-0 min-w-0 flex-1"
                   viewportClassName={cn(

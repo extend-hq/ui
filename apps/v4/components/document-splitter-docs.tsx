@@ -82,6 +82,10 @@ const PDF_WORKER_URL = new URL(
 ).toString()
 const THUMBNAIL_WIDTH = 72
 const THUMBNAIL_HEIGHT = 92
+const DEFAULT_THUMBNAIL_SIZE = {
+  width: THUMBNAIL_WIDTH,
+  height: THUMBNAIL_HEIGHT,
+} satisfies ThumbnailSize
 const SHEET_THUMBNAIL_WIDTH = 112
 const SHEET_THUMBNAIL_HEIGHT = 76
 const DEFAULT_ZOOM = 0.75
@@ -645,6 +649,25 @@ function movePageToGroup({
   })
 }
 
+function areSplitGroupsEqual(left: SplitGroup[], right: SplitGroup[]) {
+  if (left === right) return true
+  if (left.length !== right.length) return false
+
+  return left.every((leftGroup, groupIndex) => {
+    const rightGroup = right[groupIndex]
+    if (!rightGroup) return false
+
+    return (
+      leftGroup.id === rightGroup.id &&
+      leftGroup.title === rightGroup.title &&
+      leftGroup.pages.length === rightGroup.pages.length &&
+      leftGroup.pages.every(
+        (pageId, pageIndex) => pageId === rightGroup.pages[pageIndex]
+      )
+    )
+  })
+}
+
 function reorderPageInGroup({
   activePageId,
   groups,
@@ -718,7 +741,7 @@ export function DocumentSplits({
   getSplitLabel,
   labelPlacement = "corner",
   splits,
-  thumbnailSize = { width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT },
+  thumbnailSize = DEFAULT_THUMBNAIL_SIZE,
   thumbnailImages = {},
   withFrameDivider = true,
   onSplitsChange,
@@ -840,7 +863,11 @@ export function DocumentSplits({
 
   const updateSplits = React.useCallback(
     (updater: (currentSplits: SplitGroup[]) => SplitGroup[]) => {
-      onSplitsChange(updater(splits))
+      const nextSplits = updater(splits)
+
+      if (areSplitGroupsEqual(splits, nextSplits)) return
+
+      onSplitsChange(nextSplits)
     },
     [onSplitsChange, splits]
   )
@@ -1325,7 +1352,7 @@ export function XlsxDocumentSplitsBlock() {
     <XlsxViewerProvider controller={controller}>
       <PdfBlockResizableShell
         autoSaveId="xlsx-block-document-splits"
-        heightClassName="h-[720px]"
+        heightClassName="h-[680px]"
         rightDefaultSize={48}
         rightMaxSize={64}
         rightMinSize={30}
@@ -1422,7 +1449,7 @@ export function DocumentSplitsBlock() {
   const renderShell = () => (
     <PdfBlockResizableShell
       autoSaveId="pdf-block-document-splits"
-      heightClassName="h-[720px]"
+      heightClassName="h-[680px]"
       rightDefaultSize={50}
       rightMaxSize={66}
       rightMinSize={30}
@@ -1459,7 +1486,7 @@ export function DocumentSplitsBlock() {
       onLoadSuccess={handleLoadSuccess}
       loading={renderShell()}
       error={
-        <div className="grid h-[720px] place-items-center bg-background text-sm text-muted-foreground">
+        <div className="grid h-[680px] place-items-center bg-background text-sm text-muted-foreground">
           Unable to load PDF.
         </div>
       }
@@ -1933,6 +1960,23 @@ function movePageToGroup({
   });
 }
 
+function areSplitGroupsEqual(left: SplitGroup[], right: SplitGroup[]) {
+  if (left === right) return true;
+  if (left.length !== right.length) return false;
+
+  return left.every((leftGroup, groupIndex) => {
+    const rightGroup = right[groupIndex];
+    if (!rightGroup) return false;
+
+    return (
+      leftGroup.id === rightGroup.id &&
+      leftGroup.title === rightGroup.title &&
+      leftGroup.pages.length === rightGroup.pages.length &&
+      leftGroup.pages.every((pageId, pageIndex) => pageId === rightGroup.pages[pageIndex])
+    );
+  });
+}
+
 function reorderPageInGroup({
   activePageId,
   groups,
@@ -2176,26 +2220,27 @@ export function DocumentSplits({
     const pageId = String(event.active.id) as PageId;
     const overId = String(event.over.id);
 
-    onSplitsChange((() => {
-      const current = splits;
-      const sourceGroupId = findGroupId(current, pageId);
-      const targetGroupId = findGroupId(current, overId);
+    const sourceGroupId = findGroupId(splits, pageId);
+    const targetGroupId = findGroupId(splits, overId);
 
-      if (!sourceGroupId || !targetGroupId || sourceGroupId === targetGroupId) {
-        return current;
-      }
+    if (!sourceGroupId || !targetGroupId || sourceGroupId === targetGroupId) {
+      return;
+    }
 
-      const targetPages = getGroupPages(current, targetGroupId);
-      const overIndex = targetPages.indexOf(overId);
-      const insertIndex = overIndex === -1 ? targetPages.length : overIndex;
+    const targetPages = getGroupPages(splits, targetGroupId);
+    const overIndex = targetPages.indexOf(overId);
+    const insertIndex = overIndex === -1 ? targetPages.length : overIndex;
 
-      return movePageToGroup({
-        activePageId: pageId,
-        groups: current,
-        insertIndex,
-        targetGroupId,
-      });
-    })());
+    const nextSplits = movePageToGroup({
+      activePageId: pageId,
+      groups: splits,
+      insertIndex,
+      targetGroupId,
+    });
+
+    if (!areSplitGroupsEqual(splits, nextSplits)) {
+      onSplitsChange(nextSplits);
+    }
   }, [onSplitsChange, splits]);
 
   const handleDragEnd = React.useCallback((event: DragEndEvent) => {
@@ -2205,7 +2250,13 @@ export function DocumentSplits({
 
       const activeIndex = splits.findIndex((group) => group.id === activeGroupId);
       const overIndex = splits.findIndex((group) => group.id === overGroupId);
-      if (activeIndex !== -1 && overIndex !== -1) onSplitsChange(arrayMove(splits, activeIndex, overIndex));
+      if (activeIndex !== -1 && overIndex !== -1) {
+        const nextSplits = arrayMove(splits, activeIndex, overIndex);
+
+        if (!areSplitGroupsEqual(splits, nextSplits)) {
+          onSplitsChange(nextSplits);
+        }
+      }
 
       return;
     }
@@ -2222,11 +2273,15 @@ export function DocumentSplits({
     const overGroupId = findGroupId(splits, overId);
 
     if (dragStartGroupIdRef.current === overGroupId) {
-      onSplitsChange(reorderPageInGroup({
+      const nextSplits = reorderPageInGroup({
         activePageId: pageId,
         groups: splits,
         overPageId: overId,
-      }));
+      });
+
+      if (!areSplitGroupsEqual(splits, nextSplits)) {
+        onSplitsChange(nextSplits);
+      }
     }
 
     dragStartGroupIdRef.current = null;

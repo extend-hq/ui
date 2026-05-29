@@ -4,6 +4,7 @@
     "index",
     "pdf-viewer",
     "docx-viewer",
+    "docx-editor",
     "xlsx-viewer",
     "xlsx-editor",
     "csv-tsv-viewer",

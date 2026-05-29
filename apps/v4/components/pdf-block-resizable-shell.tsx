@@ -41,31 +41,35 @@ export function PdfBlockResizableShell({
     leftDefaultSize ?? (isDesktop ? 100 - rightDefaultSize : 62)
 
   return (
-    <ResizablePanelGroup
-      direction={direction}
-      autoSaveId={`${autoSaveId}-${direction}`}
+    <div
       className={cn(
         heightClassName,
         "relative max-h-[calc(100vh-8rem)] min-h-[420px] overflow-hidden bg-background",
         className
       )}
     >
-      <ResizablePanel
-        defaultSize={resolvedLeftDefaultSize}
-        minSize={leftMinSize ?? (isDesktop ? 42 : 34)}
-        className="min-h-0 min-w-0 overflow-hidden"
+      <ResizablePanelGroup
+        direction={direction}
+        autoSaveId={`${autoSaveId}-${direction}`}
+        className="h-full min-h-0"
       >
-        {left}
-      </ResizablePanel>
-      <ResizableHandle className="group z-[1000]" withHandle />
-      <ResizablePanel
-        defaultSize={isDesktop ? rightDefaultSize : 38}
-        minSize={isDesktop ? rightMinSize : 24}
-        maxSize={isDesktop ? rightMaxSize : 66}
-        className="min-h-0 min-w-0 overflow-hidden"
-      >
-        {right}
-      </ResizablePanel>
-    </ResizablePanelGroup>
+        <ResizablePanel
+          defaultSize={resolvedLeftDefaultSize}
+          minSize={leftMinSize ?? (isDesktop ? 42 : 34)}
+          className="min-h-0 min-w-0 overflow-hidden"
+        >
+          {left}
+        </ResizablePanel>
+        <ResizableHandle className="group z-[1000]" withHandle />
+        <ResizablePanel
+          defaultSize={isDesktop ? rightDefaultSize : 38}
+          minSize={isDesktop ? rightMinSize : 24}
+          maxSize={isDesktop ? rightMaxSize : 66}
+          className="min-h-0 min-w-0 overflow-hidden"
+        >
+          {right}
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   )
 }

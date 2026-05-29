@@ -33,14 +33,21 @@ import {
 } from "@/registry/new-york-v4/ui/tooltip"
 
 export type JsonPrimitive = string | number | boolean | null
-export type JsonObject = Record<string, JsonPrimitive>
-export type SchemaPropertyType = "string" | "number" | "integer" | "boolean"
+export type JsonValue = JsonPrimitive | JsonObject
+export type JsonObject = { [key: string]: JsonValue }
+export type SchemaPropertyType =
+  | "string"
+  | "number"
+  | "integer"
+  | "boolean"
+  | "object"
 
 export type ReviewFieldSchema = {
   type: SchemaPropertyType
   title?: string
   description?: string
   enum?: Array<string | number>
+  properties?: Record<string, ReviewFieldSchema>
 }
 
 export type HighlightArea = {
@@ -53,8 +60,8 @@ export type HighlightArea = {
 export type ReviewField = {
   key: string
   schema: ReviewFieldSchema
-  actual: JsonPrimitive
-  expected: JsonPrimitive
+  actual: JsonValue
+  expected: JsonValue
   location?: {
     page: number
     area: HighlightArea
@@ -152,6 +159,38 @@ const REVIEW_FIELDS: ReviewField[] = [
       area: { left: 9.5, top: 12, width: 81, height: 11.5 },
     },
   },
+  {
+    key: "remittance",
+    schema: {
+      type: "object",
+      title: "Remittance details",
+      description: "Payment destination used for invoice reconciliation.",
+      properties: {
+        account_holder: {
+          type: "string",
+          title: "Account holder",
+        },
+        routing_number: {
+          type: "string",
+          title: "Routing number",
+        },
+        verified: {
+          type: "boolean",
+          title: "Verified",
+        },
+      },
+    },
+    actual: {
+      account_holder: "Acme Supplies LLC",
+      routing_number: "021000021",
+      verified: false,
+    },
+    expected: {
+      account_holder: "Acme Supply LLC",
+      routing_number: "021000021",
+      verified: true,
+    },
+  },
 ]
 
 function valuesFromFields(
@@ -168,8 +207,81 @@ function formatJson(value: unknown) {
   return JSON.stringify(value, null, 2)
 }
 
-function formatValue(value: JsonPrimitive) {
+function isJsonObject(value: JsonValue): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function getObjectValue(value: JsonValue, key: string): JsonValue {
+  if (!isJsonObject(value)) return null
+  return value[key] ?? null
+}
+
+function setObjectValue(
+  value: JsonValue,
+  key: string,
+  childValue: JsonValue
+): JsonObject {
+  return {
+    ...(isJsonObject(value) ? value : {}),
+    [key]: childValue,
+  }
+}
+
+function getPrimitiveValue(value: JsonValue): JsonPrimitive {
+  return isJsonObject(value) ? null : value
+}
+
+function jsonValuesEqual(left: JsonValue, right: JsonValue) {
+  return formatJson(left) === formatJson(right)
+}
+
+function countReviewFields(fields: ReviewField[]): number {
+  return fields.reduce((count, field) => {
+    if (field.schema.type !== "object") return count + 1
+
+    const properties = field.schema.properties ?? {}
+    const childFields = Object.entries(properties).map(
+      ([key, schema]): ReviewField => ({
+        key: `${field.key}.${key}`,
+        schema,
+        actual: getObjectValue(field.actual, key),
+        expected: getObjectValue(field.expected, key),
+      })
+    )
+
+    return count + Math.max(countReviewFields(childFields), 1)
+  }, 0)
+}
+
+function findReviewField(
+  fields: ReviewField[],
+  fieldKey: string | undefined
+): ReviewField | undefined {
+  if (!fieldKey) return undefined
+
+  for (const field of fields) {
+    if (field.key === fieldKey) return field
+
+    if (field.schema.type === "object") {
+      const childFields = Object.entries(field.schema.properties ?? {}).map(
+        ([key, schema]): ReviewField => ({
+          key: `${field.key}.${key}`,
+          schema,
+          actual: getObjectValue(field.actual, key),
+          expected: getObjectValue(field.expected, key),
+        })
+      )
+      const childField = findReviewField(childFields, fieldKey)
+      if (childField) return childField
+    }
+  }
+
+  return undefined
+}
+
+function formatValue(value: JsonValue) {
   if (value === null) return "NULL"
+  if (isJsonObject(value)) return formatJson(value)
   if (typeof value === "boolean") return value ? "true" : "false"
   return String(value)
 }
@@ -177,6 +289,7 @@ function formatValue(value: JsonPrimitive) {
 function getFieldIcon(type: SchemaPropertyType) {
   if (type === "number" || type === "integer") return InputNumericIcon
   if (type === "boolean") return TextCheckIcon
+  if (type === "object") return SourceCodeSquareIcon
   return InputTextIcon
 }
 
@@ -257,22 +370,25 @@ function HumanReviewFieldCard({
   value,
   originalValue,
   active,
+  activeFieldKey,
   onChange,
   onFieldFocus,
   onUndo,
   onSetNull,
 }: {
   field: ReviewField
-  value: JsonPrimitive
-  originalValue: JsonPrimitive
+  value: JsonValue
+  originalValue: JsonValue
   active?: boolean
-  onChange: (value: JsonPrimitive) => void
+  activeFieldKey?: string
+  onChange: (value: JsonValue) => void
   onFieldFocus?: (field: ReviewField) => void
   onUndo: () => void
   onSetNull: () => void
 }) {
-  const modified = value !== originalValue
+  const modified = !jsonValuesEqual(value, originalValue)
   const Icon = getFieldIcon(field.schema.type)
+  const propertyEntries = Object.entries(field.schema.properties ?? {})
 
   return (
     <div
@@ -343,31 +459,79 @@ function HumanReviewFieldCard({
           </div>
         </div>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div className="rounded-md border bg-muted/30 p-2">
-          {field.schema.description ? (
-            <p className="mb-2 text-xs text-muted-foreground">
-              {field.schema.description}
-            </p>
-          ) : null}
-          <div className="mb-1 text-[11px] font-medium text-muted-foreground">
-            Actual
+      {field.schema.type === "object" ? (
+        <div className="rounded-md border bg-muted/25 p-2">
+          <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-medium text-muted-foreground">
+            <span>Properties</span>
+            <span>{propertyEntries.length} fields</span>
           </div>
-          <div className="min-h-7 rounded-md bg-background px-2 py-1.5 text-sm">
-            {formatValue(field.actual)}
+          <div className="space-y-2">
+            {propertyEntries.length ? (
+              propertyEntries.map(([propertyKey, schema]) => {
+                const childField: ReviewField = {
+                  key: `${field.key}.${propertyKey}`,
+                  schema,
+                  actual: getObjectValue(field.actual, propertyKey),
+                  expected: getObjectValue(originalValue, propertyKey),
+                }
+
+                return (
+                  <HumanReviewFieldCard
+                    key={childField.key}
+                    field={childField}
+                    value={getObjectValue(value, propertyKey)}
+                    originalValue={childField.expected}
+                    active={childField.key === activeFieldKey}
+                    activeFieldKey={activeFieldKey}
+                    onChange={(childValue) =>
+                      onChange(setObjectValue(value, propertyKey, childValue))
+                    }
+                    onFieldFocus={onFieldFocus}
+                    onUndo={() =>
+                      onChange(
+                        setObjectValue(value, propertyKey, childField.expected)
+                      )
+                    }
+                    onSetNull={() =>
+                      onChange(setObjectValue(value, propertyKey, null))
+                    }
+                  />
+                )
+              })
+            ) : (
+              <div className="rounded-md bg-background px-2 py-1.5 text-sm text-muted-foreground">
+                No properties
+              </div>
+            )}
           </div>
         </div>
-        <div className="rounded-md border border-blue-500/30 bg-blue-500/5 p-2">
-          <div className="mb-1 text-[11px] font-medium text-blue-700 dark:text-blue-300">
-            Expected
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="rounded-md border bg-muted/30 p-2">
+            {field.schema.description ? (
+              <p className="mb-2 text-xs text-muted-foreground">
+                {field.schema.description}
+              </p>
+            ) : null}
+            <div className="mb-1 text-[11px] font-medium text-muted-foreground">
+              Actual
+            </div>
+            <div className="min-h-7 rounded-md bg-background px-2 py-1.5 text-sm">
+              {formatValue(field.actual)}
+            </div>
           </div>
-          <HumanReviewValueInput
-            schema={field.schema}
-            value={value}
-            onChange={onChange}
-          />
+          <div className="rounded-md border border-blue-500/30 bg-blue-500/5 p-2">
+            <div className="mb-1 text-[11px] font-medium text-blue-700 dark:text-blue-300">
+              Expected
+            </div>
+            <HumanReviewValueInput
+              schema={field.schema}
+              value={getPrimitiveValue(value)}
+              onChange={onChange}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -463,9 +627,10 @@ export function HumanReviewPanel({
     setExpected(initialExpectedValues)
   }, [initialExpectedValues])
 
-  const updateValue = React.useCallback((key: string, value: JsonPrimitive) => {
+  const updateValue = React.useCallback((key: string, value: JsonValue) => {
     setExpected((current) => ({ ...current, [key]: value }))
   }, [])
+  const fieldCount = React.useMemo(() => countReviewFields(fields), [fields])
 
   return (
     <TooltipProvider delay={200}>
@@ -486,7 +651,7 @@ export function HumanReviewPanel({
           </TabsList>
           <div className="flex h-8 items-center gap-1 rounded-md border bg-muted/40 px-2 text-xs text-muted-foreground sm:h-7">
             <HugeiconsIcon icon={FileDiffIcon} className="size-3.5" />
-            {fields.length} fields
+            {fieldCount} fields
           </div>
         </div>
         <TabsContent value="form" className="min-h-0 flex-1">
@@ -498,7 +663,11 @@ export function HumanReviewPanel({
                   field={field}
                   value={expected[field.key] ?? null}
                   originalValue={field.expected}
-                  active={field.key === activeFieldKey}
+                  active={
+                    field.key === activeFieldKey ||
+                    activeFieldKey?.startsWith(`${field.key}.`)
+                  }
+                  activeFieldKey={activeFieldKey}
                   onChange={(value) => updateValue(field.key, value)}
                   onFieldFocus={onFieldFocus}
                   onUndo={() => updateValue(field.key, field.expected)}
@@ -527,8 +696,7 @@ export function HumanReviewBlock({
 }) {
   const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0]?.key)
   const viewerRef = React.useRef<PDFViewerHandle>(null)
-  const activeField =
-    fields.find((field) => field.key === activeFieldKey) ?? fields[0]
+  const activeField = findReviewField(fields, activeFieldKey) ?? fields[0]
 
   React.useEffect(() => {
     if (activeFieldKey || !fields[0]) return

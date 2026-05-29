@@ -2,18 +2,9 @@
 
 import type * as React from "react"
 import dynamic from "next/dynamic"
-import {
-  Loading03Icon,
-  MinusSignCircleIcon,
-  PlusSignCircleIcon,
-  RotateClockwiseIcon,
-  Search01Icon,
-  SidebarLeftIcon,
-  Upload01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
-import { Button } from "@/components/ui/button"
+import { useMediaQuery } from "@/hooks/use-media-query"
+import { Spinner } from "@/components/ui/spinner"
 import { CsvViewerPreviewClient } from "@/components/csv-viewer-docs"
 import {
   DocumentAwareFileThumbnail,
@@ -22,7 +13,17 @@ import {
 } from "@/components/file-thumbnail-docs"
 import { FileUpload } from "@/components/file-upload-docs"
 import { OcrBlocks } from "@/components/ocr-blocks-docs"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
+
+const PdfViewerPreview = dynamic(
+  () =>
+    import("@/components/pdf-viewer-preview-client").then(
+      (mod) => mod.PdfViewerPreviewClient
+    ),
+  {
+    ssr: false,
+    loading: () => <ViewerPreviewLoading />,
+  }
+)
 
 const DocxViewerPreview = dynamic(
   () =>
@@ -45,58 +46,127 @@ const XlsxViewerPreview = dynamic(
 export function MobileRootPreview() {
   return (
     <ComponentCrop className="h-[560px] border bg-background">
-      <RootPdfPreview />
+      <PdfViewerPreview />
     </ComponentCrop>
   )
 }
 
 export function RootComponentsCollage() {
+  const isLargeLayout = useMediaQuery("lg")
+
+  if (!isLargeLayout) {
+    return (
+      <div className="mx-auto grid gap-4 py-1 md:grid-cols-2">
+        <div className="flex flex-col gap-4">
+          <PdfViewerTile />
+          <CsvViewerTile />
+          <XlsxViewerTile />
+        </div>
+        <div className="flex flex-col gap-4">
+          <FileUploadTile />
+          <FileThumbnailTile />
+          <DocxViewerTile />
+          <OcrBlocksTile />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="mx-auto grid gap-4 py-1 md:grid-cols-2 lg:grid-cols-3">
+    <div className="mx-auto grid gap-4 py-1 lg:grid-cols-3">
       <div className="flex flex-col gap-4">
-        <ComponentCrop className="h-[560px] border bg-background">
-          <RootPdfPreview />
-        </ComponentCrop>
-        <ComponentCrop className="h-[400px] border bg-background">
-          <CsvViewerPreviewClient />
-        </ComponentCrop>
+        <PdfViewerTile />
+        <CsvViewerTile />
       </div>
       <div className="flex flex-col gap-4">
-        <ComponentCrop className="h-[280px]">
-          <FileUpload className="p-4" />
-        </ComponentCrop>
-        <ComponentCrop className="h-[540px] border bg-background">
-          <RootFileThumbnailGrid />
-        </ComponentCrop>
-        <ComponentCrop className="h-[560px] border bg-background">
-          <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
-        </ComponentCrop>
+        <FileUploadTile />
+        <FileThumbnailTile />
+        <DocxViewerTile />
       </div>
       <div className="flex flex-col gap-4">
-        <ComponentCrop className="h-[560px] border bg-background">
-          <XlsxViewerPreview
-            className="h-full"
-            src="/samples/crazy-chart-zoo.xlsx"
-          />
-        </ComponentCrop>
-        <ComponentCrop className="h-[430px]">
-          <OcrBlocks />
-        </ComponentCrop>
+        <XlsxViewerTile />
+        <OcrBlocksTile />
       </div>
     </div>
   )
 }
 
+function PdfViewerTile() {
+  return (
+    <ComponentCrop className="h-[560px] border bg-background">
+      <PdfViewerPreview />
+    </ComponentCrop>
+  )
+}
+
+function CsvViewerTile() {
+  return (
+    <ComponentCrop className="h-[400px] border bg-background">
+      <CsvViewerPreviewClient />
+    </ComponentCrop>
+  )
+}
+
+function FileUploadTile() {
+  return (
+    <ComponentCrop className="h-[280px]">
+      <FileUpload
+        className="h-full [&>label]:h-full [&>label]:min-h-0 [&>label]:rounded-lg"
+        showBorderBeam={false}
+      />
+    </ComponentCrop>
+  )
+}
+
+function FileThumbnailTile() {
+  return (
+    <ComponentCrop className="h-[340px] border bg-background">
+      <RootFileThumbnailGrid />
+    </ComponentCrop>
+  )
+}
+
+function DocxViewerTile() {
+  return (
+    <ComponentCrop className="h-[560px] border bg-background">
+      <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
+    </ComponentCrop>
+  )
+}
+
+function XlsxViewerTile() {
+  return (
+    <ComponentCrop className="h-[560px] border bg-background">
+      <XlsxViewerPreview
+        className="h-full"
+        src="/samples/crazy-chart-zoo.xlsx"
+      />
+    </ComponentCrop>
+  )
+}
+
+function OcrBlocksTile() {
+  return (
+    <ComponentCrop className="h-[430px]">
+      <OcrBlocks />
+    </ComponentCrop>
+  )
+}
+
 function RootFileThumbnailGrid() {
   return (
-    <div className="grid h-full gap-4 bg-background p-4 sm:grid-cols-2">
+    <div className="flex h-full flex-wrap content-start items-start justify-center gap-3 bg-background px-3 py-1.5">
       {SAMPLE_FILES.map((file, index) => (
-        <div key={file.url} className="min-w-0 space-y-2">
-          <div className="text-sm font-medium">{getFileKindLabel(file)}</div>
+        <div
+          key={file.url}
+          className="min-w-0 basis-[calc(50%-0.375rem)] space-y-1.5 sm:max-w-[7.5rem]"
+        >
+          <div className="text-xs font-medium">{getFileKindLabel(file)}</div>
           <DocumentAwareFileThumbnail
             file={file}
             generationDelayMs={250 + index * 220}
             className="w-full"
+            thumbnailWidth={260}
           />
         </div>
       ))}
@@ -107,7 +177,7 @@ function RootFileThumbnailGrid() {
 function ViewerPreviewLoading() {
   return (
     <div className="grid h-full min-h-52 place-items-center bg-background">
-      <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
+      <Spinner className="size-4" />
     </div>
   )
 }
@@ -122,89 +192,6 @@ function ComponentCrop({
   return (
     <div className={["overflow-hidden rounded-lg", className].join(" ")}>
       {children}
-    </div>
-  )
-}
-
-function RootPdfPreview() {
-  return (
-    <div
-      data-slot="pdf-viewer"
-      className="flex h-[560px] w-full flex-col overflow-hidden bg-background [overflow-anchor:none]"
-    >
-      <div className="flex min-h-12 items-center justify-between gap-3 border-b px-3">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Toggle thumbnails"
-            disabled
-          >
-            <HugeiconsIcon icon={SidebarLeftIcon} className="size-4" />
-          </Button>
-          <div className="text-sm whitespace-nowrap text-primary">
-            Page 1 of 15
-          </div>
-        </div>
-        <div className="flex min-w-0 items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Rotate counterclockwise"
-            disabled
-          >
-            <HugeiconsIcon
-              icon={RotateClockwiseIcon}
-              className="size-4 -scale-x-100"
-            />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Rotate clockwise"
-            disabled
-          >
-            <HugeiconsIcon icon={RotateClockwiseIcon} className="size-4" />
-          </Button>
-          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
-          <Button variant="ghost" size="icon-sm" aria-label="Zoom out" disabled>
-            <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
-          </Button>
-          <div className="hidden h-8 w-[84px] items-center justify-center rounded-md border bg-background text-sm sm:flex">
-            75%
-          </div>
-          <Button variant="ghost" size="icon-sm" aria-label="Zoom in" disabled>
-            <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
-          </Button>
-          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Search text"
-            disabled
-          >
-            <HugeiconsIcon icon={Search01Icon} className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Upload PDF"
-            disabled
-          >
-            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-          </Button>
-        </div>
-      </div>
-      <div className="relative min-h-0 flex-1 bg-muted/30">
-        <div className="absolute inset-0 grid place-items-center text-muted-foreground">
-          <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
-        </div>
-        <iframe
-          src="/samples/attention.pdf#toolbar=0&navpanes=0&scrollbar=0"
-          title="Attention PDF preview"
-          className="relative z-10 size-full border-0 bg-background"
-        />
-      </div>
     </div>
   )
 }

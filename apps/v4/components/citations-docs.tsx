@@ -202,9 +202,6 @@ function CitationsPanel({
                     </div>
                   </div>
                   <div className="rounded-md border bg-muted/30 p-2">
-                    <div className="mb-1 text-[11px] font-medium text-muted-foreground">
-                      Actual output
-                    </div>
                     <div className="min-h-7 rounded-md bg-background px-2 py-1.5 text-sm">
                       {citation.value}
                     </div>
@@ -303,9 +300,6 @@ function CitationExampleCard({
         </div>
       </div>
       <div className="rounded-md border bg-muted/30 p-2">
-        <div className="mb-1 text-[11px] font-medium text-muted-foreground">
-          Actual output
-        </div>
         <div className="min-h-7 rounded-md bg-background px-2 py-1.5 text-sm">
           {value}
         </div>
@@ -478,9 +472,6 @@ export function CitationCard({
         ) : null}
       </div>
       <div className="rounded-md border bg-muted/30 p-2">
-        <div className="mb-1 text-[11px] font-medium text-muted-foreground">
-          Actual output
-        </div>
         <div className="min-h-7 rounded-md bg-background px-2 py-1.5 text-sm">
           {value}
         </div>

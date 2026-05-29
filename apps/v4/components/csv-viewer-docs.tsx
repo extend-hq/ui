@@ -4,6 +4,7 @@ import * as React from "react"
 import dynamic from "next/dynamic"
 
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
 
 const SAMPLE_CSV = `Invoice,Customer,Status,Amount,Submitted
@@ -21,7 +22,7 @@ INV-1010,Westhaven Legal,Processing,410.80,2026-05-07`
 function ViewerPreviewLoading() {
   return (
     <div className="grid h-[560px] place-items-center bg-background">
-      <div className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+      <Spinner className="size-4" />
     </div>
   )
 }
@@ -115,7 +116,6 @@ import type {
   Theme,
 } from "@glideapps/glide-data-grid"
 import {
-  Loading03Icon,
   MinusSignCircleIcon,
   PlusSignCircleIcon,
   Upload01Icon,
@@ -123,6 +123,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import Papa from "papaparse"
 
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -130,7 +131,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/new-york-v4/ui/select"
+} from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
@@ -139,20 +141,29 @@ import {
   TooltipTrigger,
 } from "@/registry/new-york-v4/ui/tooltip"
 
-const SAMPLE_CSV = \`Invoice,Customer,Status,Amount,Submitted
-INV-1001,Northstar Supply,Approved,4280.50,2026-04-28
-INV-1002,Bluebird Medical,Needs review,1190.00,2026-04-29
-INV-1003,Aster Logistics,Approved,845.75,2026-04-30
-INV-1004,Juniper Foods,Exception,3499.99,2026-05-01
-INV-1005,Keystone Labs,Approved,920.10,2026-05-02
-INV-1006,Monarch Studio,Processing,1510.45,2026-05-03
-INV-1007,Orchard Bank,Approved,7820.00,2026-05-04
-INV-1008,Riverstone Energy,Needs review,632.25,2026-05-05
-INV-1009,Summit Health,Approved,2730.00,2026-05-06
-INV-1010,Westhaven Legal,Processing,410.80,2026-05-07\`
-
 const ZOOM_OPTIONS = [0.75, 1, 1.25, 1.5, 2] as const
+const GLIDE_DATA_GRID_CRITICAL_CSS = \`
+.gdg-wmyidgi{position:relative;min-width:10px;min-height:10px;max-width:100%;max-height:100%;width:var(--wmyidgi-0);height:var(--wmyidgi-1);overflow:hidden;overflow:clip;direction:ltr;}
+.gdg-wmyidgi>:first-child{position:absolute;left:0;top:0;width:100%;height:100%;}
+.gdg-s1dgczr6 .dvn-scroller{overflow:var(--s1dgczr6-0);transform:translate3d(0,0,0);}
+.gdg-s1dgczr6 .dvn-hidden{visibility:hidden;}
+.gdg-s1dgczr6 .dvn-scroll-inner{display:flex;pointer-events:none;}
+.gdg-s1dgczr6 .dvn-scroll-inner>*{flex-shrink:0;}
+.gdg-s1dgczr6 .dvn-scroll-inner .dvn-spacer{flex-grow:1;}
+.gdg-s1dgczr6 .dvn-scroll-inner .dvn-stack{display:flex;flex-direction:column;}
+.gdg-s1dgczr6 .dvn-underlay>*{position:absolute;left:0;top:0;}
+.gdg-s1dgczr6 canvas{outline:none;}
+\`
+
 type GlideDataGridModule = typeof GlideDataGrid
+type CsvViewerProps = {
+  className?: string
+  data?: string
+}
+
+function GlideDataGridCriticalStyles() {
+  return <style>{GLIDE_DATA_GRID_CRITICAL_CSS}</style>
+}
 
 function toDisplayString(value: unknown): string {
   return value === null || value === undefined ? "" : String(value)
@@ -273,15 +284,21 @@ function ToolbarTooltip({
   )
 }
 
-export function CsvViewer() {
+export function CsvViewer({ className, data }: CsvViewerProps) {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const isDark = useIsDarkTheme()
   const [glide, setGlide] = React.useState<GlideDataGridModule | null>(null)
   const [zoom, setZoom] = React.useState<(typeof ZOOM_OPTIONS)[number]>(1)
   const [parsed, setParsed] = React.useState(() =>
-    parseDelimitedText(SAMPLE_CSV)
+    data ? parseDelimitedText(data) : { headers: [], rows: [], error: null }
   )
   const [isPending, setIsPending] = React.useState(false)
+
+  React.useEffect(() => {
+    if (data) {
+      setParsed(parseDelimitedText(data))
+    }
+  }, [data])
 
   React.useEffect(() => {
     let mounted = true
@@ -390,7 +407,13 @@ export function CsvViewer() {
   }
 
   return (
-    <div className="flex h-[560px] w-full flex-col overflow-hidden bg-background">
+    <div
+      className={cn(
+        "flex h-[560px] w-full flex-col overflow-hidden bg-background",
+        className
+      )}
+    >
+      <GlideDataGridCriticalStyles />
       <div className="flex min-h-12 items-center justify-end gap-3 border-b px-3">
         <TooltipProvider>
           <div className="ml-auto flex shrink-0 items-center gap-1">
@@ -467,12 +490,30 @@ export function CsvViewer() {
           <div className="flex h-full items-center justify-center px-4 text-center text-sm text-destructive">
             {parsed.error}
           </div>
+        ) : parsed.rows.length === 0 ? (
+          <div className="grid h-full place-items-center bg-muted/30 p-4">
+            <div className="max-w-md rounded-lg border bg-background p-4 text-center text-sm shadow-xs">
+              <p className="font-medium">Upload a CSV to preview</p>
+              <p className="mt-1 text-muted-foreground">
+                Pass delimited text with the <code>data</code> prop or upload a
+                CSV file.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                loading={isPending}
+                onClick={() => inputRef.current?.click()}
+              >
+                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                Upload CSV
+              </Button>
+            </div>
+          </div>
         ) : !glide ? (
           <div className="grid h-full place-items-center bg-background">
-            <HugeiconsIcon
-              icon={Loading03Icon}
-              className="size-4 animate-spin"
-            />
+            <Spinner className="size-4" />
           </div>
         ) : (
           <glide.DataEditor

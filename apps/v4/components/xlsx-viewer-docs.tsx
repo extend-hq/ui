@@ -4,18 +4,20 @@ import * as React from "react"
 import dynamic from "next/dynamic"
 
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
 
 function ViewerPreviewLoading() {
   return (
     <div className="grid h-[640px] place-items-center bg-background">
-      <div className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+      <Spinner className="size-4" />
     </div>
   )
 }
 
 const XlsxViewerPreview = dynamic(
-  () => import("@/components/ui/xlsx-viewer").then((mod) => mod.XlsxViewerPreview),
+  () =>
+    import("@/components/ui/xlsx-viewer").then((mod) => mod.XlsxViewerPreview),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,
@@ -86,7 +88,6 @@ export function XlsxViewerExample() {
 const xlsxViewerSourceCode = `"use client"
 
 import * as React from "react"
-import { createPortal } from "react-dom"
 import {
   useXlsxViewer,
   useXlsxViewerController,
@@ -97,7 +98,6 @@ import {
   type XlsxTableHeaderMenuRenderProps,
 } from "@extend-ai/react-xlsx"
 import {
-  Loading03Icon,
   MinusSignCircleIcon,
   Moon02Icon,
   MoreHorizontalIcon,
@@ -107,10 +107,19 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useTheme } from "next-themes"
+import { createPortal } from "react-dom"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   DropdownMenu,
@@ -120,13 +129,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/registry/new-york-v4/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/registry/new-york-v4/ui/select"
 import { Separator } from "@/registry/new-york-v4/ui/separator"
 import {
   Tooltip,
@@ -135,7 +137,6 @@ import {
   TooltipTrigger,
 } from "@/registry/new-york-v4/ui/tooltip"
 
-const SAMPLE_XLSX_URL = "/samples/crazy-chart-zoo.xlsx"
 const XLSX_SOURCE_CACHE_LIMIT = 3
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-[100010]"
@@ -228,7 +229,7 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   return showSpinner
 }
 
-function useWorkbookNightRenderPreference() {
+export function useWorkbookNightRenderPreference() {
   const [nightRenderEnabled, setNightRenderEnabled] = React.useState(false)
   const [nightRenderPrefLoaded, setNightRenderPrefLoaded] =
     React.useState(false)
@@ -268,17 +269,19 @@ function ToolbarTooltip({
   )
 }
 
-function ViewerLoadingSurface({ showSpinner = true }: { showSpinner?: boolean }) {
+function ViewerLoadingSurface({
+  showSpinner = true,
+}: {
+  showSpinner?: boolean
+}) {
   return (
     <div className="grid h-full min-h-52 w-full min-w-full place-items-center bg-transparent">
-      {showSpinner ? (
-        <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
-      ) : null}
+      {showSpinner ? <Spinner className="size-4" /> : null}
     </div>
   )
 }
 
-function WorkbookTableHeaderMenu({
+export function WorkbookTableHeaderMenu({
   direction,
   sortAscending,
   sortDescending,
@@ -337,12 +340,14 @@ function WorkbookToolbar({
   onIsDarkChange,
   onUploadClick,
   showNightRenderToggle,
+  showUploadButton = true,
   workbookIdentity,
 }: {
   isDark: boolean
   onIsDarkChange: (checked: boolean) => void
   onUploadClick: () => void
   showNightRenderToggle: boolean
+  showUploadButton?: boolean
   workbookIdentity: string
 }) {
   const { canZoomIn, canZoomOut, setZoomScale, zoomIn, zoomOut, zoomScale } =
@@ -407,10 +412,7 @@ function WorkbookToolbar({
             >
               <SelectValue>{currentZoom}%</SelectValue>
             </SelectTrigger>
-            <SelectContent
-              align="end"
-              className={XLSX_DROPDOWN_Z_INDEX_CLASS}
-            >
+            <SelectContent align="end" className={XLSX_DROPDOWN_Z_INDEX_CLASS}>
               {ZOOM_OPTIONS.map((value) => (
                 <SelectItem key={value} value={value.toString()}>
                   {value}%
@@ -430,25 +432,36 @@ function WorkbookToolbar({
               <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
             </Button>
           </ToolbarTooltip>
-          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
-          <ToolbarTooltip label="Upload XLSX">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Upload XLSX"
-              onClick={onUploadClick}
-            >
-              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-            </Button>
-          </ToolbarTooltip>
+          {showUploadButton ? (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-1 h-4 self-center"
+              />
+              <ToolbarTooltip label="Upload XLSX">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Upload XLSX"
+                  onClick={onUploadClick}
+                >
+                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                </Button>
+              </ToolbarTooltip>
+            </>
+          ) : null}
         </div>
       </TooltipProvider>
     </div>
   )
 }
 
-function WorkbookSheetTabs({ workbookIdentity }: { workbookIdentity: string }) {
+export function WorkbookSheetTabs({
+  workbookIdentity,
+}: {
+  workbookIdentity: string
+}) {
   const { activeSheetIndex, setActiveSheetIndex, sheets } = useXlsxViewer()
   const { thumbnails } = useXlsxViewerThumbnails({
     resolution: {
@@ -627,25 +640,28 @@ function WorkbookSheetTabs({ workbookIdentity }: { workbookIdentity: string }) {
       >
         <ScrollArea
           orientation="horizontal"
-          className="h-8 w-full"
+          scrollbarGutter
+          className="h-10 w-full has-[[data-slot=scroll-area-viewport][data-has-overflow-x]]:h-[50px]"
           viewportClassName="overflow-y-hidden"
           viewportRef={scrollRef}
         >
-          <TabsList className="rounded-none bg-transparent p-0">
-            {sheets.map((sheet, index) => (
-              <TabsTrigger
-                key={\`\${sheet.workbookSheetIndex}-\${sheet.name}\`}
-                ref={(node) => {
-                  itemRefs.current[index] = node
-                }}
-                value={String(index)}
-                className="h-8 max-w-48 flex-none rounded-md border border-transparent px-3 shadow-none data-active:border-input data-active:bg-background"
-                onMouseEnter={() => handleItemEnter(index)}
-              >
-                <span className="truncate">{sheet.name}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="flex h-full items-center">
+            <TabsList className="shrink-0">
+              {sheets.map((sheet, index) => (
+                <TabsTrigger
+                  key={\`\${sheet.workbookSheetIndex}-\${sheet.name}\`}
+                  ref={(node) => {
+                    itemRefs.current[index] = node
+                  }}
+                  value={String(index)}
+                  className="max-w-48 flex-none"
+                  onMouseEnter={() => handleItemEnter(index)}
+                >
+                  <span className="truncate">{sheet.name}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </ScrollArea>
       </Tabs>
       {typeof document !== "undefined" && previewSheet
@@ -654,8 +670,8 @@ function WorkbookSheetTabs({ workbookIdentity }: { workbookIdentity: string }) {
               className={cn(
                 "pointer-events-none fixed z-[2147483647] overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur-md transition-[opacity,transform] duration-100",
                 previewUrl
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-1"
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-1 opacity-0"
               )}
               style={{
                 left: previewPosition.left,
@@ -673,10 +689,7 @@ function WorkbookSheetTabs({ workbookIdentity }: { workbookIdentity: string }) {
                   />
                 ) : (
                   <div className="grid size-full place-items-center">
-                    <HugeiconsIcon
-                      icon={Loading03Icon}
-                      className="size-4 animate-spin text-muted-foreground"
-                    />
+                    <Spinner className="size-4 text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -688,21 +701,27 @@ function WorkbookSheetTabs({ workbookIdentity }: { workbookIdentity: string }) {
   )
 }
 
-function WorkbookSurface({
+export function XlsxWorkbookSurface({
+  className,
   isDark,
   onIsDarkChange,
   onUploadClick,
   renderTableHeaderMenu,
   rounded,
   showNightRenderToggle,
+  showUploadButton = true,
   workbookIdentity,
 }: {
+  className?: string
   isDark: boolean
   onIsDarkChange: (checked: boolean) => void
   onUploadClick: () => void
-  renderTableHeaderMenu: (props: XlsxTableHeaderMenuRenderProps) => React.ReactNode
+  renderTableHeaderMenu: (
+    props: XlsxTableHeaderMenuRenderProps
+  ) => React.ReactNode
   rounded: boolean
   showNightRenderToggle: boolean
+  showUploadButton?: boolean
   workbookIdentity: string
 }) {
   const { error } = useXlsxViewer()
@@ -711,6 +730,7 @@ function WorkbookSurface({
     <div
       className={cn(
         "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
+        className,
         rounded && "rounded-lg"
       )}
     >
@@ -719,6 +739,7 @@ function WorkbookSurface({
         onIsDarkChange={onIsDarkChange}
         onUploadClick={onUploadClick}
         showNightRenderToggle={showNightRenderToggle}
+        showUploadButton={showUploadButton}
         workbookIdentity={workbookIdentity}
       />
       <div className="flex min-h-0 flex-1 flex-col">
@@ -767,7 +788,7 @@ export function XlsxViewerPreview({
   className,
   fileName,
   rounded = false,
-  src = SAMPLE_XLSX_URL,
+  src,
 }: {
   className?: string
   fileName?: string
@@ -775,11 +796,8 @@ export function XlsxViewerPreview({
   src?: string
 }) {
   const { resolvedTheme } = useTheme()
-  const {
-    nightRenderEnabled,
-    nightRenderPrefLoaded,
-    setNightRenderEnabled,
-  } = useWorkbookNightRenderPreference()
+  const { nightRenderEnabled, nightRenderPrefLoaded, setNightRenderEnabled } =
+    useWorkbookNightRenderPreference()
   const isViewerHydrated = resolvedTheme !== undefined && nightRenderPrefLoaded
   const shouldShowHydrationSpinner = useDelayedLoadingIndicator(
     !isViewerHydrated,
@@ -837,23 +855,32 @@ function XlsxViewerContent({
   rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
-  url: string
+  url?: string
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
-  const displayFileName = React.useMemo(
-    () => formatWorkbookName(fileName, url),
+  const [uploadedWorkbook, setUploadedWorkbook] =
+    React.useState<UploadedWorkbook | null>(null)
+  const sourceFileName = React.useMemo(
+    () =>
+      url ? formatWorkbookName(fileName, url) : (fileName ?? "workbook.xlsx"),
     [fileName, url]
   )
+  const sourceCacheKey = React.useMemo(
+    () => (url ? getWorkbookCacheKey(url, sourceFileName) : "xlsx-empty"),
+    [sourceFileName, url]
+  )
+  const displayFileName = React.useMemo(
+    () => uploadedWorkbook?.fileName ?? sourceFileName,
+    [sourceFileName, uploadedWorkbook?.fileName]
+  )
   const cacheKey = React.useMemo(
-    () => getWorkbookCacheKey(url, displayFileName),
-    [displayFileName, url]
+    () => uploadedWorkbook?.identity ?? sourceCacheKey,
+    [sourceCacheKey, uploadedWorkbook?.identity]
   )
   const [workbookBuffer, setWorkbookBuffer] =
     React.useState<ArrayBuffer | null>(
       () => xlsxWorkbookBufferCache.get(cacheKey) ?? null
     )
-  const [uploadedWorkbook, setUploadedWorkbook] =
-    React.useState<UploadedWorkbook | null>(null)
   const [loadError, setLoadError] = React.useState<string>()
   const shouldShowLoadingSpinner = useDelayedLoadingIndicator(
     !workbookBuffer && !loadError && !uploadedWorkbook,
@@ -862,14 +889,25 @@ function XlsxViewerContent({
 
   React.useEffect(() => {
     let isCurrent = true
-    setUploadedWorkbook(null)
+    if (url) {
+      setUploadedWorkbook(null)
+    }
 
     async function loadWorkbook(): Promise<void> {
-      setWorkbookBuffer(xlsxWorkbookBufferCache.get(cacheKey) ?? null)
+      if (!url) {
+        setWorkbookBuffer(null)
+        setLoadError(undefined)
+        return
+      }
+
+      setWorkbookBuffer(xlsxWorkbookBufferCache.get(sourceCacheKey) ?? null)
       setLoadError(undefined)
 
       try {
-        const nextWorkbookBuffer = await loadCachedWorkbookBuffer(url, cacheKey)
+        const nextWorkbookBuffer = await loadCachedWorkbookBuffer(
+          url,
+          sourceCacheKey
+        )
         if (!isCurrent) return
 
         setWorkbookBuffer(nextWorkbookBuffer)
@@ -887,7 +925,7 @@ function XlsxViewerContent({
     return () => {
       isCurrent = false
     }
-  }, [cacheKey, url])
+  }, [sourceCacheKey, url])
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -907,6 +945,43 @@ function XlsxViewerContent({
   const activeBuffer = uploadedWorkbook?.buffer ?? workbookBuffer
   const activeFileName = uploadedWorkbook?.fileName ?? displayFileName
   const activeIdentity = uploadedWorkbook?.identity ?? cacheKey
+
+  if (!url && !uploadedWorkbook) {
+    return (
+      <div
+        className={cn(
+          "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
+          className
+        )}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          className="hidden"
+          onChange={handleUpload}
+        />
+        <div className="grid min-h-0 flex-1 place-items-center bg-muted/30 p-4">
+          <div className="max-w-md rounded-lg border bg-background p-4 text-center text-sm shadow-xs">
+            <p className="font-medium">Upload a workbook to preview</p>
+            <p className="mt-1 text-muted-foreground">
+              Pass an XLSX URL with the <code>src</code> prop or upload a file.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              Upload XLSX
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (loadError && !activeBuffer) {
     return (
@@ -977,7 +1052,9 @@ function XlsxViewerContent({
         isDark={effectiveIsDark}
         onIsDarkChange={setNightRenderEnabled}
         onUploadClick={() => fileInputRef.current?.click()}
-        renderTableHeaderMenu={(props) => <WorkbookTableHeaderMenu {...props} />}
+        renderTableHeaderMenu={(props) => (
+          <WorkbookTableHeaderMenu {...props} />
+        )}
         rounded={rounded}
         showNightRenderToggle={shouldRenderNightMode}
         workbookBuffer={activeBuffer}
@@ -1002,7 +1079,9 @@ function XlsxWorkbookLoadedViewer({
   isDark: boolean
   onIsDarkChange: (checked: boolean) => void
   onUploadClick: () => void
-  renderTableHeaderMenu: (props: XlsxTableHeaderMenuRenderProps) => React.ReactNode
+  renderTableHeaderMenu: (
+    props: XlsxTableHeaderMenuRenderProps
+  ) => React.ReactNode
   rounded: boolean
   showNightRenderToggle: boolean
   workbookBuffer: ArrayBuffer
@@ -1023,7 +1102,7 @@ function XlsxWorkbookLoadedViewer({
 
   return (
     <XlsxViewerProvider controller={controller} isDark={isDark}>
-      <WorkbookSurface
+      <XlsxWorkbookSurface
         isDark={isDark}
         onIsDarkChange={onIsDarkChange}
         onUploadClick={onUploadClick}

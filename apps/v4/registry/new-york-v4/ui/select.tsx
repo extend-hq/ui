@@ -4,14 +4,7 @@ import type * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { useRender } from "@base-ui/react/use-render"
-import {
-  ArrowDown01Icon,
-  ArrowUp01Icon,
-  ChevronDown,
-  ChevronFirst,
-  ChevronsUpDown,
-  Tick02Icon,
-} from "@hugeicons/core-free-icons"
+import { ChevronDown, ChevronUp } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -59,7 +52,7 @@ export function SelectButton({
         </span>
         <HugeiconsIcon
           className={selectTriggerIconClassName}
-          icon={ChevronsUpDown}
+          icon={ChevronDown}
         />
       </>
     ),
@@ -158,7 +151,7 @@ export function SelectPopup({
           >
             <HugeiconsIcon
               className="relative size-4.5 sm:size-4"
-              icon={ArrowUp01Icon}
+              icon={ChevronUp}
             />
           </SelectPrimitive.ScrollUpArrow>
           <div className="relative h-full min-w-(--anchor-width) rounded-lg border bg-popover shadow-lg/5 not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
@@ -178,7 +171,7 @@ export function SelectPopup({
           >
             <HugeiconsIcon
               className="relative size-4.5 sm:size-4"
-              icon={ArrowDown01Icon}
+              icon={ChevronDown}
             />
           </SelectPrimitive.ScrollDownArrow>
         </SelectPrimitive.Popup>
@@ -202,7 +195,20 @@ export function SelectItem({
       {...props}
     >
       <SelectPrimitive.ItemIndicator className="col-start-1">
-        <HugeiconsIcon icon={Tick02Icon} />
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
+        </svg>
       </SelectPrimitive.ItemIndicator>
       <SelectPrimitive.ItemText className="col-start-2 min-w-0">
         {children}

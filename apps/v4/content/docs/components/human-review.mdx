@@ -52,6 +52,7 @@ npm install @pierre/diffs
 
 - Actual and expected values displayed side by side for each schema field.
 - Input controls selected from the JSON schema property type.
+- Object schema properties rendered as nested cards in the scrollable form.
 - Per-field undo and Set to NULL actions.
 - Form and JSON diff views for the same reviewed output state.
 
@@ -74,5 +75,5 @@ The HumanReviewPanel component renders editable review fields and a JSON diff fo
 | ---------- | ------------------- | ------- | -------- |
 | `key`      | `string`            | `-`     | Yes      |
 | `schema`   | `ReviewFieldSchema` | `-`     | Yes      |
-| `actual`   | `JsonPrimitive`     | `-`     | Yes      |
-| `expected` | `JsonPrimitive`     | `-`     | Yes      |
+| `actual`   | `JsonValue`         | `-`     | Yes      |
+| `expected` | `JsonValue`         | `-`     | Yes      |
