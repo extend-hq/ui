@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card"
 import {
   DocxEditorViewer,
   paragraphLetterheadFloatSideAtNodeIndex,
@@ -16,6 +17,7 @@ import {
   type DocxBorderPreset,
   type DocxDocumentTheme,
   type DocxEditorController,
+  type ParagraphStyleDefinition,
 } from "@extend-ai/react-docx"
 import {
   ArrowExpandDiagonal01Icon,
@@ -129,7 +131,55 @@ const HIGHLIGHT_COLORS = [
   { label: "Red", value: "red", color: "#fecaca" },
   { label: "Blue", value: "blue", color: "#bfdbfe" },
 ] as const
+const HIGHLIGHT_PREVIEW_COLORS: Record<string, string> = {
+  black: "#111827",
+  white: "#ffffff",
+  ...Object.fromEntries(
+    HIGHLIGHT_COLORS.map((option) => [option.value, option.color])
+  ),
+}
 const DOCX_PADDING_WARNING_TEXT = "a style property during rerender"
+const DEFAULT_HEADING_PREVIEW_RUN_STYLES: Record<
+  1 | 2 | 3 | 4 | 5 | 6,
+  NonNullable<ParagraphStyleDefinition["runStyle"]>
+> = {
+  1: {
+    fontFamily: "Calibri Light",
+    fontSizePt: 16,
+    bold: true,
+    color: "#2f5496",
+  },
+  2: {
+    fontFamily: "Calibri Light",
+    fontSizePt: 13,
+    bold: true,
+    color: "#2f5496",
+  },
+  3: {
+    fontFamily: "Calibri",
+    fontSizePt: 12,
+    bold: true,
+    color: "#1f3763",
+  },
+  4: {
+    fontFamily: "Calibri",
+    fontSizePt: 11,
+    bold: true,
+    color: "#1f3763",
+  },
+  5: {
+    fontFamily: "Calibri",
+    fontSizePt: 11,
+    bold: true,
+    color: "#1f3763",
+  },
+  6: {
+    fontFamily: "Calibri",
+    fontSizePt: 11,
+    bold: true,
+    color: "#1f3763",
+  },
+}
 
 const docxFileCache = new Map<string, File>()
 const docxFilePromiseCache = new Map<string, Promise<File>>()
@@ -381,6 +431,119 @@ function normalizeHexColor(value?: string, fallback = "#111827") {
   return fallback
 }
 
+function inferParagraphStyleHeadingLevel(value?: string) {
+  if (!value) return undefined
+
+  const match = value.match(/(?:^|[\s_-])(?:heading|h)\s*([1-6])(?:$|[\s_-])/i)
+  const level = match?.[1] ? Number(match[1]) : NaN
+
+  return level >= 1 && level <= 6 ? (level as 1 | 2 | 3 | 4 | 5 | 6) : undefined
+}
+
+function resolveParagraphStyleHeadingLevel(option?: ParagraphStyleDefinition) {
+  if (
+    Number.isFinite(option?.headingLevel) &&
+    option?.headingLevel &&
+    option.headingLevel >= 1 &&
+    option.headingLevel <= 6
+  ) {
+    return option.headingLevel as 1 | 2 | 3 | 4 | 5 | 6
+  }
+
+  return (
+    inferParagraphStyleHeadingLevel(option?.id) ??
+    inferParagraphStyleHeadingLevel(option?.name)
+  )
+}
+
+function resolveParagraphStyleRunPreview(option?: ParagraphStyleDefinition) {
+  if (!option) return undefined
+
+  const headingLevel = resolveParagraphStyleHeadingLevel(option)
+  const headingRunStyle = headingLevel
+    ? DEFAULT_HEADING_PREVIEW_RUN_STYLES[headingLevel]
+    : undefined
+
+  return headingRunStyle
+    ? {
+        ...headingRunStyle,
+        ...(option.runStyle ?? {}),
+      }
+    : option.runStyle
+}
+
+function resolveHighlightPreview(value?: string) {
+  if (!value) return undefined
+
+  const normalized = value.trim().toLowerCase()
+  if (!normalized) return undefined
+
+  const hex = normalizeHexColor(normalized, "")
+  if (hex) return hex
+
+  return HIGHLIGHT_PREVIEW_COLORS[normalized]
+}
+
+function themedPreviewColor(
+  color: string | undefined,
+  documentTheme: DocxDocumentTheme
+) {
+  if (documentTheme !== "dark") return color
+  if (!color) return "#f3f4f6"
+
+  const normalized = color.trim().toLowerCase()
+  if (
+    normalized === "#000" ||
+    normalized === "#000000" ||
+    normalized === "#111111" ||
+    normalized === "#111827" ||
+    normalized === "black" ||
+    normalized === "rgb(0,0,0)" ||
+    normalized === "rgb(0, 0, 0)"
+  ) {
+    return "#f3f4f6"
+  }
+
+  return color
+}
+
+function paragraphStylePreviewStyle(
+  option: ParagraphStyleDefinition,
+  documentTheme: DocxDocumentTheme
+): React.CSSProperties {
+  const runStyle = resolveParagraphStyleRunPreview(option)
+  const textDecoration = [
+    runStyle?.underline ? "underline" : "",
+    runStyle?.strike ? "line-through" : "",
+  ]
+    .filter(Boolean)
+    .join(" ")
+
+  return {
+    textAlign: option.align ?? "left",
+    fontFamily: runStyle?.fontFamily,
+    fontSize: runStyle?.fontSizePt ? `${runStyle.fontSizePt}pt` : "11pt",
+    fontWeight:
+      runStyle?.bold !== undefined ? (runStyle.bold ? 700 : 400) : undefined,
+    fontStyle: runStyle?.italic ? "italic" : undefined,
+    textDecoration: textDecoration || undefined,
+    color:
+      runStyle?.color !== undefined
+        ? themedPreviewColor(normalizeHexColor(runStyle.color), documentTheme)
+        : undefined,
+    backgroundColor: resolveHighlightPreview(runStyle?.highlight),
+    lineHeight: 1,
+    whiteSpace: "pre-wrap",
+  }
+}
+
+function paragraphStylePreviewTriggerId(prefix: string, styleId: string) {
+  return `${prefix}-paragraph-style-preview-${styleId.replace(
+    /[^a-zA-Z0-9_-]/g,
+    "_"
+  )}`
+}
+
 function parseToolbarSectionColumns(
   sectionPropertiesXml?: string
 ): { count: number; gapPx: number } | undefined {
@@ -546,6 +709,50 @@ function DocxSidebarThumbnail({
   )
 }
 
+function ParagraphStylePreviewCard({
+  documentTheme,
+  option,
+}: {
+  documentTheme: DocxDocumentTheme
+  option: ParagraphStyleDefinition
+}) {
+  const surfaceStyle: React.CSSProperties =
+    documentTheme === "dark"
+      ? {
+          backgroundColor: "#111827",
+          borderColor: "#374151",
+          color: "#f3f4f6",
+        }
+      : {
+          backgroundColor: "#ffffff",
+          borderColor: "#d4d4d8",
+          color: "#111827",
+        }
+  const secondaryTextColor = documentTheme === "dark" ? "#9ca3af" : "#6b7280"
+
+  return (
+    <div className="w-[260px] p-3">
+      <p className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+        Style Preview
+      </p>
+      <div className="mt-2 rounded-sm border p-2.5" style={surfaceStyle}>
+        <p style={paragraphStylePreviewStyle(option, documentTheme)}>
+          {option.name}
+        </p>
+        <p
+          className="mt-1 text-[11px]"
+          style={{
+            color: secondaryTextColor,
+            textAlign: option.align ?? "left",
+          }}
+        >
+          The quick brown fox jumps over the lazy dog.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function DocxEditorToolbar({
   activePage,
   controlsDisabled,
@@ -586,7 +793,7 @@ function DocxEditorToolbar({
     useDocxTrackChanges(editor)
   const selectedRunStyle = editor.selectedRunStyle
   const selectedParagraph = editor.selectedParagraph
-  const paragraphStyleOptions =
+  const paragraphStyleOptions: ParagraphStyleDefinition[] =
     paragraphStyles.length > 0
       ? paragraphStyles
       : [...FALLBACK_PARAGRAPH_STYLE_OPTIONS]
@@ -595,6 +802,27 @@ function DocxEditorToolbar({
     paragraphStyleOptions.find((option) => "isDefault" in option)?.id ??
     paragraphStyleOptions[0]?.id ??
     "Normal"
+  const selectedParagraphStyleOption =
+    paragraphStyleOptions.find(
+      (option) => option.id === selectedParagraphStyleValue
+    ) ??
+    paragraphStyleOptions[0] ??
+    FALLBACK_PARAGRAPH_STYLE_OPTIONS[0]
+  const paragraphStylePreviewHandle = React.useMemo(
+    () => PreviewCardPrimitive.createHandle<ParagraphStyleDefinition>(),
+    []
+  )
+  const paragraphStylePreviewIdPrefix = React.useId()
+  const [isParagraphStyleMenuOpen, setIsParagraphStyleMenuOpen] =
+    React.useState(false)
+  const openParagraphStylePreview = React.useCallback(
+    (styleId: string) => {
+      paragraphStylePreviewHandle.open(
+        paragraphStylePreviewTriggerId(paragraphStylePreviewIdPrefix, styleId)
+      )
+    },
+    [paragraphStylePreviewHandle, paragraphStylePreviewIdPrefix]
+  )
   const selectedLineSpacingValue = React.useMemo(() => {
     const current = Number.isFinite(lineSpacing.multiple)
       ? lineSpacing.multiple
@@ -748,30 +976,109 @@ function DocxEditorToolbar({
             </ToolbarIconButton>
           </div>
 
-          <Select
-            value={selectedParagraphStyleValue}
-            onValueChange={(value) => {
-              if (value) {
-                setParagraphStyle(value)
-              }
+          <PreviewCardPrimitive.Root handle={paragraphStylePreviewHandle}>
+            {({ payload }) => {
+              const previewOption = payload ?? selectedParagraphStyleOption
+
+              return (
+                <>
+                  <Select
+                    value={selectedParagraphStyleValue}
+                    onOpenChange={(open) => {
+                      setIsParagraphStyleMenuOpen(open)
+
+                      if (!open) {
+                        paragraphStylePreviewHandle.close()
+                        return
+                      }
+
+                      window.requestAnimationFrame(() => {
+                        openParagraphStylePreview(selectedParagraphStyleValue)
+                      })
+                    }}
+                    onValueChange={(value) => {
+                      if (value) {
+                        setParagraphStyle(value)
+                      }
+                    }}
+                    disabled={!canEdit}
+                    modal={false}
+                  >
+                    <SelectTrigger
+                      size="sm"
+                      className="w-[136px] min-w-[136px]"
+                      aria-label="Paragraph style"
+                    >
+                      <SelectValue placeholder="Style" />
+                    </SelectTrigger>
+                    <SelectContent
+                      align="start"
+                      alignItemWithTrigger={false}
+                      className="z-[100010] min-w-[210px]"
+                    >
+                      {paragraphStyleOptions.map((option) => {
+                        const previewTriggerId = paragraphStylePreviewTriggerId(
+                          paragraphStylePreviewIdPrefix,
+                          option.id
+                        )
+
+                        return (
+                          <SelectItem
+                            key={option.id}
+                            value={option.id}
+                            label={option.name}
+                            className="relative min-w-[190px]"
+                            onFocus={() => openParagraphStylePreview(option.id)}
+                            onPointerEnter={() =>
+                              openParagraphStylePreview(option.id)
+                            }
+                          >
+                            <span className="block truncate">
+                              {option.name}
+                            </span>
+                            <PreviewCardPrimitive.Trigger
+                              id={previewTriggerId}
+                              handle={paragraphStylePreviewHandle}
+                              payload={option}
+                              delay={0}
+                              closeDelay={120}
+                              render={
+                                <span
+                                  aria-hidden="true"
+                                  className="pointer-events-none absolute inset-0 block"
+                                />
+                              }
+                            />
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {isParagraphStyleMenuOpen && previewOption ? (
+                    <PreviewCardPrimitive.Portal>
+                      <PreviewCardPrimitive.Positioner
+                        side="right"
+                        align="start"
+                        sideOffset={10}
+                        alignOffset={-4}
+                        className="z-[100020] transition-[top,left,right,bottom,transform] duration-100 ease-out data-instant:transition-none"
+                      >
+                        <PreviewCardPrimitive.Popup
+                          data-slot="paragraph-style-preview-card"
+                          className="origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground shadow-lg/5 transition-opacity duration-100 outline-none not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:opacity-0 data-starting-style:opacity-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]"
+                        >
+                          <ParagraphStylePreviewCard
+                            documentTheme={documentTheme}
+                            option={previewOption}
+                          />
+                        </PreviewCardPrimitive.Popup>
+                      </PreviewCardPrimitive.Positioner>
+                    </PreviewCardPrimitive.Portal>
+                  ) : null}
+                </>
+              )
             }}
-            disabled={!canEdit}
-          >
-            <SelectTrigger
-              size="sm"
-              className="w-[136px] min-w-[136px]"
-              aria-label="Paragraph style"
-            >
-              <SelectValue placeholder="Style" />
-            </SelectTrigger>
-            <SelectContent align="start" className="z-[100010]">
-              {paragraphStyleOptions.map((option) => (
-                <SelectItem key={option.id} value={option.id}>
-                  {option.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          </PreviewCardPrimitive.Root>
 
           <Select
             value={selectedRunStyle?.fontFamily ?? "Calibri"}
@@ -781,6 +1088,7 @@ function DocxEditorToolbar({
               }
             }}
             disabled={!canEdit}
+            modal={false}
           >
             <SelectTrigger
               size="sm"
@@ -789,7 +1097,11 @@ function DocxEditorToolbar({
             >
               <SelectValue placeholder="Font" />
             </SelectTrigger>
-            <SelectContent align="start" className="z-[100010]">
+            <SelectContent
+              align="start"
+              alignItemWithTrigger={false}
+              className="z-[100010]"
+            >
               {FONT_FAMILIES.map((fontFamily) => (
                 <SelectItem key={fontFamily} value={fontFamily}>
                   <span style={{ fontFamily }}>{fontFamily}</span>
@@ -807,6 +1119,7 @@ function DocxEditorToolbar({
               }
             }}
             disabled={!canEdit}
+            modal={false}
           >
             <SelectTrigger
               size="sm"
@@ -815,7 +1128,11 @@ function DocxEditorToolbar({
             >
               <SelectValue placeholder="Size" />
             </SelectTrigger>
-            <SelectContent align="start" className="z-[100010]">
+            <SelectContent
+              align="start"
+              alignItemWithTrigger={false}
+              className="z-[100010]"
+            >
               {FONT_SIZE_OPTIONS.map((size) => (
                 <SelectItem key={size} value={String(size)}>
                   {size} pt
@@ -833,6 +1150,7 @@ function DocxEditorToolbar({
               }
             }}
             disabled={!canEdit}
+            modal={false}
           >
             <SelectTrigger
               size="sm"
@@ -841,7 +1159,11 @@ function DocxEditorToolbar({
             >
               <SelectValue placeholder="Spacing" />
             </SelectTrigger>
-            <SelectContent align="start" className="z-[100010]">
+            <SelectContent
+              align="start"
+              alignItemWithTrigger={false}
+              className="z-[100010]"
+            >
               {LINE_SPACING_OPTIONS.map((spacing) => (
                 <SelectItem key={spacing} value={String(spacing)}>
                   {spacing}x
