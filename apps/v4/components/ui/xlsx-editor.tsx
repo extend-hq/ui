@@ -28,6 +28,7 @@ import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Group, GroupText } from "@/components/ui/group"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
@@ -55,8 +56,6 @@ const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_EDITOR_READ_ONLY_THRESHOLD_BYTES = 5 * 1024 * 1024
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-[100010]"
 const ZOOM_OPTIONS = [50, 75, 100, 125, 150, 200, 400] as const
-const XLSX_EDITOR_INPUT_CHROME_CLASS =
-  "shadow-none before:shadow-none not-has-disabled:not-has-focus-visible:not-has-aria-invalid:before:shadow-none dark:not-has-disabled:not-has-focus-visible:not-has-aria-invalid:before:shadow-none"
 const XLSX_EDITOR_SELECT_CHROME_CLASS =
   "shadow-none before:shadow-none not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-none dark:not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-none"
 
@@ -370,6 +369,7 @@ function EditorToolbar({
               value={currentZoom.toString()}
               onValueChange={(value) => setZoomScale(Number(value))}
               disabled={!hasWorkbook}
+              modal={false}
             >
               <SelectTrigger
                 size="sm"
@@ -383,6 +383,7 @@ function EditorToolbar({
               </SelectTrigger>
               <SelectContent
                 align="end"
+                alignItemWithTrigger={false}
                 className={XLSX_DROPDOWN_Z_INDEX_CLASS}
               >
                 {ZOOM_OPTIONS.map((value) => (
@@ -406,44 +407,40 @@ function EditorToolbar({
             </ToolbarTooltip>
           </div>
         </div>
-        <div className="flex items-center gap-0 border-t bg-background px-2 py-1">
-          <Input
-            className={cn(
-              "h-8 w-[92px] shrink-0 rounded-r-none border-r-0 font-mono text-xs",
-              XLSX_EDITOR_INPUT_CHROME_CLASS
-            )}
-            readOnly
-            value={activeCellAddress ?? ""}
-          />
-          <div className="-mx-px flex h-8 w-9 shrink-0 items-center justify-center border border-input bg-muted/30 text-[11px] font-semibold text-muted-foreground italic">
-            fx
-          </div>
-          <Input
-            className={cn(
-              "h-8 flex-1 rounded-l-none border-l-0",
-              XLSX_EDITOR_INPUT_CHROME_CLASS
-            )}
-            disabled={!hasActiveCell || readOnly}
-            value={formulaDraft}
-            onBlur={() => {
-              commitFormula()
-              setFormulaFocused(false)
-            }}
-            onChange={(event) => setFormulaDraft(event.target.value)}
-            onFocus={() => {
-              formulaEditCellRef.current = activeCell
-              formulaInitialValueRef.current = formulaDraft
-              setFormulaFocused(true)
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault()
+        <div className="border-t bg-background px-2 py-1">
+          <Group className="w-full">
+            <Input
+              className="h-8 w-[92px] shrink-0 font-mono text-xs"
+              readOnly
+              value={activeCellAddress ?? ""}
+            />
+            <GroupText className="h-8 w-9 shrink-0 justify-center px-0 text-[11px] font-semibold italic">
+              fx
+            </GroupText>
+            <Input
+              className="h-8 flex-1"
+              disabled={!hasActiveCell || readOnly}
+              value={formulaDraft}
+              onBlur={() => {
                 commitFormula()
                 setFormulaFocused(false)
-              }
-            }}
-            placeholder="Select a cell, then enter a value or formula"
-          />
+              }}
+              onChange={(event) => setFormulaDraft(event.target.value)}
+              onFocus={() => {
+                formulaEditCellRef.current = activeCell
+                formulaInitialValueRef.current = formulaDraft
+                setFormulaFocused(true)
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault()
+                  commitFormula()
+                  setFormulaFocused(false)
+                }
+              }}
+              placeholder="Select a cell, then enter a value or formula"
+            />
+          </Group>
         </div>
       </TooltipProvider>
     </div>

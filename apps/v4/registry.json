@@ -254,6 +254,24 @@
       ]
     },
     {
+      "name": "group",
+      "type": "registry:ui",
+      "title": "Group",
+      "description": "A connected control group primitive for buttons, inputs, separators, and text addons.",
+      "dependencies": [
+        "@base-ui/react@^1.4.1",
+        "class-variance-authority@^0.7.1"
+      ],
+      "registryDependencies": ["separator", "utils"],
+      "files": [
+        {
+          "path": "components/ui/group.tsx",
+          "type": "registry:ui",
+          "target": "@ui/group.tsx"
+        }
+      ]
+    },
+    {
       "name": "kbd",
       "type": "registry:ui",
       "title": "Kbd",
@@ -575,7 +593,6 @@
         "input",
         "popover",
         "scroll-area",
-        "select",
         "separator",
         "spinner",
         "tooltip",
@@ -698,6 +715,7 @@
       ],
       "registryDependencies": [
         "button",
+        "group",
         "input",
         "scroll-area",
         "select",

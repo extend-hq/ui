@@ -365,7 +365,6 @@ function PdfViewerBlockPreview({
             <div className="absolute inset-0 right-4 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:20px_20px]" />
             <ResizablePanelGroup
               direction="horizontal"
-              autoSaveId={`blocks-${block.id}-viewport`}
               className="relative z-10 h-full"
             >
               <ResizablePanel

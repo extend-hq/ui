@@ -31,8 +31,8 @@ importers:
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.3)
       '@extend-ai/react-docx':
-        specifier: ^0.6.5
-        version: 0.6.5(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: ^0.6.6
+        version: 0.6.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-xlsx':
         specifier: ^0.9.1
         version: 0.9.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -833,8 +833,8 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@extend-ai/react-docx@0.6.5':
-    resolution: {integrity: sha512-ezaELz93wdI5qqQPlVzc0nBI4awhbeBVRbRonJM35l3vVyvJGHbYkpiJKsciDXBFDHjXU51I6sZ7j7MzUbK16A==}
+  '@extend-ai/react-docx@0.6.6':
+    resolution: {integrity: sha512-HP6b6QZHiQE/uisx60hnuWZfk8cEHmRfyNqL2hWLNwFMLEtcKpt554iaruSEEhWrzbaJWnmjsSlV45j8HVbdlQ==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -5726,7 +5726,7 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@extend-ai/react-docx@0.6.5(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-docx@0.6.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@chenglou/pretext': 0.0.5
       '@tanstack/react-virtual': 3.13.26(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

@@ -32,16 +32,16 @@ npx shadcn@latest add http://localhost:4000/r/xlsx-editor.json
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @extend-ai/react-xlsx next-themes
+npm install @extend-ai/react-xlsx @hugeicons/core-free-icons @hugeicons/react next-themes
 ```
 
 <Step>
   Install the Excel Viewer component because the editor reuses its sheet tabs
-  and table header menu.
+  and table header menu, plus the Group primitive used by the formula bar.
 </Step>
 
 ```bash
-npx shadcn@latest add http://localhost:4000/r/xlsx-viewer.json
+npx shadcn@latest add http://localhost:4000/r/xlsx-viewer.json http://localhost:4000/r/group.json
 ```
 
 <Step>Copy and paste the following code into your project.</Step>

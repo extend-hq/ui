@@ -6,6 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { Button } from "@/components/ui/button"
+import { Group, GroupSeparator } from "@/components/ui/group"
 import { CopyButtonIcon } from "@/components/copy-button"
 import {
   DropdownMenu,
@@ -15,11 +16,9 @@ import {
 } from "@/registry/new-york-v4/ui/dropdown-menu"
 import {
   Popover,
-  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from "@/registry/new-york-v4/ui/popover"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
 
 function getPromptUrl(baseURL: string, url: string) {
   return `${baseURL}?q=${encodeURIComponent(
@@ -159,33 +158,39 @@ const menuItems = {
 export function DocsCopyPage({ page, url }: { page: string; url: string }) {
   const { copyToClipboard, isCopied } = useCopyToClipboard()
 
-  const trigger = (
+  const handleCopyPage = React.useCallback(() => {
+    copyToClipboard(page)
+  }, [copyToClipboard, page])
+
+  const renderTrigger = (mobile = false) => (
     <Button
       variant="secondary"
       size="sm"
-      className="peer -ml-0.5 size-8 shadow-none md:size-7 md:text-[0.8rem]"
+      className="size-8 px-0 shadow-none md:size-7 md:text-[0.8rem]"
+      aria-label="Copy page options"
     >
-      <HugeiconsIcon icon={ChevronDown} className="rotate-180 sm:rotate-0" />
+      <HugeiconsIcon
+        icon={ChevronDown}
+        className={mobile ? "rotate-180" : undefined}
+      />
     </Button>
   )
 
   return (
-    <Popover>
-      <div className="group/buttons relative flex rounded-lg bg-secondary *:[[data-slot=button]]:focus-visible:relative *:[[data-slot=button]]:focus-visible:z-10">
-        <PopoverAnchor />
+    <>
+      <Group className="hidden rounded-lg bg-secondary sm:flex">
         <Button
           variant="secondary"
           size="sm"
           className="h-8 shadow-none md:h-7 md:text-[0.8rem]"
-          onClick={() => copyToClipboard(page)}
+          onClick={handleCopyPage}
         >
           <CopyButtonIcon copied={isCopied} />
           Copy Page
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild className="hidden sm:flex">
-            {trigger}
-          </DropdownMenuTrigger>
+        <GroupSeparator className="h-8! bg-foreground/5! md:h-7!" />
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>{renderTrigger()}</DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
             className="animate-none! rounded-lg shadow-none"
@@ -197,13 +202,22 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Separator
-          orientation="vertical"
-          className="absolute top-1 right-8 z-0 h-6! bg-foreground/5! peer-focus-visible:opacity-0 sm:right-7 sm:h-5!"
-        />
-        <PopoverTrigger asChild className="flex sm:hidden">
-          {trigger}
-        </PopoverTrigger>
+      </Group>
+
+      <Popover>
+        <Group className="flex rounded-lg bg-secondary sm:hidden">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-8 shadow-none"
+            onClick={handleCopyPage}
+          >
+            <CopyButtonIcon copied={isCopied} />
+            Copy Page
+          </Button>
+          <GroupSeparator className="h-8! bg-foreground/5!" />
+          <PopoverTrigger asChild>{renderTrigger(true)}</PopoverTrigger>
+        </Group>
         <PopoverContent
           className="w-52 origin-center! rounded-lg bg-background/70 p-1 shadow-none backdrop-blur-sm dark:bg-background/60"
           align="start"
@@ -224,7 +238,7 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
             )
           })}
         </PopoverContent>
-      </div>
-    </Popover>
+      </Popover>
+    </>
   )
 }

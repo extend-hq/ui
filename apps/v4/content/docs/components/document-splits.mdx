@@ -33,7 +33,7 @@ npx shadcn@latest add http://localhost:4000/r/document-splits.json
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install react-pdf pdfjs-dist @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities @hugeicons/core-free-icons @hugeicons/react
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -61,21 +61,20 @@ npm install react-pdf pdfjs-dist @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilit
 
 The DocumentSplits component renders controlled split groups and paints cached page images through FileThumbnail.
 
-| Prop               | Type                                             | Default | Required |
-| ------------------ | ------------------------------------------------ | ------- | -------- |
-| `splits`           | `DocumentSplit[]`                                | `-`     | Yes      |
-| `thumbnailImages`  | `Record<DocumentSplitItemId, string>`            | `{}`    | No       |
-| `onSplitsChange`   | `(splits: DocumentSplit[]) => void`              | `-`     | Yes      |
-| `activePage`       | `number`                                         | `-`     | No       |
-| `activeItemId`     | `DocumentSplitItemId`                            | `-`     | No       |
-| `onSelectPage`     | `(pageNumber: number) => void`                   | `-`     | No       |
-| `onSelectItem`     | `(itemId: DocumentSplitItemId) => void`          | `-`     | No       |
-| `getItemFile`      | `(itemId: DocumentSplitItemId) => ThumbnailFile` | PDF     | No       |
-| `getItemLabel`     | `(itemId: DocumentSplitItemId) => ReactNode`     | page #  | No       |
-| `getSplitLabel`    | `(split: DocumentSplit) => string`               | pages   | No       |
-| `thumbnailSize`    | `{ width: number; height: number }`              | PDF     | No       |
-| `labelPlacement`   | `"corner" \| "bottom"`                           | corner  | No       |
-| `onAddSplit`       | `() => void`                                     | `-`     | No       |
-| `onRemoveSplit`    | `(groupId: string) => void`                      | `-`     | No       |
-| `withFrameDivider` | `boolean`                                        | `true`  | No       |
-| `className`        | `string`                                         | `-`     | No       |
+| Prop               | Type                                  | Default | Required |
+| ------------------ | ------------------------------------- | ------- | -------- |
+| `activePage`       | `number`                              | `-`     | Yes      |
+| `className`        | `string`                              | `-`     | No       |
+| `splits`           | `DocumentSplit[]`                     | `-`     | Yes      |
+| `thumbnailImages`  | `Record<DocumentSplitPageId, string>` | `{}`    | No       |
+| `withFrameDivider` | `boolean`                             | `true`  | No       |
+| `onSelectPage`     | `(pageNumber: number) => void`        | `-`     | Yes      |
+| `onSplitsChange`   | `(splits: DocumentSplit[]) => void`   | `-`     | Yes      |
+
+### DocumentSplit
+
+| Prop    | Type                    | Default | Required |
+| ------- | ----------------------- | ------- | -------- |
+| `id`    | `string`                | `-`     | Yes      |
+| `title` | `string`                | `-`     | Yes      |
+| `pages` | `DocumentSplitPageId[]` | `-`     | Yes      |

@@ -149,7 +149,7 @@ export function useWorkbookNightRenderPreference() {
 
   React.useEffect(() => {
     const storedValue = window.localStorage.getItem("xlsx-night-render")
-    setNightRenderEnabled(storedValue !== "false")
+    setNightRenderEnabled(storedValue === "true")
     setNightRenderPrefLoaded(true)
   }, [])
 
@@ -317,6 +317,7 @@ function WorkbookToolbar({
           <Select
             value={currentZoom.toString()}
             onValueChange={(value) => setZoomScale(Number(value))}
+            modal={false}
           >
             <SelectTrigger
               size="sm"
@@ -325,7 +326,11 @@ function WorkbookToolbar({
             >
               <SelectValue>{currentZoom}%</SelectValue>
             </SelectTrigger>
-            <SelectContent align="end" className={XLSX_DROPDOWN_Z_INDEX_CLASS}>
+            <SelectContent
+              align="end"
+              alignItemWithTrigger={false}
+              className={XLSX_DROPDOWN_Z_INDEX_CLASS}
+            >
               {ZOOM_OPTIONS.map((value) => (
                 <SelectItem key={value} value={value.toString()}>
                   {value}%

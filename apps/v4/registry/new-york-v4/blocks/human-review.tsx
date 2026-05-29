@@ -520,8 +520,8 @@ function HumanReviewFieldCard({
               {formatValue(field.actual)}
             </div>
           </div>
-          <div className="rounded-md border border-blue-500/30 bg-blue-500/5 p-2">
-            <div className="mb-1 text-[11px] font-medium text-blue-700 dark:text-blue-300">
+          <div className="rounded-md border bg-muted/30 p-2">
+            <div className="mb-1 text-[11px] font-medium text-muted-foreground">
               Expected
             </div>
             <HumanReviewValueInput

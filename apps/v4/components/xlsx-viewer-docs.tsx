@@ -236,7 +236,7 @@ export function useWorkbookNightRenderPreference() {
 
   React.useEffect(() => {
     const storedValue = window.localStorage.getItem("xlsx-night-render")
-    setNightRenderEnabled(storedValue !== "false")
+    setNightRenderEnabled(storedValue === "true")
     setNightRenderPrefLoaded(true)
   }, [])
 

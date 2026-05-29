@@ -32,7 +32,16 @@ npx shadcn@latest add http://localhost:4000/r/file-upload.json
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install border-beam
+npm install @hugeicons/core-free-icons @hugeicons/react border-beam
+```
+
+<Step>
+  Install the File Thumbnail component because File Upload uses it for selected
+  file rows.
+</Step>
+
+```bash
+npx shadcn@latest add http://localhost:4000/r/file-thumbnail.json
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -65,6 +74,7 @@ The FileUpload component renders a drag-and-drop file picker, validates accepted
 | ------------------- | ----------------------------------- | ------------------------------------- | -------- |
 | `accept`            | `string`                            | `-`                                   | No       |
 | `acceptedFileTypes` | `AcceptedFileType[]`                | Image, PDF, and Sheet icons           | No       |
+| `borderBeamTheme`   | `React.ComponentProps<typeof BorderBeam>["theme"]` | `"light"` | No |
 | `browseLabel`       | `string`                            | `"Browse files"`                      | No       |
 | `className`         | `string`                            | `-`                                   | No       |
 | `description`       | `string`                            | `"PDF, DOCX, XLSX, CSV, PNG, or JPG"` | No       |

@@ -32,7 +32,7 @@ npx shadcn@latest add http://localhost:4000/r/pdf-viewer.json
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install react-pdf
+npm install @hugeicons/core-free-icons @hugeicons/react react-pdf
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -66,25 +66,25 @@ import "react-pdf/dist/Page/TextLayer.css"
 
 The PDFViewer component renders a scrollable PDF surface with toolbar controls, lazy page rendering, uploads, and page-level extension hooks.
 
-| Prop                          | Type                                                      | Default                    | Required |
-| ----------------------------- | --------------------------------------------------------- | -------------------------- | -------- |
-| `file`                        | `string`                                                  | `"/samples/attention.pdf"` | No       |
-| `className`                   | `string`                                                  | `-`                        | No       |
-| `defaultThumbnailSidebarOpen` | `boolean`                                                 | `true`                     | No       |
-| `defaultZoom`                 | `number`                                                  | `0.75`                     | No       |
-| `pageWidth`                   | `number`                                                  | `612`                      | No       |
-| `pageHeight`                  | `number`                                                  | `792`                      | No       |
-| `pageNumbers`                 | `number[]`                                                | `-`                        | No       |
-| `pageRenderBuffer`            | `number`                                                  | `2`                        | No       |
-| `showRotateControls`          | `boolean`                                                 | `true`                     | No       |
-| `showUpload`                  | `boolean`                                                 | `true`                     | No       |
-| `toolbarActions`              | `React.ReactNode`                                         | `-`                        | No       |
-| `pageClassName`               | `(pageNumber: number) => string \| undefined`             | `-`                        | No       |
-| `renderPageOverlay`           | `(props: PDFViewerPageOverlayProps) => React.ReactNode`   | `-`                        | No       |
-| `onActivePageChange`          | `(pageNumber: number) => void`                            | `-`                        | No       |
-| `onDocumentLoadSuccess`       | `(numPages: number) => void`                              | `-`                        | No       |
-| `onPdfUpload`                 | `(file: File) => void`                                    | `-`                        | No       |
-| `onPagePointerDown`           | `(event: React.PointerEvent, pageNumber: number) => void` | `-`                        | No       |
-| `onPagePointerMove`           | `(event: React.PointerEvent, pageNumber: number) => void` | `-`                        | No       |
-| `onPagePointerUp`             | `(event: React.PointerEvent, pageNumber: number) => void` | `-`                        | No       |
-| `onPagePointerCancel`         | `(event: React.PointerEvent, pageNumber: number) => void` | `-`                        | No       |
+| Prop                          | Type                                                                      | Default | Required |
+| ----------------------------- | ------------------------------------------------------------------------- | ------- | -------- |
+| `file`                        | `string`                                                                  | `-`     | No       |
+| `className`                   | `string`                                                                  | `-`     | No       |
+| `defaultThumbnailSidebarOpen` | `boolean`                                                                 | `true`  | No       |
+| `defaultZoom`                 | `number`                                                                  | `0.75`  | No       |
+| `pageWidth`                   | `number`                                                                  | `612`   | No       |
+| `pageHeight`                  | `number`                                                                  | `792`   | No       |
+| `pageNumbers`                 | `number[]`                                                                | `-`     | No       |
+| `pageRenderBuffer`            | `number`                                                                  | `2`     | No       |
+| `showRotateControls`          | `boolean`                                                                 | `true`  | No       |
+| `showUpload`                  | `boolean`                                                                 | `true`  | No       |
+| `toolbarActions`              | `React.ReactNode`                                                         | `-`     | No       |
+| `pageClassName`               | `(pageNumber: number) => string \| undefined`                             | `-`     | No       |
+| `renderPageOverlay`           | `(props: PDFViewerPageOverlayProps) => React.ReactNode`                   | `-`     | No       |
+| `onActivePageChange`          | `(pageNumber: number) => void`                                            | `-`     | No       |
+| `onDocumentLoadSuccess`       | `(numPages: number) => void`                                              | `-`     | No       |
+| `onPdfUpload`                 | `(file: File) => void`                                                    | `-`     | No       |
+| `onPagePointerDown`           | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+| `onPagePointerMove`           | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+| `onPagePointerUp`             | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+| `onPagePointerCancel`         | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |

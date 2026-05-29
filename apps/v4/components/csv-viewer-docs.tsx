@@ -247,26 +247,6 @@ function parseDelimitedText(text: string): {
   }
 }
 
-function useIsDarkTheme() {
-  const [isDark, setIsDark] = React.useState(false)
-
-  React.useEffect(() => {
-    const update = () =>
-      setIsDark(document.documentElement.classList.contains("dark"))
-    update()
-
-    const observer = new MutationObserver(update)
-    observer.observe(document.documentElement, {
-      attributeFilter: ["class"],
-      attributes: true,
-    })
-
-    return () => observer.disconnect()
-  }, [])
-
-  return isDark
-}
-
 function ToolbarTooltip({
   label,
   children,
@@ -286,7 +266,7 @@ function ToolbarTooltip({
 
 export function CsvViewer({ className, data }: CsvViewerProps) {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
-  const isDark = useIsDarkTheme()
+  const isDark = false
   const [glide, setGlide] = React.useState<GlideDataGridModule | null>(null)
   const [zoom, setZoom] = React.useState<(typeof ZOOM_OPTIONS)[number]>(1)
   const [parsed, setParsed] = React.useState(() =>

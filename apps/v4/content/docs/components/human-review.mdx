@@ -33,7 +33,7 @@ npx shadcn@latest add http://localhost:4000/r/human-review.json
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @pierre/diffs
+npm install @hugeicons/core-free-icons @hugeicons/react @pierre/diffs
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -62,12 +62,12 @@ npm install @pierre/diffs
 
 The HumanReviewPanel component renders editable review fields and a JSON diff for the same extraction output.
 
-| Prop             | Type                           | Default | Required |
-| ---------------- | ------------------------------ | ------- | -------- |
-| `fields`         | `ReviewField[]`                | `-`     | Yes      |
-| `values`         | `JsonObject`                   | `-`     | Yes      |
-| `onValuesChange` | `(values: JsonObject) => void` | `-`     | Yes      |
-| `className`      | `string`                       | `-`     | No       |
+| Prop             | Type                          | Default         | Required |
+| ---------------- | ----------------------------- | --------------- | -------- |
+| `fields`         | `ReviewField[]`               | sample fields   | No       |
+| `activeFieldKey` | `string`                      | `-`             | No       |
+| `className`      | `string`                      | `-`             | No       |
+| `onFieldFocus`   | `(field: ReviewField) => void` | `-`            | No       |
 
 ### ReviewField
 
@@ -77,3 +77,4 @@ The HumanReviewPanel component renders editable review fields and a JSON diff fo
 | `schema`   | `ReviewFieldSchema` | `-`     | Yes      |
 | `actual`   | `JsonValue`         | `-`     | Yes      |
 | `expected` | `JsonValue`         | `-`     | Yes      |
+| `location` | `{ page: number; area: HighlightArea }` | `-` | No |

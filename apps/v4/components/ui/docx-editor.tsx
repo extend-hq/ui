@@ -322,7 +322,7 @@ function useDocumentNightRenderPreference() {
 
   React.useEffect(() => {
     const storedValue = window.localStorage.getItem("docx-editor-night-render")
-    setNightRenderEnabled(storedValue !== "false")
+    setNightRenderEnabled(storedValue === "true")
     setNightRenderPrefLoaded(true)
   }, [])
 
@@ -1134,6 +1134,7 @@ function DocxEditorToolbar({
               value={zoomScale.toString()}
               onValueChange={(value) => setZoomScale(Number(value))}
               disabled={controlsDisabled}
+              modal={false}
             >
               <SelectTrigger
                 size="sm"
@@ -1142,7 +1143,11 @@ function DocxEditorToolbar({
               >
                 <SelectValue>{Math.round(zoomScale)}%</SelectValue>
               </SelectTrigger>
-              <SelectContent align="end" className="z-[100010]">
+              <SelectContent
+                align="end"
+                alignItemWithTrigger={false}
+                className="z-[100010]"
+              >
                 {ZOOM_OPTIONS.map((value) => (
                   <SelectItem key={value} value={value.toString()}>
                     {value}%

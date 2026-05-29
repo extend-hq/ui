@@ -815,13 +815,14 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                 value={String(zoom)}
                 onValueChange={(value) => setZoom(Number(value))}
                 disabled={controlsDisabled}
+                modal={false}
               >
                 <SelectTrigger size="sm" className="w-[84px] min-w-[84px]">
                   <SelectValue placeholder="Zoom">
                     {Math.round(zoom * 100)}%
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent alignItemWithTrigger={false}>
                   {ZOOM_OPTIONS.map((option) => (
                     <SelectItem key={option} value={String(option)}>
                       {Math.round(option * 100)}%
