@@ -401,7 +401,7 @@ function SignatureDialog({
             >
               <div
                 className={cn(
-                  "relative overflow-hidden rounded-md border border-dashed border-slate-400 bg-white shadow-xs",
+                  "relative overflow-hidden rounded-md border border-dashed border-input bg-background shadow-xs",
                   isReady ? "cursor-crosshair" : "cursor-wait"
                 )}
                 style={{
@@ -962,7 +962,7 @@ export function ESignatureDemo() {
                 type="button"
                 size="sm"
                 variant="outline"
-                className="relative z-10 rounded-lg bg-background text-foreground shadow-none hover:bg-muted dark:bg-background dark:text-foreground dark:hover:bg-muted"
+                className="docs-view-code-button relative z-10 rounded-lg"
                 onClick={() => setIsCodeVisible(true)}
               >
                 View Code

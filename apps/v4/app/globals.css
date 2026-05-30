@@ -336,6 +336,35 @@
     }
   }
 
+  .docs-view-code-button {
+    background-color: var(--background) !important;
+    color: var(--foreground);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 6%) !important;
+    transition-property: border-color, box-shadow, color;
+  }
+
+  .docs-view-code-button:hover,
+  .docs-view-code-button[data-pressed] {
+    background-color: var(--background) !important;
+    border-color: color-mix(in oklab, var(--ring) 55%, transparent) !important;
+    box-shadow:
+      0 4px 14px rgb(0 0 0 / 10%),
+      0 0 0 3px color-mix(in oklab, var(--ring) 16%, transparent) !important;
+  }
+
+  .dark .docs-view-code-button {
+    background-color: var(--background) !important;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 30%) !important;
+  }
+
+  .dark .docs-view-code-button:hover,
+  .dark .docs-view-code-button[data-pressed] {
+    background-color: var(--background) !important;
+    box-shadow:
+      0 4px 14px rgb(0 0 0 / 36%),
+      0 0 0 3px color-mix(in oklab, var(--ring) 20%, transparent) !important;
+  }
+
   [data-rehype-pretty-code-figure] {
     background-color: var(--color-code);
     color: var(--color-code-foreground);

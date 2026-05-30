@@ -352,7 +352,7 @@ function SignatureDialog({
             >
               <div
                 className={cn(
-                  "relative overflow-hidden rounded-md border border-dashed border-slate-400 bg-white shadow-xs",
+                  "relative overflow-hidden rounded-md border border-dashed border-input bg-background shadow-xs",
                   isReady ? "cursor-crosshair" : "cursor-wait"
                 )}
                 style={{

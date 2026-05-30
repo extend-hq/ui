@@ -683,6 +683,8 @@ type SyncedArraySelection = {
   gridSelection: GridSelection
 }
 
+export type HumanReviewTheme = "light" | "dark"
+
 const EMPTY_SYNCED_ARRAY_NESTED_VIEW: SyncedArrayNestedView = {
   activeSide: null,
   stack: [],
@@ -1619,10 +1621,29 @@ function HumanReviewHighlight({ field }: { field: ReviewField }) {
 export function JsonDiffView({
   actual,
   expected,
+  theme = "light",
 }: {
   actual: JsonObject
   expected: JsonObject
+  theme?: HumanReviewTheme
 }) {
+  const oldFile = React.useMemo(
+    () => ({
+      name: "actual.json",
+      contents: formatJson(actual),
+      lang: "json",
+    }),
+    [actual]
+  )
+  const newFile = React.useMemo(
+    () => ({
+      name: "expected.json",
+      contents: formatJson(expected),
+      lang: "json",
+    }),
+    [expected]
+  )
+
   return (
     <Virtualizer
       className="h-full overflow-auto rounded-b-xl bg-surface/60"
@@ -1632,22 +1653,14 @@ export function JsonDiffView({
         <MultiFileDiff
           className="block min-w-full"
           style={DIFF_VIEWER_THEME}
-          oldFile={{
-            name: "actual.json",
-            contents: formatJson(actual),
-            lang: "json",
-          }}
-          newFile={{
-            name: "expected.json",
-            contents: formatJson(expected),
-            lang: "json",
-          }}
-          disableWorkerPool
+          oldFile={oldFile}
+          newFile={newFile}
           options={{
             diffStyle: "split",
             diffIndicators: "bars",
             hunkSeparators: "line-info-basic",
             overflow: "wrap",
+            themeType: theme,
             theme: {
               light: "pierre-light",
               dark: "pierre-dark",
@@ -1664,11 +1677,13 @@ export function HumanReviewPanel({
   activeFieldKey,
   className,
   onFieldFocus,
+  theme = "light",
 }: {
   fields?: ReviewField[]
   activeFieldKey?: string
   className?: string
   onFieldFocus?: (field: ReviewField) => void
+  theme?: HumanReviewTheme
 } = {}) {
   const [activeTab, setActiveTab] = React.useState("form")
   const actualValues = React.useMemo(
@@ -1717,7 +1732,7 @@ export function HumanReviewPanel({
             {fieldCount} fields
           </div>
         </div>
-        <TabsContent value="form" className="min-h-0 flex-1">
+        <TabsContent value="form" keepMounted className="min-h-0 flex-1">
           <ScrollArea className="h-full" scrollFade>
             <div className="space-y-3 p-3">
               {fields.map((field) => (
@@ -1740,10 +1755,12 @@ export function HumanReviewPanel({
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="json" className="min-h-0 flex-1">
-          {activeTab === "json" ? (
-            <JsonDiffView actual={actualValues} expected={expected} />
-          ) : null}
+        <TabsContent value="json" keepMounted className="min-h-0 flex-1">
+          <JsonDiffView
+            actual={actualValues}
+            expected={expected}
+            theme={theme}
+          />
         </TabsContent>
       </Tabs>
     </TooltipProvider>
@@ -1754,10 +1771,12 @@ export function HumanReviewBlock({
   file,
   fields = REVIEW_FIELDS,
   className,
+  theme,
 }: {
   file?: string
   fields?: ReviewField[]
   className?: string
+  theme?: HumanReviewTheme
 }) {
   const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0]?.key)
   const viewerRef = React.useRef<PDFViewerHandle>(null)
@@ -1804,6 +1823,7 @@ export function HumanReviewBlock({
             fields={fields}
             activeFieldKey={activeField?.key}
             className="h-full min-h-0"
+            theme={theme}
             onFieldFocus={focusField}
           />
         </aside>

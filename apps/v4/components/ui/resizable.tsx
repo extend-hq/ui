@@ -50,7 +50,7 @@ function ResizableHandle({
     >
       {withHandle &&
         (typeof withHandle === "boolean" ? (
-          <div className="relative z-30 flex h-4 w-3 items-center justify-center rounded-xs border bg-muted shadow-sm dark:bg-neutral-800">
+          <div className="relative z-30 flex h-4 w-3 items-center justify-center rounded-xs border bg-muted shadow-sm">
             <HugeiconsIcon icon={DragDropVerticalIcon} className="size-2.5" />
           </div>
         ) : (
