@@ -552,6 +552,7 @@ function DocxViewerContent({
   const [zoomScale, setZoomScale] = React.useState(50)
   const [loadError, setLoadError] = React.useState<string>()
   const [isLoadingDocument, setIsLoadingDocument] = React.useState(true)
+  const [reportedPageCount, setReportedPageCount] = React.useState(0)
   const shouldShowDocumentSpinner = useDelayedLoadingIndicator(
     isLoadingDocument,
     DOCX_LOADING_INDICATOR_DELAY_MS
@@ -562,10 +563,13 @@ function DocxViewerContent({
   const hasDocument = Boolean(url || uploadedDocxFile)
   const pageCount =
     hasDocument && !isLoadingDocument && !loadError
-      ? Math.max(1, editor.totalPages)
+      ? Math.max(1, reportedPageCount || editor.totalPages)
       : 0
   const controlsDisabled =
     !hasDocument || isLoadingDocument || Boolean(loadError)
+  const handlePageCountChange = React.useCallback((nextPageCount: number) => {
+    setReportedPageCount(Math.max(1, Math.round(nextPageCount || 1)))
+  }, [])
 
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
@@ -596,11 +600,13 @@ function DocxViewerContent({
       if (!uploadedDocxFile && !url) {
         setIsLoadingDocument(false)
         setLoadError(undefined)
+        setReportedPageCount(0)
         return
       }
 
       setIsLoadingDocument(true)
       setLoadError(undefined)
+      setReportedPageCount(0)
 
       try {
         const docxFile =
@@ -719,6 +725,7 @@ function DocxViewerContent({
 
     setZoomScale(50)
     setActivePage(1)
+    setReportedPageCount(0)
     setUploadedDocxFile({
       file,
       identity: `${file.name}-${file.size}-${file.lastModified}`,
@@ -861,6 +868,7 @@ function DocxViewerContent({
                   pageGapBackgroundColor={viewerBackgroundColor}
                   pageVirtualization={{ enabled: false }}
                   deferInitialPaginationPaint={false}
+                  onPageCountChange={handlePageCountChange}
                 />
               </div>
             </div>
