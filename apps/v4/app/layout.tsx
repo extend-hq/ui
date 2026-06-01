@@ -108,7 +108,7 @@ export default function RootLayout({
           </LayoutProvider>
         </ThemeProvider>
         <Analytics />
-        <div id="portal" className="fixed top-0 left-0 z-[9999]" />
+        <div id="portal" className="fixed top-0 left-0 z-40" />
       </body>
     </html>
   )

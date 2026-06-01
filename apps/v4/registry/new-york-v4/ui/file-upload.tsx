@@ -155,6 +155,7 @@ export function FileUpload({
   onFilesChange,
 }: FileUploadProps) {
   const dragDepthRef = React.useRef(0)
+  const inputRef = React.useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = React.useState(false)
   const [files, setFiles] = React.useState<FileUploadItem[]>([])
   const [rejectionMessage, setRejectionMessage] = React.useState<string | null>(
@@ -191,8 +192,14 @@ export function FileUpload({
     }
   }, [files])
 
+  const openFileDialog = React.useCallback(() => {
+    inputRef.current?.click()
+  }, [])
+
   const dropzone = (
-    <label
+    <div
+      role="button"
+      tabIndex={0}
       className={cn(
         "relative flex min-h-64 cursor-pointer flex-col items-center justify-center gap-5 overflow-hidden rounded-[1.125rem] border border-dashed bg-background px-6 py-10 text-center transition-[border-color,background-color] duration-200 ease-out",
         "motion-reduce:transition-none",
@@ -200,6 +207,7 @@ export function FileUpload({
           ? "border-foreground/40 bg-accent/35"
           : "border-foreground/20 hover:border-foreground/35 hover:bg-muted/35 dark:border-foreground/25 dark:hover:border-foreground/40"
       )}
+      onClick={openFileDialog}
       onDragEnter={(event) => {
         event.preventDefault()
         dragDepthRef.current += 1
@@ -219,6 +227,12 @@ export function FileUpload({
           commitFiles(event.dataTransfer.files)
         }
       }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          openFileDialog()
+        }
+      }}
     >
       <UploadIconCluster
         acceptedFileTypes={acceptedFileTypes}
@@ -236,10 +250,11 @@ export function FileUpload({
         <span>{isDragging ? draggingLabel : browseLabel}</span>
       </div>
       <input
+        ref={inputRef}
         type="file"
         accept={accept}
         multiple={multiple}
-        className="sr-only"
+        className="hidden"
         onChange={(event) => {
           if (event.target.files) {
             commitFiles(event.target.files)
@@ -247,7 +262,7 @@ export function FileUpload({
           }
         }}
       />
-    </label>
+    </div>
   )
 
   return (

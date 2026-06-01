@@ -1018,7 +1018,7 @@ function DocxEditorToolbar({
                     <SelectContent
                       align="start"
                       alignItemWithTrigger={false}
-                      className="z-[100010] min-w-[210px]"
+                      className="z-40 min-w-[210px]"
                     >
                       {paragraphStyleOptions.map((option) => {
                         const previewTriggerId = paragraphStylePreviewTriggerId(
@@ -1065,7 +1065,7 @@ function DocxEditorToolbar({
                         align="start"
                         sideOffset={10}
                         alignOffset={-4}
-                        className="z-[100020] transition-[top,left,right,bottom,transform] duration-100 ease-out data-instant:transition-none"
+                        className="z-40 transition-[top,left,right,bottom,transform] duration-100 ease-out data-instant:transition-none"
                       >
                         <PreviewCardPrimitive.Popup
                           data-slot="paragraph-style-preview-card"
@@ -1104,7 +1104,7 @@ function DocxEditorToolbar({
             <SelectContent
               align="start"
               alignItemWithTrigger={false}
-              className="z-[100010]"
+              className="z-40"
             >
               {FONT_FAMILIES.map((fontFamily) => (
                 <SelectItem key={fontFamily} value={fontFamily}>
@@ -1135,7 +1135,7 @@ function DocxEditorToolbar({
             <SelectContent
               align="start"
               alignItemWithTrigger={false}
-              className="z-[100010]"
+              className="z-40"
             >
               {FONT_SIZE_OPTIONS.map((size) => (
                 <SelectItem key={size} value={String(size)}>
@@ -1166,7 +1166,7 @@ function DocxEditorToolbar({
             <SelectContent
               align="start"
               alignItemWithTrigger={false}
-              className="z-[100010]"
+              className="z-40"
             >
               {LINE_SPACING_OPTIONS.map((spacing) => (
                 <SelectItem key={spacing} value={String(spacing)}>
@@ -1266,7 +1266,7 @@ function DocxEditorToolbar({
                   />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="z-[100010] w-44">
+              <DropdownMenuContent align="start" className="z-40 w-44">
                 {HIGHLIGHT_COLORS.map((option) => (
                   <DropdownMenuCheckboxItem
                     key={option.value}
@@ -1391,7 +1391,7 @@ function DocxEditorToolbar({
                 {borderTriggerLabel}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="z-[100010] w-56">
+            <DropdownMenuContent align="start" className="z-40 w-56">
               {BORDER_CONTROL_OPTIONS.map((option) => {
                 const enabledForContext =
                   !option.contexts || option.contexts.includes(borderContext)
@@ -1472,7 +1472,7 @@ function DocxEditorToolbar({
               <SelectContent
                 align="end"
                 alignItemWithTrigger={false}
-                className="z-[100010]"
+                className="z-40"
               >
                 {ZOOM_OPTIONS.map((value) => (
                   <SelectItem key={value} value={value.toString()}>

@@ -51,7 +51,7 @@ import {
 
 const XLSX_SOURCE_CACHE_LIMIT = 3
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
-const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-[100010]"
+const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
 const ZOOM_OPTIONS = [10, 25, 50, 75, 100, 125, 150, 175, 200, 400] as const
 
 // Stable reference so the thumbnails memo isn't invalidated on every render
@@ -630,7 +630,7 @@ const WorkbookSheetTabsInner = React.memo(function WorkbookSheetTabsInner({
       previewUrl
         ? createPortal(
             <div
-              className="pointer-events-none fixed z-[2147483647] translate-y-0 overflow-hidden rounded-lg border bg-background/95 opacity-100 shadow-xl backdrop-blur-md transition-[opacity,transform] duration-100"
+              className="pointer-events-none fixed z-40 translate-y-0 overflow-hidden rounded-lg border bg-background/95 opacity-100 shadow-xl backdrop-blur-md transition-[opacity,transform] duration-100"
               style={{
                 left: previewPosition.left,
                 top: previewPosition.top,

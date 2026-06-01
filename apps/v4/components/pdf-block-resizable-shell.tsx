@@ -78,7 +78,7 @@ export function PdfBlockResizableShell({
         >
           {left}
         </ResizablePanel>
-        <ResizableHandle className="group z-[1000]" withHandle />
+        <ResizableHandle className="group z-10" withHandle />
         <ResizablePanel
           id={rightPanelId}
           defaultSize={toPercentSize(isDesktop ? rightDefaultSize : 38)}

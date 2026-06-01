@@ -52,7 +52,7 @@ import {
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_EDITOR_READ_ONLY_THRESHOLD_BYTES = 5 * 1024 * 1024
-const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-[100010]"
+const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
 const ZOOM_OPTIONS = [50, 75, 100, 125, 150, 200, 400] as const
 const XLSX_EDITOR_SELECT_CHROME_CLASS =
   "shadow-none before:shadow-none not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-none dark:not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-none"

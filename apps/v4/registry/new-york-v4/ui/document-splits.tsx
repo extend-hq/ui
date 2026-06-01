@@ -444,7 +444,7 @@ function SplitGroupDragOverlay({
 }) {
   return (
     <div
-      className="relative z-[1000] max-w-[calc(100vw-2rem)]"
+      className="relative z-40 max-w-[calc(100vw-2rem)]"
       style={{ width }}
     >
       <SplitGroupCard
@@ -690,7 +690,7 @@ export function DocumentSplits({
             </div>
           </SortableContext>
         </ScrollArea>
-        <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION} zIndex={1000}>
+        <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION} zIndex={40}>
           {draggedPageId ? (
             <div
               className="relative overflow-hidden rounded-md border bg-background shadow-lg shadow-black/10"
