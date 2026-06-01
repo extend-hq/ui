@@ -315,14 +315,12 @@ function SearchInput({
 }
 
 function PDFSidebarThumbnail({
-  file,
   pageMetrics,
   pageNumber,
   reactPdf,
   rotation,
   thumbnailAspectRatio,
 }: {
-  file: string
   pageMetrics: PDFPageMetrics
   pageNumber: number
   reactPdf: ReactPdfModule
@@ -336,7 +334,6 @@ function PDFSidebarThumbnail({
       file={{
         name: `Page ${pageNumber}.pdf`,
         type: "application/pdf",
-        source: file,
       }}
       previewAspectRatio={thumbnailAspectRatio}
       previewClassName="rounded-md bg-white"
@@ -348,7 +345,6 @@ function PDFSidebarThumbnail({
           className="flex size-full items-center justify-center [&_.react-pdf__Thumbnail__page]:!m-0 [&_.react-pdf__Thumbnail__page]:!h-auto [&_.react-pdf__Thumbnail__page]:!w-full [&_.react-pdf__Thumbnail__page]:overflow-hidden [&_canvas]:!h-auto [&_canvas]:!w-full"
         />
       }
-      renderDocumentPreview={false}
       className="w-[92px] rounded-md border-0 shadow-xs ring-0"
     />
   )
@@ -1302,7 +1298,6 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                               onClick={() => scrollToPage(pageNumber)}
                             >
                               <PDFSidebarThumbnail
-                                file={pdfFile}
                                 pageMetrics={metrics}
                                 pageNumber={pageNumber}
                                 reactPdf={reactPdf}

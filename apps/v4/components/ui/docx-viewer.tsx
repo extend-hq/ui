@@ -433,7 +433,6 @@ function DocxSidebarThumbnail({
           className="!size-full bg-white object-cover object-top"
         />
       }
-      renderDocumentPreview={false}
       isLoading={isLoading}
       hasError={hasError}
       className={cn(

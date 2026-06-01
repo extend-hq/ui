@@ -4,7 +4,7 @@ description: Render compact file preview images with a skeleton, fade transition
 component: true
 ---
 
-File Thumbnail gives document lists, upload queues, and attachment trays a consistent preview shell. It can render plain image previews and generate first-page thumbnails for PDF, DOCX, and XLSX files when you pass a `source`, `file.source`, or `file.url`.
+File Thumbnail gives document lists, upload queues, and attachment trays a consistent preview shell. Pass an image URL or renderer output from your PDF, DOCX, XLSX, or image pipeline; the component handles the thumbnail frame, loading shimmer, fade-in, and fallback state.
 
 <FileThumbnailDemo />
 
@@ -28,12 +28,6 @@ npx shadcn@latest add https://ui.extend.ai/r/file-thumbnail.json
 
 <Steps className="mb-0 pt-2">
 
-<Step>Install the package dependencies used by the thumbnail renderers.</Step>
-
-```bash
-npm install @extend-ai/react-docx @extend-ai/react-xlsx pdfjs-dist react-pdf
-```
-
 <Step>
   Copy `components/ui/file-thumbnail.tsx` from the registry item into your
   project.
@@ -51,19 +45,12 @@ npm install @extend-ai/react-docx @extend-ai/react-xlsx pdfjs-dist react-pdf
 
 ## Document Previews
 
-The registry install includes the renderer dependencies used by the component:
-
-- `react-pdf` and `pdfjs-dist` for first-page PDF thumbnails.
-- `@extend-ai/react-docx` for first-page DOCX thumbnails.
-- `@extend-ai/react-xlsx` for first-sheet XLSX thumbnails.
-
-Pass a `File`, `Blob`, or URL string through `source`, `file.source`, or `file.url`. You can still override the generated preview with `previewImageUrl` or `previewContent`.
+File Thumbnail does not parse documents or install renderer packages. The registry item has no npm dependencies; generate thumbnails with whichever viewer stack you already use, then pass the result through `previewImageUrl` or `previewContent`.
 
 ## Useful Behaviors
 
-- Installs the PDF, DOCX, and XLSX renderer packages through the registry item.
-- Generates first-page thumbnails for image, PDF, DOCX, and XLSX sources.
-- Shows a shimmering file-preview state while an external preview is being generated or loaded.
+- Accepts externally generated thumbnails as an image URL or custom React content.
+- Shows a shimmering file-preview state while your thumbnail generator is loading.
 - Fades the preview in after it loads.
 - Falls back to a compact file icon when no preview image is available or image loading fails.
 
@@ -71,28 +58,22 @@ Pass a `File`, `Blob`, or URL string through `source`, `file.source`, or `file.u
 
 ### FileThumbnail
 
-The FileThumbnail component renders the reusable thumbnail shell. It accepts externally generated previews and can generate image, PDF, DOCX, and XLSX thumbnails from a source.
+The FileThumbnail component renders the reusable thumbnail shell. It accepts externally generated previews from your own rendering pipeline.
 
-| Prop                    | Type                     | Default | Required |
-| ----------------------- | ------------------------ | ------- | -------- |
-| `file`                  | `ThumbnailFile \| File`  | `-`     | Yes      |
-| `className`             | `string`                 | `-`     | No       |
-| `previewAspectRatio`    | `number`                 | `-`     | No       |
-| `previewClassName`      | `string`                 | `-`     | No       |
-| `previewContent`        | `React.ReactNode`        | `-`     | No       |
-| `previewImageUrl`       | `string \| null`         | `-`     | No       |
-| `source`                | `string \| File \| Blob` | `-`     | No       |
-| `thumbnailWidth`        | `number`                 | `-`     | No       |
-| `generationDelayMs`     | `number`                 | `0`     | No       |
-| `renderDocumentPreview` | `boolean`                | `true`  | No       |
-| `isLoading`             | `boolean`                | `false` | No       |
-| `hasError`              | `boolean`                | `false` | No       |
+| Prop                 | Type                    | Default | Required |
+| -------------------- | ----------------------- | ------- | -------- |
+| `file`               | `ThumbnailFile \| File` | `-`     | Yes      |
+| `className`          | `string`                | `-`     | No       |
+| `previewAspectRatio` | `number`                | `-`     | No       |
+| `previewClassName`   | `string`                | `-`     | No       |
+| `previewContent`     | `React.ReactNode`       | `-`     | No       |
+| `previewImageUrl`    | `string \| null`        | `-`     | No       |
+| `isLoading`          | `boolean`               | `false` | No       |
+| `hasError`           | `boolean`               | `false` | No       |
 
 ### ThumbnailFile
 
-| Prop     | Type                     | Default | Required |
-| -------- | ------------------------ | ------- | -------- |
-| `name`   | `string`                 | `-`     | Yes      |
-| `type`   | `string`                 | `-`     | Yes      |
-| `source` | `string \| File \| Blob` | `-`     | No       |
-| `url`    | `string`                 | `-`     | No       |
+| Prop   | Type     | Default | Required |
+| ------ | -------- | ------- | -------- |
+| `name` | `string` | `-`     | Yes      |
+| `type` | `string` | `-`     | Yes      |

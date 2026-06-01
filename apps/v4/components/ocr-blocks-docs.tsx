@@ -92,6 +92,7 @@ type HighlightArea = {
 
 const PDF_URL = "/samples/attention-rotated.pdf"
 const DEFAULT_ZOOM = 0.75
+const ROOT_OCR_PREVIEW_PAGE = 1
 const OCR_BLOCK_ROW_ESTIMATE = 132
 const OCR_BLOCK_LIST_PADDING = 12
 const OCR_MARKDOWN_SCHEMA = {
@@ -8367,7 +8368,13 @@ function OcrBlockButton({
 }
 
 export function OcrBlocks() {
-  return <OcrBlocksPanel blocks={getOcrBlocks(ATTENTION_OCR_OUTPUT)} />
+  return (
+    <OcrBlocksPanel
+      blocks={getOcrBlocks(ATTENTION_OCR_OUTPUT).filter(
+        (block) => block.page === ROOT_OCR_PREVIEW_PAGE
+      )}
+    />
+  )
 }
 
 export function OcrBlocksBlock({

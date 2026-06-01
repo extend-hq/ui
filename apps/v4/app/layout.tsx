@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Analytics } from "@vercel/analytics/next"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 
 import { META_THEME_COLORS, siteConfig } from "@/lib/config"
@@ -53,8 +54,12 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: [{ url: "/extend.svg", type: "image/svg+xml" }],
-    shortcut: [{ url: "/extend.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/extend.svg", type: "image/svg+xml" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
@@ -102,6 +107,7 @@ export default function RootLayout({
             </ActiveThemeProvider>
           </LayoutProvider>
         </ThemeProvider>
+        <Analytics />
         <div id="portal" className="fixed top-0 left-0 z-[9999]" />
       </body>
     </html>

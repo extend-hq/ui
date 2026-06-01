@@ -32,6 +32,7 @@
     "@pierre/trees": "1.0.0-beta.4",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "3.13.26",
+    "@vercel/analytics": "^2.0.1",
     "border-beam": "^1.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

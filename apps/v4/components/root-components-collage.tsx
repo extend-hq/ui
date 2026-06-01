@@ -143,18 +143,13 @@ function OcrBlocksTile() {
 function RootFileThumbnailGrid() {
   return (
     <div className="flex flex-wrap content-start items-start justify-center gap-3 bg-background px-3 py-4">
-      {SAMPLE_FILES.map((file, index) => (
+      {SAMPLE_FILES.map((file) => (
         <div
-          key={file.url}
+          key={file.name}
           className="min-w-0 basis-[calc(50%-0.375rem)] space-y-1.5 sm:max-w-[7.5rem]"
         >
           <div className="text-xs font-medium">{getFileKindLabel(file)}</div>
-          <DocumentAwareFileThumbnail
-            file={file}
-            generationDelayMs={250 + index * 220}
-            className="w-full"
-            thumbnailWidth={260}
-          />
+          <DocumentAwareFileThumbnail file={file} className="w-full" />
         </div>
       ))}
     </div>
