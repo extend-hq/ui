@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack --port 4000",
-    "build": "next build",
+    "build": "pnpm registry:build && next build",
     "start": "next start --port 4000",
     "preview": "next build && next start --port 4000",
     "lint": "eslint . --cache --cache-location .eslintcache",
@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
     "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
-    "registry:build": "shadcn build --output .registry/r",
+    "registry:build": "shadcn build --output public/r",
     "registry:validate": "shadcn registry validate",
     "postinstall": "fumadocs-mdx"
   },

@@ -80,6 +80,8 @@ function getRegistryDirectories() {
 
   return Array.from(
     new Set([
+      path.join(cwd, "public", "r"),
+      path.join(cwd, "apps", "v4", "public", "r"),
       path.join(cwd, ".registry", "r"),
       path.join(cwd, "apps", "v4", ".registry", "r"),
     ])

@@ -47,3 +47,4 @@ next-env.d.ts
 .content-collections
 .source
 .registry
+public/r
