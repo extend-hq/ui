@@ -65,6 +65,7 @@ export function PdfDropzoneBlock() {
         key={pdfFile.url}
         file={pdfFile.url}
         defaultZoom={0.75}
+        downloadFileName={pdfFile.name}
         onPdfUpload={(file) => loadPdf([file])}
         toolbarActions={
           <div className="hidden max-w-40 truncate text-xs text-muted-foreground sm:block">

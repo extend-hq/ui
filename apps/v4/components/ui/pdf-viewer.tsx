@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  Download01Icon,
   MinusSignCircleIcon,
   PlusSignCircleIcon,
   RotateClockwiseIcon,
@@ -10,6 +11,7 @@ import {
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import type { PDFDocumentProxy } from "pdfjs-dist"
 import type * as ReactPdf from "react-pdf"
 
 import { cn } from "@/lib/utils"
@@ -45,6 +47,13 @@ import {
 } from "@/registry/new-york-v4/ui/tooltip"
 
 type ReactPdfModule = typeof ReactPdf
+type PageRotationDeltas = Map<number, number>
+
+type PDFPageMetrics = {
+  width: number
+  height: number
+  rotation: number
+}
 
 export type PDFViewerPageOverlayProps = {
   pageNumber: number
@@ -73,6 +82,8 @@ export type PDFViewerProps = {
   pageHeight?: number
   pageNumbers?: number[]
   pageRenderBuffer?: number
+  downloadFileName?: string
+  showDownload?: boolean
   showRotateControls?: boolean
   showUpload?: boolean
   toolbarActions?: React.ReactNode
@@ -116,6 +127,118 @@ type SearchHighlight = {
 
 function getPdfWorkerUrl(pdfjsVersion: string) {
   return `//unpkg.com/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`
+}
+
+function normalizeRotation(rotation: number) {
+  return (((Math.round(rotation / 90) * 90) % 360) + 360) % 360
+}
+
+function isQuarterTurn(rotation: number) {
+  return Math.abs(normalizeRotation(rotation) / 90) % 2 === 1
+}
+
+function getPageDimensions(metrics: PDFPageMetrics, rotation: number) {
+  return isQuarterTurn(rotation)
+    ? { width: metrics.height, height: metrics.width }
+    : { width: metrics.width, height: metrics.height }
+}
+
+function ensurePdfExtension(fileName: string) {
+  return fileName.toLowerCase().endsWith(".pdf") ? fileName : `${fileName}.pdf`
+}
+
+function getPdfDownloadFileName(fileName: string | undefined, file: string) {
+  if (fileName?.trim()) return ensurePdfExtension(fileName.trim())
+
+  const pathname = file.split(/[?#]/)[0] ?? ""
+  const rawName = pathname.split("/").pop() || "document.pdf"
+
+  try {
+    return ensurePdfExtension(decodeURIComponent(rawName))
+  } catch {
+    return ensurePdfExtension(rawName)
+  }
+}
+
+function getRotatedPdfDownloadFileName(fileName: string) {
+  return fileName.replace(/\.pdf$/i, "-rotated.pdf")
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+
+  anchor.href = url
+  anchor.download = fileName
+  anchor.rel = "noopener"
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+async function getDocumentPageMetrics(pdf: PDFDocumentProxy) {
+  const pageEntries = await Promise.all(
+    Array.from({ length: pdf.numPages }, async (_, index) => {
+      const pageNumber = index + 1
+      const page = await pdf.getPage(pageNumber)
+      const viewport = page.getViewport({ scale: 1, rotation: 0 })
+
+      return [
+        pageNumber,
+        {
+          width: viewport.width,
+          height: viewport.height,
+          rotation: normalizeRotation(page.rotate),
+        },
+      ] as const
+    })
+  )
+
+  return new Map<number, PDFPageMetrics>(pageEntries)
+}
+
+async function downloadPdfWithPageRotations({
+  file,
+  fileName,
+  pageRotationDeltas,
+}: {
+  file: string
+  fileName: string
+  pageRotationDeltas: PageRotationDeltas
+}) {
+  const response = await fetch(file)
+
+  if (!response.ok) {
+    throw new Error(`Failed to download PDF (${response.status})`)
+  }
+
+  const [{ PDFDocument, degrees }, pdfBytes] = await Promise.all([
+    import("pdf-lib"),
+    response.arrayBuffer(),
+  ])
+  const pdfDocument = await PDFDocument.load(pdfBytes)
+
+  pdfDocument.getPages().forEach((page, index) => {
+    const pageNumber = index + 1
+    const rotationDelta = pageRotationDeltas.get(pageNumber) ?? 0
+
+    if (!rotationDelta) return
+
+    page.setRotation(
+      degrees(normalizeRotation(page.getRotation().angle + rotationDelta))
+    )
+  })
+
+  const nextPdfBytes = await pdfDocument.save()
+  const nextPdfBuffer = new ArrayBuffer(nextPdfBytes.byteLength)
+  new Uint8Array(nextPdfBuffer).set(nextPdfBytes)
+  const hasPageRotationChanges = pageRotationDeltas.size > 0
+
+  downloadBlob(
+    new Blob([nextPdfBuffer], { type: "application/pdf" }),
+    hasPageRotationChanges ? getRotatedPdfDownloadFileName(fileName) : fileName
+  )
 }
 
 function PDFViewerLoadingSkeleton({
@@ -193,17 +316,21 @@ function SearchInput({
 
 function PDFSidebarThumbnail({
   file,
+  pageMetrics,
   pageNumber,
   reactPdf,
   rotation,
   thumbnailAspectRatio,
 }: {
   file: string
+  pageMetrics: PDFPageMetrics
   pageNumber: number
   reactPdf: ReactPdfModule
   rotation: number
   thumbnailAspectRatio: number
 }) {
+  const effectiveRotation = normalizeRotation(pageMetrics.rotation + rotation)
+
   return (
     <FileThumbnail
       file={{
@@ -212,29 +339,29 @@ function PDFSidebarThumbnail({
         source: file,
       }}
       previewAspectRatio={thumbnailAspectRatio}
-      previewClassName="bg-background"
+      previewClassName="rounded-md bg-white"
       previewContent={
         <reactPdf.Thumbnail
           pageNumber={pageNumber}
           width={THUMBNAIL_WIDTH}
-          rotate={rotation}
+          rotate={effectiveRotation}
           className="flex size-full items-center justify-center [&_.react-pdf__Thumbnail__page]:!m-0 [&_.react-pdf__Thumbnail__page]:!h-auto [&_.react-pdf__Thumbnail__page]:!w-full [&_.react-pdf__Thumbnail__page]:overflow-hidden [&_canvas]:!h-auto [&_canvas]:!w-full"
         />
       }
       renderDocumentPreview={false}
       showMetadata={false}
-      className="w-full rounded-sm border shadow-xs"
+      className="w-[92px] rounded-md border-0 shadow-xs ring-0"
     />
   )
 }
 
 function PDFViewerPage({
+  effectiveRotation,
   reactPdf,
   pageNumber,
   pageStyle,
   renderedPageWidth,
   zoom,
-  rotation,
   shouldRenderPage,
   searchQuery,
   pageClassName,
@@ -245,12 +372,12 @@ function PDFViewerPage({
   onPagePointerUp,
   onPagePointerCancel,
 }: {
+  effectiveRotation: number
   reactPdf: ReactPdfModule
   pageNumber: number
   pageStyle: React.CSSProperties & { width: number; height: number }
   renderedPageWidth: number
   zoom: number
-  rotation: number
   shouldRenderPage: boolean
   searchQuery: string
   pageClassName?: (pageNumber: number) => string | undefined
@@ -359,7 +486,7 @@ function PDFViewerPage({
           <reactPdf.Page
             pageNumber={pageNumber}
             width={renderedPageWidth}
-            rotate={rotation}
+            rotate={effectiveRotation}
             className="overflow-hidden border bg-background shadow-xs"
             renderAnnotationLayer={false}
             renderTextLayer={hasSearchQuery}
@@ -402,7 +529,7 @@ function PDFViewerPage({
         pageWidth: pageStyle.width,
         pageHeight: pageStyle.height,
         scale: zoom,
-        rotation,
+        rotation: effectiveRotation,
       })}
     </div>
   )
@@ -413,12 +540,14 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     {
       file,
       className,
-      defaultThumbnailSidebarOpen = true,
+      defaultThumbnailSidebarOpen = false,
       defaultZoom = DEFAULT_ZOOM,
       pageWidth = DEFAULT_PAGE_WIDTH,
       pageHeight = DEFAULT_PAGE_HEIGHT,
       pageNumbers,
       pageRenderBuffer = DEFAULT_PAGE_RENDER_BUFFER,
+      downloadFileName,
+      showDownload = true,
       showRotateControls = true,
       showUpload = true,
       toolbarActions,
@@ -442,7 +571,11 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     const [numPages, setNumPages] = React.useState(0)
     const [activePage, setActivePage] = React.useState(1)
     const [zoom, setZoom] = React.useState(defaultZoom)
-    const [rotation, setRotation] = React.useState(0)
+    const [pageRotationDeltas, setPageRotationDeltas] =
+      React.useState<PageRotationDeltas>(() => new Map())
+    const [pageMetrics, setPageMetrics] = React.useState<
+      Map<number, PDFPageMetrics>
+    >(() => new Map())
     const [sidebarOpen, setSidebarOpen] = React.useState(
       defaultThumbnailSidebarOpen
     )
@@ -454,7 +587,10 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       Set<number>
     >(() => new Set())
     const [loadError, setLoadError] = React.useState(false)
+    const [isPreparingDownload, setIsPreparingDownload] = React.useState(false)
     const viewportRef = React.useRef<HTMLDivElement>(null)
+    const thumbnailViewportRef = React.useRef<HTMLDivElement>(null)
+    const wasThumbnailSidebarVisibleRef = React.useRef(false)
     const [viewerShellRef, viewerShellWidth] = useElementWidth<HTMLDivElement>()
     const thumbnailClickScrollYRef = React.useRef<number | null>(null)
 
@@ -466,6 +602,8 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       setSettledPageNumbers(new Set())
       setNumPages(0)
       setActivePage(1)
+      setPageMetrics(new Map())
+      setPageRotationDeltas(new Map())
     }, [file])
 
     React.useEffect(() => {
@@ -509,23 +647,27 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     }, [numPages, pageNumbers])
 
     const firstRenderedPage = renderedPageNumbers[0] ?? 1
-    const isRotated = Math.abs(Math.round(rotation / 90)) % 2 === 1
-    const renderedPageWidth = (isRotated ? pageHeight : pageWidth) * zoom
-    const renderedPageHeight = (isRotated ? pageWidth : pageHeight) * zoom
+    const defaultPageMetrics = React.useMemo<PDFPageMetrics>(
+      () => ({ width: pageWidth, height: pageHeight, rotation: 0 }),
+      [pageHeight, pageWidth]
+    )
+    const getPageMetrics = React.useCallback(
+      (pageNumber: number) => pageMetrics.get(pageNumber) ?? defaultPageMetrics,
+      [defaultPageMetrics, pageMetrics]
+    )
+    const resolvedDownloadFileName = React.useMemo(
+      () => getPdfDownloadFileName(downloadFileName, pdfFile),
+      [downloadFileName, pdfFile]
+    )
     const hasPdfFile = Boolean(pdfFile)
     const controlsDisabled = !hasPdfFile || !reactPdf || !numPages
+    const downloadDisabled = controlsDisabled || isPreparingDownload
     const isLoading =
       hasPdfFile && (!reactPdf || isDocumentLoading || isFirstPageRendering)
     const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
-    const thumbnailIsRotated = Math.abs(Math.round(rotation / 90)) % 2 === 1
-    const thumbnailSize = {
-      width: THUMBNAIL_WIDTH,
-      height: Math.round(
-        THUMBNAIL_WIDTH *
-          (thumbnailIsRotated ? pageWidth / pageHeight : pageHeight / pageWidth)
-      ),
-    }
-    const thumbnailAspectRatio = thumbnailSize.width / thumbnailSize.height
+    const thumbnailSidebarVisible = Boolean(
+      sidebarOpen && !isLoading && !loadError
+    )
 
     const updateActivePageFromViewport = React.useCallback(() => {
       const viewport = viewportRef.current
@@ -676,12 +818,49 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       []
     )
 
+    const scrollActiveThumbnailIntoView = React.useCallback(() => {
+      const viewport = thumbnailViewportRef.current
+      const thumbnail = viewport?.querySelector<HTMLElement>(
+        `[data-pdf-viewer-thumbnail="${activePage}"]`
+      )
+
+      if (!viewport || !thumbnail) return
+
+      const viewportRect = viewport.getBoundingClientRect()
+      const thumbnailRect = thumbnail.getBoundingClientRect()
+      const targetTop =
+        thumbnailRect.top -
+        viewportRect.top +
+        viewport.scrollTop -
+        (viewport.clientHeight - thumbnail.offsetHeight) / 2
+
+      viewport.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: "auto",
+      })
+    }, [activePage])
+
+    React.useEffect(() => {
+      const wasThumbnailSidebarVisible = wasThumbnailSidebarVisibleRef.current
+      wasThumbnailSidebarVisibleRef.current = thumbnailSidebarVisible
+
+      if (!thumbnailSidebarVisible || wasThumbnailSidebarVisible) return
+
+      const frameId = window.requestAnimationFrame(
+        scrollActiveThumbnailIntoView
+      )
+
+      return () => window.cancelAnimationFrame(frameId)
+    }, [scrollActiveThumbnailIntoView, thumbnailSidebarVisible])
+
     const handleLoadStart = React.useCallback(() => {
       setIsDocumentLoading(true)
       setIsFirstPageRendering(true)
       setLoadError(false)
       setNumPages(0)
       setActivePage(1)
+      setPageMetrics(new Map())
+      setPageRotationDeltas(new Map())
       setSettledPageNumbers(new Set())
       onActivePageChange?.(1)
       setSearchQuery("")
@@ -690,9 +869,10 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     }, [onActivePageChange])
 
     const handleLoadSuccess = React.useCallback(
-      ({ numPages: nextNumPages }: { numPages: number }) => {
+      async (pdf: PDFDocumentProxy) => {
+        const nextNumPages = pdf.numPages
+
         setNumPages(nextNumPages)
-        setIsDocumentLoading(false)
         setIsFirstPageRendering(true)
         setSettledPageNumbers(new Set())
         setLoadError(false)
@@ -702,6 +882,14 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
         setSearchQuery("")
         setSearchDraft("")
         viewportRef.current?.scrollTo({ top: 0, left: 0 })
+
+        try {
+          setPageMetrics(await getDocumentPageMetrics(pdf))
+          setIsDocumentLoading(false)
+        } catch {
+          setPageMetrics(new Map())
+          setIsDocumentLoading(false)
+        }
       },
       [onActivePageChange, onDocumentLoadSuccess]
     )
@@ -711,6 +899,8 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       setIsFirstPageRendering(false)
       setLoadError(true)
       setNumPages(0)
+      setPageMetrics(new Map())
+      setPageRotationDeltas(new Map())
     }, [])
 
     const handlePageSettled = React.useCallback(
@@ -733,7 +923,51 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     React.useEffect(() => {
       setSettledPageNumbers(new Set())
       setIsFirstPageRendering(Boolean(pdfFile))
-    }, [pdfFile, renderedPageWidth, rotation])
+    }, [pdfFile, pageMetrics])
+
+    const rotateActivePage = React.useCallback(
+      (rotationDelta: number) => {
+        setPageRotationDeltas((currentRotations) => {
+          const currentRotation = currentRotations.get(activePage) ?? 0
+          const nextRotation = normalizeRotation(
+            currentRotation + rotationDelta
+          )
+          const nextRotations = new Map(currentRotations)
+
+          if (nextRotation) {
+            nextRotations.set(activePage, nextRotation)
+          } else {
+            nextRotations.delete(activePage)
+          }
+
+          return nextRotations
+        })
+      },
+      [activePage]
+    )
+
+    const handleDownload = React.useCallback(async () => {
+      if (!pdfFile || isPreparingDownload) return
+
+      setIsPreparingDownload(true)
+
+      try {
+        await downloadPdfWithPageRotations({
+          file: pdfFile,
+          fileName: resolvedDownloadFileName,
+          pageRotationDeltas,
+        })
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setIsPreparingDownload(false)
+      }
+    }, [
+      isPreparingDownload,
+      pageRotationDeltas,
+      pdfFile,
+      resolvedDownloadFileName,
+    ])
 
     const handleUpload = React.useCallback(
       (file: File) => {
@@ -781,14 +1015,14 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
             <div className="flex min-w-0 items-center gap-1">
               {showRotateControls ? (
                 <>
-                  <ToolbarTooltip label="Rotate counterclockwise">
+                  <ToolbarTooltip label="Rotate page counterclockwise">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon-sm"
-                      aria-label="Rotate counterclockwise"
+                      aria-label="Rotate page counterclockwise"
                       disabled={controlsDisabled}
-                      onClick={() => setRotation((value) => value - 90)}
+                      onClick={() => rotateActivePage(-90)}
                     >
                       <HugeiconsIcon
                         icon={RotateClockwiseIcon}
@@ -796,14 +1030,14 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                       />
                     </Button>
                   </ToolbarTooltip>
-                  <ToolbarTooltip label="Rotate clockwise">
+                  <ToolbarTooltip label="Rotate page clockwise">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon-sm"
-                      aria-label="Rotate clockwise"
+                      aria-label="Rotate page clockwise"
                       disabled={controlsDisabled}
-                      onClick={() => setRotation((value) => value + 90)}
+                      onClick={() => rotateActivePage(90)}
                     >
                       <HugeiconsIcon
                         icon={RotateClockwiseIcon}
@@ -880,6 +1114,33 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                 orientation="vertical"
                 className="mx-1 h-4 self-center"
               />
+              {showDownload ? (
+                <>
+                  <ToolbarTooltip label="Download PDF">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Download PDF"
+                      disabled={downloadDisabled}
+                      onClick={handleDownload}
+                    >
+                      {isPreparingDownload ? (
+                        <Spinner className="size-4" />
+                      ) : (
+                        <HugeiconsIcon
+                          icon={Download01Icon}
+                          className="size-4"
+                        />
+                      )}
+                    </Button>
+                  </ToolbarTooltip>
+                  <Separator
+                    orientation="vertical"
+                    className="mx-1 h-4 self-center"
+                  />
+                </>
+              ) : null}
               <Popover>
                 <ToolbarTooltip label="Search text">
                   <PopoverTrigger asChild>
@@ -999,36 +1260,60 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
               <div className="flex h-full max-h-full min-h-0 w-full flex-1 overflow-hidden">
                 <DocumentViewerThumbnailSidebar
                   inline={sidebarInline}
-                  open={Boolean(sidebarOpen && !isLoading && !loadError)}
+                  open={thumbnailSidebarVisible}
                 >
-                  <ScrollArea className="h-full" scrollFade>
+                  <ScrollArea
+                    className="h-full"
+                    scrollFade
+                    viewportRef={thumbnailViewportRef}
+                  >
                     <div className="p-4">
                       <div className="flex flex-col items-center gap-3">
-                        {renderedPageNumbers.map((pageNumber) => (
-                          <Button
-                            key={pageNumber}
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "!h-auto w-full flex-col items-center gap-2 p-2 text-xs text-muted-foreground shadow-none hover:bg-sidebar-accent",
-                              pageNumber === activePage && "bg-sidebar-accent"
-                            )}
-                            onFocus={(event) => event.currentTarget.blur()}
-                            onMouseDown={preserveThumbnailClickScroll}
-                            onPointerDown={preserveThumbnailClickScroll}
-                            onClick={() => scrollToPage(pageNumber)}
-                          >
-                            <PDFSidebarThumbnail
-                              file={pdfFile}
-                              pageNumber={pageNumber}
-                              reactPdf={reactPdf}
-                              rotation={rotation}
-                              thumbnailAspectRatio={thumbnailAspectRatio}
-                            />
-                            {pageNumber}
-                          </Button>
-                        ))}
+                        {renderedPageNumbers.map((pageNumber) => {
+                          const metrics = getPageMetrics(pageNumber)
+                          const rotationDelta =
+                            pageRotationDeltas.get(pageNumber) ?? 0
+                          const effectiveRotation = normalizeRotation(
+                            metrics.rotation + rotationDelta
+                          )
+                          const thumbnailDimensions = getPageDimensions(
+                            metrics,
+                            effectiveRotation
+                          )
+                          const thumbnailAspectRatio =
+                            thumbnailDimensions.width /
+                            thumbnailDimensions.height
+
+                          return (
+                            <Button
+                              key={pageNumber}
+                              data-pdf-viewer-thumbnail={pageNumber}
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                "!h-auto w-full flex-col items-center gap-2 p-2 text-xs shadow-none hover:bg-sidebar-accent",
+                                pageNumber === activePage
+                                  ? "bg-sidebar-accent text-foreground"
+                                  : "text-muted-foreground"
+                              )}
+                              onFocus={(event) => event.currentTarget.blur()}
+                              onMouseDown={preserveThumbnailClickScroll}
+                              onPointerDown={preserveThumbnailClickScroll}
+                              onClick={() => scrollToPage(pageNumber)}
+                            >
+                              <PDFSidebarThumbnail
+                                file={pdfFile}
+                                pageMetrics={metrics}
+                                pageNumber={pageNumber}
+                                reactPdf={reactPdf}
+                                rotation={rotationDelta}
+                                thumbnailAspectRatio={thumbnailAspectRatio}
+                              />
+                              {pageNumber}
+                            </Button>
+                          )
+                        })}
                       </div>
                     </div>
                   </ScrollArea>
@@ -1042,13 +1327,23 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                 >
                   <div className="flex min-h-full w-max min-w-full flex-col items-center justify-start gap-6 p-6">
                     {renderedPageNumbers.map((pageNumber) => {
+                      const metrics = getPageMetrics(pageNumber)
+                      const rotationDelta =
+                        pageRotationDeltas.get(pageNumber) ?? 0
+                      const effectiveRotation = normalizeRotation(
+                        metrics.rotation + rotationDelta
+                      )
+                      const dimensions = getPageDimensions(
+                        metrics,
+                        effectiveRotation
+                      )
                       const shouldRenderPage =
                         Math.abs(pageNumber - activePage) <= pageRenderBuffer ||
                         settledPageNumbers.has(pageNumber) ||
                         renderedPageNumbers.length <= pageRenderBuffer * 2 + 1
                       const pageStyle = {
-                        width: renderedPageWidth,
-                        height: renderedPageHeight,
+                        width: dimensions.width * zoom,
+                        height: dimensions.height * zoom,
                       }
                       const pageSearchQuery =
                         searchQuery.trim() &&
@@ -1059,12 +1354,12 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                       return (
                         <PDFViewerPage
                           key={pageNumber}
+                          effectiveRotation={effectiveRotation}
                           reactPdf={reactPdf}
                           pageNumber={pageNumber}
                           pageStyle={pageStyle}
-                          renderedPageWidth={renderedPageWidth}
+                          renderedPageWidth={pageStyle.width}
                           zoom={zoom}
-                          rotation={rotation}
                           shouldRenderPage={shouldRenderPage}
                           searchQuery={pageSearchQuery}
                           pageClassName={pageClassName}

@@ -424,7 +424,7 @@ function DocxSidebarThumbnail({
         type: DOCX_MIME_TYPE,
       }}
       previewAspectRatio={previewAspectRatio}
-      previewClassName="bg-white"
+      previewClassName="rounded-md bg-white"
       previewContent={
         <canvas
           ref={canvasRef}
@@ -438,8 +438,8 @@ function DocxSidebarThumbnail({
       hasError={hasError}
       showMetadata={false}
       className={cn(
-        "w-full rounded-sm border shadow-xs transition-[border-color,box-shadow] duration-150",
-        isActive && "border-primary shadow-sm"
+        "w-[92px] rounded-md border-0 shadow-xs ring-0 transition-shadow duration-150",
+        isActive && "shadow-sm"
       )}
     />
   )
@@ -447,7 +447,7 @@ function DocxSidebarThumbnail({
 
 export function DocxViewerPreview({
   className,
-  defaultThumbnailSidebarOpen = true,
+  defaultThumbnailSidebarOpen = false,
   defaultIsDark = false,
   fileName,
   isDark: controlledIsDark,
@@ -781,7 +781,7 @@ function DocxViewerContent({
             <div className="p-4">
               {isLoadingDocument ? (
                 <>
-                  <div className="mx-auto h-28 w-20 rounded-sm border bg-background shadow-xs">
+                  <div className="mx-auto h-28 w-20 overflow-hidden rounded-md bg-background shadow-xs">
                     <div className="h-full animate-pulse bg-muted" />
                   </div>
                   <div className="mx-auto mt-3 h-3 w-10 rounded-full bg-muted" />
@@ -795,9 +795,11 @@ function DocxViewerContent({
                       variant="ghost"
                       size="sm"
                       className={cn(
-                        "!h-auto w-full flex-col items-center gap-2 p-2 text-xs text-muted-foreground shadow-none hover:bg-sidebar-accent",
+                        "!h-auto w-full flex-col items-center gap-2 p-2 text-xs shadow-none hover:bg-sidebar-accent",
                         thumbnail.pageNumber === activePage &&
-                          "bg-sidebar-accent"
+                          "bg-sidebar-accent text-foreground",
+                        thumbnail.pageNumber !== activePage &&
+                          "text-muted-foreground"
                       )}
                       onFocus={(event) => event.currentTarget.blur()}
                       onClick={() => scrollToPage(thumbnail.pageNumber)}

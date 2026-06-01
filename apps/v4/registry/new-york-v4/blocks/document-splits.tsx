@@ -143,27 +143,27 @@ function getGroupPages(groups: SplitGroup[], groupId: string | null) {
 }
 
 function movePageToGroup({
-  activePageId,
+  draggedPageId,
   groups,
   insertIndex,
   targetGroupId,
 }: {
-  activePageId: PageId
+  draggedPageId: PageId
   groups: SplitGroup[]
   insertIndex: number
   targetGroupId: string
 }) {
   return groups.map((group) => {
-    const pagesWithoutActive = group.pages.filter(
-      (pageId) => pageId !== activePageId
+    const pagesWithoutDragged = group.pages.filter(
+      (pageId) => pageId !== draggedPageId
     )
 
     if (group.id !== targetGroupId) {
-      return { ...group, pages: pagesWithoutActive }
+      return { ...group, pages: pagesWithoutDragged }
     }
 
-    const nextPages = [...pagesWithoutActive]
-    nextPages.splice(insertIndex, 0, activePageId)
+    const nextPages = [...pagesWithoutDragged]
+    nextPages.splice(insertIndex, 0, draggedPageId)
 
     return { ...group, pages: nextPages }
   })
@@ -189,26 +189,26 @@ function areSplitGroupsEqual(left: SplitGroup[], right: SplitGroup[]) {
 }
 
 function reorderPageInGroup({
-  activePageId,
+  draggedPageId,
   groups,
   overPageId,
 }: {
-  activePageId: PageId
+  draggedPageId: PageId
   groups: SplitGroup[]
   overPageId: PageId
 }) {
-  const groupId = findGroupId(groups, activePageId)
+  const groupId = findGroupId(groups, draggedPageId)
   const pages = getGroupPages(groups, groupId)
-  const activeIndex = pages.indexOf(activePageId)
+  const draggedIndex = pages.indexOf(draggedPageId)
   const overIndex = pages.indexOf(overPageId)
 
-  if (!groupId || activeIndex === -1 || overIndex === -1) return groups
+  if (!groupId || draggedIndex === -1 || overIndex === -1) return groups
 
   return groups.map((group) =>
     group.id === groupId
       ? {
           ...group,
-          pages: arrayMove(group.pages, activeIndex, overIndex),
+          pages: arrayMove(group.pages, draggedIndex, overIndex),
         }
       : group
   )
@@ -247,12 +247,10 @@ function SplitGroupDropzone({
 
 function PageThumbnail({
   imageUrl,
-  isActive,
   onSelect,
   pageId,
 }: {
   imageUrl?: string
-  isActive: boolean
   onSelect: (pageNumber: number) => void
   pageId: PageId
 }) {
@@ -274,10 +272,7 @@ function PageThumbnail({
       ref={setNodeRef}
       type="button"
       className={cn(
-        "relative shrink-0 cursor-grab overflow-hidden rounded-md border bg-muted text-left shadow-xs transition-[border-color,box-shadow,opacity] active:cursor-grabbing",
-        isActive
-          ? "border-blue-500 shadow-[0_0_0_2px_rgb(59_130_246_/_14%)]"
-          : "border-border hover:border-foreground/30",
+        "relative shrink-0 cursor-grab overflow-hidden rounded-md border border-border bg-muted text-left shadow-xs transition-[border-color,opacity] hover:border-foreground/30 active:cursor-grabbing",
         isDragging && "opacity-0"
       )}
       style={{
@@ -302,7 +297,9 @@ function PageThumbnail({
         previewClassName="h-full aspect-auto"
         className="size-full rounded-[inherit] border-0"
       />
-      <span className="absolute right-1 bottom-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-xs">
+      <span
+        className="absolute right-1 bottom-1 rounded bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs ring-1 ring-border/80"
+      >
         {pageNumber}
       </span>
     </button>
@@ -310,7 +307,6 @@ function PageThumbnail({
 }
 
 function SplitGroupCard({
-  activePage,
   canRemove,
   group,
   dragHandleProps,
@@ -318,7 +314,6 @@ function SplitGroupCard({
   onRemove,
   onSelectPage,
 }: {
-  activePage: number
   canRemove: boolean
   group: SplitGroup
   dragHandleProps?: React.ComponentPropsWithoutRef<"button">
@@ -380,7 +375,6 @@ function SplitGroupCard({
                     key={pageId}
                     pageId={pageId}
                     imageUrl={thumbnailImages[pageId]}
-                    isActive={activePage === getPageNumber(pageId)}
                     onSelect={onSelectPage}
                   />
                 ))}
@@ -398,14 +392,12 @@ function SplitGroupCard({
 }
 
 function SortableSplitGroupCard({
-  activePage,
   canRemove,
   group,
   thumbnailImages,
   onRemove,
   onSelectPage,
 }: {
-  activePage: number
   canRemove: boolean
   group: SplitGroup
   thumbnailImages: Record<PageId, string>
@@ -434,7 +426,6 @@ function SortableSplitGroupCard({
       }}
     >
       <SplitGroupCard
-        activePage={activePage}
         canRemove={canRemove}
         group={group}
         thumbnailImages={thumbnailImages}
@@ -447,13 +438,11 @@ function SortableSplitGroupCard({
 }
 
 function SplitGroupDragOverlay({
-  activePage,
   group,
   thumbnailImages,
   width,
   onSelectPage,
 }: {
-  activePage: number
   group: SplitGroup
   thumbnailImages: Record<PageId, string>
   width?: number
@@ -465,7 +454,6 @@ function SplitGroupDragOverlay({
       style={{ width }}
     >
       <SplitGroupCard
-        activePage={activePage}
         canRemove={false}
         group={group}
         thumbnailImages={thumbnailImages}
@@ -477,7 +465,6 @@ function SplitGroupDragOverlay({
 }
 
 export function DocumentSplits({
-  activePage,
   className,
   splits,
   thumbnailImages = {},
@@ -485,7 +472,6 @@ export function DocumentSplits({
   onSelectPage,
   onSplitsChange,
 }: {
-  activePage: number
   className?: string
   splits: SplitGroup[]
   thumbnailImages?: Record<PageId, string>
@@ -493,7 +479,7 @@ export function DocumentSplits({
   onSelectPage: (pageNumber: number) => void
   onSplitsChange: (splits: SplitGroup[]) => void
 }) {
-  const [activePageId, setActivePageId] = React.useState<PageId | null>(null)
+  const [draggedPageId, setDraggedPageId] = React.useState<PageId | null>(null)
   const [activeSplitGroupId, setActiveSplitGroupId] = React.useState<
     string | null
   >(null)
@@ -513,7 +499,7 @@ export function DocumentSplits({
       if (dragType === "split") {
         dragStartGroupIdRef.current = null
         dragStartSplitsRef.current = null
-        setActivePageId(null)
+        setDraggedPageId(null)
         setActiveSplitGroupId(
           (event.active.data.current?.groupId as string | undefined) ?? null
         )
@@ -524,7 +510,7 @@ export function DocumentSplits({
       if (dragType !== "page") {
         dragStartGroupIdRef.current = null
         dragStartSplitsRef.current = null
-        setActivePageId(null)
+        setDraggedPageId(null)
         setActiveSplitGroupId(null)
         setActiveSplitGroupWidth(undefined)
         return
@@ -533,7 +519,7 @@ export function DocumentSplits({
       const pageId = String(event.active.id) as PageId
       dragStartGroupIdRef.current = findGroupId(splits, pageId)
       dragStartSplitsRef.current = splits
-      setActivePageId(pageId)
+      setDraggedPageId(pageId)
       setActiveSplitGroupId(null)
       setActiveSplitGroupWidth(undefined)
     },
@@ -559,7 +545,7 @@ export function DocumentSplits({
       const insertIndex = overIndex === -1 ? targetPages.length : overIndex
 
       const nextSplits = movePageToGroup({
-        activePageId: pageId,
+        draggedPageId: pageId,
         groups: splits,
         insertIndex,
         targetGroupId,
@@ -578,13 +564,13 @@ export function DocumentSplits({
         const activeGroupId = event.active.data.current.groupId
         const overGroupId = event.over.data.current?.groupId
 
-        const activeIndex = splits.findIndex(
+        const draggedIndex = splits.findIndex(
           (group) => group.id === activeGroupId
         )
         const overIndex = splits.findIndex((group) => group.id === overGroupId)
 
-        if (activeIndex !== -1 && overIndex !== -1) {
-          const nextSplits = arrayMove(splits, activeIndex, overIndex)
+        if (draggedIndex !== -1 && overIndex !== -1) {
+          const nextSplits = arrayMove(splits, draggedIndex, overIndex)
 
           if (!areSplitGroupsEqual(splits, nextSplits)) {
             onSplitsChange(nextSplits)
@@ -593,7 +579,7 @@ export function DocumentSplits({
 
         dragStartGroupIdRef.current = null
         dragStartSplitsRef.current = null
-        setActivePageId(null)
+        setDraggedPageId(null)
         setActiveSplitGroupId(null)
         setActiveSplitGroupWidth(undefined)
         return
@@ -602,7 +588,7 @@ export function DocumentSplits({
       if (event.active.data.current?.type !== "page" || !event.over) {
         dragStartGroupIdRef.current = null
         dragStartSplitsRef.current = null
-        setActivePageId(null)
+        setDraggedPageId(null)
         setActiveSplitGroupId(null)
         setActiveSplitGroupWidth(undefined)
         return
@@ -614,7 +600,7 @@ export function DocumentSplits({
 
       if (dragStartGroupIdRef.current === overGroupId) {
         const nextSplits = reorderPageInGroup({
-          activePageId: pageId,
+          draggedPageId: pageId,
           groups: splits,
           overPageId: overId,
         })
@@ -626,7 +612,7 @@ export function DocumentSplits({
 
       dragStartGroupIdRef.current = null
       dragStartSplitsRef.current = null
-      setActivePageId(null)
+      setDraggedPageId(null)
       setActiveSplitGroupId(null)
       setActiveSplitGroupWidth(undefined)
     },
@@ -640,7 +626,7 @@ export function DocumentSplits({
 
     dragStartSplitsRef.current = null
     dragStartGroupIdRef.current = null
-    setActivePageId(null)
+    setDraggedPageId(null)
     setActiveSplitGroupId(null)
     setActiveSplitGroupWidth(undefined)
   }, [onSplitsChange])
@@ -695,9 +681,6 @@ export function DocumentSplits({
               {splits.map((group) => (
                 <SortableSplitGroupCard
                   key={group.id}
-                  activePage={
-                    activePageId ? getPageNumber(activePageId) : activePage
-                  }
                   canRemove={splits.length > 1}
                   group={group}
                   thumbnailImages={thumbnailImages}
@@ -714,23 +697,22 @@ export function DocumentSplits({
           </SortableContext>
         </ScrollArea>
         <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION} zIndex={1000}>
-          {activePageId ? (
+          {draggedPageId ? (
             <div
               className="relative overflow-hidden rounded-md border bg-background shadow-lg shadow-black/10"
               style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}
             >
               <FileThumbnail
-                file={{ name: `${activePageId}.pdf`, type: "application/pdf" }}
+                file={{ name: `${draggedPageId}.pdf`, type: "application/pdf" }}
                 showMetadata={false}
-                previewImageUrl={thumbnailImages[activePageId]}
-                isLoading={!thumbnailImages[activePageId]}
+                previewImageUrl={thumbnailImages[draggedPageId]}
+                isLoading={!thumbnailImages[draggedPageId]}
                 previewClassName="h-full aspect-auto"
                 className="size-full rounded-[inherit] border-0"
               />
             </div>
           ) : activeSplitGroup ? (
             <SplitGroupDragOverlay
-              activePage={activePage}
               group={activeSplitGroup}
               thumbnailImages={thumbnailImages}
               width={activeSplitGroupWidth}
@@ -750,7 +732,6 @@ export function DocumentSplitsBlock({
   file?: string
   thumbnailImages?: Record<PageId, string>
 }) {
-  const [activePage, setActivePage] = React.useState(1)
   const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)
   const [pdfFile, setPdfFile] = React.useState(file)
   const viewerRef = React.useRef<PDFViewerHandle>(null)
@@ -758,7 +739,6 @@ export function DocumentSplitsBlock({
 
   React.useEffect(() => {
     setPdfFile(file)
-    setActivePage(1)
   }, [file])
 
   React.useEffect(() => {
@@ -778,7 +758,6 @@ export function DocumentSplitsBlock({
 
     uploadedPdfUrlRef.current = nextUrl
     setPdfFile(nextUrl)
-    setActivePage(1)
   }, [])
 
   const handleDocumentLoadSuccess = React.useCallback((pageCount: number) => {
@@ -786,7 +765,6 @@ export function DocumentSplitsBlock({
   }, [])
 
   const handleSelectPage = React.useCallback((pageNumber: number) => {
-    setActivePage(pageNumber)
     viewerRef.current?.scrollToPage(pageNumber, {
       block: "start",
       behavior: "auto",
@@ -805,7 +783,6 @@ export function DocumentSplitsBlock({
           ref={viewerRef}
           file={pdfFile}
           defaultZoom={0.75}
-          onActivePageChange={setActivePage}
           onDocumentLoadSuccess={handleDocumentLoadSuccess}
           onPdfUpload={handlePdfUpload}
         />
@@ -819,7 +796,6 @@ export function DocumentSplitsBlock({
             </p>
           </div>
           <DocumentSplits
-            activePage={activePage}
             className="min-h-0 flex-1"
             splits={splits}
             thumbnailImages={thumbnailImages}

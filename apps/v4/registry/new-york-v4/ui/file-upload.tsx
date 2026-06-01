@@ -121,7 +121,8 @@ function UploadIconCluster({
             "absolute top-1/2 left-1/2 grid size-12 place-items-center rounded-xl bg-background text-muted-foreground transition-[transform,color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] before:rounded-[calc(var(--radius-xl)-1px)]",
             "motion-reduce:transition-none",
             index === 1 && "z-10",
-            isDragging && "bg-accent text-foreground"
+            isDragging &&
+              "bg-popover text-foreground shadow-md shadow-black/10 not-dark:bg-clip-border dark:shadow-black/25"
           )}
           style={{
             transform: singleIcon
@@ -197,7 +198,7 @@ export function FileUpload({
         "motion-reduce:transition-none",
         isDragging
           ? "border-foreground/40 bg-accent/35"
-          : "border-border hover:border-foreground/30 hover:bg-muted/35"
+          : "border-foreground/20 hover:border-foreground/35 hover:bg-muted/35 dark:border-foreground/25 dark:hover:border-foreground/40"
       )}
       onDragEnter={(event) => {
         event.preventDefault()

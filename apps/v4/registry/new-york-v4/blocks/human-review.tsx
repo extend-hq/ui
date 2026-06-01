@@ -5,9 +5,11 @@ import {
   DataEditor,
   emptyGridSelection,
   GridCellKind,
+  TextCellEntry,
   type EditableGridCell,
   type GridCell,
   type GridColumn,
+  type GridMouseEventArgs,
   type GridSelection,
   type Item,
   type NumberCell,
@@ -85,10 +87,24 @@ export type ReviewField = {
   schema: ReviewFieldSchema
   actual: JsonValue
   expected: JsonValue
-  location?: {
-    page: number
-    area: HighlightArea
-  }
+  location?: ReviewLocation
+  metadataPath?: string
+}
+
+export type ReviewLocation = {
+  page: number
+  area: HighlightArea
+}
+
+export type ReviewCitation = {
+  page: number
+  polygon?: Array<{ x: number; y: number }>
+  pageWidth: number
+  pageHeight: number
+}
+
+export type ReviewMetadataEntry = {
+  citations?: ReviewCitation[]
 }
 
 const DEFAULT_ZOOM = 0.75
@@ -218,110 +234,73 @@ function useHumanReviewGridTheme() {
 
 const REVIEW_FIELDS: ReviewField[] = [
   {
-    key: "vendor_name",
+    key: "statement_period",
     schema: {
       type: "string",
-      title: "Vendor name",
-      description: "Supplier shown on the invoice header.",
+      title: "Statement period",
+      description: "Date range covered by the bank statement.",
     },
-    actual: "Acme Supplies LLC",
-    expected: "Acme Supply LLC",
+    actual: "Jan 1-31, 2026",
+    expected: "January 1-31, 2026",
     location: {
       page: 1,
       area: { left: 31, top: 30, width: 40, height: 5.8 },
     },
   },
   {
-    key: "line_items",
+    key: "transactions",
     schema: {
       type: "array",
-      title: "Line items",
-      description: "Invoice rows with nested allocation details.",
+      title: "Transactions",
+      description: "Posted account activity during the statement period.",
       items: {
         type: "object",
         properties: {
+          date: {
+            type: "string",
+            title: "Date",
+          },
           description: {
             type: "string",
             title: "Description",
           },
-          quantity: {
+          amount: {
             type: "number",
-            title: "Qty",
+            title: "Amount",
           },
-          unit_price: {
-            type: "number",
-            title: "Unit price",
-          },
-          tax_detail: {
-            type: "object",
-            title: "Tax detail",
-            properties: {
-              code: {
-                type: "string",
-                title: "Code",
-              },
-              jurisdiction: {
-                type: "string",
-                title: "Jurisdiction",
-              },
-            },
-          },
-          allocations: {
-            type: "array",
-            title: "Allocations",
-            items: {
-              type: "object",
-              properties: {
-                department: {
-                  type: "string",
-                  title: "Department",
-                },
-                percent: {
-                  type: "number",
-                  title: "Percent",
-                },
-              },
-            },
+          category: {
+            type: "string",
+            title: "Category",
           },
         },
       },
     },
     actual: [
       {
-        description: "Transformer implementation support",
-        quantity: 2,
-        unit_price: 4200,
-        tax_detail: { code: "TX-CA", jurisdiction: "CA" },
-        allocations: [
-          { department: "Research", percent: 70 },
-          { department: "Platform", percent: 20 },
-        ],
+        date: "2026-01-03",
+        description: "ACH CREDIT PAYROLL",
+        amount: 4250,
+        category: "Deposit",
       },
       {
-        description: "Attention model review",
-        quantity: 1,
-        unit_price: 4080,
-        tax_detail: { code: "TX-NY", jurisdiction: "NY" },
-        allocations: [{ department: "Research", percent: 100 }],
+        date: "2026-01-12",
+        description: "POS PURCHASE GROCERY MART",
+        amount: -86.42,
+        category: "Debit",
       },
     ],
     expected: [
       {
-        description: "Transformer implementation support",
-        quantity: 2,
-        unit_price: 4200,
-        tax_detail: { code: "TX-CA", jurisdiction: "CA" },
-        allocations: [
-          { department: "Research", percent: 70 },
-          { department: "Platform", percent: 30 },
-        ],
+        date: "2026-01-03",
+        description: "ACH CREDIT PAYROLL",
+        amount: 4250,
+        category: "Deposit",
       },
       {
-        description: "Attention model review",
-        quantity: 1,
-        unit_price: 4080.75,
-        tax_detail: { code: "TX-NY", jurisdiction: "NY" },
-        allocations: [{ department: "Research", percent: 100 }],
+        date: "2026-01-12",
+        description: "POS PURCHASE GROCERY MART",
+        amount: -68.42,
+        category: "Debit",
       },
     ],
     location: {
@@ -330,39 +309,25 @@ const REVIEW_FIELDS: ReviewField[] = [
     },
   },
   {
-    key: "total_amount",
+    key: "ending_balance",
     schema: {
       type: "number",
-      title: "Total amount",
-      description: "Final amount due including tax.",
+      title: "Ending balance",
+      description: "Final account balance at the end of the statement period.",
     },
-    actual: 12480,
-    expected: 12480.75,
+    actual: 12840.18,
+    expected: 12858.18,
     location: {
       page: 1,
       area: { left: 13.5, top: 66, width: 73.5, height: 7.5 },
     },
   },
   {
-    key: "payment_terms",
-    schema: {
-      type: "string",
-      title: "Payment terms",
-      enum: ["Due on receipt", "Net 15", "Net 30"],
-    },
-    actual: "Net 15",
-    expected: "Net 30",
-    location: {
-      page: 1,
-      area: { left: 13.5, top: 55.5, width: 73.5, height: 7.5 },
-    },
-  },
-  {
-    key: "requires_review",
+    key: "overdraft_protection_enabled",
     schema: {
       type: "boolean",
-      title: "Requires review",
-      description: "Whether a human should verify this document before export.",
+      title: "Overdraft protection enabled",
+      description: "Whether overdraft protection is enabled for the account.",
     },
     actual: false,
     expected: true,
@@ -372,38 +337,97 @@ const REVIEW_FIELDS: ReviewField[] = [
     },
   },
   {
-    key: "remittance",
+    key: "account_details",
     schema: {
       type: "object",
-      title: "Remittance details",
-      description: "Payment destination used for invoice reconciliation.",
+      title: "Account details",
+      description: "Account owner and identifying details from the statement.",
       properties: {
-        account_holder: {
+        holder_name: {
           type: "string",
-          title: "Account holder",
+          title: "Holder name",
         },
-        routing_number: {
+        account_last_four: {
           type: "string",
-          title: "Routing number",
+          title: "Account last four",
         },
-        verified: {
-          type: "boolean",
-          title: "Verified",
+        account_type: {
+          type: "string",
+          title: "Account type",
         },
       },
     },
     actual: {
-      account_holder: "Acme Supplies LLC",
-      routing_number: "021000021",
-      verified: false,
+      holder_name: "Jordan Lee",
+      account_last_four: "4821",
+      account_type: "Checking",
     },
     expected: {
-      account_holder: "Acme Supply LLC",
-      routing_number: "021000021",
-      verified: true,
+      holder_name: "Jordan Lee",
+      account_last_four: "4821",
+      account_type: "Premier Checking",
     },
   },
 ]
+
+function getCitationLocation(
+  citation: ReviewCitation
+): ReviewLocation | undefined {
+  const polygon = citation.polygon
+  if (!polygon?.length || !citation.pageWidth || !citation.pageHeight) {
+    return undefined
+  }
+
+  const xs = polygon.map((point) => point.x)
+  const ys = polygon.map((point) => point.y)
+  const left = Math.min(...xs)
+  const top = Math.min(...ys)
+  const right = Math.max(...xs)
+  const bottom = Math.max(...ys)
+
+  return {
+    page: citation.page,
+    area: {
+      left: (left / citation.pageWidth) * 100,
+      top: (top / citation.pageHeight) * 100,
+      width: ((right - left) / citation.pageWidth) * 100,
+      height: ((bottom - top) / citation.pageHeight) * 100,
+    },
+  }
+}
+
+function getMetadataLocation(
+  metadata: Record<string, ReviewMetadataEntry> | undefined,
+  metadataPath: string | undefined
+) {
+  if (!metadata || !metadataPath) return undefined
+
+  const citation = metadata[metadataPath]?.citations?.find(
+    (candidate) => candidate.polygon?.length
+  )
+
+  return citation ? getCitationLocation(citation) : undefined
+}
+
+function getReviewFieldLocation(
+  field: ReviewField | undefined,
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
+) {
+  if (!field) return undefined
+
+  return (
+    field.location ??
+    resolveLocation?.(field.metadataPath ?? field.key) ??
+    undefined
+  )
+}
+
+function getReviewLocationKey(location: ReviewLocation | undefined) {
+  if (!location) return null
+
+  const { area } = location
+  return [location.page, area.left, area.top, area.width, area.height].join(":")
+}
 
 function valuesFromFields(
   fields: ReviewField[],
@@ -476,6 +500,7 @@ function countReviewFields(fields: ReviewField[]): number {
         schema,
         actual: getObjectValue(field.actual, key),
         expected: getObjectValue(field.expected, key),
+        metadataPath: `${field.metadataPath ?? field.key}.${key}`,
       })
     )
 
@@ -499,6 +524,7 @@ function findReviewField(
           schema,
           actual: getObjectValue(field.actual, key),
           expected: getObjectValue(field.expected, key),
+          metadataPath: `${field.metadataPath ?? field.key}.${key}`,
         })
       )
       const childField = findReviewField(childFields, fieldKey)
@@ -602,9 +628,9 @@ function HumanReviewTextOverlayEditor({
   validatedSelection,
   value,
 }: HumanReviewTextOverlayEditorProps) {
-  const inputRef = React.useRef<HTMLTextAreaElement | null>(null)
   const initialValue =
     value.kind === GridCellKind.Number ? value.displayData : value.data
+  const [entryValue, setEntryValue] = React.useState(initialValue)
   const latestValueRef = React.useRef(initialValue)
   const finishedRef = React.useRef(false)
 
@@ -649,24 +675,16 @@ function HumanReviewTextOverlayEditor({
     [onFinishedEditing, overlayOpenRef, readOnly, value]
   )
 
-  React.useEffect(() => {
-    overlayOpenRef.current = true
-
-    const input = inputRef.current
-    if (!input) {
-      return () => {
-        overlayOpenRef.current = false
-      }
-    }
-
-    const handleInput = (event: Event) => {
+  const handleEntryChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       event.stopPropagation()
-      latestValueRef.current = input.value
-    }
-    const stopTextInputPropagation = (event: Event) => {
-      event.stopPropagation()
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
+      latestValueRef.current = event.target.value
+      setEntryValue(event.target.value)
+    },
+    []
+  )
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       event.stopPropagation()
 
       if (event.key === "Escape") {
@@ -685,43 +703,21 @@ function HumanReviewTextOverlayEditor({
         event.preventDefault()
         finishEditing(true, [0, 1])
       }
-    }
+    },
+    [finishEditing]
+  )
 
-    input.addEventListener("input", handleInput)
-    input.addEventListener("beforeinput", stopTextInputPropagation, true)
-    input.addEventListener("keydown", handleKeyDown, true)
-
-    input.focus()
-
-    if (validatedSelection !== undefined) {
-      const selectionRange =
-        typeof validatedSelection === "number"
-          ? [validatedSelection, validatedSelection]
-          : validatedSelection
-      input.setSelectionRange(selectionRange[0], selectionRange[1])
-    } else if (isHighlighted) {
-      input.setSelectionRange(0, input.value.length)
-    } else {
-      input.setSelectionRange(input.value.length, input.value.length)
-    }
+  React.useEffect(() => {
+    overlayOpenRef.current = true
 
     return () => {
-      input.removeEventListener("input", handleInput)
-      input.removeEventListener("beforeinput", stopTextInputPropagation, true)
-      input.removeEventListener("keydown", handleKeyDown, true)
       overlayOpenRef.current = false
     }
-  }, [
-    finishEditing,
-    isHighlighted,
-    overlayOpenRef,
-    validatedSelection,
-    readOnly,
-  ])
+  }, [overlayOpenRef])
 
   React.useEffect(() => {
     const handlePointerOutside = (event: PointerEvent | MouseEvent) => {
-      const input = inputRef.current
+      const input = document.querySelector<HTMLTextAreaElement>(".gdg-input")
       const overlayRoot = input?.closest(".gdg-clip-region")
 
       if (!overlayRoot || overlayRoot.contains(event.target as Node | null)) {
@@ -741,14 +737,15 @@ function HumanReviewTextOverlayEditor({
   }, [finishEditing])
 
   return (
-    <textarea
-      ref={inputRef}
-      className="gdg-input"
-      defaultValue={initialValue}
-      readOnly={readOnly}
-      aria-readonly={readOnly}
-      dir="auto"
-      style={{ height: "100%", minHeight: 32, resize: "none", width: "100%" }}
+    <TextCellEntry
+      autoFocus={!readOnly}
+      disabled={readOnly}
+      highlight={isHighlighted}
+      value={entryValue}
+      validatedSelection={validatedSelection}
+      altNewline
+      onChange={handleEntryChange}
+      onKeyDown={handleKeyDown}
     />
   )
 }
@@ -1024,9 +1021,13 @@ function HumanReviewArrayValueGrid({
   sharedNestedStack,
   value,
   viewSide = "expected",
+  metadataPath,
   onChange,
   onGridSelectionChange,
+  onLocationHover,
   onNestedStackChange,
+  resolveArrayItemMetadataPath,
+  resolveLocation,
 }: {
   activeNestedSide?: ArrayReviewSide | null
   activeSelectionSide?: ArrayReviewSide | null
@@ -1039,6 +1040,7 @@ function HumanReviewArrayValueGrid({
   sharedNestedStack?: ArrayNestedView[]
   value: JsonValue
   viewSide?: ArrayReviewSide
+  metadataPath?: string
   onChange?: (value: JsonValue) => void
   onGridSelectionChange?: (
     selection: GridSelection,
@@ -1049,6 +1051,13 @@ function HumanReviewArrayValueGrid({
     stack: ArrayNestedView[],
     side: ArrayReviewSide
   ) => void
+  onLocationHover?: (location?: ReviewLocation) => void
+  resolveArrayItemMetadataPath?: (
+    metadataPath: string,
+    rowIndex: number,
+    rowValue: JsonValue
+  ) => string | undefined
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
 }) {
   const rows = getArrayValue(value)
   const itemSchema = getArrayItemSchema(schema)
@@ -1215,7 +1224,7 @@ function HumanReviewArrayValueGrid({
           allowOverlay: false,
           readonly: true,
           cursor: "pointer",
-          activationBehaviorOverride: "second-click",
+          activationBehaviorOverride: "double-click",
           themeOverride: {
             textDark: blueCellText,
             ...(nestedCellTheme ?? {}),
@@ -1239,7 +1248,6 @@ function HumanReviewArrayValueGrid({
           displayData: typeof cellValue === "number" ? String(cellValue) : "",
           allowOverlay: true,
           readonly: false,
-          activationBehaviorOverride: readOnly ? "single-click" : undefined,
         }
       }
 
@@ -1259,7 +1267,6 @@ function HumanReviewArrayValueGrid({
             : String(cellValue),
         allowOverlay: true,
         readonly: false,
-        activationBehaviorOverride: readOnly ? "single-click" : undefined,
       }
     },
     [
@@ -1334,6 +1341,52 @@ function HumanReviewArrayValueGrid({
     () => !fastTextOverlayOpenRef.current,
     []
   )
+  const handleItemHovered = React.useCallback(
+    (args: GridMouseEventArgs) => {
+      if (!onLocationHover || !resolveLocation || !metadataPath) return
+
+      if (args.kind !== "cell") {
+        onLocationHover(undefined)
+        return
+      }
+
+      const [col, row] = args.location
+      const column = columns[col]
+      const rowValue = rows[row]
+      if (!column || rowValue === undefined) {
+        onLocationHover(undefined)
+        return
+      }
+
+      const columnId = String(column.id ?? "value")
+      const rowMetadataPath = resolveArrayItemMetadataPath
+        ? resolveArrayItemMetadataPath(metadataPath, row, rowValue)
+        : `${metadataPath}[${row}]`
+      if (!rowMetadataPath) {
+        onLocationHover(undefined)
+        return
+      }
+
+      const propertyMetadataPath =
+        itemSchema.type === "object"
+          ? `${rowMetadataPath}.${columnId}`
+          : rowMetadataPath
+
+      onLocationHover(
+        resolveLocation(propertyMetadataPath) ??
+          resolveLocation(rowMetadataPath)
+      )
+    },
+    [
+      columns,
+      itemSchema.type,
+      metadataPath,
+      onLocationHover,
+      resolveArrayItemMetadataPath,
+      resolveLocation,
+      rows,
+    ]
+  )
 
   const openNestedCell = React.useCallback(
     ([col, row]: Item) => {
@@ -1401,6 +1454,7 @@ function HumanReviewArrayValueGrid({
 
   return (
     <div
+      onMouseLeave={() => onLocationHover?.(undefined)}
       className={cn(
         "relative overflow-hidden rounded-md border bg-background transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:shadow-[0_0_0_1px_rgb(59_130_246_/_8%)] hover:border-blue-500/50",
         isActiveNestedSource &&
@@ -1417,12 +1471,13 @@ function HumanReviewArrayValueGrid({
             columns={columns}
             rows={rows.length}
             getCellContent={getCellContent}
-            cellActivationBehavior={readOnly ? "single-click" : "second-click"}
+            cellActivationBehavior="double-click"
             gridSelection={localGridSelection}
             highlightRegions={mirroredHighlightRegions}
             onCellEdited={updateCellValue}
             onCellActivated={openNestedCell}
             onGridSelectionChange={handleGridSelectionChange}
+            onItemHovered={handleItemHovered}
             provideEditor={provideEditor}
             isOutsideClick={handleOutsideClick}
             rowMarkers="number"
@@ -1479,6 +1534,8 @@ function HumanReviewArrayValueGrid({
                 onChange={updateNestedValue}
                 onGridSelectionChange={onGridSelectionChange}
                 onNestedStackChange={onNestedStackChange}
+                resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+                resolveLocation={resolveLocation}
               />
             ) : (
               <HumanReviewObjectValueEditor
@@ -1565,8 +1622,15 @@ type HumanReviewFieldCardProps = {
   readOnly?: boolean
   onChange: (value: JsonValue) => void
   onFieldFocus?: (field: ReviewField) => void
+  onLocationHover?: (location?: ReviewLocation) => void
   onUndo: () => void
   onSetNull: () => void
+  resolveArrayItemMetadataPath?: (
+    metadataPath: string,
+    rowIndex: number,
+    rowValue: JsonValue
+  ) => string | undefined
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
 }
 
 function areHumanReviewFieldCardPropsEqual(
@@ -1580,7 +1644,11 @@ function areHumanReviewFieldCardPropsEqual(
     previous.active === next.active &&
     previous.activeFieldKey === next.activeFieldKey &&
     previous.readOnly === next.readOnly &&
-    previous.onFieldFocus === next.onFieldFocus
+    previous.onFieldFocus === next.onFieldFocus &&
+    previous.onLocationHover === next.onLocationHover &&
+    previous.resolveArrayItemMetadataPath ===
+      next.resolveArrayItemMetadataPath &&
+    previous.resolveLocation === next.resolveLocation
   )
 }
 
@@ -1598,8 +1666,11 @@ function HumanReviewFieldCardBase({
   readOnly = false,
   onChange,
   onFieldFocus,
+  onLocationHover,
   onUndo,
   onSetNull,
+  resolveArrayItemMetadataPath,
+  resolveLocation,
 }: HumanReviewFieldCardProps) {
   const modified = !jsonValuesEqual(value, originalValue)
   const Icon = getFieldIcon(field.schema.type)
@@ -1642,12 +1713,17 @@ function HumanReviewFieldCardBase({
     },
     []
   )
+  const focusAndHoverField = React.useCallback(() => {
+    onFieldFocus?.(field)
+    onLocationHover?.(getReviewFieldLocation(field, resolveLocation))
+  }, [field, onFieldFocus, onLocationHover, resolveLocation])
 
   return (
     <div
       tabIndex={0}
-      onFocusCapture={() => onFieldFocus?.(field)}
-      onMouseEnter={() => onFieldFocus?.(field)}
+      onFocusCapture={focusAndHoverField}
+      onMouseEnter={focusAndHoverField}
+      onMouseLeave={() => onLocationHover?.(undefined)}
       className={cn(
         "rounded-lg border bg-background p-3 transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:bg-blue-500/5 hover:border-blue-500/50 hover:bg-blue-500/5 focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:outline-none",
         active &&
@@ -1728,6 +1804,7 @@ function HumanReviewFieldCardBase({
                   schema,
                   actual: getObjectValue(field.actual, propertyKey),
                   expected: getObjectValue(originalValue, propertyKey),
+                  metadataPath: `${field.metadataPath ?? field.key}.${propertyKey}`,
                 }
 
                 return (
@@ -1743,6 +1820,7 @@ function HumanReviewFieldCardBase({
                       onChange(setObjectValue(value, propertyKey, childValue))
                     }
                     onFieldFocus={onFieldFocus}
+                    onLocationHover={onLocationHover}
                     onUndo={() =>
                       onChange(
                         setObjectValue(value, propertyKey, childField.expected)
@@ -1751,6 +1829,8 @@ function HumanReviewFieldCardBase({
                     onSetNull={() =>
                       onChange(setObjectValue(value, propertyKey, null))
                     }
+                    resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+                    resolveLocation={resolveLocation}
                   />
                 )
               })
@@ -1767,7 +1847,10 @@ function HumanReviewFieldCardBase({
             activeNestedSide={syncedArrayNestedView.activeSide}
             activeSelectionSide={syncedArraySelection.activeSide}
             label="Actual"
+            metadataPath={field.metadataPath ?? field.key}
             readOnly
+            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+            resolveLocation={resolveLocation}
             schema={field.schema}
             selectionDepth={syncedArraySelection.depth}
             sharedGridSelection={syncedArraySelection.gridSelection}
@@ -1775,13 +1858,17 @@ function HumanReviewFieldCardBase({
             value={field.actual}
             viewSide="actual"
             onGridSelectionChange={updateSyncedArraySelection}
+            onLocationHover={onLocationHover}
             onNestedStackChange={updateSyncedArrayNestedView}
           />
           <HumanReviewArrayValueGrid
             activeNestedSide={syncedArrayNestedView.activeSide}
             activeSelectionSide={syncedArraySelection.activeSide}
             label="Expected"
+            metadataPath={field.metadataPath ?? field.key}
             readOnly={readOnly}
+            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+            resolveLocation={resolveLocation}
             schema={field.schema}
             selectionDepth={syncedArraySelection.depth}
             sharedGridSelection={syncedArraySelection.gridSelection}
@@ -1790,6 +1877,7 @@ function HumanReviewFieldCardBase({
             viewSide="expected"
             onChange={onChange}
             onGridSelectionChange={updateSyncedArraySelection}
+            onLocationHover={onLocationHover}
             onNestedStackChange={updateSyncedArrayNestedView}
           />
         </div>
@@ -1825,15 +1913,13 @@ function HumanReviewFieldCardBase({
   )
 }
 
-function HumanReviewHighlight({ field }: { field: ReviewField }) {
-  const area = field.location?.area
-
-  if (!area) return null
+function HumanReviewHighlight({ location }: { location: ReviewLocation }) {
+  const area = location.area
 
   return (
     <div
       className={cn(
-        "pointer-events-none absolute z-10 rounded-[3px] border",
+        "pointer-events-none absolute z-10 border",
         REVIEW_HIGHLIGHT_STYLE
       )}
       style={{
@@ -1905,12 +1991,22 @@ export function HumanReviewPanel({
   activeFieldKey,
   className,
   onFieldFocus,
+  onLocationHover,
+  resolveArrayItemMetadataPath,
+  resolveLocation,
   theme = "light",
 }: {
   fields?: ReviewField[]
   activeFieldKey?: string
   className?: string
   onFieldFocus?: (field: ReviewField) => void
+  onLocationHover?: (location?: ReviewLocation) => void
+  resolveArrayItemMetadataPath?: (
+    metadataPath: string,
+    rowIndex: number,
+    rowValue: JsonValue
+  ) => string | undefined
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
   theme?: HumanReviewTheme
 } = {}) {
   const [activeTab, setActiveTab] = React.useState("form")
@@ -1976,8 +2072,11 @@ export function HumanReviewPanel({
                   activeFieldKey={activeFieldKey}
                   onChange={(value) => updateValue(field.key, value)}
                   onFieldFocus={onFieldFocus}
+                  onLocationHover={onLocationHover}
                   onUndo={() => updateValue(field.key, field.expected)}
                   onSetNull={() => updateValue(field.key, null)}
+                  resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+                  resolveLocation={resolveLocation}
                 />
               ))}
             </div>
@@ -1999,16 +2098,37 @@ export function HumanReviewBlock({
   file,
   fields = REVIEW_FIELDS,
   className,
+  metadata,
+  resolveArrayItemMetadataPath,
+  resolveLocation,
   theme,
 }: {
   file?: string
   fields?: ReviewField[]
   className?: string
+  metadata?: Record<string, ReviewMetadataEntry>
+  resolveArrayItemMetadataPath?: (
+    metadataPath: string,
+    rowIndex: number,
+    rowValue: JsonValue
+  ) => string | undefined
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
   theme?: HumanReviewTheme
 }) {
   const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0]?.key)
+  const [hoverLocation, setHoverLocation] =
+    React.useState<ReviewLocation | null>(null)
   const viewerRef = React.useRef<PDFViewerHandle>(null)
+  const hoverLocationKeyRef = React.useRef<string | null>(null)
+  const resolveFieldLocation = React.useCallback(
+    (metadataPath: string) =>
+      resolveLocation?.(metadataPath) ??
+      getMetadataLocation(metadata, metadataPath),
+    [metadata, resolveLocation]
+  )
   const activeField = findReviewField(fields, activeFieldKey) ?? fields[0]
+  const activeLocation =
+    hoverLocation ?? getReviewFieldLocation(activeField, resolveFieldLocation)
 
   React.useEffect(() => {
     if (activeFieldKey || !fields[0]) return
@@ -2021,15 +2141,28 @@ export function HumanReviewBlock({
 
       setActiveFieldKey(field.key)
 
-      if (field.location) {
-        viewerRef.current?.scrollToPageArea(
-          field.location.page,
-          field.location.area
-        )
+      const location = getReviewFieldLocation(field, resolveFieldLocation)
+      if (location) {
+        viewerRef.current?.scrollToPageArea(location.page, location.area)
       }
     },
-    [activeFieldKey]
+    [activeFieldKey, resolveFieldLocation]
   )
+  const handleLocationHover = React.useCallback((location?: ReviewLocation) => {
+    setHoverLocation(location ?? null)
+
+    const locationKey = getReviewLocationKey(location)
+    if (!location) {
+      hoverLocationKeyRef.current = null
+      return
+    }
+    if (locationKey === hoverLocationKeyRef.current) return
+
+    hoverLocationKeyRef.current = locationKey
+    viewerRef.current?.scrollToPageArea(location.page, location.area, {
+      behavior: "auto",
+    })
+  }, [])
 
   return (
     <PdfBlockResizableShell
@@ -2044,8 +2177,8 @@ export function HumanReviewBlock({
           file={file}
           defaultZoom={DEFAULT_ZOOM}
           renderPageOverlay={({ pageNumber }) =>
-            activeField?.location?.page === pageNumber ? (
-              <HumanReviewHighlight field={activeField} />
+            activeLocation?.page === pageNumber ? (
+              <HumanReviewHighlight location={activeLocation} />
             ) : null
           }
         />
@@ -2058,6 +2191,9 @@ export function HumanReviewBlock({
             className="h-full min-h-0"
             theme={theme}
             onFieldFocus={focusField}
+            onLocationHover={handleLocationHover}
+            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+            resolveLocation={resolveFieldLocation}
           />
         </aside>
       }

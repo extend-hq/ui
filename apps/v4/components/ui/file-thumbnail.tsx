@@ -314,9 +314,7 @@ function FileThumbnailShell({
     previewImageUrl && failedPreviewImageUrl === previewImageUrl
   )
   const isImageLoading = Boolean(
-    previewImageUrl &&
-      loadedPreviewImageUrl !== previewImageUrl &&
-      !imageFailed
+    previewImageUrl && loadedPreviewImageUrl !== previewImageUrl && !imageFailed
   )
   const showLoading = isLoading || isImageLoading
   const hasPreviewContent = Boolean(previewContent)
@@ -379,7 +377,7 @@ function FileThumbnailShell({
     >
       <div
         className={cn(
-          "relative aspect-square overflow-hidden bg-muted",
+          "relative aspect-square overflow-hidden bg-muted [contain:layout_paint]",
           previewClassName
         )}
         style={
@@ -397,10 +395,8 @@ function FileThumbnailShell({
             loading="lazy"
             decoding="async"
             className={cn(
-              "size-full object-cover transition-[opacity,filter,transform] duration-[160ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-              showLoading
-                ? "scale-[1.01] opacity-0 blur-sm"
-                : "blur-0 scale-100 opacity-100"
+              "absolute inset-0 block size-full object-cover transition-[opacity,filter] duration-[160ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+              showLoading ? "opacity-0 blur-sm" : "blur-0 opacity-100"
             )}
             onLoad={(event) => {
               markImageLoaded(event.currentTarget, previewImageUrl)
@@ -419,10 +415,8 @@ function FileThumbnailShell({
         {previewContent ? (
           <div
             className={cn(
-              "size-full transition-[opacity,filter,transform] duration-[160ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-              showLoading
-                ? "scale-[1.01] opacity-0 blur-sm"
-                : "blur-0 scale-100 opacity-100"
+              "absolute inset-0 size-full transition-[opacity,filter] duration-[160ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+              showLoading ? "opacity-0 blur-sm" : "blur-0 opacity-100"
             )}
           >
             {previewContent}
@@ -579,7 +573,7 @@ function PdfFileThumbnail({
         <div
           ref={rootRef}
           aria-hidden="true"
-          className="pointer-events-none fixed top-0 left-[-10000px] w-[560px] overflow-hidden bg-white"
+          className="pointer-events-none fixed top-0 left-0 -z-10 w-[560px] overflow-hidden bg-white opacity-0 [contain:layout_paint]"
         >
           <reactPdf.Document
             file={sourceUrl}
@@ -839,7 +833,7 @@ function DocxFileThumbnail({
         <div
           ref={hiddenDocxViewerRef}
           aria-hidden="true"
-          className="pointer-events-none fixed top-[100vh] left-0 -z-10 h-[1056px] w-[816px] overflow-hidden bg-white"
+          className="pointer-events-none fixed top-0 left-0 -z-10 h-[1056px] w-[816px] overflow-hidden bg-white opacity-0 [contain:layout_paint]"
         >
           <div className="w-[816px]">
             <DocxEditorViewer

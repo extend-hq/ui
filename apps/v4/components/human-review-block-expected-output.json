@@ -1,0 +1,1086 @@
+{
+  "transactions": [
+    {
+      "date": "2021-10-01",
+      "amount": 8465,
+      "category": "Deposits and Additions",
+      "description": "American Express Settlement 4098628803 CCD ID: 1134992250"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": 7750,
+      "category": "Deposits and Additions",
+      "description": "Fed Wire Credit Via: Intercredit Bank N.A./067011812 B/O: Alexton International Limited Tortola, Virgin Islands Ref: Chase Nyc/Ctr/Bnf=ELEGANT CABINETRY, INC 331384612/Ac-000000042313 Rfb=O/B Intercredit Obi=Mantenimiento. FRANKLIN VALERIO Imad: 0404Qmgft001002628 Trn: 4644109094Ff"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": 9524,
+      "category": "Deposits and Additions",
+      "description": "Fed Wire Credit Via: Biscayne Bank/066015767 B/O: Ernesto Andres Estrada Guayaquil Ecuador 000000000 Ref: Chase Nyc/Ctr/Bnf=ELEGANT CABINETRY, INC 331384612/Ac-000000042313 Rfb=O/B Biscayne Bk Obi=Ref Mantenimiento Del Bote Abril 11 Invoice N Imad: 0405Qmgft003000505 Trn: 1571509095Ff"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": 9750,
+      "category": "Deposits and Additions",
+      "description": "Fed Wire Credit Via: Intercredit Bank N.A./067011812 B/O: Alexton International Limited Tortola, Virgin Islands Ref: Chase Nyc/Ctr/Bnf=ELEGANT CABINETRY, INC 331384612/Ac-000000042313 Rfb=O/B Intercredit Obi=Mantenimiento. FRANKLIN VALERIO Imad: 0408Qmgft007002614 Trn: 4924109098Ff"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": 716.92,
+      "category": "Deposits and Additions",
+      "description": "Merch Svc Bkcrd Dep 899000001725249 CCD ID: 1246827607"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": 300,
+      "category": "Deposits and Additions",
+      "description": "Merchant Bnkcd Deposit 434367702884 CCD ID: 8752044092"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": 139.63,
+      "category": "Deposits and Additions",
+      "description": "Card Purchase Return 10/11 U R* Kmart 04295 North Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-15",
+      "amount": 8750,
+      "category": "Deposits and Additions",
+      "description": "Fed Wire Credit Via: Intercredit Bank N.A./067011812 B/O: Alexton International Limited Tortola, Virgin Islands Ref: Chase Nyc/Ctr/Bnf=ELEGANT CABINETRY, INC 331384612/Ac-000000042313 Rfb=O/B Intercredit Obi=Mantenimiento. FRANKLIN VALERIO Imad: 0415Qmgft004003424 Trn: 6654909105Ff"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": 582.7,
+      "category": "Deposits and Additions",
+      "description": "Card Purchase Return 10/15 U R* Kvh Industries 401-8452400 RI Card 6657"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": 806.31,
+      "category": "Deposits and Additions",
+      "description": "Merch Svc Bkcrd Dep 899000001725249 CCD ID: 1246827607"
+    },
+    {
+      "date": "2021-10-19",
+      "amount": 4.75,
+      "category": "Deposits and Additions",
+      "description": "Partial Refund: Annual Fee, Ultimate Rewards Card Ending IN 6657"
+    },
+    {
+      "date": "2021-10-19",
+      "amount": 8060,
+      "category": "Deposits and Additions",
+      "description": "Paymentech Deposit 5322298 CCD ID: 1020401225"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": 19772.13,
+      "category": "Deposits and Additions",
+      "description": "American Express Settlement 4098628803 CCD ID: 1134992250"
+    },
+    {
+      "date": "2021-10-22",
+      "amount": 7750,
+      "category": "Deposits and Additions",
+      "description": "Fed Wire Credit Via: Intercredit Bank N.A./067011812 B/O: Alexton International Limited Tortola, Virgin Islands Ref: Chase Nyc/Ctr/Bnf=ELEGANT CABINETRY, INC 331384612/Ac-000000042313 Rfb=O/B Intercredit Obi=Mantenimiento. FRANKLIN VALERIO Imad: 0422Qmgft008000100 Trn: 0692509112Ff"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": 9529.1,
+      "category": "Deposits and Additions",
+      "description": "American Express Settlement 4098628803 CCD ID: 1134992250"
+    },
+    {
+      "date": "2021-10-29",
+      "amount": 8750,
+      "category": "Deposits and Additions",
+      "description": "Fed Wire Credit Via: Intercredit Bank N.A./067011812 B/O: Alexton International Limited Tortola Virgin Islands Ref: Chase Nyc/Ctr/Bnf=ELEGANT CABINETRY, INC 331384612/Ac-000000042313 Rfb=O/B Intercredit Obi=Mantenimiento. FRANKLIN VALERIO Imad: 0429Qmgft015003211 Trn: 5801309119Ff"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -821.01,
+      "category": "Checks Paid",
+      "description": "Check 1012"
+    },
+    {
+      "date": "2021-10-01",
+      "amount": -20.91,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 09/28 U R* Magicjack 561-5 561-5942140 FL Card 6657"
+    },
+    {
+      "date": "2021-10-01",
+      "amount": -15.33,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 09/30 U R* M And R Sweet Candy Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-01",
+      "amount": -453.46,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/01 U R* Sprint *Wireles 800-639-611 VA Card 6657"
+    },
+    {
+      "date": "2021-10-01",
+      "amount": -19.58,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 09/31 U R* LA Baguette Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-01",
+      "amount": -303,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Non-Chase ATM Withdraw 10/01 *Bay Point Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -97.5,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/01 U R* Hostgator Com 713-5745287 TX Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -6.31,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/01 U R* Burger King #33 Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -19.78,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/01 Subway 00008995 Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -70.71,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/01 Publix #794 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -8.06,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/02 U R* Google*Goog3543 Cc@Google.C CA Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -2.99,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/02 U R* 7-Eleven 10529 Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -14.32,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/02 U R* LA Baguette Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -187.02,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/02 Kmart 04295 North Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -14.74,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/02 Burger King #3711 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -10.13,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/02 U R* Wendys #1713 Q Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -88.1,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/03 Publix #794 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -22,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Non-Chase ATM Withdraw 10/04 9050 Biscayne Blvd Miami Shores FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -2000,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase With Pin 10/04 Buchwald Jewele/36 N.E Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -202.5,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Non-Chase ATM Withdraw 10/04 36 NE 1 St Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -202.5,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Non-Chase ATM Withdraw 10/04 36 NE 1 St Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -132.11,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/02 U R* 8X8, Inc. 888-8 888-8988733 CA Card 6657"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -9.81,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/03 Mcdonald's F11511 Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -31.68,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/03 U R* Latin Cafe Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -68.41,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/03 Toys R US #8709 N Miami Beach FL Card 7969"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -31.11,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/03 Cvspharmacy #4249 Q03 Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -16.96,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/04 U R* Steves Pizza North Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -265.05,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/04 U R* Paypal *Elsnert 402-935-773 CA Card 6657"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -6.61,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/04 Mcdonald's F11511 Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -26.93,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/04 U R* Cafe Nosh Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -127.56,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase With Pin 10/05 Costco Whse #0182 North Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -275,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase With Pin 10/05 Costco Whse #0182 North Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-06",
+      "amount": -419.01,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/04 U R* Padron Cigars 305-6432117 FL Card 6657"
+    },
+    {
+      "date": "2021-10-06",
+      "amount": -11.75,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/04 NETFLIX Inc#1224 Miami Shore FL Card 7969"
+    },
+    {
+      "date": "2021-10-06",
+      "amount": -26.48,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/04 Papa John's #0428 305-754-2666 FL Card 7969"
+    },
+    {
+      "date": "2021-10-06",
+      "amount": -18.87,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/05 U R* New York Bagel Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-06",
+      "amount": -331.57,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/05 Bass Pro Shops Dania FL Card 7969"
+    },
+    {
+      "date": "2021-10-07",
+      "amount": -67.12,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/05 Hess 09565 N. Bay Villag FL Card 7969"
+    },
+    {
+      "date": "2021-10-07",
+      "amount": -16.1,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/05 Pollo Tropical #15 North Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-07",
+      "amount": -12.81,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/05 U R* Navarro Discount PHA Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-07",
+      "amount": -92.47,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/06 U R* Miami Beach Gol Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-07",
+      "amount": -116.85,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/06 U R* Publix #794 Miami Shores FL Card 6657"
+    },
+    {
+      "date": "2021-10-07",
+      "amount": -564,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/06 U R* Kwon Jae-Hwa Ta 305-759-667 FL Card 6657"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": -38.83,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/06 U R* Miami Beach Gol Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": -15.04,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/06 U R* Deco Drive Ciga Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": -34.3,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/07 U R* Los Ranchos Restaura Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": -3,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/08 U R* Miami Beach Met Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": -5.16,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/07 Sabor Tropical #4 Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -13.45,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/07 U R* LA Sandwicherie Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -13.88,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/07 U R* NETFLIX Inc Miami Shore FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -24.95,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/09 U R* Peoplefinders.C 800-718-899 CA Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -36.38,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/08 U R* Capt Harrys Fishing Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -9150,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/08 U R* Kvh Industries 401-8458168 RI Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -43.14,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/09 U R* Bertoni Lounge N. Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -12.52,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/09 U R* Taco Rico South Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -12,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/08 U R* Harlen Cigars C Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -24,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/08 U R* Paypal *Naugleb 402-935-773 CA Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -259.03,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Google*Goog2305 Cc@Google.C CA Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -55.09,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/09 U R* Latin Cafe Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -37.97,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 Publix #794 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -25.68,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Biscayne Blvd Stn Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -5.34,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Cracker Barrel Florida City FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -42.57,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Cracker Barrel Florida City FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -49.18,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 Cracker Barrel #545 Florida City FL Card 7969"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -8.04,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Mcdonald's F5090 Tavernier FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -10.69,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/09 U R* Best Buy 0000 Aventura FL Card 6657"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -7.48,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/09 U R* Best Buy 0000 Aventura FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -79.4,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Sunset Grille & Ra Marathon FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -17.74,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Exxonmobil 9674 Marathon FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -61.9,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Exxonmobil 9674 Marathon FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -11.1,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Walgreens #1148 Florida Cit FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -17.11,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Walgreens #1148 Florida Cit FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -1.16,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/10 U R* Exxonmobil 9 Florida Cit FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -22.03,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/11 U R* Bagels & Company Inc Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -5.4,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/11 U R* Petco 2744 6 North Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -25,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/11 U R* Natl Vessel Doc Falling Wat WV Card 6657"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -641.34,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/11 U R* Kmart 04295 North Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -21.47,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/12 U R* Mcdonald's F11511 Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -123.5,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Non-Chase ATM Withdraw 10/13 401 Biscayne Blvd Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -103.5,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Non-Chase ATM Withdraw 10/13 401 Biscayne Blvd Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-14",
+      "amount": -26.64,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/12 U R* Kabobji Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-14",
+      "amount": -10.03,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/12 U R* Deco Drive Ciga Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-14",
+      "amount": -21.27,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/13 U R* New York Bagel Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-14",
+      "amount": -83,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Non-Chase ATM Withdraw 10/14 *Washington Avenue Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-15",
+      "amount": -26.64,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/13 U R* LA Baguette Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-15",
+      "amount": -21.38,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/14 U R* Steves Pizza North Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-15",
+      "amount": -114.61,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/14 Target 000103 North Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -257.27,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/15 Hotels.Com US 800-219-4606 WA Card 7969"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -12.49,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/15 U R* Mcdonald's F143 Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -5.1,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/15 U R* Mcdonald's F143 Miami Beach FL Card 6657"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -54.69,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/15 Walgreens #3173 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -92.68,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/15 Publix #794 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -71.61,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/16 Asha Quik Mart Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -39,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/16 Denny's #7455 North Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -28.04,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/17 Steak-N-Shake#0563 Q9 Hallandale FL Card 7969"
+    },
+    {
+      "date": "2021-10-19",
+      "amount": -12,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/17 Amc Stubs 010964 816-2214000 MO Card 7969"
+    },
+    {
+      "date": "2021-10-19",
+      "amount": -36,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/17 Amc Aventura 201005883 Aventura FL Card 7969"
+    },
+    {
+      "date": "2021-10-19",
+      "amount": -35.25,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/17 Amc Aventura 201005883 Aventura FL Card 7969"
+    },
+    {
+      "date": "2021-10-19",
+      "amount": -52,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/18 Metropcs 877-315-6074 TX Card 7969"
+    },
+    {
+      "date": "2021-10-20",
+      "amount": -11.95,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/19 U R* Paypams.Com 052 877-7267586 CO Card 6657"
+    },
+    {
+      "date": "2021-10-20",
+      "amount": -16.95,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/19 U R* Paypams.Com 052 877-7267586 CO Card 6657"
+    },
+    {
+      "date": "2021-10-20",
+      "amount": -9.95,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/19 U R* Paypams.Com 052 877-7267586 CO Card 6657"
+    },
+    {
+      "date": "2021-10-20",
+      "amount": -12.29,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/19 Fedex Office #0772 Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -183.43,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/20 U R* Clubflyers.Com 305-591-7600 FL Card 6657"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -129.72,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/19 Office Depot #25 N Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -9.07,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/20 Walgreens #3173 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-22",
+      "amount": -44.74,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/21 Publix #794 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-22",
+      "amount": -18.18,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/21 V.Com 866-692-2789 TX Card 7969"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": -25,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/19 U R* Skype Communicat Luxembourg Card 6657"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": -44.1,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/19 U R* Sampson Cay Club Encampment WY Card 6657"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": -10,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/21 Exxonmobil 76638758 Aventura FL Card 7969"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": -69.08,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/22 7-Eleven 30015 North Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": -16.95,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/24 J2 *Efax Plus Servic 323-817-320 CA Card 7969"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": -14.99,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/23 U R* Yousendit Inc 866-5587363 CA Card 6657"
+    },
+    {
+      "date": "2021-10-25",
+      "amount": -10,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/22 U R* Sunpass Operati 888-8655352 FL Card 6657"
+    },
+    {
+      "date": "2021-10-26",
+      "amount": -62.05,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/24 Hess 09574 Lake Buena VI FL Card 7969"
+    },
+    {
+      "date": "2021-10-26",
+      "amount": -114.44,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/26 U R* Comcast Cable C 800-Comcast FL Card 6657"
+    },
+    {
+      "date": "2021-10-26",
+      "amount": -10,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Recurring Card Purchase 10/24 U R* Sunpass Operati 888-8655352 FL Card 6657"
+    },
+    {
+      "date": "2021-10-27",
+      "amount": -64.42,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/26 Publix #794 Miami Shores FL Card 7969"
+    },
+    {
+      "date": "2021-10-28",
+      "amount": -76456.67,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/27 Kitchen Solvers of MIA FL Card 6657"
+    },
+    {
+      "date": "2021-10-29",
+      "amount": -7.47,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/27 Pollo Tropical #15 North Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-29",
+      "amount": -2.95,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/28 U R* Google *Future Google.Com/C CA Card 6657"
+    },
+    {
+      "date": "2021-10-29",
+      "amount": -82651,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/28 Lignin Custom Woodwork Miami FL Card 6657"
+    },
+    {
+      "date": "2021-10-29",
+      "amount": -21.76,
+      "category": "ATM & Debit Card Withdrawals",
+      "description": "Card Purchase 10/28 Walgreens #2790 Miami FL Card 7969"
+    },
+    {
+      "date": "2021-10-01",
+      "amount": -4.95,
+      "category": "Electronic Withdrawals",
+      "description": "American Express Collection 4098628803 CCD ID: 1134992250"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -12.53,
+      "category": "Electronic Withdrawals",
+      "description": "Merch Svc Bkcrd Fees 899000001725249 CCD ID: 1246827607"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -275.17,
+      "category": "Electronic Withdrawals",
+      "description": "Merchant Bnkcd Fee 434367702884 CCD ID: 8752044092"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -224.42,
+      "category": "Electronic Withdrawals",
+      "description": "American Express Axp Discnt 4098628803 CCD ID: 1134992250"
+    },
+    {
+      "date": "2021-10-06",
+      "amount": -560,
+      "category": "Electronic Withdrawals",
+      "description": "Paypal Inst Xfer 582J24Uh8Nzwn Web ID: Paypalsi66"
+    },
+    {
+      "date": "2021-10-06",
+      "amount": -30,
+      "category": "Electronic Withdrawals",
+      "description": "Paypal Inst Xfer 582J24Uhrurlq Web ID: Paypalsi66"
+    },
+    {
+      "date": "2021-10-07",
+      "amount": -375,
+      "category": "Electronic Withdrawals",
+      "description": "10/07 Online Payment 1075219852 To Anthony Robinson"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -405,
+      "category": "Electronic Withdrawals",
+      "description": "Rcg Infosoft Pvt Iat Paypal 582J24Uyuzl7J Web ID: 770510487C"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -49.99,
+      "category": "Electronic Withdrawals",
+      "description": "Paypal Inst Xfer 582J24Uy5E9H8 Web ID: Paypalsi66"
+    },
+    {
+      "date": "2021-10-19",
+      "amount": -1656.25,
+      "category": "Electronic Withdrawals",
+      "description": "10/19 Online Payment 1085065424 To Maritime Coverage"
+    },
+    {
+      "date": "2021-10-20",
+      "amount": -100,
+      "category": "Electronic Withdrawals",
+      "description": "Paymentech Fin ADJ 5322298 CCD ID: 1020401225"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -1100,
+      "category": "Electronic Withdrawals",
+      "description": "10/21 Online Payment 1086464662 To Ford Motor Credit"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -700,
+      "category": "Electronic Withdrawals",
+      "description": "10/21 Online Payment 1086464663 To Ford Motor Credit"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -2010,
+      "category": "Electronic Withdrawals",
+      "description": "10/21 Online Payment 1086474572 To Keybank"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -154.83,
+      "category": "Electronic Withdrawals",
+      "description": "Fpl Direct Debit Elec Pymt 1206922419 Webi Web ID: 3590247775"
+    },
+    {
+      "date": "2021-10-26",
+      "amount": -383.36,
+      "category": "Electronic Withdrawals",
+      "description": "Security Natl IN Ins Paymt G00 3487914 02 PPD ID: 2650109120"
+    },
+    {
+      "date": "2021-10-28",
+      "amount": -9.99,
+      "category": "Electronic Withdrawals",
+      "description": "Vbbcom Limited Iat Paypal 582J24Vy689Aw Web ID: 770510487C"
+    },
+    {
+      "date": "2021-10-01",
+      "amount": -2,
+      "category": "Fees and Other Withdrawals",
+      "description": "Non-Chase ATM Fee-With"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -15,
+      "category": "Fees and Other Withdrawals",
+      "description": "Incoming Domestic Wire Fee"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -8,
+      "category": "Fees and Other Withdrawals",
+      "description": "Non-Chase ATM Fee-With"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -16,
+      "category": "Fees and Other Withdrawals",
+      "description": "Non-Chase ATM Fee-With"
+    },
+    {
+      "date": "2021-10-04",
+      "amount": -2,
+      "category": "Fees and Other Withdrawals",
+      "description": "Non-Chase ATM Fee-With"
+    },
+    {
+      "date": "2021-10-05",
+      "amount": -15,
+      "category": "Fees and Other Withdrawals",
+      "description": "Incoming Domestic Wire Fee"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": -1000,
+      "category": "Fees and Other Withdrawals",
+      "description": "10/08 Withdrawal"
+    },
+    {
+      "date": "2021-10-08",
+      "amount": -15,
+      "category": "Fees and Other Withdrawals",
+      "description": "Incoming Domestic Wire Fee"
+    },
+    {
+      "date": "2021-10-11",
+      "amount": -1000,
+      "category": "Fees and Other Withdrawals",
+      "description": "10/11 Withdrawal"
+    },
+    {
+      "date": "2021-10-12",
+      "amount": -1000,
+      "category": "Fees and Other Withdrawals",
+      "description": "10/12 Withdrawal"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -8,
+      "category": "Fees and Other Withdrawals",
+      "description": "Non-Chase ATM Fee-With"
+    },
+    {
+      "date": "2021-10-13",
+      "amount": -4,
+      "category": "Fees and Other Withdrawals",
+      "description": "Non-Chase ATM Fee-With"
+    },
+    {
+      "date": "2021-10-14",
+      "amount": -2,
+      "category": "Fees and Other Withdrawals",
+      "description": "Non-Chase ATM Fee-With"
+    },
+    {
+      "date": "2021-10-15",
+      "amount": -15,
+      "category": "Fees and Other Withdrawals",
+      "description": "Incoming Domestic Wire Fee"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -500,
+      "category": "Fees and Other Withdrawals",
+      "description": "10/18 Withdrawal"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -700,
+      "category": "Fees and Other Withdrawals",
+      "description": "10/18 Withdrawal"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -1200,
+      "category": "Fees and Other Withdrawals",
+      "description": "10/18 Withdrawal"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -24,
+      "category": "Fees and Other Withdrawals",
+      "description": "Official Checks Charge"
+    },
+    {
+      "date": "2021-10-18",
+      "amount": -8,
+      "category": "Fees and Other Withdrawals",
+      "description": "Official Checks Charge"
+    },
+    {
+      "date": "2021-10-21",
+      "amount": -1500,
+      "category": "Fees and Other Withdrawals",
+      "description": "10/21 Withdrawal"
+    },
+    {
+      "date": "2021-10-22",
+      "amount": -15,
+      "category": "Fees and Other Withdrawals",
+      "description": "Incoming Domestic Wire Fee"
+    },
+    {
+      "date": "2021-10-29",
+      "amount": -15,
+      "category": "Fees and Other Withdrawals",
+      "description": "Incoming Domestic Wire Fee"
+    }
+  ],
+  "ending_balance": 60015.89,
+  "account_details": {
+    "holder_name": "ELEGANT CABINETRY, INC",
+    "account_type": "Chase BusinessSelect Checking",
+    "account_last_four": "3986"
+  },
+  "statement_period": "October 01, 2021 through October 31, 2021",
+  "overdraft_protection_enabled": null
+}

@@ -70,7 +70,7 @@ export function DocumentViewerSidebarSkeleton({ inline }: { inline: boolean }) {
 
   return (
     <div className="w-40 shrink-0 border-r bg-sidebar p-4">
-      <div className="mx-auto h-28 w-20 rounded-sm border bg-background shadow-xs">
+      <div className="mx-auto h-28 w-20 overflow-hidden rounded-md bg-background shadow-xs">
         <div className="h-full animate-pulse bg-muted" />
       </div>
       <div className="mx-auto mt-3 h-3 w-10 rounded-full bg-muted" />

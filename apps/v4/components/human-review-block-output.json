@@ -1,0 +1,2546 @@
+{
+  "value": {
+    "transactions": [
+      {
+        "date": "2021-10-01",
+        "amount": -20.91,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 09/28 U R* Magicjack 561-5 561-5942140 FL Card 6657"
+      },
+      {
+        "date": "2021-10-01",
+        "amount": -15.33,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 09/30 U R* M And R Sweet Candy Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-01",
+        "amount": -453.46,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/01 U R* Sprint *Wireles 800-639-611 VA Card 6657"
+      },
+      {
+        "date": "2021-10-01",
+        "amount": -19.58,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 09/31 U R* LA Baguette Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-01",
+        "amount": -303,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Non-Chase ATM Withdraw 10/01 *Bay Point Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -97.5,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/01 U R* Hostgator Com 713-5745287 TX Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -6.31,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/01 U R* Burger King #33 Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -19.78,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/01 Subway 00008995 Miami FL Card 7969"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -70.71,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/01 Publix #794 Miami Shores FL Card 7969"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -8.06,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/02 U R* Google*Goog3543 Cc@Google.C CA Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -2.99,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/02 U R* 7-Eleven 10529 Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -14.32,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/02 U R* LA Baguette Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -187.02,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/02 Kmart 04295 North Miami FL Card 7969"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -14.74,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/02 Burger King #3711 Miami Shores FL Card 7969"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -10.13,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/02 U R* Wendys #1713 Q Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -88.1,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/03 Publix #794 Miami Shores FL Card 7969"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -22,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Non-Chase ATM Withdraw 10/04 9050 Biscayne Blvd Miami Shores FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -2000,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase With Pin 10/04 Buchwald Jewele/36 N.E Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -202.5,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Non-Chase ATM Withdraw 10/04 36 NE 1 St Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -202.5,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Non-Chase ATM Withdraw 10/04 36 NE 1 St Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-04",
+        "amount": -132.11,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Recurring Card Purchase 10/02 U R* 8X8, Inc. 888-8 888-8988733 CA Card 6657"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -9.81,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/03 Mcdonald's F11511 Miami FL Card 7969"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -31.68,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/03 U R* Latin Cafe Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -68.41,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/03 Toys R US #8709 N Miami Beach FL Card 7969"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -31.11,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/03 Cvspharmacy #4249 Q03 Miami FL Card 7969"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -16.96,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/04 U R* Steves Pizza North Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -265.05,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/04 U R* Paypal *Elsnert 402-935-773 CA Card 6657"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -6.61,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/04 Mcdonald's F11511 Miami FL Card 7969"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -26.93,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/04 U R* Cafe Nosh Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -127.56,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase With Pin 10/05 Costco Whse #0182 North Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-05",
+        "amount": -275,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase With Pin 10/05 Costco Whse #0182 North Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-06",
+        "amount": -419.01,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/04 U R* Padron Cigars 305-6432117 FL Card 6657"
+      },
+      {
+        "date": "2021-10-06",
+        "amount": -11.75,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/04 NETFLIX Inc#1224 Miami Shore FL Card 7969"
+      },
+      {
+        "date": "2021-10-06",
+        "amount": -26.48,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/04 Papa John's #0428 305-754-2666 FL Card 7969"
+      },
+      {
+        "date": "2021-10-06",
+        "amount": -18.87,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/05 U R* New York Bagel Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-06",
+        "amount": -331.57,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/05 Bass Pro Shops Dania FL Card 7969"
+      },
+      {
+        "date": "2021-10-07",
+        "amount": -67.12,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/05 Hess 09565 N. Bay Villag FL Card 7969"
+      },
+      {
+        "date": "2021-10-07",
+        "amount": -16.1,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/05 Pollo Tropical #15 North Miami FL Card 7969"
+      },
+      {
+        "date": "2021-10-07",
+        "amount": -12.81,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/05 U R* Navarro Discount PHA Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-07",
+        "amount": -92.47,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/06 U R* Miami Beach Gol Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-07",
+        "amount": -116.85,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/06 U R* Publix #794 Miami Shores FL Card 6657"
+      },
+      {
+        "date": "2021-10-07",
+        "amount": -564,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Recurring Card Purchase 10/06 U R* Kwon Jae-Hwa Ta 305-759-667 FL Card 6657"
+      },
+      {
+        "date": "2021-10-08",
+        "amount": -38.83,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/06 U R* Miami Beach Gol Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-08",
+        "amount": -15.04,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/06 U R* Deco Drive Ciga Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-08",
+        "amount": -34.3,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/07 U R* Los Ranchos Restaura Miami FL Card 6657"
+      },
+      {
+        "date": "2021-10-08",
+        "amount": -3,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/08 U R* Miami Beach Met Miami Beach FL Card 6657"
+      },
+      {
+        "date": "2021-10-08",
+        "amount": -5.16,
+        "category": "ATM & DEBIT CARD WITHDRAWALS",
+        "description": "Card Purchase 10/07 Sabor Tropical #4 Miami FL Card 7969"
+      }
+    ],
+    "ending_balance": null,
+    "account_details": {
+      "holder_name": null,
+      "account_type": null,
+      "account_last_four": "3986"
+    },
+    "statement_period": "October 01, 2021 through October 31, 2021",
+    "overdraft_protection_enabled": null
+  },
+  "metadata": {
+    "transactions": {
+      "citations": [],
+      "ocrConfidence": 0.916,
+      "logprobsConfidence": null
+    },
+    "ending_balance": {
+      "citations": [],
+      "logprobsConfidence": null
+    },
+    "account_details": {
+      "citations": [],
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    },
+    "transactions[0]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.7696,
+              "y": 130.2048
+            },
+            {
+              "x": 536.6952,
+              "y": 130.2048
+            },
+            {
+              "x": 536.6952,
+              "y": 143.2512
+            },
+            {
+              "x": 26.7696,
+              "y": 143.2512
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/01 | Card Purchase 09/28 U R* Magicjack 561-5 561-5942140 FL Card 6657           | $20.91   |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[1]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 143.2512
+            },
+            {
+              "x": 536.6952,
+              "y": 143.2512
+            },
+            {
+              "x": 536.6952,
+              "y": 156.2976
+            },
+            {
+              "x": 26.1216,
+              "y": 156.2976
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/01 | Card Purchase 09/30 U R* M And R Sweet Candy Miami FL Card 6657             | 15.33    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[2]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 156.2976
+            },
+            {
+              "x": 536.6952,
+              "y": 156.2976
+            },
+            {
+              "x": 536.6952,
+              "y": 169.9992
+            },
+            {
+              "x": 26.1216,
+              "y": 169.9992
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/01 | Card Purchase 10/01 U R* Sprint *Wireles 800-639-611 VA Card 6657           | 453.46   |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[3]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 169.344
+            },
+            {
+              "x": 536.6952,
+              "y": 169.344
+            },
+            {
+              "x": 536.6952,
+              "y": 182.3904
+            },
+            {
+              "x": 26.1216,
+              "y": 182.3904
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/01 | Card Purchase 09/31 U R* LA Baguette Miami FL Card 6657                     | 19.58    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[4]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 182.3904
+            },
+            {
+              "x": 536.6952,
+              "y": 182.3904
+            },
+            {
+              "x": 536.6952,
+              "y": 195.4368
+            },
+            {
+              "x": 26.1216,
+              "y": 195.4368
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/01 | Non-Chase ATM Withdraw 10/01 *Bay Point Miami FL Card 6657                  | 303.00   |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[5]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 195.4368
+            },
+            {
+              "x": 536.6952,
+              "y": 195.4368
+            },
+            {
+              "x": 536.6952,
+              "y": 208.49040000000002
+            },
+            {
+              "x": 26.1216,
+              "y": 208.49040000000002
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/01 U R* Hostgator Com 713-5745287 TX Card 6657             | 97.50    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[6]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 208.49040000000002
+            },
+            {
+              "x": 536.6952,
+              "y": 208.49040000000002
+            },
+            {
+              "x": 536.6952,
+              "y": 222.1848
+            },
+            {
+              "x": 26.1216,
+              "y": 222.1848
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/01 U R* Burger King #33 Miami FL Card 6657                 | 6.31     |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[7]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 222.1848
+            },
+            {
+              "x": 536.6952,
+              "y": 222.1848
+            },
+            {
+              "x": 536.6952,
+              "y": 235.23839999999998
+            },
+            {
+              "x": 26.1216,
+              "y": 235.23839999999998
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/01 Subway 00008995 Miami FL Card 7969                      | 19.78    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[8]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 235.23839999999998
+            },
+            {
+              "x": 536.6952,
+              "y": 235.23839999999998
+            },
+            {
+              "x": 536.6952,
+              "y": 248.9328
+            },
+            {
+              "x": 26.1216,
+              "y": 248.9328
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/01 Publix #794 Miami Shores FL Card 7969                   | 70.71    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[9]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 247.62959999999998
+            },
+            {
+              "x": 536.6952,
+              "y": 247.62959999999998
+            },
+            {
+              "x": 536.6952,
+              "y": 261.9864
+            },
+            {
+              "x": 26.1216,
+              "y": 261.9864
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/02 U R* Google*Goog3543 Cc@Google.C CA Card 6657           | 8.06     |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "statement_period": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 358.9632,
+              "y": 46.497600000000006
+            },
+            {
+              "x": 515.1816,
+              "y": 46.5048
+            },
+            {
+              "x": 515.1816,
+              "y": 68.47919999999999
+            },
+            {
+              "x": 358.956,
+              "y": 68.4648
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "October 01, 2021 through October 31, 2021 Account Number: 000000710753986"
+        }
+      ],
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[10]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 261.9864
+            },
+            {
+              "x": 536.6952,
+              "y": 261.9864
+            },
+            {
+              "x": 536.6952,
+              "y": 275.0328
+            },
+            {
+              "x": 26.1216,
+              "y": 275.0328
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/02 U R* 7-Eleven 10529 Miami Beach FL Card 6657            | 2.99     |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[11]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 275.0328
+            },
+            {
+              "x": 536.6952,
+              "y": 275.0328
+            },
+            {
+              "x": 536.6952,
+              "y": 288.0792
+            },
+            {
+              "x": 26.1216,
+              "y": 288.0792
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/02 U R* LA Baguette Miami FL Card 6657                     | 14.32    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[12]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 288.0792
+            },
+            {
+              "x": 536.6952,
+              "y": 288.0792
+            },
+            {
+              "x": 536.6952,
+              "y": 301.12559999999996
+            },
+            {
+              "x": 26.1216,
+              "y": 301.12559999999996
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/02 Kmart 04295 North Miami FL Card 7969                    | 187.02   |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[13]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 300.4704
+            },
+            {
+              "x": 536.6952,
+              "y": 300.4704
+            },
+            {
+              "x": 536.6952,
+              "y": 314.8272
+            },
+            {
+              "x": 26.1216,
+              "y": 314.8272
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/02 Burger King #3711 Miami Shores FL Card 7969             | 14.74    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[14]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 314.8272
+            },
+            {
+              "x": 536.6952,
+              "y": 314.8272
+            },
+            {
+              "x": 536.6952,
+              "y": 327.8736
+            },
+            {
+              "x": 26.1216,
+              "y": 327.8736
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/02 U R* Wendys #1713 Q Miami FL Card 6657                  | 10.13    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[15]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 327.8736
+            },
+            {
+              "x": 536.6952,
+              "y": 327.8736
+            },
+            {
+              "x": 536.6952,
+              "y": 340.92
+            },
+            {
+              "x": 26.1216,
+              "y": 340.92
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase 10/03 Publix #794 Miami Shores FL Card 7969                   | 88.10    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[16]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 340.92
+            },
+            {
+              "x": 536.6952,
+              "y": 340.92
+            },
+            {
+              "x": 536.6952,
+              "y": 353.9664
+            },
+            {
+              "x": 26.1216,
+              "y": 353.9664
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Non-Chase ATM Withdraw 10/04 9050 Biscayne Blvd Miami Shores FL Card 6657   | 22.00    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[17]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 353.9664
+            },
+            {
+              "x": 536.6952,
+              "y": 353.9664
+            },
+            {
+              "x": 536.6952,
+              "y": 367.66799999999995
+            },
+            {
+              "x": 26.1216,
+              "y": 367.66799999999995
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Card Purchase With Pin 10/04 Buchwald Jewele/36 N.E Miami FL Card 6657      | 2,000.00 |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[18]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.122,
+              "y": 367.668
+            },
+            {
+              "x": 536.695,
+              "y": 367.668
+            },
+            {
+              "x": 536.695,
+              "y": 380.714
+            },
+            {
+              "x": 26.122,
+              "y": 380.714
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "10/04 Non-Chase ATM Withdraw 10/04 36 NE 1 St Miami Beach FL Card 6657 202.50"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[19]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.122,
+              "y": 367.668
+            },
+            {
+              "x": 536.695,
+              "y": 367.668
+            },
+            {
+              "x": 536.695,
+              "y": 380.714
+            },
+            {
+              "x": 26.122,
+              "y": 380.714
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "10/04 Non-Chase ATM Withdraw 10/04 36 NE 1 St Miami Beach FL Card 6657 202.50"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[20]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 393.76079999999996
+            },
+            {
+              "x": 536.6952,
+              "y": 393.76079999999996
+            },
+            {
+              "x": 536.6952,
+              "y": 406.8144
+            },
+            {
+              "x": 26.1216,
+              "y": 406.8144
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/04 | Recurring Card Purchase 10/02 U R* 8X8, Inc. 888-8 888-8988733 CA Card 6657 | 132.11   |"
+        }
+      ],
+      "ocrConfidence": 0.916,
+      "logprobsConfidence": null
+    },
+    "transactions[21]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 406.8144
+            },
+            {
+              "x": 536.6952,
+              "y": 406.8144
+            },
+            {
+              "x": 536.6952,
+              "y": 419.86080000000004
+            },
+            {
+              "x": 26.1216,
+              "y": 419.86080000000004
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase 10/03 Mcdonald's F11511 Miami FL Card 7969                    | 9.81     |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[22]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 419.2056
+            },
+            {
+              "x": 536.6952,
+              "y": 419.2056
+            },
+            {
+              "x": 536.6952,
+              "y": 433.5624
+            },
+            {
+              "x": 26.1216,
+              "y": 433.5624
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase 10/03 U R* Latin Cafe Miami FL Card 6657                      | 31.68    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[23]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 433.5624
+            },
+            {
+              "x": 536.6952,
+              "y": 433.5624
+            },
+            {
+              "x": 536.6952,
+              "y": 446.6088
+            },
+            {
+              "x": 26.1216,
+              "y": 446.6088
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase 10/03 Toys R US #8709 N Miami Beach FL Card 7969              | 68.41    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[24]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 446.6088
+            },
+            {
+              "x": 536.6952,
+              "y": 446.6088
+            },
+            {
+              "x": 536.6952,
+              "y": 459.65520000000004
+            },
+            {
+              "x": 26.1216,
+              "y": 459.65520000000004
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase 10/03 Cvspharmacy #4249 Q03 Miami FL Card 7969                | 31.11    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[25]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 459.65520000000004
+            },
+            {
+              "x": 536.6952,
+              "y": 459.65520000000004
+            },
+            {
+              "x": 536.6952,
+              "y": 472.7016
+            },
+            {
+              "x": 26.1216,
+              "y": 472.7016
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase         | 10/04 U R* Steves Pizza North Miami FL Card 6657    | 16.96    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[26]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 472.7016
+            },
+            {
+              "x": 536.6952,
+              "y": 472.7016
+            },
+            {
+              "x": 536.6952,
+              "y": 486.4032
+            },
+            {
+              "x": 26.1216,
+              "y": 486.4032
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase         | 10/04 U R* Paypal *Elsnert 402-935-773 CA Card 6657 | 265.05   |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[27]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 486.4032
+            },
+            {
+              "x": 536.6952,
+              "y": 486.4032
+            },
+            {
+              "x": 536.6952,
+              "y": 499.4496
+            },
+            {
+              "x": 26.1216,
+              "y": 499.4496
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase 10/04 Mcdonald's F11511 Miami FL Card 7969                    | 6.61     |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[28]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 499.4496
+            },
+            {
+              "x": 536.6952,
+              "y": 499.4496
+            },
+            {
+              "x": 536.6952,
+              "y": 512.496
+            },
+            {
+              "x": 26.1216,
+              "y": 512.496
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase 10/04 U R* Cafe Nosh Miami FL Card 6657                       | 26.93    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[29]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 512.496
+            },
+            {
+              "x": 536.6952,
+              "y": 512.496
+            },
+            {
+              "x": 536.6952,
+              "y": 526.1976
+            },
+            {
+              "x": 26.1216,
+              "y": 526.1976
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase With Pin 10/05 Costco Whse #0182 North Miami FL Card 6657     | 127.56   |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[30]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 524.8944
+            },
+            {
+              "x": 536.6952,
+              "y": 524.8944
+            },
+            {
+              "x": 536.6952,
+              "y": 539.2439999999999
+            },
+            {
+              "x": 26.1216,
+              "y": 539.2439999999999
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/05 | Card Purchase With Pin 10/05 Costco Whse #0182 North Miami FL Card 6657     | 275.00   |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[31]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 537.9408
+            },
+            {
+              "x": 536.6952,
+              "y": 537.9408
+            },
+            {
+              "x": 536.6952,
+              "y": 552.2904
+            },
+            {
+              "x": 26.1216,
+              "y": 552.2904
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/06 | Card Purchase 10/04 U R* Padron Cigars 305-6432117 FL Card 6657             | 419.01   |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[32]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 552.2904
+            },
+            {
+              "x": 536.6952,
+              "y": 552.2904
+            },
+            {
+              "x": 536.6952,
+              "y": 565.344
+            },
+            {
+              "x": 26.1216,
+              "y": 565.344
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/06 | Card Purchase 10/04 NETFLIX Inc#1224 Miami Shore FL Card 7969               | 11.75    |"
+        }
+      ],
+      "ocrConfidence": 0.963,
+      "logprobsConfidence": null
+    },
+    "transactions[33]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 565.344
+            },
+            {
+              "x": 536.6952,
+              "y": 565.344
+            },
+            {
+              "x": 536.6952,
+              "y": 578.3904
+            },
+            {
+              "x": 26.1216,
+              "y": 578.3904
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/06 | Card Purchase         | 10/04 Papa John's #0428 305-754-2666 FL Card 7969   | 26.48    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[34]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 578.3904
+            },
+            {
+              "x": 536.6952,
+              "y": 578.3904
+            },
+            {
+              "x": 536.6952,
+              "y": 592.0848
+            },
+            {
+              "x": 26.1216,
+              "y": 592.0848
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/06 | Card Purchase 10/05 U R* New York Bagel Miami Beach FL Card 6657            | 18.87    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[35]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 592.0848
+            },
+            {
+              "x": 536.6952,
+              "y": 592.0848
+            },
+            {
+              "x": 536.6952,
+              "y": 605.1384
+            },
+            {
+              "x": 26.1216,
+              "y": 605.1384
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/06 | Card Purchase 10/05 Bass Pro Shops Dania FL Card 7969                       | 331.57   |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[36]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 605.1384
+            },
+            {
+              "x": 536.6952,
+              "y": 605.1384
+            },
+            {
+              "x": 536.6952,
+              "y": 618.8328
+            },
+            {
+              "x": 26.1216,
+              "y": 618.8328
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/07 | Card Purchase 10/05 Hess 09565 N. Bay Villag FL Card 7969                   | 67.12    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[37]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 617.5296000000001
+            },
+            {
+              "x": 536.6952,
+              "y": 617.5296000000001
+            },
+            {
+              "x": 536.6952,
+              "y": 631.2312
+            },
+            {
+              "x": 26.1216,
+              "y": 631.2312
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/07 | Card Purchase 10/05 Pollo Tropical #15 North Miami FL Card 7969             | 16.10    |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[38]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 631.2312
+            },
+            {
+              "x": 536.6952,
+              "y": 631.2312
+            },
+            {
+              "x": 536.6952,
+              "y": 644.9328
+            },
+            {
+              "x": 26.1216,
+              "y": 644.9328
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/07 | Card Purchase 10/05 U R* Navarro Discount PHA Miami FL Card 6657            | 12.81    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[39]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 644.2776
+            },
+            {
+              "x": 536.6952,
+              "y": 644.2776
+            },
+            {
+              "x": 536.6952,
+              "y": 657.3240000000001
+            },
+            {
+              "x": 26.1216,
+              "y": 657.3240000000001
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/07 | Card Purchase 10/06 U R* Miami Beach Gol Miami Beach FL Card 6657           | 92.47    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[40]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 26.1216,
+              "y": 657.3240000000001
+            },
+            {
+              "x": 536.6952,
+              "y": 657.3240000000001
+            },
+            {
+              "x": 536.6952,
+              "y": 671.0256
+            },
+            {
+              "x": 26.1216,
+              "y": 671.0256
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/07 | Card Purchase 10/06 U R* Publix #794 Miami Shores FL Card 6657              | 116.85   |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[41]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 25.4664,
+              "y": 671.0256
+            },
+            {
+              "x": 536.6952,
+              "y": 671.0256
+            },
+            {
+              "x": 536.6952,
+              "y": 684.7271999999999
+            },
+            {
+              "x": 25.4664,
+              "y": 684.7271999999999
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/07 | Recurring Card Purchase 10/06 U R* Kwon Jae-Hwa Ta 305-759-667 FL Card 6657 | 564.00   |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[42]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 25.4664,
+              "y": 683.4240000000001
+            },
+            {
+              "x": 536.6952,
+              "y": 683.4240000000001
+            },
+            {
+              "x": 536.6952,
+              "y": 697.1184
+            },
+            {
+              "x": 25.4664,
+              "y": 697.1184
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/08 | Card Purchase 10/06 U R* Miami Beach Gol Miami Beach FL Card 6657           | 38.83    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[43]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 25.4664,
+              "y": 697.1184
+            },
+            {
+              "x": 536.6952,
+              "y": 697.1184
+            },
+            {
+              "x": 536.6952,
+              "y": 710.82
+            },
+            {
+              "x": 25.4664,
+              "y": 710.82
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/08 | Card Purchase 10/06 U R* Deco Drive Ciga Miami Beach FL Card 6657           | 15.04    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[44]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 25.4664,
+              "y": 710.172
+            },
+            {
+              "x": 536.6952,
+              "y": 710.172
+            },
+            {
+              "x": 536.6952,
+              "y": 723.8663999999999
+            },
+            {
+              "x": 25.4664,
+              "y": 723.8663999999999
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/08 | Card Purchase         | 10/07 U R* Los Ranchos Restaura Miami FL Card 6657  | 34.30    |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[45]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 25.4664,
+              "y": 723.8663999999999
+            },
+            {
+              "x": 536.6952,
+              "y": 723.8663999999999
+            },
+            {
+              "x": 536.6952,
+              "y": 736.92
+            },
+            {
+              "x": 25.4664,
+              "y": 736.92
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/08 | Card Purchase         | 10/08 U R* Miami Beach Met Miami Beach FL Card 6657 | 3.00     |"
+        }
+      ],
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[46]": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 25.4664,
+              "y": 736.92
+            },
+            {
+              "x": 536.6952,
+              "y": 736.92
+            },
+            {
+              "x": 536.6952,
+              "y": 749.9664
+            },
+            {
+              "x": 25.4664,
+              "y": 749.9664
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "| 10/08 | Card Purchase         | 10/07 Sabor Tropical #4 Miami FL Card 7969          | 5.16     |"
+        }
+      ],
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[0].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[1].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[2].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[3].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[4].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[5].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[6].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[7].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[8].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[9].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[10].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[11].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[12].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[13].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[14].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[15].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[16].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[17].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[18].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[19].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[20].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[21].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[22].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[23].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[24].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[25].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[26].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[27].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[28].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[29].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[30].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[31].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[32].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[33].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[34].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[35].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[36].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[37].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[38].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[39].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[40].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[41].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[42].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[43].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[44].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[45].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[46].date": {
+      "ocrConfidence": 0.99,
+      "logprobsConfidence": null
+    },
+    "transactions[0].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[1].amount": {
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    },
+    "transactions[2].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[3].amount": {
+      "ocrConfidence": 0.996,
+      "logprobsConfidence": null
+    },
+    "transactions[4].amount": {
+      "ocrConfidence": 0.987,
+      "logprobsConfidence": null
+    },
+    "transactions[5].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[6].amount": {
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    },
+    "transactions[7].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[8].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[9].amount": {
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    },
+    "transactions[10].amount": {
+      "ocrConfidence": 0.986,
+      "logprobsConfidence": null
+    },
+    "transactions[11].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[12].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[13].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[14].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[15].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[16].amount": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[17].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[18].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[19].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[20].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[21].amount": {
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    },
+    "transactions[22].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[23].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[24].amount": {
+      "ocrConfidence": 0.996,
+      "logprobsConfidence": null
+    },
+    "transactions[25].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[26].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[27].amount": {
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    },
+    "transactions[28].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[29].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[30].amount": {
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    },
+    "transactions[31].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[32].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[33].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[34].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[35].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[36].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[37].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[38].amount": {
+      "ocrConfidence": 0.996,
+      "logprobsConfidence": null
+    },
+    "transactions[39].amount": {
+      "ocrConfidence": 0.997,
+      "logprobsConfidence": null
+    },
+    "transactions[40].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[41].amount": {
+      "ocrConfidence": 0.977,
+      "logprobsConfidence": null
+    },
+    "transactions[42].amount": {
+      "ocrConfidence": 0.995,
+      "logprobsConfidence": null
+    },
+    "transactions[43].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[44].amount": {
+      "ocrConfidence": 0.998,
+      "logprobsConfidence": null
+    },
+    "transactions[45].amount": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[46].amount": {
+      "ocrConfidence": 0.983,
+      "logprobsConfidence": null
+    },
+    "transactions[0].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[1].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[2].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[3].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[4].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[5].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[6].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[7].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[8].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[9].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[10].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[11].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[12].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[13].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[14].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[15].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[16].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[17].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[18].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[19].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[20].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[21].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[22].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[23].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[24].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[25].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[26].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[27].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[28].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[29].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[30].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[31].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[32].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[33].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[34].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[35].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[36].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[37].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[38].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[39].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[40].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[41].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[42].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[43].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[44].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[45].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "transactions[46].category": {
+      "ocrConfidence": 0.989,
+      "logprobsConfidence": null
+    },
+    "account_details.holder_name": {
+      "citations": [],
+      "logprobsConfidence": null
+    },
+    "transactions[0].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[1].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[2].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[3].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[4].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[5].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[6].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[7].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[8].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[9].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "account_details.account_type": {
+      "citations": [],
+      "logprobsConfidence": null
+    },
+    "overdraft_protection_enabled": {
+      "citations": [],
+      "logprobsConfidence": null
+    },
+    "transactions[10].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[11].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[12].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[13].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[14].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[15].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[16].description": {
+      "ocrConfidence": 0.948,
+      "logprobsConfidence": null
+    },
+    "transactions[17].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[18].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[19].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[20].description": {
+      "ocrConfidence": 0.916,
+      "logprobsConfidence": null
+    },
+    "transactions[21].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[22].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[23].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[24].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[25].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[26].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[27].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[28].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[29].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[30].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[31].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[32].description": {
+      "ocrConfidence": 0.963,
+      "logprobsConfidence": null
+    },
+    "transactions[33].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[34].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[35].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[36].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[37].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "transactions[38].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[39].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[40].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[41].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[42].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[43].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[44].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[45].description": {
+      "ocrConfidence": 0.932,
+      "logprobsConfidence": null
+    },
+    "transactions[46].description": {
+      "ocrConfidence": 0.971,
+      "logprobsConfidence": null
+    },
+    "account_details.account_last_four": {
+      "citations": [
+        {
+          "page": 1,
+          "polygon": [
+            {
+              "x": 358.963,
+              "y": 46.498
+            },
+            {
+              "x": 515.182,
+              "y": 46.505
+            },
+            {
+              "x": 515.182,
+              "y": 68.479
+            },
+            {
+              "x": 358.956,
+              "y": 68.465
+            }
+          ],
+          "pageWidth": 612,
+          "pageHeight": 792,
+          "referenceText": "October 01, 2021 through October 31, 2021 Account Number: 000000710753986"
+        }
+      ],
+      "ocrConfidence": 0.992,
+      "logprobsConfidence": null
+    }
+  }
+}

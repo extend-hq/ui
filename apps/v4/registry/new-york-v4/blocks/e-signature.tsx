@@ -43,6 +43,8 @@ const PAGE_WIDTH = 612
 const PAGE_HEIGHT = 792
 const DEFAULT_ZOOM = 0.75
 const SIGNATURE_PAD_PADDING = 8
+const SIGNATURE_PAD_BACKGROUND_COLOR = "#ffffff"
+const SIGNATURE_PAD_PEN_COLOR = "#000000"
 const DEFAULT_SIGNATURE_ASPECT_RATIO = 3
 
 const INITIAL_FIELD: SignatureField = {
@@ -282,7 +284,7 @@ function SignatureDialog({
       const signaturePad = new SignaturePadConstructor(canvas, {
         minWidth: 1.4,
         maxWidth: 2.8,
-        penColor: "rgb(15, 23, 42)",
+        penColor: SIGNATURE_PAD_PEN_COLOR,
       })
 
       signaturePadRef.current = signaturePad
@@ -352,13 +354,14 @@ function SignatureDialog({
             >
               <div
                 className={cn(
-                  "relative overflow-hidden rounded-md border border-dashed border-input bg-background shadow-xs",
+                  "relative overflow-hidden rounded-md border border-dashed border-input bg-white shadow-xs",
                   isReady ? "cursor-crosshair" : "cursor-wait"
                 )}
                 style={{
                   width: guideSize ? `${guideSize.width}px` : undefined,
                   height: guideSize ? `${guideSize.height}px` : undefined,
                   opacity: guideSize ? 1 : 0,
+                  backgroundColor: SIGNATURE_PAD_BACKGROUND_COLOR,
                 }}
               >
                 <canvas
@@ -367,7 +370,10 @@ function SignatureDialog({
                     "absolute inset-0 size-full touch-none",
                     !isReady && "pointer-events-none"
                   )}
-                  style={{ touchAction: "none" }}
+                  style={{
+                    backgroundColor: SIGNATURE_PAD_BACKGROUND_COLOR,
+                    touchAction: "none",
+                  }}
                 />
               </div>
             </div>

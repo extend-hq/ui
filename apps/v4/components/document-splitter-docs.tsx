@@ -273,7 +273,6 @@ const PageThumbnailPreview = React.memo(function PageThumbnailPreview({
   itemId,
   itemLabel,
   labelPlacement,
-  isActive,
   imageUrl,
   thumbnailSize,
   onSelect,
@@ -282,7 +281,6 @@ const PageThumbnailPreview = React.memo(function PageThumbnailPreview({
   itemId: DocumentSplitItemId
   itemLabel: React.ReactNode
   labelPlacement: ThumbnailLabelPlacement
-  isActive: boolean
   imageUrl?: string
   thumbnailSize: ThumbnailSize
   onSelect: (itemId: DocumentSplitItemId) => void
@@ -294,12 +292,7 @@ const PageThumbnailPreview = React.memo(function PageThumbnailPreview({
     >
       <button
         type="button"
-        className={cn(
-          "relative cursor-grab overflow-hidden rounded-md border bg-muted text-left shadow-xs transition-[border-color,box-shadow,opacity] active:cursor-grabbing",
-          isActive
-            ? "border-blue-500 shadow-[0_0_0_2px_rgb(59_130_246_/_14%)]"
-            : "border-border hover:border-foreground/30"
-        )}
+        className="relative cursor-grab overflow-hidden rounded-md border border-border bg-muted text-left shadow-xs transition-[border-color,opacity] hover:border-foreground/30 active:cursor-grabbing"
         style={{ width: thumbnailSize.width, height: thumbnailSize.height }}
         onClick={() => onSelect(itemId)}
       >
@@ -313,7 +306,7 @@ const PageThumbnailPreview = React.memo(function PageThumbnailPreview({
         />
         <span
           className={cn(
-            "absolute bottom-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-xs",
+            "absolute bottom-1 rounded bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs ring-1 ring-border/80",
             labelPlacement === "bottom"
               ? "inset-x-1 truncate"
               : "right-1 max-w-[calc(100%-0.5rem)]"
@@ -332,7 +325,6 @@ function SortablePageThumbnail({
   groupId,
   pageId,
   labelPlacement,
-  isActive,
   imageUrl,
   thumbnailSize,
   onSelect,
@@ -342,7 +334,6 @@ function SortablePageThumbnail({
   groupId: string
   pageId: PageId
   labelPlacement: ThumbnailLabelPlacement
-  isActive: boolean
   imageUrl?: string
   thumbnailSize: ThumbnailSize
   onSelect: (itemId: DocumentSplitItemId) => void
@@ -379,7 +370,6 @@ function SortablePageThumbnail({
         itemId={pageId}
         itemLabel={getItemLabel(pageId)}
         labelPlacement={labelPlacement}
-        isActive={isActive}
         imageUrl={imageUrl}
         thumbnailSize={thumbnailSize}
         onSelect={onSelect}
@@ -389,7 +379,6 @@ function SortablePageThumbnail({
 }
 
 function SplitGroupCard({
-  activeItemId,
   emptyLabel,
   getItemFile,
   getItemLabel,
@@ -405,7 +394,6 @@ function SplitGroupCard({
   onRemove,
   onSelectItem,
 }: {
-  activeItemId?: DocumentSplitItemId
   emptyLabel: string
   getItemFile: (itemId: DocumentSplitItemId) => ThumbnailFile
   getItemLabel: (itemId: DocumentSplitItemId) => React.ReactNode
@@ -490,7 +478,6 @@ function SplitGroupCard({
                       groupId={group.id}
                       pageId={pageId}
                       labelPlacement={labelPlacement}
-                      isActive={activeItemId === pageId}
                       imageUrl={thumbnailImages?.[pageId]}
                       thumbnailSize={thumbnailSize}
                       onSelect={onSelectItem}
@@ -564,7 +551,7 @@ function PageDragOverlay({
 }) {
   return (
     <div
-      className="relative overflow-hidden rounded-md border border-blue-500 bg-background shadow-lg shadow-black/10"
+      className="relative overflow-hidden rounded-md border border-border bg-background shadow-lg shadow-black/10"
       style={{ width: thumbnailSize.width, height: thumbnailSize.height }}
     >
       <FileThumbnail
@@ -577,7 +564,7 @@ function PageDragOverlay({
       />
       <span
         className={cn(
-          "absolute bottom-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-xs",
+          "absolute bottom-1 rounded bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs ring-1 ring-border/80",
           labelPlacement === "bottom"
             ? "inset-x-1 truncate"
             : "right-1 max-w-[calc(100%-0.5rem)]"
@@ -623,27 +610,27 @@ function getGroupPages(groups: SplitGroup[], groupId: string | null) {
 }
 
 function movePageToGroup({
-  activePageId,
+  draggedPageId,
   groups,
   insertIndex,
   targetGroupId,
 }: {
-  activePageId: PageId
+  draggedPageId: PageId
   groups: SplitGroup[]
   insertIndex: number
   targetGroupId: string
 }) {
   return groups.map((group) => {
-    const pagesWithoutActive = group.pages.filter(
-      (pageId) => pageId !== activePageId
+    const pagesWithoutDragged = group.pages.filter(
+      (pageId) => pageId !== draggedPageId
     )
 
     if (group.id !== targetGroupId) {
-      return { ...group, pages: pagesWithoutActive }
+      return { ...group, pages: pagesWithoutDragged }
     }
 
-    const nextPages = [...pagesWithoutActive]
-    nextPages.splice(insertIndex, 0, activePageId)
+    const nextPages = [...pagesWithoutDragged]
+    nextPages.splice(insertIndex, 0, draggedPageId)
     return { ...group, pages: nextPages }
   })
 }
@@ -668,24 +655,24 @@ function areSplitGroupsEqual(left: SplitGroup[], right: SplitGroup[]) {
 }
 
 function reorderPageInGroup({
-  activePageId,
+  draggedPageId,
   groups,
   overPageId,
 }: {
-  activePageId: PageId
+  draggedPageId: PageId
   groups: SplitGroup[]
   overPageId: PageId
 }) {
-  const groupId = findGroupId(groups, activePageId)
+  const groupId = findGroupId(groups, draggedPageId)
   const pages = getGroupPages(groups, groupId)
-  const activeIndex = pages.indexOf(activePageId)
+  const draggedIndex = pages.indexOf(draggedPageId)
   const overIndex = pages.indexOf(overPageId)
 
-  if (!groupId || activeIndex === -1 || overIndex === -1) return groups
+  if (!groupId || draggedIndex === -1 || overIndex === -1) return groups
 
   return groups.map((group) =>
     group.id === groupId
-      ? { ...group, pages: arrayMove(group.pages, activeIndex, overIndex) }
+      ? { ...group, pages: arrayMove(group.pages, draggedIndex, overIndex) }
       : group
   )
 }
@@ -729,8 +716,6 @@ function useWorkbookSheetThumbnailUrls(workbookIdentity: string) {
 }
 
 export function DocumentSplits({
-  activeItemId,
-  activePage,
   addSplitLabel = "Add split",
   className,
   dndId = "document-splits-dnd",
@@ -749,8 +734,6 @@ export function DocumentSplits({
   onAddSplit,
   onRemoveSplit,
 }: {
-  activeItemId?: DocumentSplitItemId
-  activePage?: number
   addSplitLabel?: string
   className?: string
   dndId?: string
@@ -769,7 +752,7 @@ export function DocumentSplits({
   onAddSplit?: () => void
   onRemoveSplit?: (groupId: string) => void
 }) {
-  const [activePageId, setActivePageId] = React.useState<PageId | null>(null)
+  const [draggedPageId, setDraggedPageId] = React.useState<PageId | null>(null)
   const [activeSplitGroupId, setActiveSplitGroupId] = React.useState<
     string | null
   >(null)
@@ -788,8 +771,6 @@ export function DocumentSplits({
     () => createPageRangeLabels(splits),
     [splits]
   )
-  const resolvedActiveItemId =
-    activeItemId ?? (activePage ? toPageId(activePage) : undefined)
   const resolvedGetItemLabel = React.useCallback(
     (itemId: DocumentSplitItemId) =>
       getItemLabel?.(itemId) ?? getPageNumber(itemId),
@@ -879,7 +860,7 @@ export function DocumentSplits({
         const pageId = String(event.active.id) as PageId
         dragStartGroupIdRef.current = findGroupId(splits, pageId)
         dragStartGroupsRef.current = splits
-        setActivePageId(pageId)
+        setDraggedPageId(pageId)
         setActiveSplitGroupId(null)
         setActiveSplitGroupWidth(undefined)
         return
@@ -888,7 +869,7 @@ export function DocumentSplits({
       if (dragType === "split") {
         dragStartGroupIdRef.current = null
         dragStartGroupsRef.current = null
-        setActivePageId(null)
+        setDraggedPageId(null)
         setActiveSplitGroupId(
           (event.active.data.current?.groupId as string | undefined) ?? null
         )
@@ -898,7 +879,7 @@ export function DocumentSplits({
 
       dragStartGroupIdRef.current = null
       dragStartGroupsRef.current = null
-      setActivePageId(null)
+      setDraggedPageId(null)
       setActiveSplitGroupId(null)
       setActiveSplitGroupWidth(undefined)
     },
@@ -942,7 +923,7 @@ export function DocumentSplits({
 
         return movePageToGroup({
           groups: previousSplits,
-          activePageId: pageId,
+          draggedPageId: pageId,
           targetGroupId,
           insertIndex,
         })
@@ -965,21 +946,21 @@ export function DocumentSplits({
           | undefined
 
         updateSplits((previousSplits) => {
-          const activeIndex = previousSplits.findIndex(
+          const draggedIndex = previousSplits.findIndex(
             (group) => group.id === activeGroupId
           )
           const overIndex = previousSplits.findIndex(
             (group) => group.id === overGroupId
           )
 
-          if (activeIndex === -1 || overIndex === -1) return previousSplits
+          if (draggedIndex === -1 || overIndex === -1) return previousSplits
 
-          return arrayMove(previousSplits, activeIndex, overIndex)
+          return arrayMove(previousSplits, draggedIndex, overIndex)
         })
       }
 
       if (dragType === "page" && overId) {
-        const activePageId = String(event.active.id) as PageId
+        const draggedPageId = String(event.active.id) as PageId
         const overPageId = String(overId) as PageId
 
         updateSplits((previousSplits) => {
@@ -991,7 +972,7 @@ export function DocumentSplits({
 
           return reorderPageInGroup({
             groups: previousSplits,
-            activePageId,
+            draggedPageId,
             overPageId,
           })
         })
@@ -999,7 +980,7 @@ export function DocumentSplits({
 
       dragStartGroupIdRef.current = null
       dragStartGroupsRef.current = null
-      setActivePageId(null)
+      setDraggedPageId(null)
       setActiveSplitGroupId(null)
       setActiveSplitGroupWidth(undefined)
     },
@@ -1013,12 +994,12 @@ export function DocumentSplits({
 
     dragStartGroupIdRef.current = null
     dragStartGroupsRef.current = null
-    setActivePageId(null)
+    setDraggedPageId(null)
     setActiveSplitGroupId(null)
     setActiveSplitGroupWidth(undefined)
   }, [onSplitsChange])
 
-  const isPageDragging = activePageId !== null
+  const isPageDragging = draggedPageId !== null
   const activeSplitGroup = activeSplitGroupId
     ? splits.find((group) => group.id === activeSplitGroupId)
     : null
@@ -1055,9 +1036,6 @@ export function DocumentSplits({
               {splits.map((group) => (
                 <SortableSplitGroupCard
                   key={group.id}
-                  activeItemId={
-                    activePageId ? activePageId : resolvedActiveItemId
-                  }
                   emptyLabel={emptyLabel}
                   getItemFile={resolvedGetItemFile}
                   getItemLabel={resolvedGetItemLabel}
@@ -1080,18 +1058,17 @@ export function DocumentSplits({
           </SortableContext>
         </ScrollArea>
         <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION} zIndex={1000}>
-          {activePageId ? (
+          {draggedPageId ? (
             <PageDragOverlay
               getItemFile={resolvedGetItemFile}
               getItemLabel={resolvedGetItemLabel}
               labelPlacement={labelPlacement}
-              pageId={activePageId}
-              imageUrl={thumbnailImages[activePageId]}
+              pageId={draggedPageId}
+              imageUrl={thumbnailImages[draggedPageId]}
               thumbnailSize={thumbnailSize}
             />
           ) : activeSplitGroup ? (
             <SplitGroupDragOverlay
-              activeItemId={resolvedActiveItemId}
               emptyLabel={emptyLabel}
               getItemFile={resolvedGetItemFile}
               getItemLabel={resolvedGetItemLabel}
@@ -1298,7 +1275,6 @@ function WorkbookSplitsPane({
 
   return (
     <DocumentSplits
-      activeItemId={toWorkbookSheetId(activeSheetIndex)}
       addSplitLabel="Add split"
       className={className}
       dndId="workbook-document-splits-dnd"
@@ -1362,7 +1338,6 @@ export function DocumentSplitsBlock() {
   const [reactPdf, setReactPdf] = React.useState<ReactPdfModule | null>(null)
   const [pdfUrl, setPdfUrl] = React.useState(PDF_URL)
   const [numPages, setNumPages] = React.useState(0)
-  const [activePage, setActivePage] = React.useState(1)
   const [splits, setSplits] = React.useState<SplitGroup[]>(() =>
     createInitialGroups(DEFAULT_PREVIEW_PAGE_COUNT)
   )
@@ -1405,14 +1380,6 @@ export function DocumentSplitsBlock() {
     []
   )
 
-  const handleActivePageChange = React.useCallback((pageNumber: number) => {
-    window.queueMicrotask(() => {
-      setActivePage((currentPage) =>
-        currentPage === pageNumber ? currentPage : pageNumber
-      )
-    })
-  }, [])
-
   const handlePdfUpload = React.useCallback((file: File) => {
     const nextUrl = URL.createObjectURL(file)
 
@@ -1423,12 +1390,9 @@ export function DocumentSplitsBlock() {
     uploadedPdfUrlRef.current = nextUrl
     setPdfUrl(nextUrl)
     setNumPages(0)
-    setActivePage(1)
   }, [])
 
   const scrollToPage = React.useCallback((pageNumber: number) => {
-    setActivePage(pageNumber)
-
     viewerRef.current?.scrollToPage(pageNumber, {
       block: "start",
       behavior: "auto",
@@ -1453,14 +1417,12 @@ export function DocumentSplitsBlock() {
           ref={viewerRef}
           file={pdfUrl}
           defaultZoom={DEFAULT_ZOOM}
-          onActivePageChange={handleActivePageChange}
           onPdfUpload={handlePdfUpload}
           onDocumentLoadSuccess={updatePageCountFromViewer}
         />
       }
       right={
         <DocumentSplits
-          activePage={activePage}
           splits={splits}
           thumbnailImages={thumbnailImages}
           withFrameDivider={false}
@@ -1500,12 +1462,10 @@ export function DocumentSplitsBlock() {
 function DocumentSplitExampleCard({
   title,
   pages,
-  activePage,
   className,
 }: {
   title: string
   pages: number[]
-  activePage?: number
   className?: string
 }) {
   return (
@@ -1539,14 +1499,10 @@ function DocumentSplitExampleCard({
             <button
               key={page}
               type="button"
-              className={cn(
-                "relative h-[92px] w-[72px] shrink-0 overflow-hidden rounded-md border bg-muted text-xs text-muted-foreground transition-colors hover:border-primary/50",
-                activePage === page &&
-                  "border-primary bg-primary/5 text-primary"
-              )}
+              className="relative h-[92px] w-[72px] shrink-0 overflow-hidden rounded-md border border-border bg-muted text-xs text-foreground transition-colors hover:border-foreground/30"
             >
               <div className="absolute inset-2 rounded-sm bg-background/70 shadow-sm" />
-              <span className="absolute right-1.5 bottom-1.5 rounded bg-background/90 px-1 text-[10px]">
+              <span className="absolute right-1.5 bottom-1.5 rounded bg-background/95 px-1 text-[10px] font-semibold text-foreground shadow-xs ring-1 ring-border/80">
                 {page}
               </span>
             </button>
@@ -1563,12 +1519,10 @@ function DocumentSplitsExample() {
       <DocumentSplitExampleCard
         title="Abstract and intro"
         pages={[1, 2, 3]}
-        activePage={2}
       />
       <DocumentSplitExampleCard
         title="Model architecture"
         pages={[4, 5, 6, 7, 8]}
-        className="border-blue-500/50 bg-blue-500/5"
       />
       <DocumentSplitExampleCard
         title="Training and results"
@@ -1608,7 +1562,6 @@ function DocumentSplitsPreview({ file }: { file: string }) {
 
   const panel = (
     <DocumentSplits
-      activePage={1}
       className="h-[620px]"
       splits={splits}
       thumbnailImages={thumbnailImages}
@@ -1862,7 +1815,6 @@ export function DocumentSplitsExample() {
 
   const panel = (
     <DocumentSplits
-      activePage={1}
       className="h-[620px]"
       splits={splits}
       thumbnailImages={thumbnailImages}
@@ -1888,7 +1840,7 @@ export function DocumentSplitsExample() {
 }`
 
 const documentSplitterSourceCode =
-  '"use client"\n\nimport * as React from "react"\nimport {\n  closestCenter,\n  DndContext,\n  DragOverlay,\n  PointerSensor,\n  useDroppable,\n  useSensor,\n  useSensors,\n  type CollisionDetection,\n  type DragEndEvent,\n  type DragOverEvent,\n  type DragStartEvent,\n} from "@dnd-kit/core"\nimport {\n  arrayMove,\n  horizontalListSortingStrategy,\n  SortableContext,\n  useSortable,\n  verticalListSortingStrategy,\n} from "@dnd-kit/sortable"\nimport { CSS } from "@dnd-kit/utilities"\nimport {\n  Add01Icon,\n  Delete02Icon,\n  DragDropVerticalIcon,\n} from "@hugeicons/core-free-icons"\nimport { HugeiconsIcon } from "@hugeicons/react"\n\nimport { cn } from "@/lib/utils"\nimport { FileThumbnail } from "@/components/ui/file-thumbnail"\nimport { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"\nimport { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"\nimport { Button } from "@/registry/new-york-v4/ui/button"\nimport { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"\n\nexport type DocumentSplitPageId = `page-${number}`\nexport type DocumentSplit = {\n  id: string\n  title: string\n  pages: DocumentSplitPageId[]\n}\n\ntype PageId = DocumentSplitPageId\ntype SplitGroup = DocumentSplit\n\nconst THUMBNAIL_WIDTH = 72\nconst THUMBNAIL_HEIGHT = 92\nconst DRAG_OVERLAY_DROP_ANIMATION = null\n\nconst splitterCollisionDetection: CollisionDetection = (args) => {\n  const dragType = args.active.data.current?.type\n\n  if (dragType === "page") {\n    return closestCenter({\n      ...args,\n      droppableContainers: args.droppableContainers.filter(\n        (container) =>\n          container.data.current?.type === "page" ||\n          (container.data.current?.type === "page-dropzone" &&\n            container.data.current?.isEmpty)\n      ),\n    })\n  }\n\n  if (dragType === "split") {\n    return closestCenter({\n      ...args,\n      droppableContainers: args.droppableContainers.filter(\n        (container) => container.data.current?.type === "split"\n      ),\n    })\n  }\n\n  return closestCenter(args)\n}\n\nconst INITIAL_SPLITS: DocumentSplit[] = [\n  {\n    id: "split-1",\n    title: "Abstract and intro",\n    pages: ["page-1", "page-2", "page-3"],\n  },\n  {\n    id: "split-2",\n    title: "Model architecture",\n    pages: ["page-4", "page-5", "page-6", "page-7"],\n  },\n  {\n    id: "split-3",\n    title: "Training and results",\n    pages: ["page-8", "page-9", "page-10"],\n  },\n]\n\nfunction createInitialSplits(pageCount: number) {\n  if (pageCount <= 0) return INITIAL_SPLITS\n\n  const pages = Array.from(\n    { length: pageCount },\n    (_, index) => `page-${index + 1}` as PageId\n  )\n  const chunkSize = Math.max(1, Math.ceil(pageCount / 3))\n\n  return Array.from(\n    { length: Math.ceil(pageCount / chunkSize) },\n    (_, index) => {\n      const startIndex = index * chunkSize\n      const groupPages = pages.slice(startIndex, startIndex + chunkSize)\n      const firstPage = getPageNumber(groupPages[0])\n      const lastPage = getPageNumber(groupPages[groupPages.length - 1])\n\n      return {\n        id: `split-${index + 1}`,\n        title:\n          firstPage === lastPage\n            ? `Page ${firstPage}`\n            : `Pages ${firstPage}-${lastPage}`,\n        pages: groupPages,\n      }\n    }\n  )\n}\n\nfunction getPageNumber(pageId: PageId) {\n  return Number(pageId.replace("page-", ""))\n}\n\nfunction getSplitSortableId(groupId: string) {\n  return `split-sortable-${groupId}`\n}\n\nfunction findGroupId(groups: SplitGroup[], id: string) {\n  if (groups.some((group) => group.id === id)) return id\n\n  return groups.find((group) => group.pages.includes(id as PageId))?.id ?? null\n}\n\nfunction getGroupPages(groups: SplitGroup[], groupId: string | null) {\n  return groups.find((group) => group.id === groupId)?.pages ?? []\n}\n\nfunction movePageToGroup({\n  activePageId,\n  groups,\n  insertIndex,\n  targetGroupId,\n}: {\n  activePageId: PageId\n  groups: SplitGroup[]\n  insertIndex: number\n  targetGroupId: string\n}) {\n  return groups.map((group) => {\n    const pagesWithoutActive = group.pages.filter(\n      (pageId) => pageId !== activePageId\n    )\n\n    if (group.id !== targetGroupId) {\n      return { ...group, pages: pagesWithoutActive }\n    }\n\n    const nextPages = [...pagesWithoutActive]\n    nextPages.splice(insertIndex, 0, activePageId)\n\n    return { ...group, pages: nextPages }\n  })\n}\n\nfunction areSplitGroupsEqual(left: SplitGroup[], right: SplitGroup[]) {\n  if (left === right) return true\n  if (left.length !== right.length) return false\n\n  return left.every((leftGroup, groupIndex) => {\n    const rightGroup = right[groupIndex]\n    if (!rightGroup) return false\n\n    return (\n      leftGroup.id === rightGroup.id &&\n      leftGroup.title === rightGroup.title &&\n      leftGroup.pages.length === rightGroup.pages.length &&\n      leftGroup.pages.every(\n        (pageId, pageIndex) => pageId === rightGroup.pages[pageIndex]\n      )\n    )\n  })\n}\n\nfunction reorderPageInGroup({\n  activePageId,\n  groups,\n  overPageId,\n}: {\n  activePageId: PageId\n  groups: SplitGroup[]\n  overPageId: PageId\n}) {\n  const groupId = findGroupId(groups, activePageId)\n  const pages = getGroupPages(groups, groupId)\n  const activeIndex = pages.indexOf(activePageId)\n  const overIndex = pages.indexOf(overPageId)\n\n  if (!groupId || activeIndex === -1 || overIndex === -1) return groups\n\n  return groups.map((group) =>\n    group.id === groupId\n      ? {\n          ...group,\n          pages: arrayMove(group.pages, activeIndex, overIndex),\n        }\n      : group\n  )\n}\n\nfunction createPageRangeLabel(pageIds: PageId[]) {\n  if (pageIds.length === 0) return "No pages"\n\n  return `Pages ${pageIds.map(getPageNumber).join(", ")}`\n}\n\nfunction SplitGroupDropzone({\n  children,\n  group,\n}: {\n  children: React.ReactNode\n  group: SplitGroup\n}) {\n  const { isOver, setNodeRef } = useDroppable({\n    id: group.id,\n    data: { type: "page-dropzone", isEmpty: group.pages.length === 0 },\n  })\n\n  return (\n    <div\n      ref={setNodeRef}\n      className={cn(\n        "min-h-[116px] rounded-lg p-2 transition-[background-color,box-shadow]",\n        isOver && "bg-accent/30 shadow-[inset_0_0_0_1px_var(--border)]"\n      )}\n    >\n      {children}\n    </div>\n  )\n}\n\nfunction PageThumbnail({\n  imageUrl,\n  isActive,\n  onSelect,\n  pageId,\n}: {\n  imageUrl?: string\n  isActive: boolean\n  onSelect: (pageNumber: number) => void\n  pageId: PageId\n}) {\n  const pageNumber = getPageNumber(pageId)\n  const {\n    attributes,\n    isDragging,\n    listeners,\n    setNodeRef,\n    transform,\n    transition,\n  } = useSortable({\n    id: pageId,\n    data: { type: "page" },\n  })\n\n  return (\n    <button\n      ref={setNodeRef}\n      type="button"\n      className={cn(\n        "relative shrink-0 cursor-grab overflow-hidden rounded-md border bg-muted text-left shadow-xs transition-[border-color,box-shadow,opacity] active:cursor-grabbing",\n        isActive\n          ? "border-blue-500 shadow-[0_0_0_2px_rgb(59_130_246_/_14%)]"\n          : "border-border hover:border-foreground/30",\n        isDragging && "opacity-0"\n      )}\n      style={{\n        width: THUMBNAIL_WIDTH,\n        height: THUMBNAIL_HEIGHT,\n        transform: CSS.Transform.toString(transform),\n        transition,\n      }}\n      onClick={() => onSelect(pageNumber)}\n      {...attributes}\n      {...listeners}\n    >\n      <FileThumbnail\n        file={{\n          name: `page-${pageNumber}.pdf`,\n          type: "application/pdf",\n          size: `Page ${pageNumber}`,\n        }}\n        showMetadata={false}\n        previewImageUrl={imageUrl}\n        isLoading={!imageUrl}\n        previewClassName="h-full aspect-auto"\n        className="size-full rounded-[inherit] border-0"\n      />\n      <span className="absolute right-1 bottom-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-xs">\n        {pageNumber}\n      </span>\n    </button>\n  )\n}\n\nfunction SplitGroupCard({\n  activePage,\n  canRemove,\n  group,\n  dragHandleProps,\n  thumbnailImages,\n  onRemove,\n  onSelectPage,\n}: {\n  activePage: number\n  canRemove: boolean\n  group: SplitGroup\n  dragHandleProps?: React.ComponentPropsWithoutRef<"button">\n  thumbnailImages: Record<PageId, string>\n  onRemove: () => void\n  onSelectPage: (pageNumber: number) => void\n}) {\n  return (\n    <section className="w-full rounded-lg border bg-background">\n      <div className="flex items-center justify-between gap-3 border-b p-3">\n        <div className="flex min-w-0 items-center gap-2">\n          <button\n            type="button"\n            aria-label={`Reorder ${group.title}`}\n            className="inline-flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-muted active:cursor-grabbing"\n            {...dragHandleProps}\n          >\n            <HugeiconsIcon icon={DragDropVerticalIcon} className="size-4" />\n          </button>\n          <div className="min-w-0">\n            <div className="truncate text-sm font-medium">{group.title}</div>\n            <div className="mt-1 text-xs text-muted-foreground">\n              {createPageRangeLabel(group.pages)}\n            </div>\n          </div>\n        </div>\n        <div className="flex shrink-0 items-center gap-2">\n          <div className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">\n            {group.pages.length}\n          </div>\n          <Button\n            type="button"\n            variant="ghost"\n            size="icon-sm"\n            aria-label={`Remove ${group.title}`}\n            disabled={!canRemove}\n            onClick={onRemove}\n          >\n            <HugeiconsIcon icon={Delete02Icon} className="size-4" />\n          </Button>\n        </div>\n      </div>\n      <SplitGroupDropzone group={group}>\n        {group.pages.length ? (\n          <SortableContext\n            items={group.pages}\n            strategy={horizontalListSortingStrategy}\n          >\n            <ScrollArea\n              className="h-[110px] w-full overflow-hidden"\n              orientation="horizontal"\n              scrollbarGutter\n              scrollbarOverflowOnly\n              viewportClassName="overflow-y-hidden"\n            >\n              <div className="flex w-max gap-2 overflow-y-hidden py-1 pr-6">\n                {group.pages.map((pageId) => (\n                  <PageThumbnail\n                    key={pageId}\n                    pageId={pageId}\n                    imageUrl={thumbnailImages[pageId]}\n                    isActive={activePage === getPageNumber(pageId)}\n                    onSelect={onSelectPage}\n                  />\n                ))}\n              </div>\n            </ScrollArea>\n          </SortableContext>\n        ) : (\n          <div className="grid h-[104px] place-items-center rounded-lg bg-muted/35 text-xs text-muted-foreground">\n            Drop pages here\n          </div>\n        )}\n      </SplitGroupDropzone>\n    </section>\n  )\n}\n\nfunction SortableSplitGroupCard({\n  activePage,\n  canRemove,\n  group,\n  thumbnailImages,\n  onRemove,\n  onSelectPage,\n}: {\n  activePage: number\n  canRemove: boolean\n  group: SplitGroup\n  thumbnailImages: Record<PageId, string>\n  onRemove: () => void\n  onSelectPage: (pageNumber: number) => void\n}) {\n  const {\n    attributes,\n    isDragging,\n    listeners,\n    setNodeRef,\n    transform,\n    transition,\n  } = useSortable({\n    id: getSplitSortableId(group.id),\n    data: { type: "split", groupId: group.id },\n  })\n\n  return (\n    <div\n      ref={setNodeRef}\n      className={cn("w-full", isDragging && "opacity-0")}\n      style={{\n        transform: CSS.Transform.toString(transform),\n        transition,\n      }}\n    >\n      <SplitGroupCard\n        activePage={activePage}\n        canRemove={canRemove}\n        group={group}\n        thumbnailImages={thumbnailImages}\n        dragHandleProps={{ ...attributes, ...listeners }}\n        onRemove={onRemove}\n        onSelectPage={onSelectPage}\n      />\n    </div>\n  )\n}\n\nfunction SplitGroupDragOverlay({\n  activePage,\n  group,\n  thumbnailImages,\n  width,\n  onSelectPage,\n}: {\n  activePage: number\n  group: SplitGroup\n  thumbnailImages: Record<PageId, string>\n  width?: number\n  onSelectPage: (pageNumber: number) => void\n}) {\n  return (\n    <div\n      className="relative z-[1000] max-w-[calc(100vw-2rem)]"\n      style={{ width }}\n    >\n      <SplitGroupCard\n        activePage={activePage}\n        canRemove={false}\n        group={group}\n        thumbnailImages={thumbnailImages}\n        onRemove={() => {}}\n        onSelectPage={onSelectPage}\n      />\n    </div>\n  )\n}\n\nexport function DocumentSplits({\n  activePage,\n  className,\n  splits,\n  thumbnailImages = {},\n  withFrameDivider = true,\n  onSelectPage,\n  onSplitsChange,\n}: {\n  activePage: number\n  className?: string\n  splits: SplitGroup[]\n  thumbnailImages?: Record<PageId, string>\n  withFrameDivider?: boolean\n  onSelectPage: (pageNumber: number) => void\n  onSplitsChange: (splits: SplitGroup[]) => void\n}) {\n  const [activePageId, setActivePageId] = React.useState<PageId | null>(null)\n  const [activeSplitGroupId, setActiveSplitGroupId] = React.useState<\n    string | null\n  >(null)\n  const [activeSplitGroupWidth, setActiveSplitGroupWidth] = React.useState<\n    number | undefined\n  >()\n  const dragStartGroupIdRef = React.useRef<string | null>(null)\n  const dragStartSplitsRef = React.useRef<SplitGroup[] | null>(null)\n  const sensors = useSensors(\n    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })\n  )\n\n  const handleDragStart = React.useCallback(\n    (event: DragStartEvent) => {\n      const dragType = event.active.data.current?.type\n\n      if (dragType === "split") {\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setActivePageId(null)\n        setActiveSplitGroupId(\n          (event.active.data.current?.groupId as string | undefined) ?? null\n        )\n        setActiveSplitGroupWidth(event.active.rect.current.initial?.width)\n        return\n      }\n\n      if (dragType !== "page") {\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setActivePageId(null)\n        setActiveSplitGroupId(null)\n        setActiveSplitGroupWidth(undefined)\n        return\n      }\n\n      const pageId = String(event.active.id) as PageId\n      dragStartGroupIdRef.current = findGroupId(splits, pageId)\n      dragStartSplitsRef.current = splits\n      setActivePageId(pageId)\n      setActiveSplitGroupId(null)\n      setActiveSplitGroupWidth(undefined)\n    },\n    [splits]\n  )\n\n  const handleDragOver = React.useCallback(\n    (event: DragOverEvent) => {\n      if (event.active.data.current?.type !== "page" || !event.over) return\n\n      const pageId = String(event.active.id) as PageId\n      const overId = String(event.over.id)\n\n      const sourceGroupId = findGroupId(splits, pageId)\n      const targetGroupId = findGroupId(splits, overId)\n\n      if (!sourceGroupId || !targetGroupId || sourceGroupId === targetGroupId) {\n        return\n      }\n\n      const targetPages = getGroupPages(splits, targetGroupId)\n      const overIndex = targetPages.indexOf(overId as PageId)\n      const insertIndex = overIndex === -1 ? targetPages.length : overIndex\n\n      const nextSplits = movePageToGroup({\n        activePageId: pageId,\n        groups: splits,\n        insertIndex,\n        targetGroupId,\n      })\n\n      if (!areSplitGroupsEqual(splits, nextSplits)) {\n        onSplitsChange(nextSplits)\n      }\n    },\n    [onSplitsChange, splits]\n  )\n\n  const handleDragEnd = React.useCallback(\n    (event: DragEndEvent) => {\n      if (event.active.data.current?.type === "split" && event.over) {\n        const activeGroupId = event.active.data.current.groupId\n        const overGroupId = event.over.data.current?.groupId\n\n        const activeIndex = splits.findIndex(\n          (group) => group.id === activeGroupId\n        )\n        const overIndex = splits.findIndex((group) => group.id === overGroupId)\n\n        if (activeIndex !== -1 && overIndex !== -1) {\n          const nextSplits = arrayMove(splits, activeIndex, overIndex)\n\n          if (!areSplitGroupsEqual(splits, nextSplits)) {\n            onSplitsChange(nextSplits)\n          }\n        }\n\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setActivePageId(null)\n        setActiveSplitGroupId(null)\n        setActiveSplitGroupWidth(undefined)\n        return\n      }\n\n      if (event.active.data.current?.type !== "page" || !event.over) {\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setActivePageId(null)\n        setActiveSplitGroupId(null)\n        setActiveSplitGroupWidth(undefined)\n        return\n      }\n\n      const pageId = String(event.active.id) as PageId\n      const overId = String(event.over.id) as PageId\n      const overGroupId = findGroupId(splits, overId)\n\n      if (dragStartGroupIdRef.current === overGroupId) {\n        const nextSplits = reorderPageInGroup({\n          activePageId: pageId,\n          groups: splits,\n          overPageId: overId,\n        })\n\n        if (!areSplitGroupsEqual(splits, nextSplits)) {\n          onSplitsChange(nextSplits)\n        }\n      }\n\n      dragStartGroupIdRef.current = null\n      dragStartSplitsRef.current = null\n      setActivePageId(null)\n      setActiveSplitGroupId(null)\n      setActiveSplitGroupWidth(undefined)\n    },\n    [onSplitsChange, splits]\n  )\n\n  const handleDragCancel = React.useCallback(() => {\n    if (dragStartSplitsRef.current) {\n      onSplitsChange(dragStartSplitsRef.current)\n    }\n\n    dragStartSplitsRef.current = null\n    dragStartGroupIdRef.current = null\n    setActivePageId(null)\n    setActiveSplitGroupId(null)\n    setActiveSplitGroupWidth(undefined)\n  }, [onSplitsChange])\n\n  const activeSplitGroup = activeSplitGroupId\n    ? splits.find((group) => group.id === activeSplitGroupId)\n    : null\n\n  return (\n    <aside\n      className={cn(\n        "flex h-full min-h-0 flex-col bg-muted/20",\n        withFrameDivider && "border-t md:border-t-0 md:border-l",\n        className\n      )}\n    >\n      <div className="flex min-h-12 items-center justify-end gap-3 border-b bg-background px-3">\n        <Button\n          type="button"\n          variant="outline"\n          size="sm"\n          onClick={() =>\n            onSplitsChange([\n              ...splits,\n              {\n                id: `split-${Date.now()}`,\n                title: `Split ${splits.length + 1}`,\n                pages: [],\n              },\n            ])\n          }\n        >\n          <HugeiconsIcon icon={Add01Icon} className="size-4" />\n          Add split\n        </Button>\n      </div>\n      <DndContext\n        id="document-splits-dnd"\n        sensors={sensors}\n        collisionDetection={splitterCollisionDetection}\n        onDragStart={handleDragStart}\n        onDragOver={handleDragOver}\n        onDragEnd={handleDragEnd}\n        onDragCancel={handleDragCancel}\n      >\n        <ScrollArea className="min-h-0 flex-1" scrollFade>\n          <SortableContext\n            items={splits.map((group) => getSplitSortableId(group.id))}\n            strategy={verticalListSortingStrategy}\n          >\n            <div className="space-y-3 p-3">\n              {splits.map((group) => (\n                <SortableSplitGroupCard\n                  key={group.id}\n                  activePage={\n                    activePageId ? getPageNumber(activePageId) : activePage\n                  }\n                  canRemove={splits.length > 1}\n                  group={group}\n                  thumbnailImages={thumbnailImages}\n                  onRemove={() => {\n                    if (splits.length <= 1) return\n                    onSplitsChange(\n                      splits.filter((split) => split.id !== group.id)\n                    )\n                  }}\n                  onSelectPage={onSelectPage}\n                />\n              ))}\n            </div>\n          </SortableContext>\n        </ScrollArea>\n        <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION} zIndex={1000}>\n          {activePageId ? (\n            <div\n              className="relative overflow-hidden rounded-md border bg-background shadow-lg shadow-black/10"\n              style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}\n            >\n              <FileThumbnail\n                file={{ name: `${activePageId}.pdf`, type: "application/pdf" }}\n                showMetadata={false}\n                previewImageUrl={thumbnailImages[activePageId]}\n                isLoading={!thumbnailImages[activePageId]}\n                previewClassName="h-full aspect-auto"\n                className="size-full rounded-[inherit] border-0"\n              />\n            </div>\n          ) : activeSplitGroup ? (\n            <SplitGroupDragOverlay\n              activePage={activePage}\n              group={activeSplitGroup}\n              thumbnailImages={thumbnailImages}\n              width={activeSplitGroupWidth}\n              onSelectPage={onSelectPage}\n            />\n          ) : null}\n        </DragOverlay>\n      </DndContext>\n    </aside>\n  )\n}\n\nexport function DocumentSplitsBlock({\n  file,\n  thumbnailImages,\n}: {\n  file?: string\n  thumbnailImages?: Record<PageId, string>\n}) {\n  const [activePage, setActivePage] = React.useState(1)\n  const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)\n  const [pdfFile, setPdfFile] = React.useState(file)\n  const viewerRef = React.useRef<PDFViewerHandle>(null)\n  const uploadedPdfUrlRef = React.useRef<string | null>(null)\n\n  React.useEffect(() => {\n    setPdfFile(file)\n    setActivePage(1)\n  }, [file])\n\n  React.useEffect(() => {\n    return () => {\n      if (uploadedPdfUrlRef.current) {\n        URL.revokeObjectURL(uploadedPdfUrlRef.current)\n      }\n    }\n  }, [])\n\n  const handlePdfUpload = React.useCallback((uploadedFile: File) => {\n    const nextUrl = URL.createObjectURL(uploadedFile)\n\n    if (uploadedPdfUrlRef.current) {\n      URL.revokeObjectURL(uploadedPdfUrlRef.current)\n    }\n\n    uploadedPdfUrlRef.current = nextUrl\n    setPdfFile(nextUrl)\n    setActivePage(1)\n  }, [])\n\n  const handleDocumentLoadSuccess = React.useCallback((pageCount: number) => {\n    setSplits(createInitialSplits(pageCount))\n  }, [])\n\n  const handleSelectPage = React.useCallback((pageNumber: number) => {\n    setActivePage(pageNumber)\n    viewerRef.current?.scrollToPage(pageNumber, {\n      block: "start",\n      behavior: "auto",\n    })\n  }, [])\n\n  return (\n    <PdfBlockResizableShell\n      autoSaveId="pdf-block-document-splits"\n      heightClassName="h-[720px]"\n      rightDefaultSize={50}\n      rightMaxSize={66}\n      rightMinSize={30}\n      left={\n        <PDFViewer\n          ref={viewerRef}\n          file={pdfFile}\n          defaultZoom={0.75}\n          onActivePageChange={setActivePage}\n          onDocumentLoadSuccess={handleDocumentLoadSuccess}\n          onPdfUpload={handlePdfUpload}\n        />\n      }\n      right={\n        <div className="flex min-h-0 flex-col bg-background">\n          <div className="border-b px-4 py-3">\n            <h3 className="text-sm font-medium">Document splits</h3>\n            <p className="text-xs text-muted-foreground">\n              Drag pages between split groups and reorder output documents.\n            </p>\n          </div>\n          <DocumentSplits\n            activePage={activePage}\n            className="min-h-0 flex-1"\n            splits={splits}\n            thumbnailImages={thumbnailImages}\n            withFrameDivider={false}\n            onSelectPage={handleSelectPage}\n            onSplitsChange={setSplits}\n          />\n        </div>\n      }\n    />\n  )\n}\n'
+  "\"use client\"\n\nimport * as React from \"react\"\nimport {\n  closestCenter,\n  DndContext,\n  DragOverlay,\n  PointerSensor,\n  useDroppable,\n  useSensor,\n  useSensors,\n  type CollisionDetection,\n  type DragEndEvent,\n  type DragOverEvent,\n  type DragStartEvent,\n} from \"@dnd-kit/core\"\nimport {\n  arrayMove,\n  horizontalListSortingStrategy,\n  SortableContext,\n  useSortable,\n  verticalListSortingStrategy,\n} from \"@dnd-kit/sortable\"\nimport { CSS } from \"@dnd-kit/utilities\"\nimport {\n  Add01Icon,\n  Delete02Icon,\n  DragDropVerticalIcon,\n} from \"@hugeicons/core-free-icons\"\nimport { HugeiconsIcon } from \"@hugeicons/react\"\n\nimport { cn } from \"@/lib/utils\"\nimport { FileThumbnail } from \"@/components/ui/file-thumbnail\"\nimport { PDFViewer, type PDFViewerHandle } from \"@/components/ui/pdf-viewer\"\nimport { PdfBlockResizableShell } from \"@/components/pdf-block-resizable-shell\"\nimport { Button } from \"@/registry/new-york-v4/ui/button\"\nimport { ScrollArea } from \"@/registry/new-york-v4/ui/scroll-area\"\n\nexport type DocumentSplitPageId = `page-${number}`\nexport type DocumentSplit = {\n  id: string\n  title: string\n  pages: DocumentSplitPageId[]\n}\n\ntype PageId = DocumentSplitPageId\ntype SplitGroup = DocumentSplit\n\nconst THUMBNAIL_WIDTH = 72\nconst THUMBNAIL_HEIGHT = 92\nconst DRAG_OVERLAY_DROP_ANIMATION = null\n\nconst splitterCollisionDetection: CollisionDetection = (args) => {\n  const dragType = args.active.data.current?.type\n\n  if (dragType === \"page\") {\n    return closestCenter({\n      ...args,\n      droppableContainers: args.droppableContainers.filter(\n        (container) =>\n          container.data.current?.type === \"page\" ||\n          (container.data.current?.type === \"page-dropzone\" &&\n            container.data.current?.isEmpty)\n      ),\n    })\n  }\n\n  if (dragType === \"split\") {\n    return closestCenter({\n      ...args,\n      droppableContainers: args.droppableContainers.filter(\n        (container) => container.data.current?.type === \"split\"\n      ),\n    })\n  }\n\n  return closestCenter(args)\n}\n\nconst INITIAL_SPLITS: DocumentSplit[] = [\n  {\n    id: \"split-1\",\n    title: \"Abstract and intro\",\n    pages: [\"page-1\", \"page-2\", \"page-3\"],\n  },\n  {\n    id: \"split-2\",\n    title: \"Model architecture\",\n    pages: [\"page-4\", \"page-5\", \"page-6\", \"page-7\"],\n  },\n  {\n    id: \"split-3\",\n    title: \"Training and results\",\n    pages: [\"page-8\", \"page-9\", \"page-10\"],\n  },\n]\n\nfunction createInitialSplits(pageCount: number) {\n  if (pageCount <= 0) return INITIAL_SPLITS\n\n  const pages = Array.from(\n    { length: pageCount },\n    (_, index) => `page-${index + 1}` as PageId\n  )\n  const chunkSize = Math.max(1, Math.ceil(pageCount / 3))\n\n  return Array.from(\n    { length: Math.ceil(pageCount / chunkSize) },\n    (_, index) => {\n      const startIndex = index * chunkSize\n      const groupPages = pages.slice(startIndex, startIndex + chunkSize)\n      const firstPage = getPageNumber(groupPages[0])\n      const lastPage = getPageNumber(groupPages[groupPages.length - 1])\n\n      return {\n        id: `split-${index + 1}`,\n        title:\n          firstPage === lastPage\n            ? `Page ${firstPage}`\n            : `Pages ${firstPage}-${lastPage}`,\n        pages: groupPages,\n      }\n    }\n  )\n}\n\nfunction getPageNumber(pageId: PageId) {\n  return Number(pageId.replace(\"page-\", \"\"))\n}\n\nfunction getSplitSortableId(groupId: string) {\n  return `split-sortable-${groupId}`\n}\n\nfunction findGroupId(groups: SplitGroup[], id: string) {\n  if (groups.some((group) => group.id === id)) return id\n\n  return groups.find((group) => group.pages.includes(id as PageId))?.id ?? null\n}\n\nfunction getGroupPages(groups: SplitGroup[], groupId: string | null) {\n  return groups.find((group) => group.id === groupId)?.pages ?? []\n}\n\nfunction movePageToGroup({\n  draggedPageId,\n  groups,\n  insertIndex,\n  targetGroupId,\n}: {\n  draggedPageId: PageId\n  groups: SplitGroup[]\n  insertIndex: number\n  targetGroupId: string\n}) {\n  return groups.map((group) => {\n    const pagesWithoutDragged = group.pages.filter(\n      (pageId) => pageId !== draggedPageId\n    )\n\n    if (group.id !== targetGroupId) {\n      return { ...group, pages: pagesWithoutDragged }\n    }\n\n    const nextPages = [...pagesWithoutDragged]\n    nextPages.splice(insertIndex, 0, draggedPageId)\n\n    return { ...group, pages: nextPages }\n  })\n}\n\nfunction areSplitGroupsEqual(left: SplitGroup[], right: SplitGroup[]) {\n  if (left === right) return true\n  if (left.length !== right.length) return false\n\n  return left.every((leftGroup, groupIndex) => {\n    const rightGroup = right[groupIndex]\n    if (!rightGroup) return false\n\n    return (\n      leftGroup.id === rightGroup.id &&\n      leftGroup.title === rightGroup.title &&\n      leftGroup.pages.length === rightGroup.pages.length &&\n      leftGroup.pages.every(\n        (pageId, pageIndex) => pageId === rightGroup.pages[pageIndex]\n      )\n    )\n  })\n}\n\nfunction reorderPageInGroup({\n  draggedPageId,\n  groups,\n  overPageId,\n}: {\n  draggedPageId: PageId\n  groups: SplitGroup[]\n  overPageId: PageId\n}) {\n  const groupId = findGroupId(groups, draggedPageId)\n  const pages = getGroupPages(groups, groupId)\n  const draggedIndex = pages.indexOf(draggedPageId)\n  const overIndex = pages.indexOf(overPageId)\n\n  if (!groupId || draggedIndex === -1 || overIndex === -1) return groups\n\n  return groups.map((group) =>\n    group.id === groupId\n      ? {\n          ...group,\n          pages: arrayMove(group.pages, draggedIndex, overIndex),\n        }\n      : group\n  )\n}\n\nfunction createPageRangeLabel(pageIds: PageId[]) {\n  if (pageIds.length === 0) return \"No pages\"\n\n  return `Pages ${pageIds.map(getPageNumber).join(\", \")}`\n}\n\nfunction SplitGroupDropzone({\n  children,\n  group,\n}: {\n  children: React.ReactNode\n  group: SplitGroup\n}) {\n  const { isOver, setNodeRef } = useDroppable({\n    id: group.id,\n    data: { type: \"page-dropzone\", isEmpty: group.pages.length === 0 },\n  })\n\n  return (\n    <div\n      ref={setNodeRef}\n      className={cn(\n        \"min-h-[116px] rounded-lg p-2 transition-[background-color,box-shadow]\",\n        isOver && \"bg-accent/30 shadow-[inset_0_0_0_1px_var(--border)]\"\n      )}\n    >\n      {children}\n    </div>\n  )\n}\n\nfunction PageThumbnail({\n  imageUrl,\n  onSelect,\n  pageId,\n}: {\n  imageUrl?: string\n  onSelect: (pageNumber: number) => void\n  pageId: PageId\n}) {\n  const pageNumber = getPageNumber(pageId)\n  const {\n    attributes,\n    isDragging,\n    listeners,\n    setNodeRef,\n    transform,\n    transition,\n  } = useSortable({\n    id: pageId,\n    data: { type: \"page\" },\n  })\n\n  return (\n    <button\n      ref={setNodeRef}\n      type=\"button\"\n      className={cn(\n        \"relative shrink-0 cursor-grab overflow-hidden rounded-md border border-border bg-muted text-left shadow-xs transition-[border-color,opacity] hover:border-foreground/30 active:cursor-grabbing\",\n        isDragging && \"opacity-0\"\n      )}\n      style={{\n        width: THUMBNAIL_WIDTH,\n        height: THUMBNAIL_HEIGHT,\n        transform: CSS.Transform.toString(transform),\n        transition,\n      }}\n      onClick={() => onSelect(pageNumber)}\n      {...attributes}\n      {...listeners}\n    >\n      <FileThumbnail\n        file={{\n          name: `page-${pageNumber}.pdf`,\n          type: \"application/pdf\",\n          size: `Page ${pageNumber}`,\n        }}\n        showMetadata={false}\n        previewImageUrl={imageUrl}\n        isLoading={!imageUrl}\n        previewClassName=\"h-full aspect-auto\"\n        className=\"size-full rounded-[inherit] border-0\"\n      />\n      <span\n        className=\"absolute right-1 bottom-1 rounded bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs ring-1 ring-border/80\"\n      >\n        {pageNumber}\n      </span>\n    </button>\n  )\n}\n\nfunction SplitGroupCard({\n  canRemove,\n  group,\n  dragHandleProps,\n  thumbnailImages,\n  onRemove,\n  onSelectPage,\n}: {\n  canRemove: boolean\n  group: SplitGroup\n  dragHandleProps?: React.ComponentPropsWithoutRef<\"button\">\n  thumbnailImages: Record<PageId, string>\n  onRemove: () => void\n  onSelectPage: (pageNumber: number) => void\n}) {\n  return (\n    <section className=\"w-full rounded-lg border bg-background\">\n      <div className=\"flex items-center justify-between gap-3 border-b p-3\">\n        <div className=\"flex min-w-0 items-center gap-2\">\n          <button\n            type=\"button\"\n            aria-label={`Reorder ${group.title}`}\n            className=\"inline-flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-muted active:cursor-grabbing\"\n            {...dragHandleProps}\n          >\n            <HugeiconsIcon icon={DragDropVerticalIcon} className=\"size-4\" />\n          </button>\n          <div className=\"min-w-0\">\n            <div className=\"truncate text-sm font-medium\">{group.title}</div>\n            <div className=\"mt-1 text-xs text-muted-foreground\">\n              {createPageRangeLabel(group.pages)}\n            </div>\n          </div>\n        </div>\n        <div className=\"flex shrink-0 items-center gap-2\">\n          <div className=\"rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground\">\n            {group.pages.length}\n          </div>\n          <Button\n            type=\"button\"\n            variant=\"ghost\"\n            size=\"icon-sm\"\n            aria-label={`Remove ${group.title}`}\n            disabled={!canRemove}\n            onClick={onRemove}\n          >\n            <HugeiconsIcon icon={Delete02Icon} className=\"size-4\" />\n          </Button>\n        </div>\n      </div>\n      <SplitGroupDropzone group={group}>\n        {group.pages.length ? (\n          <SortableContext\n            items={group.pages}\n            strategy={horizontalListSortingStrategy}\n          >\n            <ScrollArea\n              className=\"h-[110px] w-full overflow-hidden\"\n              orientation=\"horizontal\"\n              scrollbarGutter\n              scrollbarOverflowOnly\n              viewportClassName=\"overflow-y-hidden\"\n            >\n              <div className=\"flex w-max gap-2 overflow-y-hidden py-1 pr-6\">\n                {group.pages.map((pageId) => (\n                  <PageThumbnail\n                    key={pageId}\n                    pageId={pageId}\n                    imageUrl={thumbnailImages[pageId]}\n                    onSelect={onSelectPage}\n                  />\n                ))}\n              </div>\n            </ScrollArea>\n          </SortableContext>\n        ) : (\n          <div className=\"grid h-[104px] place-items-center rounded-lg bg-muted/35 text-xs text-muted-foreground\">\n            Drop pages here\n          </div>\n        )}\n      </SplitGroupDropzone>\n    </section>\n  )\n}\n\nfunction SortableSplitGroupCard({\n  canRemove,\n  group,\n  thumbnailImages,\n  onRemove,\n  onSelectPage,\n}: {\n  canRemove: boolean\n  group: SplitGroup\n  thumbnailImages: Record<PageId, string>\n  onRemove: () => void\n  onSelectPage: (pageNumber: number) => void\n}) {\n  const {\n    attributes,\n    isDragging,\n    listeners,\n    setNodeRef,\n    transform,\n    transition,\n  } = useSortable({\n    id: getSplitSortableId(group.id),\n    data: { type: \"split\", groupId: group.id },\n  })\n\n  return (\n    <div\n      ref={setNodeRef}\n      className={cn(\"w-full\", isDragging && \"opacity-0\")}\n      style={{\n        transform: CSS.Transform.toString(transform),\n        transition,\n      }}\n    >\n      <SplitGroupCard\n        canRemove={canRemove}\n        group={group}\n        thumbnailImages={thumbnailImages}\n        dragHandleProps={{ ...attributes, ...listeners }}\n        onRemove={onRemove}\n        onSelectPage={onSelectPage}\n      />\n    </div>\n  )\n}\n\nfunction SplitGroupDragOverlay({\n  group,\n  thumbnailImages,\n  width,\n  onSelectPage,\n}: {\n  group: SplitGroup\n  thumbnailImages: Record<PageId, string>\n  width?: number\n  onSelectPage: (pageNumber: number) => void\n}) {\n  return (\n    <div\n      className=\"relative z-[1000] max-w-[calc(100vw-2rem)]\"\n      style={{ width }}\n    >\n      <SplitGroupCard\n        canRemove={false}\n        group={group}\n        thumbnailImages={thumbnailImages}\n        onRemove={() => {}}\n        onSelectPage={onSelectPage}\n      />\n    </div>\n  )\n}\n\nexport function DocumentSplits({\n  className,\n  splits,\n  thumbnailImages = {},\n  withFrameDivider = true,\n  onSelectPage,\n  onSplitsChange,\n}: {\n  className?: string\n  splits: SplitGroup[]\n  thumbnailImages?: Record<PageId, string>\n  withFrameDivider?: boolean\n  onSelectPage: (pageNumber: number) => void\n  onSplitsChange: (splits: SplitGroup[]) => void\n}) {\n  const [draggedPageId, setDraggedPageId] = React.useState<PageId | null>(null)\n  const [activeSplitGroupId, setActiveSplitGroupId] = React.useState<\n    string | null\n  >(null)\n  const [activeSplitGroupWidth, setActiveSplitGroupWidth] = React.useState<\n    number | undefined\n  >()\n  const dragStartGroupIdRef = React.useRef<string | null>(null)\n  const dragStartSplitsRef = React.useRef<SplitGroup[] | null>(null)\n  const sensors = useSensors(\n    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })\n  )\n\n  const handleDragStart = React.useCallback(\n    (event: DragStartEvent) => {\n      const dragType = event.active.data.current?.type\n\n      if (dragType === \"split\") {\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setDraggedPageId(null)\n        setActiveSplitGroupId(\n          (event.active.data.current?.groupId as string | undefined) ?? null\n        )\n        setActiveSplitGroupWidth(event.active.rect.current.initial?.width)\n        return\n      }\n\n      if (dragType !== \"page\") {\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setDraggedPageId(null)\n        setActiveSplitGroupId(null)\n        setActiveSplitGroupWidth(undefined)\n        return\n      }\n\n      const pageId = String(event.active.id) as PageId\n      dragStartGroupIdRef.current = findGroupId(splits, pageId)\n      dragStartSplitsRef.current = splits\n      setDraggedPageId(pageId)\n      setActiveSplitGroupId(null)\n      setActiveSplitGroupWidth(undefined)\n    },\n    [splits]\n  )\n\n  const handleDragOver = React.useCallback(\n    (event: DragOverEvent) => {\n      if (event.active.data.current?.type !== \"page\" || !event.over) return\n\n      const pageId = String(event.active.id) as PageId\n      const overId = String(event.over.id)\n\n      const sourceGroupId = findGroupId(splits, pageId)\n      const targetGroupId = findGroupId(splits, overId)\n\n      if (!sourceGroupId || !targetGroupId || sourceGroupId === targetGroupId) {\n        return\n      }\n\n      const targetPages = getGroupPages(splits, targetGroupId)\n      const overIndex = targetPages.indexOf(overId as PageId)\n      const insertIndex = overIndex === -1 ? targetPages.length : overIndex\n\n      const nextSplits = movePageToGroup({\n        draggedPageId: pageId,\n        groups: splits,\n        insertIndex,\n        targetGroupId,\n      })\n\n      if (!areSplitGroupsEqual(splits, nextSplits)) {\n        onSplitsChange(nextSplits)\n      }\n    },\n    [onSplitsChange, splits]\n  )\n\n  const handleDragEnd = React.useCallback(\n    (event: DragEndEvent) => {\n      if (event.active.data.current?.type === \"split\" && event.over) {\n        const activeGroupId = event.active.data.current.groupId\n        const overGroupId = event.over.data.current?.groupId\n\n        const draggedIndex = splits.findIndex(\n          (group) => group.id === activeGroupId\n        )\n        const overIndex = splits.findIndex((group) => group.id === overGroupId)\n\n        if (draggedIndex !== -1 && overIndex !== -1) {\n          const nextSplits = arrayMove(splits, draggedIndex, overIndex)\n\n          if (!areSplitGroupsEqual(splits, nextSplits)) {\n            onSplitsChange(nextSplits)\n          }\n        }\n\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setDraggedPageId(null)\n        setActiveSplitGroupId(null)\n        setActiveSplitGroupWidth(undefined)\n        return\n      }\n\n      if (event.active.data.current?.type !== \"page\" || !event.over) {\n        dragStartGroupIdRef.current = null\n        dragStartSplitsRef.current = null\n        setDraggedPageId(null)\n        setActiveSplitGroupId(null)\n        setActiveSplitGroupWidth(undefined)\n        return\n      }\n\n      const pageId = String(event.active.id) as PageId\n      const overId = String(event.over.id) as PageId\n      const overGroupId = findGroupId(splits, overId)\n\n      if (dragStartGroupIdRef.current === overGroupId) {\n        const nextSplits = reorderPageInGroup({\n          draggedPageId: pageId,\n          groups: splits,\n          overPageId: overId,\n        })\n\n        if (!areSplitGroupsEqual(splits, nextSplits)) {\n          onSplitsChange(nextSplits)\n        }\n      }\n\n      dragStartGroupIdRef.current = null\n      dragStartSplitsRef.current = null\n      setDraggedPageId(null)\n      setActiveSplitGroupId(null)\n      setActiveSplitGroupWidth(undefined)\n    },\n    [onSplitsChange, splits]\n  )\n\n  const handleDragCancel = React.useCallback(() => {\n    if (dragStartSplitsRef.current) {\n      onSplitsChange(dragStartSplitsRef.current)\n    }\n\n    dragStartSplitsRef.current = null\n    dragStartGroupIdRef.current = null\n    setDraggedPageId(null)\n    setActiveSplitGroupId(null)\n    setActiveSplitGroupWidth(undefined)\n  }, [onSplitsChange])\n\n  const activeSplitGroup = activeSplitGroupId\n    ? splits.find((group) => group.id === activeSplitGroupId)\n    : null\n\n  return (\n    <aside\n      className={cn(\n        \"flex h-full min-h-0 flex-col bg-muted/20\",\n        withFrameDivider && \"border-t md:border-t-0 md:border-l\",\n        className\n      )}\n    >\n      <div className=\"flex min-h-12 items-center justify-end gap-3 border-b bg-background px-3\">\n        <Button\n          type=\"button\"\n          variant=\"outline\"\n          size=\"sm\"\n          onClick={() =>\n            onSplitsChange([\n              ...splits,\n              {\n                id: `split-${Date.now()}`,\n                title: `Split ${splits.length + 1}`,\n                pages: [],\n              },\n            ])\n          }\n        >\n          <HugeiconsIcon icon={Add01Icon} className=\"size-4\" />\n          Add split\n        </Button>\n      </div>\n      <DndContext\n        id=\"document-splits-dnd\"\n        sensors={sensors}\n        collisionDetection={splitterCollisionDetection}\n        onDragStart={handleDragStart}\n        onDragOver={handleDragOver}\n        onDragEnd={handleDragEnd}\n        onDragCancel={handleDragCancel}\n      >\n        <ScrollArea className=\"min-h-0 flex-1\" scrollFade>\n          <SortableContext\n            items={splits.map((group) => getSplitSortableId(group.id))}\n            strategy={verticalListSortingStrategy}\n          >\n            <div className=\"space-y-3 p-3\">\n              {splits.map((group) => (\n                <SortableSplitGroupCard\n                  key={group.id}\n                  canRemove={splits.length > 1}\n                  group={group}\n                  thumbnailImages={thumbnailImages}\n                  onRemove={() => {\n                    if (splits.length <= 1) return\n                    onSplitsChange(\n                      splits.filter((split) => split.id !== group.id)\n                    )\n                  }}\n                  onSelectPage={onSelectPage}\n                />\n              ))}\n            </div>\n          </SortableContext>\n        </ScrollArea>\n        <DragOverlay dropAnimation={DRAG_OVERLAY_DROP_ANIMATION} zIndex={1000}>\n          {draggedPageId ? (\n            <div\n              className=\"relative overflow-hidden rounded-md border bg-background shadow-lg shadow-black/10\"\n              style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}\n            >\n              <FileThumbnail\n                file={{ name: `${draggedPageId}.pdf`, type: \"application/pdf\" }}\n                showMetadata={false}\n                previewImageUrl={thumbnailImages[draggedPageId]}\n                isLoading={!thumbnailImages[draggedPageId]}\n                previewClassName=\"h-full aspect-auto\"\n                className=\"size-full rounded-[inherit] border-0\"\n              />\n            </div>\n          ) : activeSplitGroup ? (\n            <SplitGroupDragOverlay\n              group={activeSplitGroup}\n              thumbnailImages={thumbnailImages}\n              width={activeSplitGroupWidth}\n              onSelectPage={onSelectPage}\n            />\n          ) : null}\n        </DragOverlay>\n      </DndContext>\n    </aside>\n  )\n}\n\nexport function DocumentSplitsBlock({\n  file,\n  thumbnailImages,\n}: {\n  file?: string\n  thumbnailImages?: Record<PageId, string>\n}) {\n  const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)\n  const [pdfFile, setPdfFile] = React.useState(file)\n  const viewerRef = React.useRef<PDFViewerHandle>(null)\n  const uploadedPdfUrlRef = React.useRef<string | null>(null)\n\n  React.useEffect(() => {\n    setPdfFile(file)\n  }, [file])\n\n  React.useEffect(() => {\n    return () => {\n      if (uploadedPdfUrlRef.current) {\n        URL.revokeObjectURL(uploadedPdfUrlRef.current)\n      }\n    }\n  }, [])\n\n  const handlePdfUpload = React.useCallback((uploadedFile: File) => {\n    const nextUrl = URL.createObjectURL(uploadedFile)\n\n    if (uploadedPdfUrlRef.current) {\n      URL.revokeObjectURL(uploadedPdfUrlRef.current)\n    }\n\n    uploadedPdfUrlRef.current = nextUrl\n    setPdfFile(nextUrl)\n  }, [])\n\n  const handleDocumentLoadSuccess = React.useCallback((pageCount: number) => {\n    setSplits(createInitialSplits(pageCount))\n  }, [])\n\n  const handleSelectPage = React.useCallback((pageNumber: number) => {\n    viewerRef.current?.scrollToPage(pageNumber, {\n      block: \"start\",\n      behavior: \"auto\",\n    })\n  }, [])\n\n  return (\n    <PdfBlockResizableShell\n      autoSaveId=\"pdf-block-document-splits\"\n      heightClassName=\"h-[720px]\"\n      rightDefaultSize={50}\n      rightMaxSize={66}\n      rightMinSize={30}\n      left={\n        <PDFViewer\n          ref={viewerRef}\n          file={pdfFile}\n          defaultZoom={0.75}\n          onDocumentLoadSuccess={handleDocumentLoadSuccess}\n          onPdfUpload={handlePdfUpload}\n        />\n      }\n      right={\n        <div className=\"flex min-h-0 flex-col bg-background\">\n          <div className=\"border-b px-4 py-3\">\n            <h3 className=\"text-sm font-medium\">Document splits</h3>\n            <p className=\"text-xs text-muted-foreground\">\n              Drag pages between split groups and reorder output documents.\n            </p>\n          </div>\n          <DocumentSplits\n            className=\"min-h-0 flex-1\"\n            splits={splits}\n            thumbnailImages={thumbnailImages}\n            withFrameDivider={false}\n            onSelectPage={handleSelectPage}\n            onSplitsChange={setSplits}\n          />\n        </div>\n      }\n    />\n  )\n}\n"
 
 export function DocumentSplitsSource() {
   return <HighlightedCodeBlock code={documentSplitterSourceCode} />

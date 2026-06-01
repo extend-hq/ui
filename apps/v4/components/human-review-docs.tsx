@@ -5,9 +5,11 @@ import {
   DataEditor,
   emptyGridSelection,
   GridCellKind,
+  TextCellEntry,
   type EditableGridCell,
   type GridCell,
   type GridColumn,
+  type GridMouseEventArgs,
   type GridSelection,
   type Item,
   type NumberCell,
@@ -53,6 +55,8 @@ import {
   TooltipTrigger,
 } from "@/registry/new-york-v4/ui/tooltip"
 
+import blockReviewOutput from "./human-review-block-output.json"
+
 import "@glideapps/glide-data-grid/dist/index.css"
 
 type JsonPrimitive = string | number | boolean | null
@@ -81,10 +85,8 @@ type ReviewFieldDefinition = {
   schema: ReviewFieldSchema
   actual: JsonValue
   expected: JsonValue
-  location?: {
-    page: number
-    area: HighlightArea
-  }
+  location?: ReviewLocation
+  metadataPath?: string
 }
 
 type HighlightArea = {
@@ -94,7 +96,49 @@ type HighlightArea = {
   height: number
 }
 
+type ReviewLocation = {
+  page: number
+  area: HighlightArea
+}
+
+type HumanReviewBlockTransaction = {
+  date: string
+  amount: number
+  category: string
+  description: string
+}
+
+type HumanReviewBlockOutput = {
+  transactions: HumanReviewBlockTransaction[]
+  ending_balance: number | null
+  account_details: {
+    holder_name: string | null
+    account_type: string | null
+    account_last_four: string | null
+  }
+  statement_period: string
+  overdraft_protection_enabled: boolean | null
+}
+
+type HumanReviewBlockCitation = {
+  page: number
+  polygon?: Array<{ x: number; y: number }>
+  pageWidth: number
+  pageHeight: number
+  referenceText?: string
+}
+
+type HumanReviewBlockMetadataEntry = {
+  citations?: HumanReviewBlockCitation[]
+}
+
+type HumanReviewBlockRawOutput = {
+  value: HumanReviewBlockOutput
+  metadata: Record<string, HumanReviewBlockMetadataEntry>
+}
+
 const PDF_URL = "/samples/attention.pdf"
+const BLOCK_REVIEW_PDF_URL = "/samples/bank-statement-x4uhhi7t.pdf"
 const DEFAULT_ZOOM = 0.75
 const REVIEW_HIGHLIGHT_STYLE =
   "border-blue-500/70 bg-blue-500/12 shadow-[0_4px_16px_rgb(59_130_246_/_10%)]"
@@ -221,110 +265,73 @@ function useHumanReviewGridTheme() {
 
 const REVIEW_SCHEMA: ReviewFieldDefinition[] = [
   {
-    key: "vendor_name",
+    key: "statement_period",
     schema: {
       type: "string",
-      title: "Vendor name",
-      description: "Supplier shown on the invoice header.",
+      title: "Statement period",
+      description: "Date range covered by the bank statement.",
     },
-    actual: "Acme Supplies LLC",
-    expected: "Acme Supply LLC",
+    actual: "Jan 1-31, 2026",
+    expected: "January 1-31, 2026",
     location: {
       page: 1,
       area: { left: 31, top: 30, width: 40, height: 5.8 },
     },
   },
   {
-    key: "line_items",
+    key: "transactions",
     schema: {
       type: "array",
-      title: "Line items",
-      description: "Invoice rows with nested allocation details.",
+      title: "Transactions",
+      description: "Posted account activity during the statement period.",
       items: {
         type: "object",
         properties: {
+          date: {
+            type: "string",
+            title: "Date",
+          },
           description: {
             type: "string",
             title: "Description",
           },
-          quantity: {
+          amount: {
             type: "number",
-            title: "Qty",
+            title: "Amount",
           },
-          unit_price: {
-            type: "number",
-            title: "Unit price",
-          },
-          tax_detail: {
-            type: "object",
-            title: "Tax detail",
-            properties: {
-              code: {
-                type: "string",
-                title: "Code",
-              },
-              jurisdiction: {
-                type: "string",
-                title: "Jurisdiction",
-              },
-            },
-          },
-          allocations: {
-            type: "array",
-            title: "Allocations",
-            items: {
-              type: "object",
-              properties: {
-                department: {
-                  type: "string",
-                  title: "Department",
-                },
-                percent: {
-                  type: "number",
-                  title: "Percent",
-                },
-              },
-            },
+          category: {
+            type: "string",
+            title: "Category",
           },
         },
       },
     },
     actual: [
       {
-        description: "Transformer implementation support",
-        quantity: 2,
-        unit_price: 4200,
-        tax_detail: { code: "TX-CA", jurisdiction: "CA" },
-        allocations: [
-          { department: "Research", percent: 70 },
-          { department: "Platform", percent: 20 },
-        ],
+        date: "2026-01-03",
+        description: "ACH CREDIT PAYROLL",
+        amount: 4250,
+        category: "Deposit",
       },
       {
-        description: "Attention model review",
-        quantity: 1,
-        unit_price: 4080,
-        tax_detail: { code: "TX-NY", jurisdiction: "NY" },
-        allocations: [{ department: "Research", percent: 100 }],
+        date: "2026-01-12",
+        description: "POS PURCHASE GROCERY MART",
+        amount: -86.42,
+        category: "Debit",
       },
     ],
     expected: [
       {
-        description: "Transformer implementation support",
-        quantity: 2,
-        unit_price: 4200,
-        tax_detail: { code: "TX-CA", jurisdiction: "CA" },
-        allocations: [
-          { department: "Research", percent: 70 },
-          { department: "Platform", percent: 30 },
-        ],
+        date: "2026-01-03",
+        description: "ACH CREDIT PAYROLL",
+        amount: 4250,
+        category: "Deposit",
       },
       {
-        description: "Attention model review",
-        quantity: 1,
-        unit_price: 4080.75,
-        tax_detail: { code: "TX-NY", jurisdiction: "NY" },
-        allocations: [{ department: "Research", percent: 100 }],
+        date: "2026-01-12",
+        description: "POS PURCHASE GROCERY MART",
+        amount: -68.42,
+        category: "Debit",
       },
     ],
     location: {
@@ -333,39 +340,25 @@ const REVIEW_SCHEMA: ReviewFieldDefinition[] = [
     },
   },
   {
-    key: "total_amount",
+    key: "ending_balance",
     schema: {
       type: "number",
-      title: "Total amount",
-      description: "Final amount due including tax.",
+      title: "Ending balance",
+      description: "Final account balance at the end of the statement period.",
     },
-    actual: 12480,
-    expected: 12480.75,
+    actual: 12840.18,
+    expected: 12858.18,
     location: {
       page: 1,
       area: { left: 13.5, top: 66, width: 73.5, height: 7.5 },
     },
   },
   {
-    key: "payment_terms",
-    schema: {
-      type: "string",
-      title: "Payment terms",
-      enum: ["Due on receipt", "Net 15", "Net 30"],
-    },
-    actual: "Net 15",
-    expected: "Net 30",
-    location: {
-      page: 1,
-      area: { left: 13.5, top: 55.5, width: 73.5, height: 7.5 },
-    },
-  },
-  {
-    key: "requires_review",
+    key: "overdraft_protection_enabled",
     schema: {
       type: "boolean",
-      title: "Requires review",
-      description: "Whether a human should verify this document before export.",
+      title: "Overdraft protection enabled",
+      description: "Whether overdraft protection is enabled for the account.",
     },
     actual: false,
     expected: true,
@@ -375,51 +368,327 @@ const REVIEW_SCHEMA: ReviewFieldDefinition[] = [
     },
   },
   {
-    key: "remittance",
+    key: "account_details",
     schema: {
       type: "object",
-      title: "Remittance details",
-      description: "Payment destination used for invoice reconciliation.",
+      title: "Account details",
+      description: "Account owner and identifying details from the statement.",
       properties: {
-        account_holder: {
+        holder_name: {
           type: "string",
-          title: "Account holder",
+          title: "Holder name",
         },
-        routing_number: {
+        account_last_four: {
           type: "string",
-          title: "Routing number",
+          title: "Account last four",
         },
-        verified: {
-          type: "boolean",
-          title: "Verified",
+        account_type: {
+          type: "string",
+          title: "Account type",
         },
       },
     },
     actual: {
-      account_holder: "Acme Supplies LLC",
-      routing_number: "021000021",
-      verified: false,
+      holder_name: "Jordan Lee",
+      account_last_four: "4821",
+      account_type: "Checking",
     },
     expected: {
-      account_holder: "Acme Supply LLC",
-      routing_number: "021000021",
-      verified: true,
+      holder_name: "Jordan Lee",
+      account_last_four: "4821",
+      account_type: "Premier Checking",
     },
   },
 ]
 
-const INITIAL_EXPECTED_VALUES = REVIEW_SCHEMA.reduce<JsonObject>(
-  (values, field) => {
+const BLOCK_REVIEW_OUTPUT = blockReviewOutput as HumanReviewBlockRawOutput
+const BLOCK_REVIEW_EXPECTED_OUTPUT = BLOCK_REVIEW_OUTPUT.value
+const BLOCK_REVIEW_METADATA = BLOCK_REVIEW_OUTPUT.metadata
+const BLOCK_REVIEW_FIRST_INCLUDED_SOURCE_PAGE = 1
+const BLOCK_REVIEW_LAST_INCLUDED_SOURCE_PAGE = 1
+
+function getBlockReviewPdfPage(sourcePage: number) {
+  if (
+    sourcePage < BLOCK_REVIEW_FIRST_INCLUDED_SOURCE_PAGE ||
+    sourcePage > BLOCK_REVIEW_LAST_INCLUDED_SOURCE_PAGE
+  ) {
+    return undefined
+  }
+
+  return sourcePage - BLOCK_REVIEW_FIRST_INCLUDED_SOURCE_PAGE + 1
+}
+
+function getCitationLocation(
+  citation: HumanReviewBlockCitation
+): ReviewLocation | undefined {
+  const polygon = citation.polygon
+  if (!polygon?.length || !citation.pageWidth || !citation.pageHeight) {
+    return undefined
+  }
+
+  const xs = polygon.map((point) => point.x)
+  const ys = polygon.map((point) => point.y)
+  const left = Math.min(...xs)
+  const top = Math.min(...ys)
+  const right = Math.max(...xs)
+  const bottom = Math.max(...ys)
+
+  return {
+    page: citation.page,
+    area: {
+      left: (left / citation.pageWidth) * 100,
+      top: (top / citation.pageHeight) * 100,
+      width: ((right - left) / citation.pageWidth) * 100,
+      height: ((bottom - top) / citation.pageHeight) * 100,
+    },
+  }
+}
+
+function normalizeCitationSearchText(value: unknown) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+}
+
+function getTransactionDateSearchText(value: unknown) {
+  if (typeof value !== "string") return null
+
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  return match ? `${match[2]} ${match[3]}` : normalizeCitationSearchText(value)
+}
+
+function getNumberSearchTexts(value: unknown) {
+  if (typeof value !== "number") return []
+
+  const absoluteValue = Math.abs(value)
+
+  return [
+    absoluteValue.toString(),
+    absoluteValue.toFixed(2),
+    absoluteValue.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
+  ].map(normalizeCitationSearchText)
+}
+
+function citationMatchesTransaction(
+  citation: HumanReviewBlockCitation | undefined,
+  transaction: JsonValue
+) {
+  if (!citation?.referenceText || !isJsonObject(transaction)) return false
+
+  const referenceText = normalizeCitationSearchText(citation.referenceText)
+  const dateText = getTransactionDateSearchText(transaction.date)
+  const descriptionText = normalizeCitationSearchText(transaction.description)
+    .split(" ")
+    .slice(0, 4)
+    .join(" ")
+  const amountTexts = getNumberSearchTexts(transaction.amount)
+
+  return (
+    Boolean(dateText && referenceText.includes(dateText)) &&
+    Boolean(descriptionText && referenceText.includes(descriptionText)) &&
+    amountTexts.some((amountText) => referenceText.includes(amountText))
+  )
+}
+
+function resolveBlockReviewArrayItemMetadataPath(
+  metadataPath: string,
+  rowIndex: number,
+  rowValue: JsonValue
+) {
+  if (metadataPath !== "transactions") return `${metadataPath}[${rowIndex}]`
+
+  const rowMetadataPath = `${metadataPath}[${rowIndex}]`
+  const rowCitation = BLOCK_REVIEW_METADATA[rowMetadataPath]?.citations?.find(
+    (candidate) => candidate.polygon?.length
+  )
+
+  if (citationMatchesTransaction(rowCitation, rowValue)) {
+    return rowMetadataPath
+  }
+
+  const matchedEntry = Object.entries(BLOCK_REVIEW_METADATA).find(
+    ([candidatePath, entry]) =>
+      candidatePath.startsWith(`${metadataPath}[`) &&
+      !candidatePath.includes(".") &&
+      citationMatchesTransaction(
+        entry.citations?.find((candidate) => candidate.polygon?.length),
+        rowValue
+      )
+  )
+
+  return matchedEntry?.[0]
+}
+
+function getBlockReviewLocation(metadataPath: string | undefined) {
+  if (!metadataPath) return undefined
+
+  const citation = BLOCK_REVIEW_METADATA[metadataPath]?.citations?.find(
+    (candidate) => candidate.polygon?.length
+  )
+  const localPage = citation ? getBlockReviewPdfPage(citation.page) : undefined
+
+  if (!citation || localPage === undefined) return undefined
+
+  const location = getCitationLocation(citation)
+
+  return location ? { ...location, page: localPage } : undefined
+}
+
+function getReviewFieldLocation(
+  field: ReviewFieldDefinition | undefined,
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
+) {
+  if (!field) return undefined
+
+  return (
+    field.location ??
+    resolveLocation?.(field.metadataPath ?? field.key) ??
+    undefined
+  )
+}
+
+function getReviewLocationKey(location: ReviewLocation | undefined) {
+  if (!location) return null
+
+  const { area } = location
+  return [location.page, area.left, area.top, area.width, area.height].join(":")
+}
+
+const BLOCK_REVIEW_ACTUAL_OUTPUT = {
+  ...BLOCK_REVIEW_EXPECTED_OUTPUT,
+  transactions: BLOCK_REVIEW_EXPECTED_OUTPUT.transactions.map(
+    (transaction, index) => {
+      if (index === 0) {
+        return {
+          ...transaction,
+          category: "Card Activity",
+        }
+      }
+
+      if (index === 15) {
+        return {
+          ...transaction,
+          category: "Retail Spend",
+        }
+      }
+
+      if (index === 28) {
+        return {
+          ...transaction,
+          category: "Food & Dining",
+        }
+      }
+
+      return transaction
+    }
+  ),
+  account_details: {
+    ...BLOCK_REVIEW_EXPECTED_OUTPUT.account_details,
+    account_type: "Chase Business Checking",
+  },
+  statement_period: "Oct 01-31, 2021",
+  overdraft_protection_enabled: false,
+} satisfies HumanReviewBlockOutput
+
+const BLOCK_REVIEW_SCHEMA: ReviewFieldDefinition[] = [
+  {
+    key: "transactions",
+    schema: {
+      type: "array",
+      title: "Transactions",
+      description: "Posted account activity during the statement period.",
+      items: {
+        type: "object",
+        properties: {
+          date: {
+            type: "string",
+            title: "Date",
+          },
+          description: {
+            type: "string",
+            title: "Description",
+          },
+          amount: {
+            type: "number",
+            title: "Amount",
+          },
+          category: {
+            type: "string",
+            title: "Category",
+          },
+        },
+      },
+    },
+    actual: BLOCK_REVIEW_ACTUAL_OUTPUT.transactions,
+    expected: BLOCK_REVIEW_EXPECTED_OUTPUT.transactions,
+    metadataPath: "transactions",
+  },
+  {
+    key: "account_details",
+    schema: {
+      type: "object",
+      title: "Account details",
+      description: "Account owner and identifying details from the statement.",
+      properties: {
+        holder_name: {
+          type: "string",
+          title: "Holder name",
+        },
+        account_type: {
+          type: "string",
+          title: "Account type",
+        },
+        account_last_four: {
+          type: "string",
+          title: "Account last four",
+        },
+      },
+    },
+    actual: BLOCK_REVIEW_ACTUAL_OUTPUT.account_details,
+    expected: BLOCK_REVIEW_EXPECTED_OUTPUT.account_details,
+    metadataPath: "account_details",
+  },
+  {
+    key: "statement_period",
+    schema: {
+      type: "string",
+      title: "Statement period",
+      description: "Date range covered by the bank statement.",
+    },
+    actual: BLOCK_REVIEW_ACTUAL_OUTPUT.statement_period,
+    expected: BLOCK_REVIEW_EXPECTED_OUTPUT.statement_period,
+    metadataPath: "statement_period",
+  },
+  {
+    key: "overdraft_protection_enabled",
+    schema: {
+      type: "boolean",
+      title: "Overdraft protection enabled",
+      description: "Whether overdraft protection is enabled for the account.",
+    },
+    actual: BLOCK_REVIEW_ACTUAL_OUTPUT.overdraft_protection_enabled,
+    expected: BLOCK_REVIEW_EXPECTED_OUTPUT.overdraft_protection_enabled,
+    metadataPath: "overdraft_protection_enabled",
+  },
+]
+
+function getExpectedValues(fields: ReviewFieldDefinition[]) {
+  return fields.reduce<JsonObject>((values, field) => {
     values[field.key] = field.expected
     return values
-  },
-  {}
-)
+  }, {})
+}
 
-const ACTUAL_VALUES = REVIEW_SCHEMA.reduce<JsonObject>((values, field) => {
-  values[field.key] = field.actual
-  return values
-}, {})
+function getActualValues(fields: ReviewFieldDefinition[]) {
+  return fields.reduce<JsonObject>((values, field) => {
+    values[field.key] = field.actual
+    return values
+  }, {})
+}
 
 function formatJson(value: unknown) {
   return JSON.stringify(value, null, 2)
@@ -482,6 +751,7 @@ function countReviewFields(fields: ReviewFieldDefinition[]): number {
         schema,
         actual: getObjectValue(field.actual, key),
         expected: getObjectValue(field.expected, key),
+        metadataPath: `${field.metadataPath ?? field.key}.${key}`,
       })
     )
 
@@ -505,6 +775,7 @@ function findReviewField(
           schema,
           actual: getObjectValue(field.actual, key),
           expected: getObjectValue(field.expected, key),
+          metadataPath: `${field.metadataPath ?? field.key}.${key}`,
         })
       )
       const childField = findReviewField(childFields, fieldKey)
@@ -608,9 +879,9 @@ function HumanReviewTextOverlayEditor({
   validatedSelection,
   value,
 }: HumanReviewTextOverlayEditorProps) {
-  const inputRef = React.useRef<HTMLTextAreaElement | null>(null)
   const initialValue =
     value.kind === GridCellKind.Number ? value.displayData : value.data
+  const [entryValue, setEntryValue] = React.useState(initialValue)
   const latestValueRef = React.useRef(initialValue)
   const finishedRef = React.useRef(false)
 
@@ -655,24 +926,16 @@ function HumanReviewTextOverlayEditor({
     [onFinishedEditing, overlayOpenRef, readOnly, value]
   )
 
-  React.useEffect(() => {
-    overlayOpenRef.current = true
-
-    const input = inputRef.current
-    if (!input) {
-      return () => {
-        overlayOpenRef.current = false
-      }
-    }
-
-    const handleInput = (event: Event) => {
+  const handleEntryChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       event.stopPropagation()
-      latestValueRef.current = input.value
-    }
-    const stopTextInputPropagation = (event: Event) => {
-      event.stopPropagation()
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
+      latestValueRef.current = event.target.value
+      setEntryValue(event.target.value)
+    },
+    []
+  )
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       event.stopPropagation()
 
       if (event.key === "Escape") {
@@ -691,43 +954,21 @@ function HumanReviewTextOverlayEditor({
         event.preventDefault()
         finishEditing(true, [0, 1])
       }
-    }
+    },
+    [finishEditing]
+  )
 
-    input.addEventListener("input", handleInput)
-    input.addEventListener("beforeinput", stopTextInputPropagation, true)
-    input.addEventListener("keydown", handleKeyDown, true)
-
-    input.focus()
-
-    if (validatedSelection !== undefined) {
-      const selectionRange =
-        typeof validatedSelection === "number"
-          ? [validatedSelection, validatedSelection]
-          : validatedSelection
-      input.setSelectionRange(selectionRange[0], selectionRange[1])
-    } else if (isHighlighted) {
-      input.setSelectionRange(0, input.value.length)
-    } else {
-      input.setSelectionRange(input.value.length, input.value.length)
-    }
+  React.useEffect(() => {
+    overlayOpenRef.current = true
 
     return () => {
-      input.removeEventListener("input", handleInput)
-      input.removeEventListener("beforeinput", stopTextInputPropagation, true)
-      input.removeEventListener("keydown", handleKeyDown, true)
       overlayOpenRef.current = false
     }
-  }, [
-    finishEditing,
-    isHighlighted,
-    overlayOpenRef,
-    validatedSelection,
-    readOnly,
-  ])
+  }, [overlayOpenRef])
 
   React.useEffect(() => {
     const handlePointerOutside = (event: PointerEvent | MouseEvent) => {
-      const input = inputRef.current
+      const input = document.querySelector<HTMLTextAreaElement>(".gdg-input")
       const overlayRoot = input?.closest(".gdg-clip-region")
 
       if (!overlayRoot || overlayRoot.contains(event.target as Node | null)) {
@@ -747,14 +988,15 @@ function HumanReviewTextOverlayEditor({
   }, [finishEditing])
 
   return (
-    <textarea
-      ref={inputRef}
-      className="gdg-input"
-      defaultValue={initialValue}
-      readOnly={readOnly}
-      aria-readonly={readOnly}
-      dir="auto"
-      style={{ height: "100%", minHeight: 32, resize: "none", width: "100%" }}
+    <TextCellEntry
+      autoFocus={!readOnly}
+      disabled={readOnly}
+      highlight={isHighlighted}
+      value={entryValue}
+      validatedSelection={validatedSelection}
+      altNewline
+      onChange={handleEntryChange}
+      onKeyDown={handleKeyDown}
     />
   )
 }
@@ -1022,6 +1264,7 @@ function HumanReviewArrayValueGrid({
   activeNestedSide = null,
   activeSelectionSide = null,
   label,
+  metadataPath,
   nestedStackBaseDepth = 0,
   readOnly = false,
   schema,
@@ -1032,7 +1275,10 @@ function HumanReviewArrayValueGrid({
   viewSide = "expected",
   onChange,
   onGridSelectionChange,
+  onLocationHover,
   onNestedStackChange,
+  resolveLocation,
+  resolveArrayItemMetadataPath,
 }: {
   activeNestedSide?: ArrayReviewSide | null
   activeSelectionSide?: ArrayReviewSide | null
@@ -1051,10 +1297,18 @@ function HumanReviewArrayValueGrid({
     side: ArrayReviewSide,
     depth: number
   ) => void
+  onLocationHover?: (location?: ReviewLocation) => void
   onNestedStackChange?: (
     stack: ArrayNestedView[],
     side: ArrayReviewSide
   ) => void
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
+  resolveArrayItemMetadataPath?: (
+    metadataPath: string,
+    rowIndex: number,
+    rowValue: JsonValue
+  ) => string | undefined
+  metadataPath?: string
 }) {
   const rows = getArrayValue(value)
   const itemSchema = getArrayItemSchema(schema)
@@ -1222,7 +1476,7 @@ function HumanReviewArrayValueGrid({
           allowOverlay: false,
           readonly: true,
           cursor: "pointer",
-          activationBehaviorOverride: "second-click",
+          activationBehaviorOverride: "double-click",
           themeOverride: {
             textDark: blueCellText,
             ...(nestedCellTheme ?? {}),
@@ -1246,7 +1500,6 @@ function HumanReviewArrayValueGrid({
           displayData: typeof cellValue === "number" ? String(cellValue) : "",
           allowOverlay: true,
           readonly: false,
-          activationBehaviorOverride: readOnly ? "single-click" : undefined,
         }
       }
 
@@ -1266,7 +1519,6 @@ function HumanReviewArrayValueGrid({
             : String(cellValue),
         allowOverlay: true,
         readonly: false,
-        activationBehaviorOverride: readOnly ? "single-click" : undefined,
       }
     },
     [
@@ -1341,6 +1593,52 @@ function HumanReviewArrayValueGrid({
     () => !fastTextOverlayOpenRef.current,
     []
   )
+  const handleItemHovered = React.useCallback(
+    (args: GridMouseEventArgs) => {
+      if (!onLocationHover || !resolveLocation || !metadataPath) return
+
+      if (args.kind !== "cell") {
+        onLocationHover(undefined)
+        return
+      }
+
+      const [col, row] = args.location
+      const column = columns[col]
+      const rowValue = rows[row]
+      if (!column || rowValue === undefined) {
+        onLocationHover(undefined)
+        return
+      }
+
+      const columnId = String(column.id ?? "value")
+      const rowMetadataPath = resolveArrayItemMetadataPath
+        ? resolveArrayItemMetadataPath(metadataPath, row, rowValue)
+        : `${metadataPath}[${row}]`
+      if (!rowMetadataPath) {
+        onLocationHover(undefined)
+        return
+      }
+
+      const propertyMetadataPath =
+        itemSchema.type === "object"
+          ? `${rowMetadataPath}.${columnId}`
+          : rowMetadataPath
+
+      onLocationHover(
+        resolveLocation(propertyMetadataPath) ??
+          resolveLocation(rowMetadataPath)
+      )
+    },
+    [
+      columns,
+      itemSchema.type,
+      metadataPath,
+      onLocationHover,
+      resolveArrayItemMetadataPath,
+      resolveLocation,
+      rows,
+    ]
+  )
 
   const openNestedCell = React.useCallback(
     ([col, row]: Item) => {
@@ -1408,6 +1706,7 @@ function HumanReviewArrayValueGrid({
 
   return (
     <div
+      onMouseLeave={() => onLocationHover?.(undefined)}
       className={cn(
         "relative overflow-hidden rounded-md border bg-background transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:shadow-[0_0_0_1px_rgb(59_130_246_/_8%)] hover:border-blue-500/50",
         isActiveNestedSource &&
@@ -1425,14 +1724,13 @@ function HumanReviewArrayValueGrid({
               columns={columns}
               rows={rows.length}
               getCellContent={getCellContent}
-              cellActivationBehavior={
-                readOnly ? "single-click" : "second-click"
-              }
+              cellActivationBehavior="double-click"
               gridSelection={localGridSelection}
               highlightRegions={mirroredHighlightRegions}
               onCellEdited={updateCellValue}
               onCellActivated={openNestedCell}
               onGridSelectionChange={handleGridSelectionChange}
+              onItemHovered={handleItemHovered}
               provideEditor={provideEditor}
               isOutsideClick={handleOutsideClick}
               rowMarkers="number"
@@ -1492,6 +1790,8 @@ function HumanReviewArrayValueGrid({
                 onChange={updateNestedValue}
                 onGridSelectionChange={onGridSelectionChange}
                 onNestedStackChange={onNestedStackChange}
+                resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+                resolveLocation={resolveLocation}
               />
             ) : (
               <HumanReviewObjectValueEditor
@@ -1578,8 +1878,15 @@ type HumanReviewFieldCardProps = {
   readOnly?: boolean
   onChange: (value: JsonValue) => void
   onFieldFocus?: (field: ReviewFieldDefinition) => void
+  onLocationHover?: (location?: ReviewLocation) => void
   onUndo: () => void
   onSetNull: () => void
+  resolveArrayItemMetadataPath?: (
+    metadataPath: string,
+    rowIndex: number,
+    rowValue: JsonValue
+  ) => string | undefined
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
 }
 
 function areHumanReviewFieldCardPropsEqual(
@@ -1593,7 +1900,11 @@ function areHumanReviewFieldCardPropsEqual(
     previous.active === next.active &&
     previous.activeFieldKey === next.activeFieldKey &&
     previous.readOnly === next.readOnly &&
-    previous.onFieldFocus === next.onFieldFocus
+    previous.onFieldFocus === next.onFieldFocus &&
+    previous.onLocationHover === next.onLocationHover &&
+    previous.resolveArrayItemMetadataPath ===
+      next.resolveArrayItemMetadataPath &&
+    previous.resolveLocation === next.resolveLocation
   )
 }
 
@@ -1611,8 +1922,11 @@ function HumanReviewFieldCardBase({
   readOnly = false,
   onChange,
   onFieldFocus,
+  onLocationHover,
   onUndo,
   onSetNull,
+  resolveArrayItemMetadataPath,
+  resolveLocation,
 }: HumanReviewFieldCardProps) {
   const modified = !jsonValuesEqual(value, originalValue)
   const Icon = getFieldIcon(field.schema.type)
@@ -1655,12 +1969,17 @@ function HumanReviewFieldCardBase({
     },
     []
   )
+  const focusAndHoverField = React.useCallback(() => {
+    onFieldFocus?.(field)
+    onLocationHover?.(getReviewFieldLocation(field, resolveLocation))
+  }, [field, onFieldFocus, onLocationHover, resolveLocation])
 
   return (
     <div
       tabIndex={0}
-      onFocusCapture={() => onFieldFocus?.(field)}
-      onMouseEnter={() => onFieldFocus?.(field)}
+      onFocusCapture={focusAndHoverField}
+      onMouseEnter={focusAndHoverField}
+      onMouseLeave={() => onLocationHover?.(undefined)}
       className={cn(
         "rounded-lg border bg-background p-3 transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:bg-blue-500/5 hover:border-blue-500/50 hover:bg-blue-500/5 focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:outline-none",
         active &&
@@ -1743,6 +2062,7 @@ function HumanReviewFieldCardBase({
                   schema,
                   actual: getObjectValue(field.actual, propertyKey),
                   expected: getObjectValue(originalValue, propertyKey),
+                  metadataPath: `${field.metadataPath ?? field.key}.${propertyKey}`,
                 }
 
                 return (
@@ -1758,6 +2078,7 @@ function HumanReviewFieldCardBase({
                       onChange(setObjectValue(value, propertyKey, childValue))
                     }
                     onFieldFocus={onFieldFocus}
+                    onLocationHover={onLocationHover}
                     onUndo={() =>
                       onChange(
                         setObjectValue(value, propertyKey, childField.expected)
@@ -1766,6 +2087,8 @@ function HumanReviewFieldCardBase({
                     onSetNull={() =>
                       onChange(setObjectValue(value, propertyKey, null))
                     }
+                    resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+                    resolveLocation={resolveLocation}
                   />
                 )
               })
@@ -1782,7 +2105,10 @@ function HumanReviewFieldCardBase({
             activeNestedSide={syncedArrayNestedView.activeSide}
             activeSelectionSide={syncedArraySelection.activeSide}
             label="Actual"
+            metadataPath={field.metadataPath ?? field.key}
             readOnly
+            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+            resolveLocation={resolveLocation}
             schema={field.schema}
             selectionDepth={syncedArraySelection.depth}
             sharedGridSelection={syncedArraySelection.gridSelection}
@@ -1790,13 +2116,17 @@ function HumanReviewFieldCardBase({
             value={field.actual}
             viewSide="actual"
             onGridSelectionChange={updateSyncedArraySelection}
+            onLocationHover={onLocationHover}
             onNestedStackChange={updateSyncedArrayNestedView}
           />
           <HumanReviewArrayValueGrid
             activeNestedSide={syncedArrayNestedView.activeSide}
             activeSelectionSide={syncedArraySelection.activeSide}
             label="Expected"
+            metadataPath={field.metadataPath ?? field.key}
             readOnly={readOnly}
+            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+            resolveLocation={resolveLocation}
             schema={field.schema}
             selectionDepth={syncedArraySelection.depth}
             sharedGridSelection={syncedArraySelection.gridSelection}
@@ -1805,6 +2135,7 @@ function HumanReviewFieldCardBase({
             viewSide="expected"
             onChange={onChange}
             onGridSelectionChange={updateSyncedArraySelection}
+            onLocationHover={onLocationHover}
             onNestedStackChange={updateSyncedArrayNestedView}
           />
         </div>
@@ -1835,15 +2166,13 @@ function HumanReviewFieldCardBase({
   )
 }
 
-function HumanReviewHighlight({ field }: { field: ReviewFieldDefinition }) {
-  const area = field.location?.area
-
-  if (!area) return null
+function HumanReviewHighlight({ location }: { location: ReviewLocation }) {
+  const area = location.area
 
   return (
     <div
       className={cn(
-        "pointer-events-none absolute z-10 rounded-[3px] border",
+        "pointer-events-none absolute z-10 border",
         REVIEW_HIGHLIGHT_STYLE
       )}
       style={{
@@ -1913,25 +2242,46 @@ function JsonDiffView({
 function HumanReviewPanel({
   activeFieldKey,
   className,
+  fields = REVIEW_SCHEMA,
   onFieldFocus,
+  onLocationHover,
+  resolveArrayItemMetadataPath,
+  resolveLocation,
   theme = "light",
 }: {
   activeFieldKey?: string
   className?: string
+  fields?: ReviewFieldDefinition[]
   onFieldFocus?: (field: ReviewFieldDefinition) => void
+  onLocationHover?: (location?: ReviewLocation) => void
+  resolveArrayItemMetadataPath?: (
+    metadataPath: string,
+    rowIndex: number,
+    rowValue: JsonValue
+  ) => string | undefined
+  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
   theme?: HumanReviewTheme
 } = {}) {
   const [activeTab, setActiveTab] = React.useState("form")
-  const [expected, setExpected] = React.useState<JsonObject>(
-    INITIAL_EXPECTED_VALUES
+  const actualValues = React.useMemo(() => getActualValues(fields), [fields])
+  const initialExpectedValues = React.useMemo(
+    () => getExpectedValues(fields),
+    [fields]
   )
+  const [expected, setExpected] = React.useState<JsonObject>(
+    initialExpectedValues
+  )
+
+  React.useEffect(() => {
+    setExpected(initialExpectedValues)
+  }, [initialExpectedValues])
 
   const updateValue = React.useCallback((key: string, value: JsonValue) => {
     setExpected((current) =>
       Object.is(current[key], value) ? current : { ...current, [key]: value }
     )
   }, [])
-  const fieldCount = React.useMemo(() => countReviewFields(REVIEW_SCHEMA), [])
+  const fieldCount = React.useMemo(() => countReviewFields(fields), [fields])
 
   return (
     <TooltipProvider delay={200}>
@@ -1959,7 +2309,7 @@ function HumanReviewPanel({
         <TabsContent value="form" keepMounted className="min-h-0 flex-1">
           <ScrollArea className="h-full" scrollFade>
             <div className="space-y-3 p-3">
-              {REVIEW_SCHEMA.map((field) => (
+              {fields.map((field) => (
                 <HumanReviewFieldCard
                   key={field.key}
                   field={field}
@@ -1972,8 +2322,11 @@ function HumanReviewPanel({
                   activeFieldKey={activeFieldKey}
                   onChange={(value) => updateValue(field.key, value)}
                   onFieldFocus={onFieldFocus}
+                  onLocationHover={onLocationHover}
                   onUndo={() => updateValue(field.key, field.expected)}
                   onSetNull={() => updateValue(field.key, null)}
+                  resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+                  resolveLocation={resolveLocation}
                 />
               ))}
             </div>
@@ -1981,7 +2334,7 @@ function HumanReviewPanel({
         </TabsContent>
         <TabsContent value="json" keepMounted className="min-h-0 flex-1">
           <JsonDiffView
-            actual={ACTUAL_VALUES}
+            actual={actualValues}
             expected={expected}
             theme={theme}
           />
@@ -1993,12 +2346,15 @@ function HumanReviewPanel({
 
 export function HumanReviewBlock() {
   const { resolvedTheme } = useTheme()
-  const [activeFieldKey, setActiveFieldKey] = React.useState(
-    REVIEW_SCHEMA[0].key
-  )
+  const fields = BLOCK_REVIEW_SCHEMA
+  const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0].key)
+  const [hoverLocation, setHoverLocation] =
+    React.useState<ReviewLocation | null>(null)
   const viewerRef = React.useRef<PDFViewerHandle>(null)
-  const activeField =
-    findReviewField(REVIEW_SCHEMA, activeFieldKey) ?? REVIEW_SCHEMA[0]
+  const hoverLocationKeyRef = React.useRef<string | null>(null)
+  const activeField = findReviewField(fields, activeFieldKey) ?? fields[0]
+  const activeLocation =
+    hoverLocation ?? getReviewFieldLocation(activeField, getBlockReviewLocation)
   const reviewTheme: HumanReviewTheme =
     resolvedTheme === "dark" ? "dark" : "light"
 
@@ -2008,15 +2364,28 @@ export function HumanReviewBlock() {
 
       setActiveFieldKey(field.key)
 
-      if (field.location) {
-        viewerRef.current?.scrollToPageArea(
-          field.location.page,
-          field.location.area
-        )
+      const location = getReviewFieldLocation(field, getBlockReviewLocation)
+      if (location) {
+        viewerRef.current?.scrollToPageArea(location.page, location.area)
       }
     },
     [activeFieldKey]
   )
+  const handleLocationHover = React.useCallback((location?: ReviewLocation) => {
+    setHoverLocation(location ?? null)
+
+    const locationKey = getReviewLocationKey(location)
+    if (!location) {
+      hoverLocationKeyRef.current = null
+      return
+    }
+    if (locationKey === hoverLocationKeyRef.current) return
+
+    hoverLocationKeyRef.current = locationKey
+    viewerRef.current?.scrollToPageArea(location.page, location.area, {
+      behavior: "auto",
+    })
+  }, [])
 
   return (
     <PdfBlockResizableShell
@@ -2024,11 +2393,11 @@ export function HumanReviewBlock() {
       left={
         <PDFViewer
           ref={viewerRef}
-          file={PDF_URL}
+          file={BLOCK_REVIEW_PDF_URL}
           defaultZoom={DEFAULT_ZOOM}
           renderPageOverlay={({ pageNumber }) =>
-            activeField.location?.page === pageNumber ? (
-              <HumanReviewHighlight field={activeField} />
+            activeLocation?.page === pageNumber ? (
+              <HumanReviewHighlight location={activeLocation} />
             ) : null
           }
         />
@@ -2037,8 +2406,12 @@ export function HumanReviewBlock() {
         <HumanReviewPanel
           activeFieldKey={activeField.key}
           className="h-full min-h-0"
+          fields={fields}
           theme={reviewTheme}
           onFieldFocus={focusField}
+          onLocationHover={handleLocationHover}
+          resolveArrayItemMetadataPath={resolveBlockReviewArrayItemMetadataPath}
+          resolveLocation={getBlockReviewLocation}
         />
       }
     />
@@ -2109,127 +2482,97 @@ import { HumanReviewPanel, type ReviewField } from "@/components/ui/human-review
 
 const fields: ReviewField[] = [
   {
-    key: "vendor_name",
+    key: "statement_period",
     schema: {
       type: "string",
-      title: "Vendor name",
-      description: "Supplier shown on the invoice header.",
+      title: "Statement period",
+      description: "Date range covered by the bank statement.",
     },
-    actual: "Acme Supplies LLC",
-    expected: "Acme Supply LLC",
+    actual: "Jan 1-31, 2026",
+    expected: "January 1-31, 2026",
   },
   {
-    key: "total_amount",
-    schema: {
-      type: "number",
-      title: "Total amount",
-      description: "Final amount due including tax.",
-    },
-    actual: 12480,
-    expected: 12480.75,
-  },
-  {
-    key: "payment_terms",
-    schema: {
-      type: "string",
-      title: "Payment terms",
-      enum: ["Due on receipt", "Net 15", "Net 30"],
-    },
-    actual: "Net 15",
-    expected: "Net 30",
-  },
-  {
-    key: "line_items",
+    key: "transactions",
     schema: {
       type: "array",
-      title: "Line items",
+      title: "Transactions",
       items: {
         type: "object",
         properties: {
+          date: { type: "string", title: "Date" },
           description: { type: "string", title: "Description" },
-          quantity: { type: "number", title: "Qty" },
-          unit_price: { type: "number", title: "Unit price" },
-          tax_detail: {
-            type: "object",
-            title: "Tax detail",
-            properties: {
-              code: { type: "string", title: "Code" },
-              jurisdiction: { type: "string", title: "Jurisdiction" },
-            },
-          },
-          allocations: {
-            type: "array",
-            title: "Allocations",
-            items: {
-              type: "object",
-              properties: {
-                department: { type: "string", title: "Department" },
-                percent: { type: "number", title: "Percent" },
-              },
-            },
-          },
+          amount: { type: "number", title: "Amount" },
+          category: { type: "string", title: "Category" },
         },
       },
     },
     actual: [
       {
-        description: "Transformer implementation support",
-        quantity: 2,
-        unit_price: 4200,
-        tax_detail: { code: "TX-CA", jurisdiction: "CA" },
-        allocations: [{ department: "Platform", percent: 20 }],
+        date: "2026-01-12",
+        description: "POS PURCHASE GROCERY MART",
+        amount: -86.42,
+        category: "Debit",
       },
     ],
     expected: [
       {
-        description: "Transformer implementation support",
-        quantity: 2,
-        unit_price: 4200,
-        tax_detail: { code: "TX-CA", jurisdiction: "CA" },
-        allocations: [{ department: "Platform", percent: 30 }],
+        date: "2026-01-12",
+        description: "POS PURCHASE GROCERY MART",
+        amount: -68.42,
+        category: "Debit",
       },
     ],
   },
   {
-    key: "requires_review",
+    key: "ending_balance",
+    schema: {
+      type: "number",
+      title: "Ending balance",
+      description: "Final account balance at the end of the statement period.",
+    },
+    actual: 12840.18,
+    expected: 12858.18,
+  },
+  {
+    key: "overdraft_protection_enabled",
     schema: {
       type: "boolean",
-      title: "Requires review",
-      description: "Whether a human should verify this document before export.",
+      title: "Overdraft protection enabled",
+      description: "Whether overdraft protection is enabled for the account.",
     },
     actual: false,
     expected: true,
   },
   {
-    key: "remittance",
+    key: "account_details",
     schema: {
       type: "object",
-      title: "Remittance details",
-      description: "Payment destination used for invoice reconciliation.",
+      title: "Account details",
+      description: "Account owner and identifying details from the statement.",
       properties: {
-        account_holder: {
+        holder_name: {
           type: "string",
-          title: "Account holder",
+          title: "Holder name",
         },
-        routing_number: {
+        account_last_four: {
           type: "string",
-          title: "Routing number",
+          title: "Account last four",
         },
-        verified: {
-          type: "boolean",
-          title: "Verified",
+        account_type: {
+          type: "string",
+          title: "Account type",
         },
       },
     },
     actual: {
-      account_holder: "Acme Supplies LLC",
-      routing_number: "021000021",
-      verified: false,
+      holder_name: "Jordan Lee",
+      account_last_four: "4821",
+      account_type: "Checking",
     },
     expected: {
-      account_holder: "Acme Supply LLC",
-      routing_number: "021000021",
-      verified: true,
+      holder_name: "Jordan Lee",
+      account_last_four: "4821",
+      account_type: "Premier Checking",
     },
   },
 ];
@@ -2250,7 +2593,8 @@ export function HumanReviewExample() {
 }`
 
 const humanReviewSourceCode =
-  '"use client"\n\nimport * as React from "react"\nimport {\n  DataEditor,\n  emptyGridSelection,\n  GridCellKind,\n  type EditableGridCell,\n  type GridCell,\n  type GridColumn,\n  type GridSelection,\n  type Item,\n  type NumberCell,\n  type ProvideEditorComponent,\n  type Rectangle,\n  type TextCell,\n  type Theme,\n} from "@glideapps/glide-data-grid"\nimport {\n  ArrowLeft01Icon,\n  CancelCircleIcon,\n  FileDiffIcon,\n  InputNumericIcon,\n  InputTextIcon,\n  SecondBracketIcon,\n  SourceCodeSquareIcon,\n  TextCheckIcon,\n  Undo02Icon,\n} from "@hugeicons/core-free-icons"\nimport { HugeiconsIcon } from "@hugeicons/react"\nimport { MultiFileDiff, Virtualizer } from "@pierre/diffs/react"\nimport { flushSync } from "react-dom"\n\nimport { cn } from "@/lib/utils"\nimport { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"\nimport { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"\nimport { Button } from "@/registry/new-york-v4/ui/button"\nimport { Input } from "@/registry/new-york-v4/ui/input"\nimport { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"\nimport {\n  Tabs,\n  TabsContent,\n  TabsList,\n  TabsTrigger,\n} from "@/registry/new-york-v4/ui/tabs"\nimport {\n  Tooltip,\n  TooltipContent,\n  TooltipProvider,\n  TooltipTrigger,\n} from "@/registry/new-york-v4/ui/tooltip"\n\nimport "@glideapps/glide-data-grid/dist/index.css"\n\nexport type JsonPrimitive = string | number | boolean | null\nexport type JsonValue = JsonPrimitive | JsonObject | JsonArray\nexport type JsonObject = { [key: string]: JsonValue }\nexport type JsonArray = JsonValue[]\nexport type SchemaPropertyType =\n  | "string"\n  | "number"\n  | "integer"\n  | "boolean"\n  | "object"\n  | "array"\n\nexport type ReviewFieldSchema = {\n  type: SchemaPropertyType\n  title?: string\n  description?: string\n  enum?: Array<string | number>\n  properties?: Record<string, ReviewFieldSchema>\n  items?: ReviewFieldSchema\n}\n\nexport type HighlightArea = {\n  left: number\n  top: number\n  width: number\n  height: number\n}\n\nexport type ReviewField = {\n  key: string\n  schema: ReviewFieldSchema\n  actual: JsonValue\n  expected: JsonValue\n  location?: {\n    page: number\n    area: HighlightArea\n  }\n}\n\nconst DEFAULT_ZOOM = 0.75\nconst REVIEW_HIGHLIGHT_STYLE =\n  "border-blue-500/70 bg-blue-500/12 shadow-[0_4px_16px_rgb(59_130_246_/_10%)]"\nconst DIFF_VIEWER_THEME = {\n  "--diffs-light-bg": "oklch(0.985 0.002 247)",\n  "--diffs-dark-bg": "oklch(0.18 0.003 247)",\n  "--diffs-light": "oklch(0.22 0.01 247)",\n  "--diffs-dark": "oklch(0.92 0.006 247)",\n  "--diffs-bg-context-override":\n    "light-dark(oklch(0.967 0.003 247), oklch(0.235 0.004 247))",\n  "--diffs-bg-context-gutter-override":\n    "light-dark(oklch(0.948 0.004 247), oklch(0.205 0.004 247))",\n  "--diffs-bg-separator-override":\n    "light-dark(oklch(0.94 0.004 247), oklch(0.255 0.005 247))",\n  "--diffs-bg-buffer-override":\n    "light-dark(oklch(0.955 0.004 247), oklch(0.225 0.004 247))",\n  "--diffs-light-addition-color": "oklch(0.54 0.13 158)",\n  "--diffs-dark-addition-color": "oklch(0.72 0.13 158)",\n  "--diffs-light-deletion-color": "oklch(0.55 0.16 28)",\n  "--diffs-dark-deletion-color": "oklch(0.72 0.14 28)",\n  "--diffs-bg-addition-override":\n    "light-dark(oklch(0.957 0.032 158), oklch(0.255 0.052 158))",\n  "--diffs-bg-addition-emphasis-override":\n    "light-dark(oklch(0.88 0.06 158), oklch(0.36 0.08 158))",\n  "--diffs-bg-deletion-override":\n    "light-dark(oklch(0.958 0.03 28), oklch(0.255 0.047 28))",\n  "--diffs-bg-deletion-emphasis-override":\n    "light-dark(oklch(0.9 0.052 28), oklch(0.36 0.075 28))",\n  "--diffs-fg-number-override":\n    "light-dark(oklch(0.56 0.018 247), oklch(0.66 0.012 247))",\n  "--diffs-font-size": "12px",\n  "--diffs-line-height": "20px",\n} as React.CSSProperties\n\nfunction readIsDarkTheme() {\n  return (\n    typeof document !== "undefined" &&\n    document.documentElement.classList.contains("dark")\n  )\n}\n\n// A single shared MutationObserver backs every consumer. Each grid previously\n// created its own observer (two, via useHumanReviewGridTheme), so opening a\n// nested array view spun up and tore down several observers at once.\nconst darkThemeListeners = new Set<(isDark: boolean) => void>()\nlet darkThemeObserver: MutationObserver | null = null\nlet sharedIsDarkTheme = false\n\nfunction ensureDarkThemeObserver() {\n  if (\n    darkThemeObserver ||\n    typeof document === "undefined" ||\n    typeof MutationObserver === "undefined"\n  ) {\n    return\n  }\n\n  sharedIsDarkTheme = readIsDarkTheme()\n  darkThemeObserver = new MutationObserver(() => {\n    const nextIsDark = readIsDarkTheme()\n    if (nextIsDark === sharedIsDarkTheme) return\n\n    sharedIsDarkTheme = nextIsDark\n    darkThemeListeners.forEach((listener) => listener(nextIsDark))\n  })\n  darkThemeObserver.observe(document.documentElement, {\n    attributes: true,\n    attributeFilter: ["class"],\n  })\n}\n\nfunction useIsDarkTheme() {\n  const [isDark, setIsDark] = React.useState(readIsDarkTheme)\n\n  React.useEffect(() => {\n    ensureDarkThemeObserver()\n    setIsDark(sharedIsDarkTheme)\n    darkThemeListeners.add(setIsDark)\n\n    return () => {\n      darkThemeListeners.delete(setIsDark)\n      if (darkThemeListeners.size === 0 && darkThemeObserver) {\n        darkThemeObserver.disconnect()\n        darkThemeObserver = null\n      }\n    }\n  }, [])\n\n  return isDark\n}\n\nfunction useHumanReviewGridTheme() {\n  const isDark = useIsDarkTheme()\n\n  return React.useMemo<Partial<Theme>>(\n    () => ({\n      accentColor: isDark ? "rgb(96, 165, 250)" : "rgb(37, 99, 235)",\n      accentLight: isDark ? "rgba(29, 78, 216, 0.15)" : "rgb(219, 234, 254)",\n      accentFg: "rgb(255, 255, 255)",\n      textDark: isDark ? "rgb(229, 229, 229)" : "rgb(23, 23, 23)",\n      textMedium: isDark ? "rgb(163, 163, 163)" : "rgb(82, 82, 82)",\n      textLight: isDark ? "rgb(115, 115, 115)" : "rgb(163, 163, 163)",\n      textBubble: isDark ? "rgb(245, 245, 245)" : "rgb(23, 23, 23)",\n      textHeader: isDark ? "rgb(245, 245, 245)" : "rgb(23, 23, 23)",\n      textGroupHeader: isDark ? "rgb(163, 163, 163)" : "rgb(82, 82, 82)",\n      bgCell: isDark ? "rgb(10, 10, 10)" : "rgb(255, 255, 255)",\n      bgCellMedium: isDark ? "rgb(23, 23, 23)" : "rgb(250, 250, 250)",\n      bgHeader: isDark ? "rgb(23, 23, 23)" : "rgb(250, 250, 250)",\n      bgHeaderHasFocus: isDark ? "rgb(38, 38, 38)" : "rgb(245, 245, 245)",\n      bgHeaderHovered: isDark ? "rgb(38, 38, 38)" : "rgb(245, 245, 245)",\n      borderColor: isDark ? "rgb(38, 38, 38)" : "rgb(229, 229, 229)",\n      horizontalBorderColor: isDark ? "rgb(38, 38, 38)" : "rgb(229, 229, 229)",\n      cellHorizontalPadding: 8,\n      cellVerticalPadding: 3,\n      headerIconSize: 18,\n      baseFontStyle: "13px",\n      headerFontStyle: "600 13px",\n      markerFontStyle: "11px",\n      fontFamily: \'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\',\n      editorFontSize: "13px",\n    }),\n    [isDark]\n  )\n}\n\nconst REVIEW_FIELDS: ReviewField[] = [\n  {\n    key: "vendor_name",\n    schema: {\n      type: "string",\n      title: "Vendor name",\n      description: "Supplier shown on the invoice header.",\n    },\n    actual: "Acme Supplies LLC",\n    expected: "Acme Supply LLC",\n    location: {\n      page: 1,\n      area: { left: 31, top: 30, width: 40, height: 5.8 },\n    },\n  },\n  {\n    key: "line_items",\n    schema: {\n      type: "array",\n      title: "Line items",\n      description: "Invoice rows with nested allocation details.",\n      items: {\n        type: "object",\n        properties: {\n          description: {\n            type: "string",\n            title: "Description",\n          },\n          quantity: {\n            type: "number",\n            title: "Qty",\n          },\n          unit_price: {\n            type: "number",\n            title: "Unit price",\n          },\n          tax_detail: {\n            type: "object",\n            title: "Tax detail",\n            properties: {\n              code: {\n                type: "string",\n                title: "Code",\n              },\n              jurisdiction: {\n                type: "string",\n                title: "Jurisdiction",\n              },\n            },\n          },\n          allocations: {\n            type: "array",\n            title: "Allocations",\n            items: {\n              type: "object",\n              properties: {\n                department: {\n                  type: "string",\n                  title: "Department",\n                },\n                percent: {\n                  type: "number",\n                  title: "Percent",\n                },\n              },\n            },\n          },\n        },\n      },\n    },\n    actual: [\n      {\n        description: "Transformer implementation support",\n        quantity: 2,\n        unit_price: 4200,\n        tax_detail: { code: "TX-CA", jurisdiction: "CA" },\n        allocations: [\n          { department: "Research", percent: 70 },\n          { department: "Platform", percent: 20 },\n        ],\n      },\n      {\n        description: "Attention model review",\n        quantity: 1,\n        unit_price: 4080,\n        tax_detail: { code: "TX-NY", jurisdiction: "NY" },\n        allocations: [{ department: "Research", percent: 100 }],\n      },\n    ],\n    expected: [\n      {\n        description: "Transformer implementation support",\n        quantity: 2,\n        unit_price: 4200,\n        tax_detail: { code: "TX-CA", jurisdiction: "CA" },\n        allocations: [\n          { department: "Research", percent: 70 },\n          { department: "Platform", percent: 30 },\n        ],\n      },\n      {\n        description: "Attention model review",\n        quantity: 1,\n        unit_price: 4080.75,\n        tax_detail: { code: "TX-NY", jurisdiction: "NY" },\n        allocations: [{ department: "Research", percent: 100 }],\n      },\n    ],\n    location: {\n      page: 1,\n      area: { left: 13.5, top: 66, width: 73.5, height: 7.5 },\n    },\n  },\n  {\n    key: "total_amount",\n    schema: {\n      type: "number",\n      title: "Total amount",\n      description: "Final amount due including tax.",\n    },\n    actual: 12480,\n    expected: 12480.75,\n    location: {\n      page: 1,\n      area: { left: 13.5, top: 66, width: 73.5, height: 7.5 },\n    },\n  },\n  {\n    key: "payment_terms",\n    schema: {\n      type: "string",\n      title: "Payment terms",\n      enum: ["Due on receipt", "Net 15", "Net 30"],\n    },\n    actual: "Net 15",\n    expected: "Net 30",\n    location: {\n      page: 1,\n      area: { left: 13.5, top: 55.5, width: 73.5, height: 7.5 },\n    },\n  },\n  {\n    key: "requires_review",\n    schema: {\n      type: "boolean",\n      title: "Requires review",\n      description: "Whether a human should verify this document before export.",\n    },\n    actual: false,\n    expected: true,\n    location: {\n      page: 2,\n      area: { left: 9.5, top: 12, width: 81, height: 11.5 },\n    },\n  },\n  {\n    key: "remittance",\n    schema: {\n      type: "object",\n      title: "Remittance details",\n      description: "Payment destination used for invoice reconciliation.",\n      properties: {\n        account_holder: {\n          type: "string",\n          title: "Account holder",\n        },\n        routing_number: {\n          type: "string",\n          title: "Routing number",\n        },\n        verified: {\n          type: "boolean",\n          title: "Verified",\n        },\n      },\n    },\n    actual: {\n      account_holder: "Acme Supplies LLC",\n      routing_number: "021000021",\n      verified: false,\n    },\n    expected: {\n      account_holder: "Acme Supply LLC",\n      routing_number: "021000021",\n      verified: true,\n    },\n  },\n]\n\nfunction valuesFromFields(\n  fields: ReviewField[],\n  valueKey: "actual" | "expected"\n) {\n  return fields.reduce<JsonObject>((values, field) => {\n    values[field.key] = field[valueKey]\n    return values\n  }, {})\n}\n\nfunction formatJson(value: unknown) {\n  return JSON.stringify(value, null, 2)\n}\n\nfunction isJsonObject(value: JsonValue): value is JsonObject {\n  return typeof value === "object" && value !== null && !Array.isArray(value)\n}\n\nfunction isJsonArray(value: JsonValue): value is JsonArray {\n  return Array.isArray(value)\n}\n\nfunction getObjectValue(value: JsonValue, key: string): JsonValue {\n  if (!isJsonObject(value)) return null\n  return value[key] ?? null\n}\n\nfunction setObjectValue(\n  value: JsonValue,\n  key: string,\n  childValue: JsonValue\n): JsonObject {\n  return {\n    ...(isJsonObject(value) ? value : {}),\n    [key]: childValue,\n  }\n}\n\nfunction getArrayValue(value: JsonValue): JsonArray {\n  return isJsonArray(value) ? value : []\n}\n\nfunction setArrayItemValue(\n  value: JsonValue,\n  index: number,\n  childValue: JsonValue\n): JsonArray {\n  const nextValue = getArrayValue(value).slice()\n  nextValue[index] = childValue\n  return nextValue\n}\n\nfunction getPrimitiveValue(value: JsonValue): JsonPrimitive {\n  return isJsonObject(value) || isJsonArray(value) ? null : value\n}\n\nfunction jsonValuesEqual(left: JsonValue, right: JsonValue) {\n  return formatJson(left) === formatJson(right)\n}\n\nfunction countReviewFields(fields: ReviewField[]): number {\n  return fields.reduce((count, field) => {\n    if (field.schema.type !== "object") return count + 1\n\n    const properties = field.schema.properties ?? {}\n    const childFields = Object.entries(properties).map(\n      ([key, schema]): ReviewField => ({\n        key: `${field.key}.${key}`,\n        schema,\n        actual: getObjectValue(field.actual, key),\n        expected: getObjectValue(field.expected, key),\n      })\n    )\n\n    return count + Math.max(countReviewFields(childFields), 1)\n  }, 0)\n}\n\nfunction findReviewField(\n  fields: ReviewField[],\n  fieldKey: string | undefined\n): ReviewField | undefined {\n  if (!fieldKey) return undefined\n\n  for (const field of fields) {\n    if (field.key === fieldKey) return field\n\n    if (field.schema.type === "object") {\n      const childFields = Object.entries(field.schema.properties ?? {}).map(\n        ([key, schema]): ReviewField => ({\n          key: `${field.key}.${key}`,\n          schema,\n          actual: getObjectValue(field.actual, key),\n          expected: getObjectValue(field.expected, key),\n        })\n      )\n      const childField = findReviewField(childFields, fieldKey)\n      if (childField) return childField\n    }\n  }\n\n  return undefined\n}\n\nfunction formatValue(value: JsonValue) {\n  if (value === null) return "NULL"\n  if (isJsonObject(value) || isJsonArray(value)) return formatJson(value)\n  if (typeof value === "boolean") return value ? "true" : "false"\n  return String(value)\n}\n\nfunction areGridRangesEqual(\n  left: Readonly<Rectangle> | undefined,\n  right: Readonly<Rectangle> | undefined\n) {\n  return (\n    left === right ||\n    (left !== undefined &&\n      right !== undefined &&\n      left.x === right.x &&\n      left.y === right.y &&\n      left.width === right.width &&\n      left.height === right.height)\n  )\n}\n\nfunction areGridRangeStacksEqual(\n  left: readonly Readonly<Rectangle>[] | undefined,\n  right: readonly Readonly<Rectangle>[] | undefined\n) {\n  if (left === right) return true\n  if (!left || !right || left.length !== right.length) return false\n\n  return left.every((range, index) => areGridRangesEqual(range, right[index]))\n}\n\nfunction areGridSelectionsEqual(left: GridSelection, right: GridSelection) {\n  const leftCurrent = left.current\n  const rightCurrent = right.current\n\n  return (\n    leftCurrent?.cell[0] === rightCurrent?.cell[0] &&\n    leftCurrent?.cell[1] === rightCurrent?.cell[1] &&\n    areGridRangesEqual(leftCurrent?.range, rightCurrent?.range) &&\n    areGridRangeStacksEqual(\n      leftCurrent?.rangeStack,\n      rightCurrent?.rangeStack\n    ) &&\n    left.columns.equals(right.columns) &&\n    left.rows.equals(right.rows)\n  )\n}\n\nfunction getGridSelectionRanges(selection: GridSelection | undefined) {\n  const current = selection?.current\n  if (!current) return []\n\n  return [...(current.rangeStack ?? []), current.range]\n}\n\nfunction areArrayNestedViewsEqual(\n  left: ArrayNestedView[],\n  right: ArrayNestedView[]\n) {\n  if (left === right) return true\n  if (left.length !== right.length) return false\n\n  return left.every((view, index) => {\n    const other = right[index]\n\n    return (\n      view.rowIndex === other?.rowIndex &&\n      view.columnId === other.columnId &&\n      view.title === other.title &&\n      view.schema === other.schema &&\n      Object.is(view.value, other.value)\n    )\n  })\n}\n\ntype HumanReviewOverlayCell = TextCell | NumberCell\n\ntype HumanReviewTextOverlayEditorProps = React.ComponentProps<\n  ProvideEditorComponent<HumanReviewOverlayCell>\n> & {\n  overlayOpenRef: React.RefObject<boolean>\n  readOnly?: boolean\n}\n\nfunction HumanReviewTextOverlayEditor({\n  isHighlighted,\n  onFinishedEditing,\n  overlayOpenRef,\n  readOnly = false,\n  validatedSelection,\n  value,\n}: HumanReviewTextOverlayEditorProps) {\n  const inputRef = React.useRef<HTMLTextAreaElement | null>(null)\n  const initialValue =\n    value.kind === GridCellKind.Number ? value.displayData : value.data\n  const latestValueRef = React.useRef(initialValue)\n  const finishedRef = React.useRef(false)\n\n  const finishEditing = React.useCallback(\n    (\n      shouldSave: boolean,\n      movement: readonly [-1 | 0 | 1, -1 | 0 | 1] = [0, 0]\n    ) => {\n      if (finishedRef.current) return\n\n      finishedRef.current = true\n      overlayOpenRef.current = false\n\n      if (!shouldSave || readOnly) {\n        onFinishedEditing(undefined, movement)\n        return\n      }\n\n      if (value.kind === GridCellKind.Number) {\n        const numericValue = Number(latestValueRef.current)\n\n        onFinishedEditing(\n          {\n            ...value,\n            data: Number.isFinite(numericValue) ? numericValue : value.data,\n            displayData: latestValueRef.current,\n          },\n          movement\n        )\n        return\n      }\n\n      onFinishedEditing(\n        {\n          ...value,\n          data: latestValueRef.current,\n          displayData: latestValueRef.current,\n        },\n        movement\n      )\n    },\n    [onFinishedEditing, overlayOpenRef, readOnly, value]\n  )\n\n  React.useEffect(() => {\n    overlayOpenRef.current = true\n\n    const input = inputRef.current\n    if (!input) {\n      return () => {\n        overlayOpenRef.current = false\n      }\n    }\n\n    const handleInput = (event: Event) => {\n      event.stopPropagation()\n      latestValueRef.current = input.value\n    }\n    const stopTextInputPropagation = (event: Event) => {\n      event.stopPropagation()\n    }\n    const handleKeyDown = (event: KeyboardEvent) => {\n      event.stopPropagation()\n\n      if (event.key === "Escape") {\n        event.preventDefault()\n        finishEditing(false)\n        return\n      }\n\n      if (event.key === "Tab") {\n        event.preventDefault()\n        finishEditing(true, [event.shiftKey ? -1 : 1, 0])\n        return\n      }\n\n      if (event.key === "Enter" && !event.shiftKey) {\n        event.preventDefault()\n        finishEditing(true, [0, 1])\n      }\n    }\n\n    input.addEventListener("input", handleInput)\n    input.addEventListener("beforeinput", stopTextInputPropagation, true)\n    input.addEventListener("keydown", handleKeyDown, true)\n\n    input.focus()\n\n    if (validatedSelection !== undefined) {\n      const selectionRange =\n        typeof validatedSelection === "number"\n          ? [validatedSelection, validatedSelection]\n          : validatedSelection\n      input.setSelectionRange(selectionRange[0], selectionRange[1])\n    } else if (isHighlighted) {\n      input.setSelectionRange(0, input.value.length)\n    } else {\n      input.setSelectionRange(input.value.length, input.value.length)\n    }\n\n    return () => {\n      input.removeEventListener("input", handleInput)\n      input.removeEventListener("beforeinput", stopTextInputPropagation, true)\n      input.removeEventListener("keydown", handleKeyDown, true)\n      overlayOpenRef.current = false\n    }\n  }, [\n    finishEditing,\n    isHighlighted,\n    overlayOpenRef,\n    validatedSelection,\n    readOnly,\n  ])\n\n  React.useEffect(() => {\n    const handlePointerOutside = (event: PointerEvent | MouseEvent) => {\n      const input = inputRef.current\n      const overlayRoot = input?.closest(".gdg-clip-region")\n\n      if (!overlayRoot || overlayRoot.contains(event.target as Node | null)) {\n        return\n      }\n\n      finishEditing(true)\n    }\n\n    document.addEventListener("pointerdown", handlePointerOutside, true)\n    document.addEventListener("contextmenu", handlePointerOutside, true)\n\n    return () => {\n      document.removeEventListener("pointerdown", handlePointerOutside, true)\n      document.removeEventListener("contextmenu", handlePointerOutside, true)\n    }\n  }, [finishEditing])\n\n  return (\n    <textarea\n      ref={inputRef}\n      className="gdg-input"\n      defaultValue={initialValue}\n      readOnly={readOnly}\n      aria-readonly={readOnly}\n      dir="auto"\n      style={{ height: "100%", minHeight: 32, resize: "none", width: "100%" }}\n    />\n  )\n}\n\nfunction getFieldIcon(type: SchemaPropertyType) {\n  if (type === "number" || type === "integer") return InputNumericIcon\n  if (type === "boolean") return TextCheckIcon\n  if (type === "array") return SecondBracketIcon\n  if (type === "object") return SourceCodeSquareIcon\n  return InputTextIcon\n}\n\nfunction HumanReviewValueInput({\n  readOnly = false,\n  schema,\n  value,\n  onChange,\n}: {\n  readOnly?: boolean\n  schema: ReviewFieldSchema\n  value: JsonPrimitive\n  onChange: (value: JsonPrimitive) => void\n}) {\n  if (schema.enum?.length) {\n    return (\n      <span className="relative inline-flex w-full rounded-lg border border-input bg-background text-sm text-foreground shadow-xs/5 dark:bg-input/32">\n        <select\n          disabled={readOnly}\n          value={value === null ? "" : String(value)}\n          onChange={(event) => onChange(event.target.value)}\n          className="h-8.5 w-full appearance-none rounded-[inherit] bg-transparent px-3 text-sm outline-none sm:h-7.5"\n        >\n          {schema.enum.map((option) => (\n            <option key={String(option)} value={String(option)}>\n              {String(option)}\n            </option>\n          ))}\n        </select>\n      </span>\n    )\n  }\n\n  if (schema.type === "number" || schema.type === "integer") {\n    return (\n      <Input\n        nativeInput\n        readOnly={readOnly}\n        type="number"\n        value={value === null ? "" : String(value)}\n        onChange={(event) => {\n          const nextValue = event.currentTarget.value\n          onChange(nextValue === "" ? null : Number(nextValue))\n        }}\n      />\n    )\n  }\n\n  if (schema.type === "boolean") {\n    return (\n      <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-0.5">\n        {[true, false].map((option) => (\n          <Button\n            key={String(option)}\n            type="button"\n            size="sm"\n            variant={value === option ? "outline" : "ghost"}\n            className={cn(\n              "h-7 shadow-none",\n              value === option && "bg-background dark:bg-input"\n            )}\n            disabled={readOnly}\n            onClick={() => onChange(option)}\n          >\n            {option ? "True" : "False"}\n          </Button>\n        ))}\n      </div>\n    )\n  }\n\n  return (\n    <Input\n      nativeInput\n      readOnly={readOnly}\n      value={value === null ? "" : String(value)}\n      onChange={(event) => onChange(event.currentTarget.value)}\n    />\n  )\n}\n\nfunction getArrayItemSchema(schema: ReviewFieldSchema): ReviewFieldSchema {\n  return schema.items ?? { type: "string" }\n}\n\nfunction isComplexSchema(schema: ReviewFieldSchema) {\n  return schema.type === "object" || schema.type === "array"\n}\n\nfunction summarizeComplexValue(value: JsonValue) {\n  if (isJsonArray(value)) return `${value.length} items`\n  if (isJsonObject(value)) return `${Object.keys(value).length} fields`\n  return formatValue(value)\n}\n\nfunction getCellValueForArrayColumn(\n  rowValue: JsonValue,\n  itemSchema: ReviewFieldSchema,\n  columnId: string\n) {\n  if (itemSchema.type === "object") {\n    return getObjectValue(rowValue, columnId)\n  }\n\n  return rowValue\n}\n\nfunction getCellSchemaForArrayColumn(\n  itemSchema: ReviewFieldSchema,\n  columnId: string\n) {\n  if (itemSchema.type === "object") {\n    return itemSchema.properties?.[columnId] ?? { type: "string" }\n  }\n\n  return itemSchema\n}\n\nfunction applyPrimitiveEdit(\n  schema: ReviewFieldSchema,\n  value: EditableGridCell\n): JsonValue | undefined {\n  if (schema.type === "boolean" && value.kind === GridCellKind.Boolean) {\n    return value.data\n  }\n\n  if (\n    (schema.type === "number" || schema.type === "integer") &&\n    value.kind === GridCellKind.Number\n  ) {\n    return value.data ?? null\n  }\n\n  if (value.kind === GridCellKind.Text) {\n    if (schema.type === "number" || schema.type === "integer") {\n      return value.data.trim() === "" ? null : Number(value.data)\n    }\n\n    return value.data\n  }\n\n  return undefined\n}\n\ntype ArrayNestedView = {\n  rowIndex: number\n  columnId: string\n  title: string\n  schema: ReviewFieldSchema\n  value: JsonValue\n}\n\ntype ArrayReviewSide = "actual" | "expected"\n\ntype SyncedArrayNestedView = {\n  activeSide: ArrayReviewSide | null\n  stack: ArrayNestedView[]\n}\n\ntype SyncedArraySelection = {\n  activeSide: ArrayReviewSide | null\n  depth: number\n  gridSelection: GridSelection\n}\n\nexport type HumanReviewTheme = "light" | "dark"\n\nconst EMPTY_SYNCED_ARRAY_NESTED_VIEW: SyncedArrayNestedView = {\n  activeSide: null,\n  stack: [],\n}\n\nconst EMPTY_SYNCED_ARRAY_SELECTION: SyncedArraySelection = {\n  activeSide: null,\n  depth: 0,\n  gridSelection: emptyGridSelection,\n}\n\nfunction setNestedArrayValue({\n  value,\n  schema,\n  nestedStack,\n  nextNestedValue,\n}: {\n  value: JsonValue\n  schema: ReviewFieldSchema\n  nestedStack: ArrayNestedView[]\n  nextNestedValue: JsonValue\n}): JsonValue {\n  const [currentView, ...remainingViews] = nestedStack\n\n  if (!currentView) return nextNestedValue\n\n  const itemSchema = getArrayItemSchema(schema)\n  const rowValue = getArrayValue(value)[currentView.rowIndex] ?? null\n  const cellSchema = getCellSchemaForArrayColumn(\n    itemSchema,\n    currentView.columnId\n  )\n  const currentCellValue = getCellValueForArrayColumn(\n    rowValue,\n    itemSchema,\n    currentView.columnId\n  )\n  const nextCellValue: JsonValue = remainingViews.length\n    ? setNestedArrayValue({\n        value: currentCellValue,\n        schema: cellSchema,\n        nestedStack: remainingViews,\n        nextNestedValue,\n      })\n    : nextNestedValue\n  const nextRowValue: JsonValue =\n    itemSchema.type === "object"\n      ? setObjectValue(rowValue, currentView.columnId, nextCellValue)\n      : nextCellValue\n\n  return setArrayItemValue(value, currentView.rowIndex, nextRowValue)\n}\n\nfunction getNestedArrayValue({\n  value,\n  schema,\n  nestedStack,\n}: {\n  value: JsonValue\n  schema: ReviewFieldSchema\n  nestedStack: ArrayNestedView[]\n}): JsonValue {\n  const [currentView, ...remainingViews] = nestedStack\n\n  if (!currentView) return value\n\n  const itemSchema = getArrayItemSchema(schema)\n  const rowValue = getArrayValue(value)[currentView.rowIndex] ?? null\n  const cellSchema = getCellSchemaForArrayColumn(\n    itemSchema,\n    currentView.columnId\n  )\n  const cellValue = getCellValueForArrayColumn(\n    rowValue,\n    itemSchema,\n    currentView.columnId\n  )\n\n  if (!remainingViews.length) return cellValue\n\n  return getNestedArrayValue({\n    value: cellValue,\n    schema: cellSchema,\n    nestedStack: remainingViews,\n  })\n}\n\nfunction HumanReviewArrayValueGrid({\n  activeNestedSide = null,\n  activeSelectionSide = null,\n  label,\n  nestedStackBaseDepth = 0,\n  readOnly = false,\n  schema,\n  selectionDepth = 0,\n  sharedGridSelection,\n  sharedNestedStack,\n  value,\n  viewSide = "expected",\n  onChange,\n  onGridSelectionChange,\n  onNestedStackChange,\n}: {\n  activeNestedSide?: ArrayReviewSide | null\n  activeSelectionSide?: ArrayReviewSide | null\n  label: string\n  nestedStackBaseDepth?: number\n  readOnly?: boolean\n  schema: ReviewFieldSchema\n  selectionDepth?: number\n  sharedGridSelection?: GridSelection\n  sharedNestedStack?: ArrayNestedView[]\n  value: JsonValue\n  viewSide?: ArrayReviewSide\n  onChange?: (value: JsonValue) => void\n  onGridSelectionChange?: (\n    selection: GridSelection,\n    side: ArrayReviewSide,\n    depth: number\n  ) => void\n  onNestedStackChange?: (\n    stack: ArrayNestedView[],\n    side: ArrayReviewSide\n  ) => void\n}) {\n  const rows = getArrayValue(value)\n  const itemSchema = getArrayItemSchema(schema)\n  const gridTheme = useHumanReviewGridTheme()\n  const isDark = useIsDarkTheme()\n  const [localNestedStack, setLocalNestedStack] = React.useState<\n    ArrayNestedView[]\n  >([])\n  const [localGridSelection, setLocalGridSelection] =\n    React.useState<GridSelection>(emptyGridSelection)\n  const fastTextOverlayOpenRef = React.useRef(false)\n  const nestedStack = sharedNestedStack ?? localNestedStack\n  const visibleNestedStack = nestedStack.slice(nestedStackBaseDepth)\n  const activeNestedView = visibleNestedStack[0] ?? null\n  const activeNestedValue = activeNestedView\n    ? getNestedArrayValue({\n        value,\n        schema,\n        nestedStack: [activeNestedView],\n      })\n    : null\n  const isActiveNestedSource =\n    Boolean(activeNestedView) && activeNestedSide === viewSide\n  const isMirroredNestedTarget =\n    Boolean(activeNestedView) &&\n    activeNestedSide !== null &&\n    activeNestedSide !== viewSide\n  const blueCellText = isDark ? "rgb(147, 197, 253)" : "rgb(37, 99, 235)"\n  const selectedCellBackground = isDark\n    ? "rgba(37, 99, 235, 0.2)"\n    : "rgba(219, 234, 254, 0.85)"\n  const mirroredCellBackground = isDark\n    ? "rgba(167, 139, 250, 0.18)"\n    : "rgba(237, 233, 254, 0.9)"\n  const mirroredHighlightRegions = React.useMemo<\n    React.ComponentProps<typeof DataEditor>["highlightRegions"]\n  >(() => {\n    if (\n      !activeSelectionSide ||\n      activeSelectionSide === viewSide ||\n      selectionDepth !== nestedStackBaseDepth\n    ) {\n      return undefined\n    }\n\n    const ranges = getGridSelectionRanges(sharedGridSelection)\n    if (!ranges.length) return undefined\n\n    return ranges.map((range) => ({\n      color: mirroredCellBackground,\n      range,\n      style: "dashed" as const,\n    }))\n  }, [\n    activeSelectionSide,\n    mirroredCellBackground,\n    nestedStackBaseDepth,\n    selectionDepth,\n    sharedGridSelection,\n    viewSide,\n  ])\n\n  const setNestedStack = React.useCallback(\n    (\n      updater:\n        | ArrayNestedView[]\n        | ((current: ArrayNestedView[]) => ArrayNestedView[])\n    ) => {\n      if (onNestedStackChange) {\n        const nextStack =\n          typeof updater === "function" ? updater(nestedStack) : updater\n\n        onNestedStackChange(nextStack, viewSide)\n        return\n      }\n\n      setLocalNestedStack(updater)\n    },\n    [nestedStack, onNestedStackChange, viewSide]\n  )\n\n  const handleGridSelectionChange = React.useCallback(\n    (selection: GridSelection) => {\n      flushSync(() => {\n        setLocalGridSelection((current) =>\n          areGridSelectionsEqual(current, selection) ? current : selection\n        )\n      })\n\n      if (onGridSelectionChange) {\n        if (\n          activeSelectionSide === viewSide &&\n          sharedGridSelection &&\n          areGridSelectionsEqual(sharedGridSelection, selection)\n        ) {\n          return\n        }\n\n        React.startTransition(() => {\n          onGridSelectionChange(selection, viewSide, nestedStackBaseDepth)\n        })\n        return\n      }\n    },\n    [\n      activeSelectionSide,\n      nestedStackBaseDepth,\n      onGridSelectionChange,\n      sharedGridSelection,\n      viewSide,\n    ]\n  )\n\n  const columns = React.useMemo<GridColumn[]>(() => {\n    if (itemSchema.type === "object") {\n      const propertyEntries = Object.entries(itemSchema.properties ?? {})\n\n      if (propertyEntries.length) {\n        return propertyEntries.map(([key, propertySchema]) => ({\n          id: key,\n          title: propertySchema.title ?? key,\n          width: isComplexSchema(propertySchema) ? 148 : 132,\n        }))\n      }\n    }\n\n    return [\n      {\n        id: "value",\n        title: itemSchema.title ?? "Value",\n        width: isComplexSchema(itemSchema) ? 148 : 180,\n      },\n    ]\n  }, [itemSchema])\n\n  const getCellContent = React.useCallback(\n    ([col, row]: Item): GridCell => {\n      const column = columns[col]\n      const columnId = String(column?.id ?? "value")\n      const rowValue = rows[row] ?? null\n      const cellSchema = getCellSchemaForArrayColumn(itemSchema, columnId)\n      const cellValue = getCellValueForArrayColumn(\n        rowValue,\n        itemSchema,\n        columnId\n      )\n      const matchedNestedCell =\n        activeNestedView?.rowIndex === row &&\n        activeNestedView.columnId === columnId\n      const nestedCellTheme: Partial<Theme> | undefined = matchedNestedCell\n        ? {\n            bgCell: isMirroredNestedTarget\n              ? mirroredCellBackground\n              : selectedCellBackground,\n            textDark: blueCellText,\n          }\n        : undefined\n\n      if (isComplexSchema(cellSchema)) {\n        return {\n          kind: GridCellKind.Text,\n          data: summarizeComplexValue(cellValue),\n          displayData: summarizeComplexValue(cellValue),\n          allowOverlay: false,\n          readonly: true,\n          cursor: "pointer",\n          activationBehaviorOverride: "second-click",\n          themeOverride: {\n            textDark: blueCellText,\n            ...(nestedCellTheme ?? {}),\n          },\n        }\n      }\n\n      if (cellSchema.type === "boolean") {\n        return {\n          kind: GridCellKind.Boolean,\n          data: typeof cellValue === "boolean" ? cellValue : false,\n          allowOverlay: false,\n          readonly: readOnly,\n        }\n      }\n\n      if (cellSchema.type === "number" || cellSchema.type === "integer") {\n        return {\n          kind: GridCellKind.Number,\n          data: typeof cellValue === "number" ? cellValue : undefined,\n          displayData: typeof cellValue === "number" ? String(cellValue) : "",\n          allowOverlay: true,\n          readonly: false,\n          activationBehaviorOverride: readOnly ? "single-click" : undefined,\n        }\n      }\n\n      return {\n        kind: GridCellKind.Text,\n        data:\n          cellValue === null ||\n          isJsonObject(cellValue) ||\n          isJsonArray(cellValue)\n            ? ""\n            : String(cellValue),\n        displayData:\n          cellValue === null ||\n          isJsonObject(cellValue) ||\n          isJsonArray(cellValue)\n            ? ""\n            : String(cellValue),\n        allowOverlay: true,\n        readonly: false,\n        activationBehaviorOverride: readOnly ? "single-click" : undefined,\n      }\n    },\n    [\n      activeNestedView,\n      blueCellText,\n      columns,\n      isMirroredNestedTarget,\n      itemSchema,\n      mirroredCellBackground,\n      readOnly,\n      rows,\n      selectedCellBackground,\n    ]\n  )\n\n  const updateCellValue = React.useCallback(\n    ([col, row]: Item, nextCell: EditableGridCell) => {\n      if (readOnly || !onChange) return\n\n      const column = columns[col]\n      const columnId = String(column?.id ?? "value")\n      const rowValue = rows[row] ?? null\n      const cellSchema = getCellSchemaForArrayColumn(itemSchema, columnId)\n      const nextValue = applyPrimitiveEdit(cellSchema, nextCell)\n\n      if (nextValue === undefined) return\n\n      const nextRowValue =\n        itemSchema.type === "object"\n          ? setObjectValue(rowValue, columnId, nextValue)\n          : nextValue\n\n      onChange(setArrayItemValue(value, row, nextRowValue))\n    },\n    [columns, itemSchema, onChange, readOnly, rows, value]\n  )\n  const provideEditor = React.useCallback<\n    NonNullable<React.ComponentProps<typeof DataEditor>["provideEditor"]>\n  >(\n    (cell) => {\n      if (\n        cell.kind !== GridCellKind.Text &&\n        cell.kind !== GridCellKind.Number\n      ) {\n        return undefined\n      }\n\n      return {\n        editor: (props) => {\n          if (\n            props.value.kind !== GridCellKind.Text &&\n            props.value.kind !== GridCellKind.Number\n          ) {\n            return null\n          }\n\n          return (\n            <HumanReviewTextOverlayEditor\n              {...(props as React.ComponentProps<\n                ProvideEditorComponent<HumanReviewOverlayCell>\n              >)}\n              overlayOpenRef={fastTextOverlayOpenRef}\n              readOnly={readOnly}\n            />\n          )\n        },\n      }\n    },\n    [readOnly]\n  )\n  const handleOutsideClick = React.useCallback(\n    () => !fastTextOverlayOpenRef.current,\n    []\n  )\n\n  const openNestedCell = React.useCallback(\n    ([col, row]: Item) => {\n      const column = columns[col]\n      const columnId = String(column?.id ?? "value")\n      const rowValue = rows[row] ?? null\n      const cellSchema = getCellSchemaForArrayColumn(itemSchema, columnId)\n\n      if (!isComplexSchema(cellSchema)) return\n\n      setNestedStack((current) => {\n        const nextView = {\n          rowIndex: row,\n          columnId,\n          title: `${column?.title ?? columnId} / row ${row + 1}`,\n          schema: cellSchema,\n          value: getCellValueForArrayColumn(rowValue, itemSchema, columnId),\n        }\n        const currentView = current[nestedStackBaseDepth]\n\n        if (\n          currentView?.rowIndex === nextView.rowIndex &&\n          currentView.columnId === nextView.columnId\n        ) {\n          return current\n        }\n\n        return [...current.slice(0, nestedStackBaseDepth), nextView]\n      })\n    },\n    [columns, itemSchema, nestedStackBaseDepth, rows, setNestedStack]\n  )\n\n  const updateNestedValue = React.useCallback(\n    (nextNestedValue: JsonValue) => {\n      if (!activeNestedView || readOnly || !onChange) return\n\n      onChange(\n        setNestedArrayValue({\n          value,\n          schema,\n          nestedStack: visibleNestedStack.slice(0, 1),\n          nextNestedValue,\n        })\n      )\n      setNestedStack((current) =>\n        current.map((view, index) =>\n          index === nestedStackBaseDepth\n            ? { ...view, value: nextNestedValue }\n            : view\n        )\n      )\n    },\n    [\n      activeNestedView,\n      nestedStackBaseDepth,\n      onChange,\n      readOnly,\n      schema,\n      setNestedStack,\n      value,\n      visibleNestedStack,\n    ]\n  )\n\n  return (\n    <div\n      className={cn(\n        "relative overflow-hidden rounded-md border bg-background transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:shadow-[0_0_0_1px_rgb(59_130_246_/_8%)] hover:border-blue-500/50",\n        isActiveNestedSource &&\n          "border-blue-500/60 bg-blue-500/5 shadow-[0_0_0_1px_rgb(59_130_246_/_10%)]"\n      )}\n    >\n      <div>\n        <div className="flex h-8 items-center justify-between gap-2 border-b px-2 text-[11px] font-medium text-muted-foreground">\n          <span>{label}</span>\n          <span>{rows.length} rows</span>\n        </div>\n        <div className="h-[220px]">\n          <DataEditor\n            columns={columns}\n            rows={rows.length}\n            getCellContent={getCellContent}\n            cellActivationBehavior={readOnly ? "single-click" : "second-click"}\n            gridSelection={localGridSelection}\n            highlightRegions={mirroredHighlightRegions}\n            onCellEdited={updateCellValue}\n            onCellActivated={openNestedCell}\n            onGridSelectionChange={handleGridSelectionChange}\n            provideEditor={provideEditor}\n            isOutsideClick={handleOutsideClick}\n            rowMarkers="number"\n            smoothScrollX\n            smoothScrollY\n            theme={gridTheme}\n            width="100%"\n            height="100%"\n            rowHeight={32}\n            headerHeight={34}\n          />\n        </div>\n      </div>\n      {activeNestedView ? (\n        <div className="absolute inset-0 z-10 flex flex-col bg-background">\n          <div className="flex h-8 items-center gap-2 border-b px-2">\n            <Button\n              type="button"\n              variant="ghost"\n              size="icon-sm"\n              className="size-6 text-muted-foreground"\n              onClick={() =>\n                setNestedStack((current) =>\n                  current.slice(\n                    0,\n                    Math.max(nestedStackBaseDepth, current.length - 1)\n                  )\n                )\n              }\n              aria-label="Back to parent array"\n            >\n              <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />\n            </Button>\n            <div className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">\n              {activeNestedView.title}\n            </div>\n          </div>\n          <div className="min-h-0 flex-1 overflow-auto p-2">\n            {activeNestedView.schema.type === "array" ? (\n              <HumanReviewArrayValueGrid\n                label={\n                  activeNestedView.schema.title ?? activeNestedView.columnId\n                }\n                nestedStackBaseDepth={nestedStackBaseDepth + 1}\n                readOnly={readOnly}\n                schema={activeNestedView.schema}\n                sharedGridSelection={sharedGridSelection}\n                sharedNestedStack={sharedNestedStack}\n                value={activeNestedValue}\n                viewSide={viewSide}\n                activeNestedSide={activeNestedSide}\n                activeSelectionSide={activeSelectionSide}\n                selectionDepth={selectionDepth}\n                onChange={updateNestedValue}\n                onGridSelectionChange={onGridSelectionChange}\n                onNestedStackChange={onNestedStackChange}\n              />\n            ) : (\n              <HumanReviewObjectValueEditor\n                schema={activeNestedView.schema}\n                value={activeNestedValue}\n                originalValue={activeNestedValue}\n                readOnly={readOnly}\n                onChange={updateNestedValue}\n              />\n            )}\n          </div>\n        </div>\n      ) : null}\n    </div>\n  )\n}\n\nfunction HumanReviewObjectValueEditor({\n  schema,\n  value,\n  originalValue,\n  readOnly = false,\n  onChange,\n}: {\n  schema: ReviewFieldSchema\n  value: JsonValue\n  originalValue: JsonValue\n  readOnly?: boolean\n  onChange: (value: JsonValue) => void\n}) {\n  const propertyEntries = Object.entries(schema.properties ?? {})\n\n  if (!propertyEntries.length) {\n    return (\n      <div className="rounded-md bg-background px-2 py-1.5 text-sm text-muted-foreground">\n        No properties\n      </div>\n    )\n  }\n\n  return (\n    <div className="space-y-2">\n      {propertyEntries.map(([propertyKey, propertySchema]) => (\n        <HumanReviewFieldCard\n          key={propertyKey}\n          field={{\n            key: propertyKey,\n            schema: propertySchema,\n            actual: getObjectValue(originalValue, propertyKey),\n            expected: getObjectValue(originalValue, propertyKey),\n          }}\n          value={getObjectValue(value, propertyKey)}\n          originalValue={getObjectValue(originalValue, propertyKey)}\n          readOnly={readOnly}\n          onChange={(childValue) =>\n            !readOnly &&\n            onChange(setObjectValue(value, propertyKey, childValue))\n          }\n          onUndo={() =>\n            !readOnly &&\n            onChange(\n              setObjectValue(\n                value,\n                propertyKey,\n                getObjectValue(originalValue, propertyKey)\n              )\n            )\n          }\n          onSetNull={() =>\n            !readOnly && onChange(setObjectValue(value, propertyKey, null))\n          }\n        />\n      ))}\n    </div>\n  )\n}\n\ntype HumanReviewFieldCardProps = {\n  field: ReviewField\n  value: JsonValue\n  originalValue: JsonValue\n  active?: boolean\n  activeFieldKey?: string\n  readOnly?: boolean\n  onChange: (value: JsonValue) => void\n  onFieldFocus?: (field: ReviewField) => void\n  onUndo: () => void\n  onSetNull: () => void\n}\n\nfunction areHumanReviewFieldCardPropsEqual(\n  previous: HumanReviewFieldCardProps,\n  next: HumanReviewFieldCardProps\n) {\n  return (\n    previous.field === next.field &&\n    Object.is(previous.value, next.value) &&\n    Object.is(previous.originalValue, next.originalValue) &&\n    previous.active === next.active &&\n    previous.activeFieldKey === next.activeFieldKey &&\n    previous.readOnly === next.readOnly &&\n    previous.onFieldFocus === next.onFieldFocus\n  )\n}\n\nconst HumanReviewFieldCard = React.memo(\n  HumanReviewFieldCardBase,\n  areHumanReviewFieldCardPropsEqual\n)\n\nfunction HumanReviewFieldCardBase({\n  field,\n  value,\n  originalValue,\n  active,\n  activeFieldKey,\n  readOnly = false,\n  onChange,\n  onFieldFocus,\n  onUndo,\n  onSetNull,\n}: HumanReviewFieldCardProps) {\n  const modified = !jsonValuesEqual(value, originalValue)\n  const Icon = getFieldIcon(field.schema.type)\n  const propertyEntries = Object.entries(field.schema.properties ?? {})\n  const [syncedArrayNestedView, setSyncedArrayNestedView] =\n    React.useState<SyncedArrayNestedView>(EMPTY_SYNCED_ARRAY_NESTED_VIEW)\n  const [syncedArraySelection, setSyncedArraySelection] =\n    React.useState<SyncedArraySelection>(EMPTY_SYNCED_ARRAY_SELECTION)\n  const updateSyncedArrayNestedView = React.useCallback(\n    (stack: ArrayNestedView[], side: ArrayReviewSide) => {\n      const activeSide = stack.length ? side : null\n\n      setSyncedArrayNestedView((current) =>\n        current.activeSide === activeSide &&\n        areArrayNestedViewsEqual(current.stack, stack)\n          ? current\n          : {\n              activeSide,\n              stack,\n            }\n      )\n    },\n    []\n  )\n  const updateSyncedArraySelection = React.useCallback(\n    (gridSelection: GridSelection, side: ArrayReviewSide, depth: number) => {\n      const activeSide = gridSelection.current ? side : null\n\n      setSyncedArraySelection((current) =>\n        current.activeSide === activeSide &&\n        current.depth === depth &&\n        areGridSelectionsEqual(current.gridSelection, gridSelection)\n          ? current\n          : {\n              activeSide,\n              depth,\n              gridSelection,\n            }\n      )\n    },\n    []\n  )\n\n  return (\n    <div\n      tabIndex={0}\n      onFocusCapture={() => onFieldFocus?.(field)}\n      onMouseEnter={() => onFieldFocus?.(field)}\n      className={cn(\n        "rounded-lg border bg-background p-3 transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:bg-blue-500/5 hover:border-blue-500/50 hover:bg-blue-500/5 focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:outline-none",\n        active &&\n          "border-blue-500/60 bg-blue-500/5 shadow-[0_0_0_1px_rgb(59_130_246_/_8%)]"\n      )}\n    >\n      <div className="mb-3 flex min-h-8 items-start justify-between gap-3">\n        <div className="min-w-0">\n          <div className="flex min-w-0 items-center gap-2">\n            <div className="min-w-0">\n              <div className="truncate text-sm font-medium">\n                {field.schema.title ?? field.key}\n              </div>\n            </div>\n            <span\n              className={cn(\n                "size-2 shrink-0 rounded-full bg-amber-400 transition-opacity",\n                !modified && "opacity-0"\n              )}\n            />\n          </div>\n          <div className="truncate text-xs text-muted-foreground">\n            {field.key}\n          </div>\n        </div>\n        <div className="flex shrink-0 items-center gap-1">\n          {!readOnly && modified ? (\n            <Tooltip>\n              <TooltipTrigger asChild>\n                <Button\n                  type="button"\n                  variant="ghost"\n                  size="icon-sm"\n                  className="text-muted-foreground"\n                  onClick={onUndo}\n                  aria-label={`Undo ${field.key}`}\n                >\n                  <HugeiconsIcon icon={Undo02Icon} className="size-4" />\n                </Button>\n              </TooltipTrigger>\n              <TooltipContent>Revert changes</TooltipContent>\n            </Tooltip>\n          ) : null}\n          {!readOnly ? (\n            <Tooltip>\n              <TooltipTrigger asChild>\n                <Button\n                  type="button"\n                  variant="ghost"\n                  size="icon-sm"\n                  className="text-muted-foreground"\n                  onClick={onSetNull}\n                  aria-label={`Set ${field.key} to null`}\n                >\n                  <HugeiconsIcon icon={CancelCircleIcon} className="size-4" />\n                </Button>\n              </TooltipTrigger>\n              <TooltipContent>Set to NULL</TooltipContent>\n            </Tooltip>\n          ) : null}\n          <div className="flex h-6 items-center gap-1 rounded-md border bg-muted/50 px-1.5 text-xs text-muted-foreground">\n            <HugeiconsIcon icon={Icon} className="size-3.5" />\n            {field.schema.type}\n          </div>\n        </div>\n      </div>\n      {field.schema.type === "object" ? (\n        <div className="rounded-md border bg-muted/25 p-2">\n          <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-medium text-muted-foreground">\n            <span>Properties</span>\n            <span>{propertyEntries.length} fields</span>\n          </div>\n          <div className="space-y-2">\n            {propertyEntries.length ? (\n              propertyEntries.map(([propertyKey, schema]) => {\n                const childField: ReviewField = {\n                  key: `${field.key}.${propertyKey}`,\n                  schema,\n                  actual: getObjectValue(field.actual, propertyKey),\n                  expected: getObjectValue(originalValue, propertyKey),\n                }\n\n                return (\n                  <HumanReviewFieldCard\n                    key={childField.key}\n                    field={childField}\n                    value={getObjectValue(value, propertyKey)}\n                    originalValue={childField.expected}\n                    active={childField.key === activeFieldKey}\n                    activeFieldKey={activeFieldKey}\n                    readOnly={readOnly}\n                    onChange={(childValue) =>\n                      onChange(setObjectValue(value, propertyKey, childValue))\n                    }\n                    onFieldFocus={onFieldFocus}\n                    onUndo={() =>\n                      onChange(\n                        setObjectValue(value, propertyKey, childField.expected)\n                      )\n                    }\n                    onSetNull={() =>\n                      onChange(setObjectValue(value, propertyKey, null))\n                    }\n                  />\n                )\n              })\n            ) : (\n              <div className="rounded-md bg-background px-2 py-1.5 text-sm text-muted-foreground">\n                No properties\n              </div>\n            )}\n          </div>\n        </div>\n      ) : field.schema.type === "array" ? (\n        <div className="grid gap-2">\n          <HumanReviewArrayValueGrid\n            activeNestedSide={syncedArrayNestedView.activeSide}\n            activeSelectionSide={syncedArraySelection.activeSide}\n            label="Actual"\n            readOnly\n            schema={field.schema}\n            selectionDepth={syncedArraySelection.depth}\n            sharedGridSelection={syncedArraySelection.gridSelection}\n            sharedNestedStack={syncedArrayNestedView.stack}\n            value={field.actual}\n            viewSide="actual"\n            onGridSelectionChange={updateSyncedArraySelection}\n            onNestedStackChange={updateSyncedArrayNestedView}\n          />\n          <HumanReviewArrayValueGrid\n            activeNestedSide={syncedArrayNestedView.activeSide}\n            activeSelectionSide={syncedArraySelection.activeSide}\n            label="Expected"\n            readOnly={readOnly}\n            schema={field.schema}\n            selectionDepth={syncedArraySelection.depth}\n            sharedGridSelection={syncedArraySelection.gridSelection}\n            sharedNestedStack={syncedArrayNestedView.stack}\n            value={value}\n            viewSide="expected"\n            onChange={onChange}\n            onGridSelectionChange={updateSyncedArraySelection}\n            onNestedStackChange={updateSyncedArrayNestedView}\n          />\n        </div>\n      ) : (\n        <div className="grid gap-2 sm:grid-cols-2">\n          <div className="rounded-md border bg-muted/30 p-2">\n            {field.schema.description ? (\n              <p className="mb-2 text-xs text-muted-foreground">\n                {field.schema.description}\n              </p>\n            ) : null}\n            <div className="mb-1 text-[11px] font-medium text-muted-foreground">\n              Actual\n            </div>\n            <div className="min-h-7 rounded-md bg-background px-2 py-1.5 text-sm">\n              {formatValue(field.actual)}\n            </div>\n          </div>\n          <div className="rounded-md border bg-muted/30 p-2">\n            <div className="mb-1 text-[11px] font-medium text-muted-foreground">\n              Expected\n            </div>\n            <HumanReviewValueInput\n              readOnly={readOnly}\n              schema={field.schema}\n              value={getPrimitiveValue(value)}\n              onChange={onChange}\n            />\n          </div>\n        </div>\n      )}\n    </div>\n  )\n}\n\nfunction HumanReviewHighlight({ field }: { field: ReviewField }) {\n  const area = field.location?.area\n\n  if (!area) return null\n\n  return (\n    <div\n      className={cn(\n        "pointer-events-none absolute z-10 rounded-[3px] border",\n        REVIEW_HIGHLIGHT_STYLE\n      )}\n      style={{\n        left: `${area.left}%`,\n        top: `${area.top}%`,\n        width: `${area.width}%`,\n        height: `${area.height}%`,\n      }}\n    />\n  )\n}\n\nexport function JsonDiffView({\n  actual,\n  expected,\n  theme = "light",\n}: {\n  actual: JsonObject\n  expected: JsonObject\n  theme?: HumanReviewTheme\n}) {\n  const oldFile = React.useMemo(\n    () => ({\n      name: "actual.json",\n      contents: formatJson(actual),\n      lang: "json",\n    }),\n    [actual]\n  )\n  const newFile = React.useMemo(\n    () => ({\n      name: "expected.json",\n      contents: formatJson(expected),\n      lang: "json",\n    }),\n    [expected]\n  )\n\n  return (\n    <Virtualizer\n      className="h-full overflow-auto rounded-b-xl bg-surface/60"\n      contentClassName="min-w-full"\n    >\n      <div className="human-review-diff h-full text-xs">\n        <MultiFileDiff\n          className="block min-w-full"\n          style={DIFF_VIEWER_THEME}\n          oldFile={oldFile}\n          newFile={newFile}\n          options={{\n            diffStyle: "split",\n            diffIndicators: "bars",\n            hunkSeparators: "line-info-basic",\n            overflow: "wrap",\n            themeType: theme,\n            theme: {\n              light: "pierre-light",\n              dark: "pierre-dark",\n            },\n          }}\n        />\n      </div>\n    </Virtualizer>\n  )\n}\n\nexport function HumanReviewPanel({\n  fields = REVIEW_FIELDS,\n  activeFieldKey,\n  className,\n  onFieldFocus,\n  theme = "light",\n}: {\n  fields?: ReviewField[]\n  activeFieldKey?: string\n  className?: string\n  onFieldFocus?: (field: ReviewField) => void\n  theme?: HumanReviewTheme\n} = {}) {\n  const [activeTab, setActiveTab] = React.useState("form")\n  const actualValues = React.useMemo(\n    () => valuesFromFields(fields, "actual"),\n    [fields]\n  )\n  const initialExpectedValues = React.useMemo(\n    () => valuesFromFields(fields, "expected"),\n    [fields]\n  )\n  const [expected, setExpected] = React.useState<JsonObject>(\n    initialExpectedValues\n  )\n\n  React.useEffect(() => {\n    setExpected(initialExpectedValues)\n  }, [initialExpectedValues])\n\n  const updateValue = React.useCallback((key: string, value: JsonValue) => {\n    setExpected((current) =>\n      Object.is(current[key], value) ? current : { ...current, [key]: value }\n    )\n  }, [])\n  const fieldCount = React.useMemo(() => countReviewFields(fields), [fields])\n\n  return (\n    <TooltipProvider delay={200}>\n      <Tabs\n        value={activeTab}\n        onValueChange={setActiveTab}\n        className={cn("flex h-[560px] flex-col gap-0 bg-background", className)}\n      >\n        <div className="flex min-h-12 items-center justify-between gap-3 border-b px-3">\n          <TabsList className="h-8 sm:h-7">\n            <TabsTrigger value="form" className="h-7 sm:h-6">\n              <HugeiconsIcon icon={TextCheckIcon} className="size-4" />\n              Form\n            </TabsTrigger>\n            <TabsTrigger value="json" className="h-7 sm:h-6">\n              <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />\n              JSON\n            </TabsTrigger>\n          </TabsList>\n          <div className="flex h-8 items-center gap-1 rounded-md border bg-muted/40 px-2 text-xs text-muted-foreground sm:h-7">\n            <HugeiconsIcon icon={FileDiffIcon} className="size-3.5" />\n            {fieldCount} fields\n          </div>\n        </div>\n        <TabsContent value="form" keepMounted className="min-h-0 flex-1">\n          <ScrollArea className="h-full" scrollFade>\n            <div className="space-y-3 p-3">\n              {fields.map((field) => (\n                <HumanReviewFieldCard\n                  key={field.key}\n                  field={field}\n                  value={expected[field.key] ?? null}\n                  originalValue={field.expected}\n                  active={\n                    field.key === activeFieldKey ||\n                    activeFieldKey?.startsWith(`${field.key}.`)\n                  }\n                  activeFieldKey={activeFieldKey}\n                  onChange={(value) => updateValue(field.key, value)}\n                  onFieldFocus={onFieldFocus}\n                  onUndo={() => updateValue(field.key, field.expected)}\n                  onSetNull={() => updateValue(field.key, null)}\n                />\n              ))}\n            </div>\n          </ScrollArea>\n        </TabsContent>\n        <TabsContent value="json" keepMounted className="min-h-0 flex-1">\n          <JsonDiffView\n            actual={actualValues}\n            expected={expected}\n            theme={theme}\n          />\n        </TabsContent>\n      </Tabs>\n    </TooltipProvider>\n  )\n}\n\nexport function HumanReviewBlock({\n  file,\n  fields = REVIEW_FIELDS,\n  className,\n  theme,\n}: {\n  file?: string\n  fields?: ReviewField[]\n  className?: string\n  theme?: HumanReviewTheme\n}) {\n  const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0]?.key)\n  const viewerRef = React.useRef<PDFViewerHandle>(null)\n  const activeField = findReviewField(fields, activeFieldKey) ?? fields[0]\n\n  React.useEffect(() => {\n    if (activeFieldKey || !fields[0]) return\n    setActiveFieldKey(fields[0].key)\n  }, [activeFieldKey, fields])\n\n  const focusField = React.useCallback(\n    (field: ReviewField) => {\n      if (field.key === activeFieldKey) return\n\n      setActiveFieldKey(field.key)\n\n      if (field.location) {\n        viewerRef.current?.scrollToPageArea(\n          field.location.page,\n          field.location.area\n        )\n      }\n    },\n    [activeFieldKey]\n  )\n\n  return (\n    <PdfBlockResizableShell\n      autoSaveId="pdf-block-human-review"\n      className={className}\n      rightDefaultSize={42}\n      rightMaxSize={60}\n      rightMinSize={30}\n      left={\n        <PDFViewer\n          ref={viewerRef}\n          file={file}\n          defaultZoom={DEFAULT_ZOOM}\n          renderPageOverlay={({ pageNumber }) =>\n            activeField?.location?.page === pageNumber ? (\n              <HumanReviewHighlight field={activeField} />\n            ) : null\n          }\n        />\n      }\n      right={\n        <aside className="min-h-0 bg-background">\n          <HumanReviewPanel\n            fields={fields}\n            activeFieldKey={activeField?.key}\n            className="h-full min-h-0"\n            theme={theme}\n            onFieldFocus={focusField}\n          />\n        </aside>\n      }\n    />\n  )\n}\n'
+  '"use client"\n\nimport * as React from "react"\nimport {\n  DataEditor,\n  emptyGridSelection,\n  GridCellKind,\n  TextCellEntry,\n  type EditableGridCell,\n  type GridCell,\n  type GridColumn,\n  type GridMouseEventArgs,\n  type GridSelection,\n  type Item,\n  type NumberCell,\n  type ProvideEditorComponent,\n  type Rectangle,\n  type TextCell,\n  type Theme,\n} from "@glideapps/glide-data-grid"\nimport {\n  ArrowLeft01Icon,\n  CancelCircleIcon,\n  FileDiffIcon,\n  InputNumericIcon,\n  InputTextIcon,\n  SecondBracketIcon,\n  SourceCodeSquareIcon,\n  TextCheckIcon,\n  Undo02Icon,\n} from "@hugeicons/core-free-icons"\nimport { HugeiconsIcon } from "@hugeicons/react"\nimport { MultiFileDiff, Virtualizer } from "@pierre/diffs/react"\nimport { flushSync } from "react-dom"\n\nimport { cn } from "@/lib/utils"\nimport { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"\nimport { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"\nimport { Button } from "@/registry/new-york-v4/ui/button"\nimport { Input } from "@/registry/new-york-v4/ui/input"\nimport { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"\nimport {\n  Tabs,\n  TabsContent,\n  TabsList,\n  TabsTrigger,\n} from "@/registry/new-york-v4/ui/tabs"\nimport {\n  Tooltip,\n  TooltipContent,\n  TooltipProvider,\n  TooltipTrigger,\n} from "@/registry/new-york-v4/ui/tooltip"\n\nimport "@glideapps/glide-data-grid/dist/index.css"\n\nexport type JsonPrimitive = string | number | boolean | null\nexport type JsonValue = JsonPrimitive | JsonObject | JsonArray\nexport type JsonObject = { [key: string]: JsonValue }\nexport type JsonArray = JsonValue[]\nexport type SchemaPropertyType =\n  | "string"\n  | "number"\n  | "integer"\n  | "boolean"\n  | "object"\n  | "array"\n\nexport type ReviewFieldSchema = {\n  type: SchemaPropertyType\n  title?: string\n  description?: string\n  enum?: Array<string | number>\n  properties?: Record<string, ReviewFieldSchema>\n  items?: ReviewFieldSchema\n}\n\nexport type HighlightArea = {\n  left: number\n  top: number\n  width: number\n  height: number\n}\n\nexport type ReviewField = {\n  key: string\n  schema: ReviewFieldSchema\n  actual: JsonValue\n  expected: JsonValue\n  location?: ReviewLocation\n  metadataPath?: string\n}\n\nexport type ReviewLocation = {\n  page: number\n  area: HighlightArea\n}\n\nexport type ReviewCitation = {\n  page: number\n  polygon?: Array<{ x: number; y: number }>\n  pageWidth: number\n  pageHeight: number\n}\n\nexport type ReviewMetadataEntry = {\n  citations?: ReviewCitation[]\n}\n\nconst DEFAULT_ZOOM = 0.75\nconst REVIEW_HIGHLIGHT_STYLE =\n  "border-blue-500/70 bg-blue-500/12 shadow-[0_4px_16px_rgb(59_130_246_/_10%)]"\nconst DIFF_VIEWER_THEME = {\n  "--diffs-light-bg": "oklch(0.985 0.002 247)",\n  "--diffs-dark-bg": "oklch(0.18 0.003 247)",\n  "--diffs-light": "oklch(0.22 0.01 247)",\n  "--diffs-dark": "oklch(0.92 0.006 247)",\n  "--diffs-bg-context-override":\n    "light-dark(oklch(0.967 0.003 247), oklch(0.235 0.004 247))",\n  "--diffs-bg-context-gutter-override":\n    "light-dark(oklch(0.948 0.004 247), oklch(0.205 0.004 247))",\n  "--diffs-bg-separator-override":\n    "light-dark(oklch(0.94 0.004 247), oklch(0.255 0.005 247))",\n  "--diffs-bg-buffer-override":\n    "light-dark(oklch(0.955 0.004 247), oklch(0.225 0.004 247))",\n  "--diffs-light-addition-color": "oklch(0.54 0.13 158)",\n  "--diffs-dark-addition-color": "oklch(0.72 0.13 158)",\n  "--diffs-light-deletion-color": "oklch(0.55 0.16 28)",\n  "--diffs-dark-deletion-color": "oklch(0.72 0.14 28)",\n  "--diffs-bg-addition-override":\n    "light-dark(oklch(0.957 0.032 158), oklch(0.255 0.052 158))",\n  "--diffs-bg-addition-emphasis-override":\n    "light-dark(oklch(0.88 0.06 158), oklch(0.36 0.08 158))",\n  "--diffs-bg-deletion-override":\n    "light-dark(oklch(0.958 0.03 28), oklch(0.255 0.047 28))",\n  "--diffs-bg-deletion-emphasis-override":\n    "light-dark(oklch(0.9 0.052 28), oklch(0.36 0.075 28))",\n  "--diffs-fg-number-override":\n    "light-dark(oklch(0.56 0.018 247), oklch(0.66 0.012 247))",\n  "--diffs-font-size": "12px",\n  "--diffs-line-height": "20px",\n} as React.CSSProperties\n\nfunction readIsDarkTheme() {\n  return (\n    typeof document !== "undefined" &&\n    document.documentElement.classList.contains("dark")\n  )\n}\n\n// A single shared MutationObserver backs every consumer. Each grid previously\n// created its own observer (two, via useHumanReviewGridTheme), so opening a\n// nested array view spun up and tore down several observers at once.\nconst darkThemeListeners = new Set<(isDark: boolean) => void>()\nlet darkThemeObserver: MutationObserver | null = null\nlet sharedIsDarkTheme = false\n\nfunction ensureDarkThemeObserver() {\n  if (\n    darkThemeObserver ||\n    typeof document === "undefined" ||\n    typeof MutationObserver === "undefined"\n  ) {\n    return\n  }\n\n  sharedIsDarkTheme = readIsDarkTheme()\n  darkThemeObserver = new MutationObserver(() => {\n    const nextIsDark = readIsDarkTheme()\n    if (nextIsDark === sharedIsDarkTheme) return\n\n    sharedIsDarkTheme = nextIsDark\n    darkThemeListeners.forEach((listener) => listener(nextIsDark))\n  })\n  darkThemeObserver.observe(document.documentElement, {\n    attributes: true,\n    attributeFilter: ["class"],\n  })\n}\n\nfunction useIsDarkTheme() {\n  const [isDark, setIsDark] = React.useState(readIsDarkTheme)\n\n  React.useEffect(() => {\n    ensureDarkThemeObserver()\n    setIsDark(sharedIsDarkTheme)\n    darkThemeListeners.add(setIsDark)\n\n    return () => {\n      darkThemeListeners.delete(setIsDark)\n      if (darkThemeListeners.size === 0 && darkThemeObserver) {\n        darkThemeObserver.disconnect()\n        darkThemeObserver = null\n      }\n    }\n  }, [])\n\n  return isDark\n}\n\nfunction useHumanReviewGridTheme() {\n  const isDark = useIsDarkTheme()\n\n  return React.useMemo<Partial<Theme>>(\n    () => ({\n      accentColor: isDark ? "rgb(96, 165, 250)" : "rgb(37, 99, 235)",\n      accentLight: isDark ? "rgba(29, 78, 216, 0.15)" : "rgb(219, 234, 254)",\n      accentFg: "rgb(255, 255, 255)",\n      textDark: isDark ? "rgb(229, 229, 229)" : "rgb(23, 23, 23)",\n      textMedium: isDark ? "rgb(163, 163, 163)" : "rgb(82, 82, 82)",\n      textLight: isDark ? "rgb(115, 115, 115)" : "rgb(163, 163, 163)",\n      textBubble: isDark ? "rgb(245, 245, 245)" : "rgb(23, 23, 23)",\n      textHeader: isDark ? "rgb(245, 245, 245)" : "rgb(23, 23, 23)",\n      textGroupHeader: isDark ? "rgb(163, 163, 163)" : "rgb(82, 82, 82)",\n      bgCell: isDark ? "rgb(10, 10, 10)" : "rgb(255, 255, 255)",\n      bgCellMedium: isDark ? "rgb(23, 23, 23)" : "rgb(250, 250, 250)",\n      bgHeader: isDark ? "rgb(23, 23, 23)" : "rgb(250, 250, 250)",\n      bgHeaderHasFocus: isDark ? "rgb(38, 38, 38)" : "rgb(245, 245, 245)",\n      bgHeaderHovered: isDark ? "rgb(38, 38, 38)" : "rgb(245, 245, 245)",\n      borderColor: isDark ? "rgb(38, 38, 38)" : "rgb(229, 229, 229)",\n      horizontalBorderColor: isDark ? "rgb(38, 38, 38)" : "rgb(229, 229, 229)",\n      cellHorizontalPadding: 8,\n      cellVerticalPadding: 3,\n      headerIconSize: 18,\n      baseFontStyle: "13px",\n      headerFontStyle: "600 13px",\n      markerFontStyle: "11px",\n      fontFamily: \'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\',\n      editorFontSize: "13px",\n    }),\n    [isDark]\n  )\n}\n\nconst REVIEW_FIELDS: ReviewField[] = [\n  {\n    key: "statement_period",\n    schema: {\n      type: "string",\n      title: "Statement period",\n      description: "Date range covered by the bank statement.",\n    },\n    actual: "Jan 1-31, 2026",\n    expected: "January 1-31, 2026",\n    location: {\n      page: 1,\n      area: { left: 31, top: 30, width: 40, height: 5.8 },\n    },\n  },\n  {\n    key: "transactions",\n    schema: {\n      type: "array",\n      title: "Transactions",\n      description: "Posted account activity during the statement period.",\n      items: {\n        type: "object",\n        properties: {\n          date: {\n            type: "string",\n            title: "Date",\n          },\n          description: {\n            type: "string",\n            title: "Description",\n          },\n          amount: {\n            type: "number",\n            title: "Amount",\n          },\n          category: {\n            type: "string",\n            title: "Category",\n          },\n        },\n      },\n    },\n    actual: [\n      {\n        date: "2026-01-03",\n        description: "ACH CREDIT PAYROLL",\n        amount: 4250,\n        category: "Deposit",\n      },\n      {\n        date: "2026-01-12",\n        description: "POS PURCHASE GROCERY MART",\n        amount: -86.42,\n        category: "Debit",\n      },\n    ],\n    expected: [\n      {\n        date: "2026-01-03",\n        description: "ACH CREDIT PAYROLL",\n        amount: 4250,\n        category: "Deposit",\n      },\n      {\n        date: "2026-01-12",\n        description: "POS PURCHASE GROCERY MART",\n        amount: -68.42,\n        category: "Debit",\n      },\n    ],\n    location: {\n      page: 1,\n      area: { left: 13.5, top: 66, width: 73.5, height: 7.5 },\n    },\n  },\n  {\n    key: "ending_balance",\n    schema: {\n      type: "number",\n      title: "Ending balance",\n      description: "Final account balance at the end of the statement period.",\n    },\n    actual: 12840.18,\n    expected: 12858.18,\n    location: {\n      page: 1,\n      area: { left: 13.5, top: 66, width: 73.5, height: 7.5 },\n    },\n  },\n  {\n    key: "overdraft_protection_enabled",\n    schema: {\n      type: "boolean",\n      title: "Overdraft protection enabled",\n      description: "Whether overdraft protection is enabled for the account.",\n    },\n    actual: false,\n    expected: true,\n    location: {\n      page: 2,\n      area: { left: 9.5, top: 12, width: 81, height: 11.5 },\n    },\n  },\n  {\n    key: "account_details",\n    schema: {\n      type: "object",\n      title: "Account details",\n      description: "Account owner and identifying details from the statement.",\n      properties: {\n        holder_name: {\n          type: "string",\n          title: "Holder name",\n        },\n        account_last_four: {\n          type: "string",\n          title: "Account last four",\n        },\n        account_type: {\n          type: "string",\n          title: "Account type",\n        },\n      },\n    },\n    actual: {\n      holder_name: "Jordan Lee",\n      account_last_four: "4821",\n      account_type: "Checking",\n    },\n    expected: {\n      holder_name: "Jordan Lee",\n      account_last_four: "4821",\n      account_type: "Premier Checking",\n    },\n  },\n]\n\nfunction getCitationLocation(\n  citation: ReviewCitation\n): ReviewLocation | undefined {\n  const polygon = citation.polygon\n  if (!polygon?.length || !citation.pageWidth || !citation.pageHeight) {\n    return undefined\n  }\n\n  const xs = polygon.map((point) => point.x)\n  const ys = polygon.map((point) => point.y)\n  const left = Math.min(...xs)\n  const top = Math.min(...ys)\n  const right = Math.max(...xs)\n  const bottom = Math.max(...ys)\n\n  return {\n    page: citation.page,\n    area: {\n      left: (left / citation.pageWidth) * 100,\n      top: (top / citation.pageHeight) * 100,\n      width: ((right - left) / citation.pageWidth) * 100,\n      height: ((bottom - top) / citation.pageHeight) * 100,\n    },\n  }\n}\n\nfunction getMetadataLocation(\n  metadata: Record<string, ReviewMetadataEntry> | undefined,\n  metadataPath: string | undefined\n) {\n  if (!metadata || !metadataPath) return undefined\n\n  const citation = metadata[metadataPath]?.citations?.find(\n    (candidate) => candidate.polygon?.length\n  )\n\n  return citation ? getCitationLocation(citation) : undefined\n}\n\nfunction getReviewFieldLocation(\n  field: ReviewField | undefined,\n  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined\n) {\n  if (!field) return undefined\n\n  return (\n    field.location ??\n    resolveLocation?.(field.metadataPath ?? field.key) ??\n    undefined\n  )\n}\n\nfunction getReviewLocationKey(location: ReviewLocation | undefined) {\n  if (!location) return null\n\n  const { area } = location\n  return [location.page, area.left, area.top, area.width, area.height].join(":")\n}\n\nfunction valuesFromFields(\n  fields: ReviewField[],\n  valueKey: "actual" | "expected"\n) {\n  return fields.reduce<JsonObject>((values, field) => {\n    values[field.key] = field[valueKey]\n    return values\n  }, {})\n}\n\nfunction formatJson(value: unknown) {\n  return JSON.stringify(value, null, 2)\n}\n\nfunction isJsonObject(value: JsonValue): value is JsonObject {\n  return typeof value === "object" && value !== null && !Array.isArray(value)\n}\n\nfunction isJsonArray(value: JsonValue): value is JsonArray {\n  return Array.isArray(value)\n}\n\nfunction getObjectValue(value: JsonValue, key: string): JsonValue {\n  if (!isJsonObject(value)) return null\n  return value[key] ?? null\n}\n\nfunction setObjectValue(\n  value: JsonValue,\n  key: string,\n  childValue: JsonValue\n): JsonObject {\n  return {\n    ...(isJsonObject(value) ? value : {}),\n    [key]: childValue,\n  }\n}\n\nfunction getArrayValue(value: JsonValue): JsonArray {\n  return isJsonArray(value) ? value : []\n}\n\nfunction setArrayItemValue(\n  value: JsonValue,\n  index: number,\n  childValue: JsonValue\n): JsonArray {\n  const nextValue = getArrayValue(value).slice()\n  nextValue[index] = childValue\n  return nextValue\n}\n\nfunction getPrimitiveValue(value: JsonValue): JsonPrimitive {\n  return isJsonObject(value) || isJsonArray(value) ? null : value\n}\n\nfunction jsonValuesEqual(left: JsonValue, right: JsonValue) {\n  return formatJson(left) === formatJson(right)\n}\n\nfunction countReviewFields(fields: ReviewField[]): number {\n  return fields.reduce((count, field) => {\n    if (field.schema.type !== "object") return count + 1\n\n    const properties = field.schema.properties ?? {}\n    const childFields = Object.entries(properties).map(\n      ([key, schema]): ReviewField => ({\n        key: `${field.key}.${key}`,\n        schema,\n        actual: getObjectValue(field.actual, key),\n        expected: getObjectValue(field.expected, key),\n        metadataPath: `${field.metadataPath ?? field.key}.${key}`,\n      })\n    )\n\n    return count + Math.max(countReviewFields(childFields), 1)\n  }, 0)\n}\n\nfunction findReviewField(\n  fields: ReviewField[],\n  fieldKey: string | undefined\n): ReviewField | undefined {\n  if (!fieldKey) return undefined\n\n  for (const field of fields) {\n    if (field.key === fieldKey) return field\n\n    if (field.schema.type === "object") {\n      const childFields = Object.entries(field.schema.properties ?? {}).map(\n        ([key, schema]): ReviewField => ({\n          key: `${field.key}.${key}`,\n          schema,\n          actual: getObjectValue(field.actual, key),\n          expected: getObjectValue(field.expected, key),\n          metadataPath: `${field.metadataPath ?? field.key}.${key}`,\n        })\n      )\n      const childField = findReviewField(childFields, fieldKey)\n      if (childField) return childField\n    }\n  }\n\n  return undefined\n}\n\nfunction formatValue(value: JsonValue) {\n  if (value === null) return "NULL"\n  if (isJsonObject(value) || isJsonArray(value)) return formatJson(value)\n  if (typeof value === "boolean") return value ? "true" : "false"\n  return String(value)\n}\n\nfunction areGridRangesEqual(\n  left: Readonly<Rectangle> | undefined,\n  right: Readonly<Rectangle> | undefined\n) {\n  return (\n    left === right ||\n    (left !== undefined &&\n      right !== undefined &&\n      left.x === right.x &&\n      left.y === right.y &&\n      left.width === right.width &&\n      left.height === right.height)\n  )\n}\n\nfunction areGridRangeStacksEqual(\n  left: readonly Readonly<Rectangle>[] | undefined,\n  right: readonly Readonly<Rectangle>[] | undefined\n) {\n  if (left === right) return true\n  if (!left || !right || left.length !== right.length) return false\n\n  return left.every((range, index) => areGridRangesEqual(range, right[index]))\n}\n\nfunction areGridSelectionsEqual(left: GridSelection, right: GridSelection) {\n  const leftCurrent = left.current\n  const rightCurrent = right.current\n\n  return (\n    leftCurrent?.cell[0] === rightCurrent?.cell[0] &&\n    leftCurrent?.cell[1] === rightCurrent?.cell[1] &&\n    areGridRangesEqual(leftCurrent?.range, rightCurrent?.range) &&\n    areGridRangeStacksEqual(\n      leftCurrent?.rangeStack,\n      rightCurrent?.rangeStack\n    ) &&\n    left.columns.equals(right.columns) &&\n    left.rows.equals(right.rows)\n  )\n}\n\nfunction getGridSelectionRanges(selection: GridSelection | undefined) {\n  const current = selection?.current\n  if (!current) return []\n\n  return [...(current.rangeStack ?? []), current.range]\n}\n\nfunction areArrayNestedViewsEqual(\n  left: ArrayNestedView[],\n  right: ArrayNestedView[]\n) {\n  if (left === right) return true\n  if (left.length !== right.length) return false\n\n  return left.every((view, index) => {\n    const other = right[index]\n\n    return (\n      view.rowIndex === other?.rowIndex &&\n      view.columnId === other.columnId &&\n      view.title === other.title &&\n      view.schema === other.schema &&\n      Object.is(view.value, other.value)\n    )\n  })\n}\n\ntype HumanReviewOverlayCell = TextCell | NumberCell\n\ntype HumanReviewTextOverlayEditorProps = React.ComponentProps<\n  ProvideEditorComponent<HumanReviewOverlayCell>\n> & {\n  overlayOpenRef: React.RefObject<boolean>\n  readOnly?: boolean\n}\n\nfunction HumanReviewTextOverlayEditor({\n  isHighlighted,\n  onFinishedEditing,\n  overlayOpenRef,\n  readOnly = false,\n  validatedSelection,\n  value,\n}: HumanReviewTextOverlayEditorProps) {\n  const initialValue =\n    value.kind === GridCellKind.Number ? value.displayData : value.data\n  const [entryValue, setEntryValue] = React.useState(initialValue)\n  const latestValueRef = React.useRef(initialValue)\n  const finishedRef = React.useRef(false)\n\n  const finishEditing = React.useCallback(\n    (\n      shouldSave: boolean,\n      movement: readonly [-1 | 0 | 1, -1 | 0 | 1] = [0, 0]\n    ) => {\n      if (finishedRef.current) return\n\n      finishedRef.current = true\n      overlayOpenRef.current = false\n\n      if (!shouldSave || readOnly) {\n        onFinishedEditing(undefined, movement)\n        return\n      }\n\n      if (value.kind === GridCellKind.Number) {\n        const numericValue = Number(latestValueRef.current)\n\n        onFinishedEditing(\n          {\n            ...value,\n            data: Number.isFinite(numericValue) ? numericValue : value.data,\n            displayData: latestValueRef.current,\n          },\n          movement\n        )\n        return\n      }\n\n      onFinishedEditing(\n        {\n          ...value,\n          data: latestValueRef.current,\n          displayData: latestValueRef.current,\n        },\n        movement\n      )\n    },\n    [onFinishedEditing, overlayOpenRef, readOnly, value]\n  )\n\n  const handleEntryChange = React.useCallback(\n    (event: React.ChangeEvent<HTMLTextAreaElement>) => {\n      event.stopPropagation()\n      latestValueRef.current = event.target.value\n      setEntryValue(event.target.value)\n    },\n    []\n  )\n  const handleKeyDown = React.useCallback(\n    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {\n      event.stopPropagation()\n\n      if (event.key === "Escape") {\n        event.preventDefault()\n        finishEditing(false)\n        return\n      }\n\n      if (event.key === "Tab") {\n        event.preventDefault()\n        finishEditing(true, [event.shiftKey ? -1 : 1, 0])\n        return\n      }\n\n      if (event.key === "Enter" && !event.shiftKey) {\n        event.preventDefault()\n        finishEditing(true, [0, 1])\n      }\n    },\n    [finishEditing]\n  )\n\n  React.useEffect(() => {\n    overlayOpenRef.current = true\n\n    return () => {\n      overlayOpenRef.current = false\n    }\n  }, [overlayOpenRef])\n\n  React.useEffect(() => {\n    const handlePointerOutside = (event: PointerEvent | MouseEvent) => {\n      const input = document.querySelector<HTMLTextAreaElement>(".gdg-input")\n      const overlayRoot = input?.closest(".gdg-clip-region")\n\n      if (!overlayRoot || overlayRoot.contains(event.target as Node | null)) {\n        return\n      }\n\n      finishEditing(true)\n    }\n\n    document.addEventListener("pointerdown", handlePointerOutside, true)\n    document.addEventListener("contextmenu", handlePointerOutside, true)\n\n    return () => {\n      document.removeEventListener("pointerdown", handlePointerOutside, true)\n      document.removeEventListener("contextmenu", handlePointerOutside, true)\n    }\n  }, [finishEditing])\n\n  return (\n    <TextCellEntry\n      autoFocus={!readOnly}\n      disabled={readOnly}\n      highlight={isHighlighted}\n      value={entryValue}\n      validatedSelection={validatedSelection}\n      altNewline\n      onChange={handleEntryChange}\n      onKeyDown={handleKeyDown}\n    />\n  )\n}\n\nfunction getFieldIcon(type: SchemaPropertyType) {\n  if (type === "number" || type === "integer") return InputNumericIcon\n  if (type === "boolean") return TextCheckIcon\n  if (type === "array") return SecondBracketIcon\n  if (type === "object") return SourceCodeSquareIcon\n  return InputTextIcon\n}\n\nfunction HumanReviewValueInput({\n  readOnly = false,\n  schema,\n  value,\n  onChange,\n}: {\n  readOnly?: boolean\n  schema: ReviewFieldSchema\n  value: JsonPrimitive\n  onChange: (value: JsonPrimitive) => void\n}) {\n  if (schema.enum?.length) {\n    return (\n      <span className="relative inline-flex w-full rounded-lg border border-input bg-background text-sm text-foreground shadow-xs/5 dark:bg-input/32">\n        <select\n          disabled={readOnly}\n          value={value === null ? "" : String(value)}\n          onChange={(event) => onChange(event.target.value)}\n          className="h-8.5 w-full appearance-none rounded-[inherit] bg-transparent px-3 text-sm outline-none sm:h-7.5"\n        >\n          {schema.enum.map((option) => (\n            <option key={String(option)} value={String(option)}>\n              {String(option)}\n            </option>\n          ))}\n        </select>\n      </span>\n    )\n  }\n\n  if (schema.type === "number" || schema.type === "integer") {\n    return (\n      <Input\n        nativeInput\n        readOnly={readOnly}\n        type="number"\n        value={value === null ? "" : String(value)}\n        onChange={(event) => {\n          const nextValue = event.currentTarget.value\n          onChange(nextValue === "" ? null : Number(nextValue))\n        }}\n      />\n    )\n  }\n\n  if (schema.type === "boolean") {\n    return (\n      <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-0.5">\n        {[true, false].map((option) => (\n          <Button\n            key={String(option)}\n            type="button"\n            size="sm"\n            variant={value === option ? "outline" : "ghost"}\n            className={cn(\n              "h-7 shadow-none",\n              value === option && "bg-background dark:bg-input"\n            )}\n            disabled={readOnly}\n            onClick={() => onChange(option)}\n          >\n            {option ? "True" : "False"}\n          </Button>\n        ))}\n      </div>\n    )\n  }\n\n  return (\n    <Input\n      nativeInput\n      readOnly={readOnly}\n      value={value === null ? "" : String(value)}\n      onChange={(event) => onChange(event.currentTarget.value)}\n    />\n  )\n}\n\nfunction getArrayItemSchema(schema: ReviewFieldSchema): ReviewFieldSchema {\n  return schema.items ?? { type: "string" }\n}\n\nfunction isComplexSchema(schema: ReviewFieldSchema) {\n  return schema.type === "object" || schema.type === "array"\n}\n\nfunction summarizeComplexValue(value: JsonValue) {\n  if (isJsonArray(value)) return `${value.length} items`\n  if (isJsonObject(value)) return `${Object.keys(value).length} fields`\n  return formatValue(value)\n}\n\nfunction getCellValueForArrayColumn(\n  rowValue: JsonValue,\n  itemSchema: ReviewFieldSchema,\n  columnId: string\n) {\n  if (itemSchema.type === "object") {\n    return getObjectValue(rowValue, columnId)\n  }\n\n  return rowValue\n}\n\nfunction getCellSchemaForArrayColumn(\n  itemSchema: ReviewFieldSchema,\n  columnId: string\n) {\n  if (itemSchema.type === "object") {\n    return itemSchema.properties?.[columnId] ?? { type: "string" }\n  }\n\n  return itemSchema\n}\n\nfunction applyPrimitiveEdit(\n  schema: ReviewFieldSchema,\n  value: EditableGridCell\n): JsonValue | undefined {\n  if (schema.type === "boolean" && value.kind === GridCellKind.Boolean) {\n    return value.data\n  }\n\n  if (\n    (schema.type === "number" || schema.type === "integer") &&\n    value.kind === GridCellKind.Number\n  ) {\n    return value.data ?? null\n  }\n\n  if (value.kind === GridCellKind.Text) {\n    if (schema.type === "number" || schema.type === "integer") {\n      return value.data.trim() === "" ? null : Number(value.data)\n    }\n\n    return value.data\n  }\n\n  return undefined\n}\n\ntype ArrayNestedView = {\n  rowIndex: number\n  columnId: string\n  title: string\n  schema: ReviewFieldSchema\n  value: JsonValue\n}\n\ntype ArrayReviewSide = "actual" | "expected"\n\ntype SyncedArrayNestedView = {\n  activeSide: ArrayReviewSide | null\n  stack: ArrayNestedView[]\n}\n\ntype SyncedArraySelection = {\n  activeSide: ArrayReviewSide | null\n  depth: number\n  gridSelection: GridSelection\n}\n\nexport type HumanReviewTheme = "light" | "dark"\n\nconst EMPTY_SYNCED_ARRAY_NESTED_VIEW: SyncedArrayNestedView = {\n  activeSide: null,\n  stack: [],\n}\n\nconst EMPTY_SYNCED_ARRAY_SELECTION: SyncedArraySelection = {\n  activeSide: null,\n  depth: 0,\n  gridSelection: emptyGridSelection,\n}\n\nfunction setNestedArrayValue({\n  value,\n  schema,\n  nestedStack,\n  nextNestedValue,\n}: {\n  value: JsonValue\n  schema: ReviewFieldSchema\n  nestedStack: ArrayNestedView[]\n  nextNestedValue: JsonValue\n}): JsonValue {\n  const [currentView, ...remainingViews] = nestedStack\n\n  if (!currentView) return nextNestedValue\n\n  const itemSchema = getArrayItemSchema(schema)\n  const rowValue = getArrayValue(value)[currentView.rowIndex] ?? null\n  const cellSchema = getCellSchemaForArrayColumn(\n    itemSchema,\n    currentView.columnId\n  )\n  const currentCellValue = getCellValueForArrayColumn(\n    rowValue,\n    itemSchema,\n    currentView.columnId\n  )\n  const nextCellValue: JsonValue = remainingViews.length\n    ? setNestedArrayValue({\n        value: currentCellValue,\n        schema: cellSchema,\n        nestedStack: remainingViews,\n        nextNestedValue,\n      })\n    : nextNestedValue\n  const nextRowValue: JsonValue =\n    itemSchema.type === "object"\n      ? setObjectValue(rowValue, currentView.columnId, nextCellValue)\n      : nextCellValue\n\n  return setArrayItemValue(value, currentView.rowIndex, nextRowValue)\n}\n\nfunction getNestedArrayValue({\n  value,\n  schema,\n  nestedStack,\n}: {\n  value: JsonValue\n  schema: ReviewFieldSchema\n  nestedStack: ArrayNestedView[]\n}): JsonValue {\n  const [currentView, ...remainingViews] = nestedStack\n\n  if (!currentView) return value\n\n  const itemSchema = getArrayItemSchema(schema)\n  const rowValue = getArrayValue(value)[currentView.rowIndex] ?? null\n  const cellSchema = getCellSchemaForArrayColumn(\n    itemSchema,\n    currentView.columnId\n  )\n  const cellValue = getCellValueForArrayColumn(\n    rowValue,\n    itemSchema,\n    currentView.columnId\n  )\n\n  if (!remainingViews.length) return cellValue\n\n  return getNestedArrayValue({\n    value: cellValue,\n    schema: cellSchema,\n    nestedStack: remainingViews,\n  })\n}\n\nfunction HumanReviewArrayValueGrid({\n  activeNestedSide = null,\n  activeSelectionSide = null,\n  label,\n  nestedStackBaseDepth = 0,\n  readOnly = false,\n  schema,\n  selectionDepth = 0,\n  sharedGridSelection,\n  sharedNestedStack,\n  value,\n  viewSide = "expected",\n  metadataPath,\n  onChange,\n  onGridSelectionChange,\n  onLocationHover,\n  onNestedStackChange,\n  resolveArrayItemMetadataPath,\n  resolveLocation,\n}: {\n  activeNestedSide?: ArrayReviewSide | null\n  activeSelectionSide?: ArrayReviewSide | null\n  label: string\n  nestedStackBaseDepth?: number\n  readOnly?: boolean\n  schema: ReviewFieldSchema\n  selectionDepth?: number\n  sharedGridSelection?: GridSelection\n  sharedNestedStack?: ArrayNestedView[]\n  value: JsonValue\n  viewSide?: ArrayReviewSide\n  metadataPath?: string\n  onChange?: (value: JsonValue) => void\n  onGridSelectionChange?: (\n    selection: GridSelection,\n    side: ArrayReviewSide,\n    depth: number\n  ) => void\n  onNestedStackChange?: (\n    stack: ArrayNestedView[],\n    side: ArrayReviewSide\n  ) => void\n  onLocationHover?: (location?: ReviewLocation) => void\n  resolveArrayItemMetadataPath?: (\n    metadataPath: string,\n    rowIndex: number,\n    rowValue: JsonValue\n  ) => string | undefined\n  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined\n}) {\n  const rows = getArrayValue(value)\n  const itemSchema = getArrayItemSchema(schema)\n  const gridTheme = useHumanReviewGridTheme()\n  const isDark = useIsDarkTheme()\n  const [localNestedStack, setLocalNestedStack] = React.useState<\n    ArrayNestedView[]\n  >([])\n  const [localGridSelection, setLocalGridSelection] =\n    React.useState<GridSelection>(emptyGridSelection)\n  const fastTextOverlayOpenRef = React.useRef(false)\n  const nestedStack = sharedNestedStack ?? localNestedStack\n  const visibleNestedStack = nestedStack.slice(nestedStackBaseDepth)\n  const activeNestedView = visibleNestedStack[0] ?? null\n  const activeNestedValue = activeNestedView\n    ? getNestedArrayValue({\n        value,\n        schema,\n        nestedStack: [activeNestedView],\n      })\n    : null\n  const isActiveNestedSource =\n    Boolean(activeNestedView) && activeNestedSide === viewSide\n  const isMirroredNestedTarget =\n    Boolean(activeNestedView) &&\n    activeNestedSide !== null &&\n    activeNestedSide !== viewSide\n  const blueCellText = isDark ? "rgb(147, 197, 253)" : "rgb(37, 99, 235)"\n  const selectedCellBackground = isDark\n    ? "rgba(37, 99, 235, 0.2)"\n    : "rgba(219, 234, 254, 0.85)"\n  const mirroredCellBackground = isDark\n    ? "rgba(167, 139, 250, 0.18)"\n    : "rgba(237, 233, 254, 0.9)"\n  const mirroredHighlightRegions = React.useMemo<\n    React.ComponentProps<typeof DataEditor>["highlightRegions"]\n  >(() => {\n    if (\n      !activeSelectionSide ||\n      activeSelectionSide === viewSide ||\n      selectionDepth !== nestedStackBaseDepth\n    ) {\n      return undefined\n    }\n\n    const ranges = getGridSelectionRanges(sharedGridSelection)\n    if (!ranges.length) return undefined\n\n    return ranges.map((range) => ({\n      color: mirroredCellBackground,\n      range,\n      style: "dashed" as const,\n    }))\n  }, [\n    activeSelectionSide,\n    mirroredCellBackground,\n    nestedStackBaseDepth,\n    selectionDepth,\n    sharedGridSelection,\n    viewSide,\n  ])\n\n  const setNestedStack = React.useCallback(\n    (\n      updater:\n        | ArrayNestedView[]\n        | ((current: ArrayNestedView[]) => ArrayNestedView[])\n    ) => {\n      if (onNestedStackChange) {\n        const nextStack =\n          typeof updater === "function" ? updater(nestedStack) : updater\n\n        onNestedStackChange(nextStack, viewSide)\n        return\n      }\n\n      setLocalNestedStack(updater)\n    },\n    [nestedStack, onNestedStackChange, viewSide]\n  )\n\n  const handleGridSelectionChange = React.useCallback(\n    (selection: GridSelection) => {\n      flushSync(() => {\n        setLocalGridSelection((current) =>\n          areGridSelectionsEqual(current, selection) ? current : selection\n        )\n      })\n\n      if (onGridSelectionChange) {\n        if (\n          activeSelectionSide === viewSide &&\n          sharedGridSelection &&\n          areGridSelectionsEqual(sharedGridSelection, selection)\n        ) {\n          return\n        }\n\n        React.startTransition(() => {\n          onGridSelectionChange(selection, viewSide, nestedStackBaseDepth)\n        })\n        return\n      }\n    },\n    [\n      activeSelectionSide,\n      nestedStackBaseDepth,\n      onGridSelectionChange,\n      sharedGridSelection,\n      viewSide,\n    ]\n  )\n\n  const columns = React.useMemo<GridColumn[]>(() => {\n    if (itemSchema.type === "object") {\n      const propertyEntries = Object.entries(itemSchema.properties ?? {})\n\n      if (propertyEntries.length) {\n        return propertyEntries.map(([key, propertySchema]) => ({\n          id: key,\n          title: propertySchema.title ?? key,\n          width: isComplexSchema(propertySchema) ? 148 : 132,\n        }))\n      }\n    }\n\n    return [\n      {\n        id: "value",\n        title: itemSchema.title ?? "Value",\n        width: isComplexSchema(itemSchema) ? 148 : 180,\n      },\n    ]\n  }, [itemSchema])\n\n  const getCellContent = React.useCallback(\n    ([col, row]: Item): GridCell => {\n      const column = columns[col]\n      const columnId = String(column?.id ?? "value")\n      const rowValue = rows[row] ?? null\n      const cellSchema = getCellSchemaForArrayColumn(itemSchema, columnId)\n      const cellValue = getCellValueForArrayColumn(\n        rowValue,\n        itemSchema,\n        columnId\n      )\n      const matchedNestedCell =\n        activeNestedView?.rowIndex === row &&\n        activeNestedView.columnId === columnId\n      const nestedCellTheme: Partial<Theme> | undefined = matchedNestedCell\n        ? {\n            bgCell: isMirroredNestedTarget\n              ? mirroredCellBackground\n              : selectedCellBackground,\n            textDark: blueCellText,\n          }\n        : undefined\n\n      if (isComplexSchema(cellSchema)) {\n        return {\n          kind: GridCellKind.Text,\n          data: summarizeComplexValue(cellValue),\n          displayData: summarizeComplexValue(cellValue),\n          allowOverlay: false,\n          readonly: true,\n          cursor: "pointer",\n          activationBehaviorOverride: "double-click",\n          themeOverride: {\n            textDark: blueCellText,\n            ...(nestedCellTheme ?? {}),\n          },\n        }\n      }\n\n      if (cellSchema.type === "boolean") {\n        return {\n          kind: GridCellKind.Boolean,\n          data: typeof cellValue === "boolean" ? cellValue : false,\n          allowOverlay: false,\n          readonly: readOnly,\n        }\n      }\n\n      if (cellSchema.type === "number" || cellSchema.type === "integer") {\n        return {\n          kind: GridCellKind.Number,\n          data: typeof cellValue === "number" ? cellValue : undefined,\n          displayData: typeof cellValue === "number" ? String(cellValue) : "",\n          allowOverlay: true,\n          readonly: false,\n        }\n      }\n\n      return {\n        kind: GridCellKind.Text,\n        data:\n          cellValue === null ||\n          isJsonObject(cellValue) ||\n          isJsonArray(cellValue)\n            ? ""\n            : String(cellValue),\n        displayData:\n          cellValue === null ||\n          isJsonObject(cellValue) ||\n          isJsonArray(cellValue)\n            ? ""\n            : String(cellValue),\n        allowOverlay: true,\n        readonly: false,\n      }\n    },\n    [\n      activeNestedView,\n      blueCellText,\n      columns,\n      isMirroredNestedTarget,\n      itemSchema,\n      mirroredCellBackground,\n      readOnly,\n      rows,\n      selectedCellBackground,\n    ]\n  )\n\n  const updateCellValue = React.useCallback(\n    ([col, row]: Item, nextCell: EditableGridCell) => {\n      if (readOnly || !onChange) return\n\n      const column = columns[col]\n      const columnId = String(column?.id ?? "value")\n      const rowValue = rows[row] ?? null\n      const cellSchema = getCellSchemaForArrayColumn(itemSchema, columnId)\n      const nextValue = applyPrimitiveEdit(cellSchema, nextCell)\n\n      if (nextValue === undefined) return\n\n      const nextRowValue =\n        itemSchema.type === "object"\n          ? setObjectValue(rowValue, columnId, nextValue)\n          : nextValue\n\n      onChange(setArrayItemValue(value, row, nextRowValue))\n    },\n    [columns, itemSchema, onChange, readOnly, rows, value]\n  )\n  const provideEditor = React.useCallback<\n    NonNullable<React.ComponentProps<typeof DataEditor>["provideEditor"]>\n  >(\n    (cell) => {\n      if (\n        cell.kind !== GridCellKind.Text &&\n        cell.kind !== GridCellKind.Number\n      ) {\n        return undefined\n      }\n\n      return {\n        editor: (props) => {\n          if (\n            props.value.kind !== GridCellKind.Text &&\n            props.value.kind !== GridCellKind.Number\n          ) {\n            return null\n          }\n\n          return (\n            <HumanReviewTextOverlayEditor\n              {...(props as React.ComponentProps<\n                ProvideEditorComponent<HumanReviewOverlayCell>\n              >)}\n              overlayOpenRef={fastTextOverlayOpenRef}\n              readOnly={readOnly}\n            />\n          )\n        },\n      }\n    },\n    [readOnly]\n  )\n  const handleOutsideClick = React.useCallback(\n    () => !fastTextOverlayOpenRef.current,\n    []\n  )\n  const handleItemHovered = React.useCallback(\n    (args: GridMouseEventArgs) => {\n      if (!onLocationHover || !resolveLocation || !metadataPath) return\n\n      if (args.kind !== "cell") {\n        onLocationHover(undefined)\n        return\n      }\n\n      const [col, row] = args.location\n      const column = columns[col]\n      const rowValue = rows[row]\n      if (!column || rowValue === undefined) {\n        onLocationHover(undefined)\n        return\n      }\n\n      const columnId = String(column.id ?? "value")\n      const rowMetadataPath = resolveArrayItemMetadataPath\n        ? resolveArrayItemMetadataPath(metadataPath, row, rowValue)\n        : `${metadataPath}[${row}]`\n      if (!rowMetadataPath) {\n        onLocationHover(undefined)\n        return\n      }\n\n      const propertyMetadataPath =\n        itemSchema.type === "object"\n          ? `${rowMetadataPath}.${columnId}`\n          : rowMetadataPath\n\n      onLocationHover(\n        resolveLocation(propertyMetadataPath) ??\n          resolveLocation(rowMetadataPath)\n      )\n    },\n    [\n      columns,\n      itemSchema.type,\n      metadataPath,\n      onLocationHover,\n      resolveArrayItemMetadataPath,\n      resolveLocation,\n      rows,\n    ]\n  )\n\n  const openNestedCell = React.useCallback(\n    ([col, row]: Item) => {\n      const column = columns[col]\n      const columnId = String(column?.id ?? "value")\n      const rowValue = rows[row] ?? null\n      const cellSchema = getCellSchemaForArrayColumn(itemSchema, columnId)\n\n      if (!isComplexSchema(cellSchema)) return\n\n      setNestedStack((current) => {\n        const nextView = {\n          rowIndex: row,\n          columnId,\n          title: `${column?.title ?? columnId} / row ${row + 1}`,\n          schema: cellSchema,\n          value: getCellValueForArrayColumn(rowValue, itemSchema, columnId),\n        }\n        const currentView = current[nestedStackBaseDepth]\n\n        if (\n          currentView?.rowIndex === nextView.rowIndex &&\n          currentView.columnId === nextView.columnId\n        ) {\n          return current\n        }\n\n        return [...current.slice(0, nestedStackBaseDepth), nextView]\n      })\n    },\n    [columns, itemSchema, nestedStackBaseDepth, rows, setNestedStack]\n  )\n\n  const updateNestedValue = React.useCallback(\n    (nextNestedValue: JsonValue) => {\n      if (!activeNestedView || readOnly || !onChange) return\n\n      onChange(\n        setNestedArrayValue({\n          value,\n          schema,\n          nestedStack: visibleNestedStack.slice(0, 1),\n          nextNestedValue,\n        })\n      )\n      setNestedStack((current) =>\n        current.map((view, index) =>\n          index === nestedStackBaseDepth\n            ? { ...view, value: nextNestedValue }\n            : view\n        )\n      )\n    },\n    [\n      activeNestedView,\n      nestedStackBaseDepth,\n      onChange,\n      readOnly,\n      schema,\n      setNestedStack,\n      value,\n      visibleNestedStack,\n    ]\n  )\n\n  return (\n    <div\n      onMouseLeave={() => onLocationHover?.(undefined)}\n      className={cn(\n        "relative overflow-hidden rounded-md border bg-background transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:shadow-[0_0_0_1px_rgb(59_130_246_/_8%)] hover:border-blue-500/50",\n        isActiveNestedSource &&\n          "border-blue-500/60 bg-blue-500/5 shadow-[0_0_0_1px_rgb(59_130_246_/_10%)]"\n      )}\n    >\n      <div>\n        <div className="flex h-8 items-center justify-between gap-2 border-b px-2 text-[11px] font-medium text-muted-foreground">\n          <span>{label}</span>\n          <span>{rows.length} rows</span>\n        </div>\n        <div className="h-[220px]">\n          <DataEditor\n            columns={columns}\n            rows={rows.length}\n            getCellContent={getCellContent}\n            cellActivationBehavior="double-click"\n            gridSelection={localGridSelection}\n            highlightRegions={mirroredHighlightRegions}\n            onCellEdited={updateCellValue}\n            onCellActivated={openNestedCell}\n            onGridSelectionChange={handleGridSelectionChange}\n            onItemHovered={handleItemHovered}\n            provideEditor={provideEditor}\n            isOutsideClick={handleOutsideClick}\n            rowMarkers="number"\n            smoothScrollX\n            smoothScrollY\n            theme={gridTheme}\n            width="100%"\n            height="100%"\n            rowHeight={32}\n            headerHeight={34}\n          />\n        </div>\n      </div>\n      {activeNestedView ? (\n        <div className="absolute inset-0 z-10 flex flex-col bg-background">\n          <div className="flex h-8 items-center gap-2 border-b px-2">\n            <Button\n              type="button"\n              variant="ghost"\n              size="icon-sm"\n              className="size-6 text-muted-foreground"\n              onClick={() =>\n                setNestedStack((current) =>\n                  current.slice(\n                    0,\n                    Math.max(nestedStackBaseDepth, current.length - 1)\n                  )\n                )\n              }\n              aria-label="Back to parent array"\n            >\n              <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />\n            </Button>\n            <div className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">\n              {activeNestedView.title}\n            </div>\n          </div>\n          <div className="min-h-0 flex-1 overflow-auto p-2">\n            {activeNestedView.schema.type === "array" ? (\n              <HumanReviewArrayValueGrid\n                label={\n                  activeNestedView.schema.title ?? activeNestedView.columnId\n                }\n                nestedStackBaseDepth={nestedStackBaseDepth + 1}\n                readOnly={readOnly}\n                schema={activeNestedView.schema}\n                sharedGridSelection={sharedGridSelection}\n                sharedNestedStack={sharedNestedStack}\n                value={activeNestedValue}\n                viewSide={viewSide}\n                activeNestedSide={activeNestedSide}\n                activeSelectionSide={activeSelectionSide}\n                selectionDepth={selectionDepth}\n                onChange={updateNestedValue}\n                onGridSelectionChange={onGridSelectionChange}\n                onNestedStackChange={onNestedStackChange}\n                resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}\n                resolveLocation={resolveLocation}\n              />\n            ) : (\n              <HumanReviewObjectValueEditor\n                schema={activeNestedView.schema}\n                value={activeNestedValue}\n                originalValue={activeNestedValue}\n                readOnly={readOnly}\n                onChange={updateNestedValue}\n              />\n            )}\n          </div>\n        </div>\n      ) : null}\n    </div>\n  )\n}\n\nfunction HumanReviewObjectValueEditor({\n  schema,\n  value,\n  originalValue,\n  readOnly = false,\n  onChange,\n}: {\n  schema: ReviewFieldSchema\n  value: JsonValue\n  originalValue: JsonValue\n  readOnly?: boolean\n  onChange: (value: JsonValue) => void\n}) {\n  const propertyEntries = Object.entries(schema.properties ?? {})\n\n  if (!propertyEntries.length) {\n    return (\n      <div className="rounded-md bg-background px-2 py-1.5 text-sm text-muted-foreground">\n        No properties\n      </div>\n    )\n  }\n\n  return (\n    <div className="space-y-2">\n      {propertyEntries.map(([propertyKey, propertySchema]) => (\n        <HumanReviewFieldCard\n          key={propertyKey}\n          field={{\n            key: propertyKey,\n            schema: propertySchema,\n            actual: getObjectValue(originalValue, propertyKey),\n            expected: getObjectValue(originalValue, propertyKey),\n          }}\n          value={getObjectValue(value, propertyKey)}\n          originalValue={getObjectValue(originalValue, propertyKey)}\n          readOnly={readOnly}\n          onChange={(childValue) =>\n            !readOnly &&\n            onChange(setObjectValue(value, propertyKey, childValue))\n          }\n          onUndo={() =>\n            !readOnly &&\n            onChange(\n              setObjectValue(\n                value,\n                propertyKey,\n                getObjectValue(originalValue, propertyKey)\n              )\n            )\n          }\n          onSetNull={() =>\n            !readOnly && onChange(setObjectValue(value, propertyKey, null))\n          }\n        />\n      ))}\n    </div>\n  )\n}\n\ntype HumanReviewFieldCardProps = {\n  field: ReviewField\n  value: JsonValue\n  originalValue: JsonValue\n  active?: boolean\n  activeFieldKey?: string\n  readOnly?: boolean\n  onChange: (value: JsonValue) => void\n  onFieldFocus?: (field: ReviewField) => void\n  onLocationHover?: (location?: ReviewLocation) => void\n  onUndo: () => void\n  onSetNull: () => void\n  resolveArrayItemMetadataPath?: (\n    metadataPath: string,\n    rowIndex: number,\n    rowValue: JsonValue\n  ) => string | undefined\n  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined\n}\n\nfunction areHumanReviewFieldCardPropsEqual(\n  previous: HumanReviewFieldCardProps,\n  next: HumanReviewFieldCardProps\n) {\n  return (\n    previous.field === next.field &&\n    Object.is(previous.value, next.value) &&\n    Object.is(previous.originalValue, next.originalValue) &&\n    previous.active === next.active &&\n    previous.activeFieldKey === next.activeFieldKey &&\n    previous.readOnly === next.readOnly &&\n    previous.onFieldFocus === next.onFieldFocus &&\n    previous.onLocationHover === next.onLocationHover &&\n    previous.resolveArrayItemMetadataPath ===\n      next.resolveArrayItemMetadataPath &&\n    previous.resolveLocation === next.resolveLocation\n  )\n}\n\nconst HumanReviewFieldCard = React.memo(\n  HumanReviewFieldCardBase,\n  areHumanReviewFieldCardPropsEqual\n)\n\nfunction HumanReviewFieldCardBase({\n  field,\n  value,\n  originalValue,\n  active,\n  activeFieldKey,\n  readOnly = false,\n  onChange,\n  onFieldFocus,\n  onLocationHover,\n  onUndo,\n  onSetNull,\n  resolveArrayItemMetadataPath,\n  resolveLocation,\n}: HumanReviewFieldCardProps) {\n  const modified = !jsonValuesEqual(value, originalValue)\n  const Icon = getFieldIcon(field.schema.type)\n  const propertyEntries = Object.entries(field.schema.properties ?? {})\n  const [syncedArrayNestedView, setSyncedArrayNestedView] =\n    React.useState<SyncedArrayNestedView>(EMPTY_SYNCED_ARRAY_NESTED_VIEW)\n  const [syncedArraySelection, setSyncedArraySelection] =\n    React.useState<SyncedArraySelection>(EMPTY_SYNCED_ARRAY_SELECTION)\n  const updateSyncedArrayNestedView = React.useCallback(\n    (stack: ArrayNestedView[], side: ArrayReviewSide) => {\n      const activeSide = stack.length ? side : null\n\n      setSyncedArrayNestedView((current) =>\n        current.activeSide === activeSide &&\n        areArrayNestedViewsEqual(current.stack, stack)\n          ? current\n          : {\n              activeSide,\n              stack,\n            }\n      )\n    },\n    []\n  )\n  const updateSyncedArraySelection = React.useCallback(\n    (gridSelection: GridSelection, side: ArrayReviewSide, depth: number) => {\n      const activeSide = gridSelection.current ? side : null\n\n      setSyncedArraySelection((current) =>\n        current.activeSide === activeSide &&\n        current.depth === depth &&\n        areGridSelectionsEqual(current.gridSelection, gridSelection)\n          ? current\n          : {\n              activeSide,\n              depth,\n              gridSelection,\n            }\n      )\n    },\n    []\n  )\n  const focusAndHoverField = React.useCallback(() => {\n    onFieldFocus?.(field)\n    onLocationHover?.(getReviewFieldLocation(field, resolveLocation))\n  }, [field, onFieldFocus, onLocationHover, resolveLocation])\n\n  return (\n    <div\n      tabIndex={0}\n      onFocusCapture={focusAndHoverField}\n      onMouseEnter={focusAndHoverField}\n      onMouseLeave={() => onLocationHover?.(undefined)}\n      className={cn(\n        "rounded-lg border bg-background p-3 transition-[border-color,background-color,box-shadow] focus-within:border-blue-500/50 focus-within:bg-blue-500/5 hover:border-blue-500/50 hover:bg-blue-500/5 focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:outline-none",\n        active &&\n          "border-blue-500/60 bg-blue-500/5 shadow-[0_0_0_1px_rgb(59_130_246_/_8%)]"\n      )}\n    >\n      <div className="mb-3 flex min-h-8 items-start justify-between gap-3">\n        <div className="min-w-0">\n          <div className="flex min-w-0 items-center gap-2">\n            <div className="min-w-0">\n              <div className="truncate text-sm font-medium">\n                {field.schema.title ?? field.key}\n              </div>\n            </div>\n            <span\n              className={cn(\n                "size-2 shrink-0 rounded-full bg-amber-400 transition-opacity",\n                !modified && "opacity-0"\n              )}\n            />\n          </div>\n          <div className="truncate text-xs text-muted-foreground">\n            {field.key}\n          </div>\n        </div>\n        <div className="flex shrink-0 items-center gap-1">\n          {!readOnly && modified ? (\n            <Tooltip>\n              <TooltipTrigger asChild>\n                <Button\n                  type="button"\n                  variant="ghost"\n                  size="icon-sm"\n                  className="text-muted-foreground"\n                  onClick={onUndo}\n                  aria-label={`Undo ${field.key}`}\n                >\n                  <HugeiconsIcon icon={Undo02Icon} className="size-4" />\n                </Button>\n              </TooltipTrigger>\n              <TooltipContent>Revert changes</TooltipContent>\n            </Tooltip>\n          ) : null}\n          {!readOnly ? (\n            <Tooltip>\n              <TooltipTrigger asChild>\n                <Button\n                  type="button"\n                  variant="ghost"\n                  size="icon-sm"\n                  className="text-muted-foreground"\n                  onClick={onSetNull}\n                  aria-label={`Set ${field.key} to null`}\n                >\n                  <HugeiconsIcon icon={CancelCircleIcon} className="size-4" />\n                </Button>\n              </TooltipTrigger>\n              <TooltipContent>Set to NULL</TooltipContent>\n            </Tooltip>\n          ) : null}\n          <div className="flex h-6 items-center gap-1 rounded-md border bg-muted/50 px-1.5 text-xs text-muted-foreground">\n            <HugeiconsIcon icon={Icon} className="size-3.5" />\n            {field.schema.type}\n          </div>\n        </div>\n      </div>\n      {field.schema.type === "object" ? (\n        <div className="rounded-md border bg-muted/25 p-2">\n          <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-medium text-muted-foreground">\n            <span>Properties</span>\n            <span>{propertyEntries.length} fields</span>\n          </div>\n          <div className="space-y-2">\n            {propertyEntries.length ? (\n              propertyEntries.map(([propertyKey, schema]) => {\n                const childField: ReviewField = {\n                  key: `${field.key}.${propertyKey}`,\n                  schema,\n                  actual: getObjectValue(field.actual, propertyKey),\n                  expected: getObjectValue(originalValue, propertyKey),\n                  metadataPath: `${field.metadataPath ?? field.key}.${propertyKey}`,\n                }\n\n                return (\n                  <HumanReviewFieldCard\n                    key={childField.key}\n                    field={childField}\n                    value={getObjectValue(value, propertyKey)}\n                    originalValue={childField.expected}\n                    active={childField.key === activeFieldKey}\n                    activeFieldKey={activeFieldKey}\n                    readOnly={readOnly}\n                    onChange={(childValue) =>\n                      onChange(setObjectValue(value, propertyKey, childValue))\n                    }\n                    onFieldFocus={onFieldFocus}\n                    onLocationHover={onLocationHover}\n                    onUndo={() =>\n                      onChange(\n                        setObjectValue(value, propertyKey, childField.expected)\n                      )\n                    }\n                    onSetNull={() =>\n                      onChange(setObjectValue(value, propertyKey, null))\n                    }\n                    resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}\n                    resolveLocation={resolveLocation}\n                  />\n                )\n              })\n            ) : (\n              <div className="rounded-md bg-background px-2 py-1.5 text-sm text-muted-foreground">\n                No properties\n              </div>\n            )}\n          </div>\n        </div>\n      ) : field.schema.type === "array" ? (\n        <div className="grid gap-2">\n          <HumanReviewArrayValueGrid\n            activeNestedSide={syncedArrayNestedView.activeSide}\n            activeSelectionSide={syncedArraySelection.activeSide}\n            label="Actual"\n            metadataPath={field.metadataPath ?? field.key}\n            readOnly\n            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}\n            resolveLocation={resolveLocation}\n            schema={field.schema}\n            selectionDepth={syncedArraySelection.depth}\n            sharedGridSelection={syncedArraySelection.gridSelection}\n            sharedNestedStack={syncedArrayNestedView.stack}\n            value={field.actual}\n            viewSide="actual"\n            onGridSelectionChange={updateSyncedArraySelection}\n            onLocationHover={onLocationHover}\n            onNestedStackChange={updateSyncedArrayNestedView}\n          />\n          <HumanReviewArrayValueGrid\n            activeNestedSide={syncedArrayNestedView.activeSide}\n            activeSelectionSide={syncedArraySelection.activeSide}\n            label="Expected"\n            metadataPath={field.metadataPath ?? field.key}\n            readOnly={readOnly}\n            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}\n            resolveLocation={resolveLocation}\n            schema={field.schema}\n            selectionDepth={syncedArraySelection.depth}\n            sharedGridSelection={syncedArraySelection.gridSelection}\n            sharedNestedStack={syncedArrayNestedView.stack}\n            value={value}\n            viewSide="expected"\n            onChange={onChange}\n            onGridSelectionChange={updateSyncedArraySelection}\n            onLocationHover={onLocationHover}\n            onNestedStackChange={updateSyncedArrayNestedView}\n          />\n        </div>\n      ) : (\n        <div className="grid gap-2 sm:grid-cols-2">\n          <div className="rounded-md border bg-muted/30 p-2">\n            {field.schema.description ? (\n              <p className="mb-2 text-xs text-muted-foreground">\n                {field.schema.description}\n              </p>\n            ) : null}\n            <div className="mb-1 text-[11px] font-medium text-muted-foreground">\n              Actual\n            </div>\n            <div className="min-h-7 rounded-md bg-background px-2 py-1.5 text-sm">\n              {formatValue(field.actual)}\n            </div>\n          </div>\n          <div className="rounded-md border bg-muted/30 p-2">\n            <div className="mb-1 text-[11px] font-medium text-muted-foreground">\n              Expected\n            </div>\n            <HumanReviewValueInput\n              readOnly={readOnly}\n              schema={field.schema}\n              value={getPrimitiveValue(value)}\n              onChange={onChange}\n            />\n          </div>\n        </div>\n      )}\n    </div>\n  )\n}\n\nfunction HumanReviewHighlight({ location }: { location: ReviewLocation }) {\n  const area = location.area\n\n  return (\n    <div\n      className={cn(\n        "pointer-events-none absolute z-10 border",\n        REVIEW_HIGHLIGHT_STYLE\n      )}\n      style={{\n        left: `${area.left}%`,\n        top: `${area.top}%`,\n        width: `${area.width}%`,\n        height: `${area.height}%`,\n      }}\n    />\n  )\n}\n\nexport function JsonDiffView({\n  actual,\n  expected,\n  theme = "light",\n}: {\n  actual: JsonObject\n  expected: JsonObject\n  theme?: HumanReviewTheme\n}) {\n  const oldFile = React.useMemo(\n    () => ({\n      name: "actual.json",\n      contents: formatJson(actual),\n      lang: "json",\n    }),\n    [actual]\n  )\n  const newFile = React.useMemo(\n    () => ({\n      name: "expected.json",\n      contents: formatJson(expected),\n      lang: "json",\n    }),\n    [expected]\n  )\n\n  return (\n    <Virtualizer\n      className="h-full overflow-auto rounded-b-xl bg-surface/60"\n      contentClassName="min-w-full"\n    >\n      <div className="human-review-diff h-full text-xs">\n        <MultiFileDiff\n          className="block min-w-full"\n          style={DIFF_VIEWER_THEME}\n          oldFile={oldFile}\n          newFile={newFile}\n          options={{\n            diffStyle: "split",\n            diffIndicators: "bars",\n            hunkSeparators: "line-info-basic",\n            overflow: "wrap",\n            themeType: theme,\n            theme: {\n              light: "pierre-light",\n              dark: "pierre-dark",\n            },\n          }}\n        />\n      </div>\n    </Virtualizer>\n  )\n}\n\nexport function HumanReviewPanel({\n  fields = REVIEW_FIELDS,\n  activeFieldKey,\n  className,\n  onFieldFocus,\n  onLocationHover,\n  resolveArrayItemMetadataPath,\n  resolveLocation,\n  theme = "light",\n}: {\n  fields?: ReviewField[]\n  activeFieldKey?: string\n  className?: string\n  onFieldFocus?: (field: ReviewField) => void\n  onLocationHover?: (location?: ReviewLocation) => void\n  resolveArrayItemMetadataPath?: (\n    metadataPath: string,\n    rowIndex: number,\n    rowValue: JsonValue\n  ) => string | undefined\n  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined\n  theme?: HumanReviewTheme\n} = {}) {\n  const [activeTab, setActiveTab] = React.useState("form")\n  const actualValues = React.useMemo(\n    () => valuesFromFields(fields, "actual"),\n    [fields]\n  )\n  const initialExpectedValues = React.useMemo(\n    () => valuesFromFields(fields, "expected"),\n    [fields]\n  )\n  const [expected, setExpected] = React.useState<JsonObject>(\n    initialExpectedValues\n  )\n\n  React.useEffect(() => {\n    setExpected(initialExpectedValues)\n  }, [initialExpectedValues])\n\n  const updateValue = React.useCallback((key: string, value: JsonValue) => {\n    setExpected((current) =>\n      Object.is(current[key], value) ? current : { ...current, [key]: value }\n    )\n  }, [])\n  const fieldCount = React.useMemo(() => countReviewFields(fields), [fields])\n\n  return (\n    <TooltipProvider delay={200}>\n      <Tabs\n        value={activeTab}\n        onValueChange={setActiveTab}\n        className={cn("flex h-[560px] flex-col gap-0 bg-background", className)}\n      >\n        <div className="flex min-h-12 items-center justify-between gap-3 border-b px-3">\n          <TabsList className="h-8 sm:h-7">\n            <TabsTrigger value="form" className="h-7 sm:h-6">\n              <HugeiconsIcon icon={TextCheckIcon} className="size-4" />\n              Form\n            </TabsTrigger>\n            <TabsTrigger value="json" className="h-7 sm:h-6">\n              <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />\n              JSON\n            </TabsTrigger>\n          </TabsList>\n          <div className="flex h-8 items-center gap-1 rounded-md border bg-muted/40 px-2 text-xs text-muted-foreground sm:h-7">\n            <HugeiconsIcon icon={FileDiffIcon} className="size-3.5" />\n            {fieldCount} fields\n          </div>\n        </div>\n        <TabsContent value="form" keepMounted className="min-h-0 flex-1">\n          <ScrollArea className="h-full" scrollFade>\n            <div className="space-y-3 p-3">\n              {fields.map((field) => (\n                <HumanReviewFieldCard\n                  key={field.key}\n                  field={field}\n                  value={expected[field.key] ?? null}\n                  originalValue={field.expected}\n                  active={\n                    field.key === activeFieldKey ||\n                    activeFieldKey?.startsWith(`${field.key}.`)\n                  }\n                  activeFieldKey={activeFieldKey}\n                  onChange={(value) => updateValue(field.key, value)}\n                  onFieldFocus={onFieldFocus}\n                  onLocationHover={onLocationHover}\n                  onUndo={() => updateValue(field.key, field.expected)}\n                  onSetNull={() => updateValue(field.key, null)}\n                  resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}\n                  resolveLocation={resolveLocation}\n                />\n              ))}\n            </div>\n          </ScrollArea>\n        </TabsContent>\n        <TabsContent value="json" keepMounted className="min-h-0 flex-1">\n          <JsonDiffView\n            actual={actualValues}\n            expected={expected}\n            theme={theme}\n          />\n        </TabsContent>\n      </Tabs>\n    </TooltipProvider>\n  )\n}\n\nexport function HumanReviewBlock({\n  file,\n  fields = REVIEW_FIELDS,\n  className,\n  metadata,\n  resolveArrayItemMetadataPath,\n  resolveLocation,\n  theme,\n}: {\n  file?: string\n  fields?: ReviewField[]\n  className?: string\n  metadata?: Record<string, ReviewMetadataEntry>\n  resolveArrayItemMetadataPath?: (\n    metadataPath: string,\n    rowIndex: number,\n    rowValue: JsonValue\n  ) => string | undefined\n  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined\n  theme?: HumanReviewTheme\n}) {\n  const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0]?.key)\n  const [hoverLocation, setHoverLocation] =\n    React.useState<ReviewLocation | null>(null)\n  const viewerRef = React.useRef<PDFViewerHandle>(null)\n  const hoverLocationKeyRef = React.useRef<string | null>(null)\n  const resolveFieldLocation = React.useCallback(\n    (metadataPath: string) =>\n      resolveLocation?.(metadataPath) ??\n      getMetadataLocation(metadata, metadataPath),\n    [metadata, resolveLocation]\n  )\n  const activeField = findReviewField(fields, activeFieldKey) ?? fields[0]\n  const activeLocation =\n    hoverLocation ?? getReviewFieldLocation(activeField, resolveFieldLocation)\n\n  React.useEffect(() => {\n    if (activeFieldKey || !fields[0]) return\n    setActiveFieldKey(fields[0].key)\n  }, [activeFieldKey, fields])\n\n  const focusField = React.useCallback(\n    (field: ReviewField) => {\n      if (field.key === activeFieldKey) return\n\n      setActiveFieldKey(field.key)\n\n      const location = getReviewFieldLocation(field, resolveFieldLocation)\n      if (location) {\n        viewerRef.current?.scrollToPageArea(location.page, location.area)\n      }\n    },\n    [activeFieldKey, resolveFieldLocation]\n  )\n  const handleLocationHover = React.useCallback((location?: ReviewLocation) => {\n    setHoverLocation(location ?? null)\n\n    const locationKey = getReviewLocationKey(location)\n    if (!location) {\n      hoverLocationKeyRef.current = null\n      return\n    }\n    if (locationKey === hoverLocationKeyRef.current) return\n\n    hoverLocationKeyRef.current = locationKey\n    viewerRef.current?.scrollToPageArea(location.page, location.area, {\n      behavior: "auto",\n    })\n  }, [])\n\n  return (\n    <PdfBlockResizableShell\n      autoSaveId="pdf-block-human-review"\n      className={className}\n      rightDefaultSize={42}\n      rightMaxSize={60}\n      rightMinSize={30}\n      left={\n        <PDFViewer\n          ref={viewerRef}\n          file={file}\n          defaultZoom={DEFAULT_ZOOM}\n          renderPageOverlay={({ pageNumber }) =>\n            activeLocation?.page === pageNumber ? (\n              <HumanReviewHighlight location={activeLocation} />\n            ) : null\n          }\n        />\n      }\n      right={\n        <aside className="min-h-0 bg-background">\n          <HumanReviewPanel\n            fields={fields}\n            activeFieldKey={activeField?.key}\n            className="h-full min-h-0"\n            theme={theme}\n            onFieldFocus={focusField}\n            onLocationHover={handleLocationHover}\n            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}\n            resolveLocation={resolveFieldLocation}\n          />\n        </aside>\n      }\n    />\n  )\n}\n'
+
 export function HumanReviewSource() {
   return <HighlightedCodeBlock code={humanReviewSourceCode} />
 }

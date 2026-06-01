@@ -26,7 +26,7 @@ type PdfBlockResizableShellProps = {
 export function PdfBlockResizableShell({
   autoSaveId,
   className,
-  heightClassName = "h-[620px]",
+  heightClassName = "h-[680px]",
   left,
   leftDefaultSize,
   leftMinSize,
