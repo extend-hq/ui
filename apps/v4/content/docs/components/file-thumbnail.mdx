@@ -1,6 +1,6 @@
 ---
 title: File Thumbnail
-description: Render compact file preview images with a skeleton, fade transition, metadata, and fallback state.
+description: Render compact file preview images with a skeleton, fade transition, and fallback state.
 component: true
 ---
 
@@ -66,7 +66,6 @@ Pass a `File`, `Blob`, or URL string through `source`, `file.source`, or `file.u
 - Shows a shimmering file-preview state while an external preview is being generated or loaded.
 - Fades the preview in after it loads.
 - Falls back to a compact file icon when no preview image is available or image loading fails.
-- Supports optional metadata for file name, type, size, page count, or processing status.
 
 ## API Reference
 
@@ -88,7 +87,6 @@ The FileThumbnail component renders the reusable thumbnail shell. It accepts ext
 | `renderDocumentPreview` | `boolean`                | `true`  | No       |
 | `isLoading`             | `boolean`                | `false` | No       |
 | `hasError`              | `boolean`                | `false` | No       |
-| `showMetadata`          | `boolean`                | `true`  | No       |
 
 ### ThumbnailFile
 
@@ -96,6 +94,5 @@ The FileThumbnail component renders the reusable thumbnail shell. It accepts ext
 | -------- | ------------------------ | ------- | -------- |
 | `name`   | `string`                 | `-`     | Yes      |
 | `type`   | `string`                 | `-`     | Yes      |
-| `size`   | `string \| number`       | `-`     | No       |
 | `source` | `string \| File \| Blob` | `-`     | No       |
 | `url`    | `string`                 | `-`     | No       |

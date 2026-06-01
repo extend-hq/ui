@@ -38,10 +38,8 @@ export function ExcelDocumentSplitsBlock({ file }: { file?: string }) {
                       file={{
                         name: sheet,
                         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        size: "XLSX sheet",
                       }}
                       className="h-20 w-full"
-                      showMetadata={false}
                     />
                   </div>
                 </section>

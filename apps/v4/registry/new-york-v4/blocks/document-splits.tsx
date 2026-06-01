@@ -289,17 +289,13 @@ function PageThumbnail({
         file={{
           name: `page-${pageNumber}.pdf`,
           type: "application/pdf",
-          size: `Page ${pageNumber}`,
         }}
-        showMetadata={false}
         previewImageUrl={imageUrl}
         isLoading={!imageUrl}
         previewClassName="h-full aspect-auto"
         className="size-full rounded-[inherit] border-0"
       />
-      <span
-        className="absolute right-1 bottom-1 rounded bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs ring-1 ring-border/80"
-      >
+      <span className="absolute right-1 bottom-1 rounded bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs ring-1 ring-border/80">
         {pageNumber}
       </span>
     </button>
@@ -704,7 +700,6 @@ export function DocumentSplits({
             >
               <FileThumbnail
                 file={{ name: `${draggedPageId}.pdf`, type: "application/pdf" }}
-                showMetadata={false}
                 previewImageUrl={thumbnailImages[draggedPageId]}
                 isLoading={!thumbnailImages[draggedPageId]}
                 previewClassName="h-full aspect-auto"

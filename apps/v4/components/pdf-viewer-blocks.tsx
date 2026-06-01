@@ -1,13 +1,11 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import Link from "next/link"
 import {
   ArrowUpRight01Icon,
-  ArrowRight01Icon,
   CodeIcon,
-  File01Icon,
-  Folder01Icon,
   LaptopIcon,
   Refresh01Icon,
   SmartPhone01Icon,
@@ -16,6 +14,9 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { prepareFileTreeInput } from "@pierre/trees"
+import { FileTree as PierreFileTree, useFileTree } from "@pierre/trees/react"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import type { ImperativePanelHandle } from "react-resizable-panels"
 
 import { siteConfig } from "@/lib/config"
@@ -36,23 +37,22 @@ import {
 import { DocxEditorBlock } from "@/components/docx-editor-docs"
 import { ESignatureBlock } from "@/components/e-signature-docs"
 import { HumanReviewBlock } from "@/components/human-review-docs"
-import { OcrBlocksBlock } from "@/components/ocr-blocks-docs"
 import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
 type BlockCodeSample = {
   sourcePath: string
   targetPath: string
+  language: string
+}
+
+type LoadedBlockCodeSample = BlockCodeSample & {
   content: string
-  highlightedContent: string
+  highlightedContent: string | null
+  lineCount: number
 }
 
 type BlockViewportSize = "desktop" | "tablet" | "mobile"
 type BlockView = "preview" | "code"
-type BlockFileTreeNode = {
-  children?: BlockFileTreeNode[]
-  name: string
-  path?: string
-}
 
 function getRegistryAddCommand(name: string) {
   return `npx shadcn@latest add ${siteConfig.url}/r/${name}.json`
@@ -70,6 +70,14 @@ const blockViewportSizes: Array<{
 ]
 
 const BLOCK_VIEWPORT_HEIGHT_CLASS = "h-[680px]"
+
+const OcrBlocksBlock = dynamic(
+  () =>
+    import("@/components/ocr-blocks-docs").then((mod) => mod.OcrBlocksBlock),
+  {
+    loading: () => <BlockPreviewPlaceholder />,
+  }
+)
 
 const pdfViewerBlocks = [
   {
@@ -177,9 +185,6 @@ function PdfViewerBlockPreview({
   const previewPanelRef = React.useRef<ImperativePanelHandle>(null)
   const codePanelMountFrameRef = React.useRef<number | null>(null)
   const Preview = block.component
-  const activeCodeSample =
-    codeSamples.find((sample) => sample.targetPath === activeFile) ??
-    codeSamples[0]
   const isDesktopViewport = useMediaQuery("(min-width: 768px)")
 
   const scheduleCodePanelMount = React.useCallback(() => {
@@ -223,6 +228,20 @@ function PdfViewerBlockPreview({
     const timer = window.setTimeout(() => setIsCommandCopied(false), 2000)
     return () => window.clearTimeout(timer)
   }, [isCommandCopied])
+
+  React.useEffect(() => {
+    if (!codeSamples.length) {
+      setActiveFile(null)
+      return
+    }
+
+    if (
+      !activeFile ||
+      !codeSamples.some((sample) => sample.targetPath === activeFile)
+    ) {
+      setActiveFile(codeSamples[0]?.targetPath ?? null)
+    }
+  }, [activeFile, codeSamples])
 
   async function copyInstallCommand() {
     const copied = await copyToClipboardWithMeta(block.command, {
@@ -354,6 +373,7 @@ function PdfViewerBlockPreview({
         {hasOpenedCode ? (
           <div className={view === "code" ? "block" : "hidden"}>
             <BlockCodePanel
+              blockId={block.id}
               codeSamples={codeSamples}
               activeFile={activeFile}
               onActiveFileChange={setActiveFile}
@@ -442,17 +462,72 @@ function BlockCodePanelShell() {
 }
 
 function BlockCodePanel({
+  blockId,
   codeSamples,
   activeFile,
   onActiveFileChange,
 }: {
+  blockId: string
   codeSamples: BlockCodeSample[]
   activeFile: string | null
   onActiveFileChange: (file: string) => void
 }) {
+  const [loadedCodeByPath, setLoadedCodeByPath] = React.useState<
+    Record<string, LoadedBlockCodeSample>
+  >({})
+  const [loadingPath, setLoadingPath] = React.useState<string | null>(null)
+  const [failedPath, setFailedPath] = React.useState<string | null>(null)
   const activeCodeSample =
     codeSamples.find((sample) => sample.targetPath === activeFile) ??
     codeSamples[0]
+  const activeLoadedCode = activeCodeSample
+    ? loadedCodeByPath[activeCodeSample.targetPath]
+    : undefined
+
+  React.useEffect(() => {
+    if (!activeCodeSample || activeLoadedCode) return
+
+    const controller = new AbortController()
+    const targetPath = activeCodeSample.targetPath
+
+    setLoadingPath(targetPath)
+    setFailedPath(null)
+
+    async function loadCode() {
+      try {
+        const response = await fetch(
+          `/api/block-code?block=${encodeURIComponent(
+            blockId
+          )}&file=${encodeURIComponent(targetPath)}`,
+          { signal: controller.signal }
+        )
+
+        if (!response.ok) {
+          throw new Error(`Failed to load ${targetPath}`)
+        }
+
+        const loadedCode = (await response.json()) as LoadedBlockCodeSample
+
+        setLoadedCodeByPath((current) => ({
+          ...current,
+          [targetPath]: loadedCode,
+        }))
+      } catch (error) {
+        if (controller.signal.aborted) return
+
+        console.error(error)
+        setFailedPath(targetPath)
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoadingPath((current) => (current === targetPath ? null : current))
+        }
+      }
+    }
+
+    void loadCode()
+
+    return () => controller.abort()
+  }, [activeCodeSample, activeLoadedCode, blockId])
 
   if (!activeCodeSample) {
     return (
@@ -483,23 +558,107 @@ function BlockCodePanel({
           <HugeiconsIcon icon={CodeIcon} className="size-4 opacity-70" />
           <span className="truncate">{activeCodeSample.targetPath}</span>
           <CopyButton
-            value={activeCodeSample.content}
+            value={activeLoadedCode?.content ?? ""}
             className="static ml-auto size-7 bg-transparent"
+            disabled={!activeLoadedCode}
             event="copy_block_code"
           />
         </div>
-        <figure
-          data-rehype-pretty-code-figure
-          className="m-0! min-h-0 flex-1 overflow-hidden"
-        >
+        <BlockCodeContent
+          code={activeLoadedCode}
+          failed={failedPath === activeCodeSample.targetPath}
+          loading={
+            loadingPath === activeCodeSample.targetPath && !activeLoadedCode
+          }
+        />
+      </div>
+    </div>
+  )
+}
+
+function BlockCodeContent({
+  code,
+  failed,
+  loading,
+}: {
+  code?: LoadedBlockCodeSample
+  failed: boolean
+  loading: boolean
+}) {
+  if (loading) {
+    return (
+      <div className="grid min-h-0 flex-1 place-items-center text-sm text-code-foreground/72">
+        Loading source...
+      </div>
+    )
+  }
+
+  if (failed) {
+    return (
+      <div className="grid min-h-0 flex-1 place-items-center p-6 text-center text-sm text-code-foreground/72">
+        Unable to load this source file.
+      </div>
+    )
+  }
+
+  if (!code) {
+    return <div className="min-h-0 flex-1" />
+  }
+
+  if (!code.highlightedContent) {
+    return <VirtualizedCodeBlock code={code.content} />
+  }
+
+  return (
+    <figure
+      data-rehype-pretty-code-figure
+      className="m-0! min-h-0 flex-1 overflow-hidden"
+    >
+      <div
+        key={code.targetPath}
+        className="h-full [&_pre]:h-full [&_pre]:max-h-none"
+        dangerouslySetInnerHTML={{
+          __html: code.highlightedContent,
+        }}
+      />
+    </figure>
+  )
+}
+
+function VirtualizedCodeBlock({ code }: { code: string }) {
+  const parentRef = React.useRef<HTMLDivElement | null>(null)
+  const lines = React.useMemo(() => code.split("\n"), [code])
+  const lineVirtualizer = useVirtualizer({
+    count: lines.length,
+    estimateSize: () => 20,
+    getScrollElement: () => parentRef.current,
+    overscan: 32,
+  })
+
+  return (
+    <div
+      ref={parentRef}
+      data-rehype-pretty-code-figure
+      className="no-scrollbar min-h-0 flex-1 overflow-auto overscroll-contain bg-code text-[0.8rem] leading-5 text-code-foreground outline-none"
+    >
+      <div
+        className="relative min-w-max py-3.5 font-mono"
+        style={{ height: lineVirtualizer.getTotalSize() + 28 }}
+      >
+        {lineVirtualizer.getVirtualItems().map((virtualLine) => (
           <div
-            key={activeCodeSample.targetPath}
-            className="h-full [&_pre]:h-full [&_pre]:max-h-none"
-            dangerouslySetInnerHTML={{
-              __html: activeCodeSample.highlightedContent,
-            }}
-          />
-        </figure>
+            key={virtualLine.key}
+            className="absolute top-0 left-0 flex min-w-full whitespace-pre"
+            style={{ transform: `translateY(${virtualLine.start + 14}px)` }}
+          >
+            <span className="w-12 shrink-0 pr-4 text-right text-code-foreground/45 select-none">
+              {virtualLine.index + 1}
+            </span>
+            <code className="pr-8">
+              {lines[virtualLine.index] || " "}
+            </code>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -514,117 +673,82 @@ function BlockFileTree({
   activeFile: string
   onActiveFileChange: (file: string) => void
 }) {
-  const fileTree = React.useMemo(
-    () => createBlockFileTree(codeSamples.map((sample) => sample.targetPath)),
+  const paths = React.useMemo(
+    () => codeSamples.map((sample) => sample.targetPath),
     [codeSamples]
   )
 
   return (
-    <div className="h-[calc(34rem-3rem)] overflow-auto p-2">
-      <div className="space-y-1">
-        {fileTree.map((item) => (
-          <BlockFileTreeItem
-            key={item.path ?? item.name}
-            activeFile={activeFile}
-            item={item}
-            level={0}
-            onActiveFileChange={onActiveFileChange}
-          />
-        ))}
-      </div>
-    </div>
+    <PierreBlockFileTree
+      key={paths.join("\0")}
+      activeFile={activeFile}
+      paths={paths}
+      onActiveFileChange={onActiveFileChange}
+    />
   )
 }
 
-function BlockFileTreeItem({
+function PierreBlockFileTree({
   activeFile,
-  item,
-  level,
+  paths,
   onActiveFileChange,
 }: {
   activeFile: string
-  item: BlockFileTreeNode
-  level: number
+  paths: string[]
   onActiveFileChange: (file: string) => void
 }) {
-  if (item.children?.length) {
-    return (
-      <div>
-        <div
-          className="flex h-7 items-center gap-1.5 rounded-md px-2 text-xs text-code-foreground/80"
-          style={{ paddingLeft: `${level * 0.75 + 0.5}rem` }}
-        >
-          <HugeiconsIcon
-            icon={ArrowRight01Icon}
-            className="size-3 rotate-90 opacity-60"
-          />
-          <HugeiconsIcon icon={Folder01Icon} className="size-3.5 opacity-70" />
-          <span className="truncate">{item.name}</span>
-        </div>
-        <div>
-          {item.children.map((child) => (
-            <BlockFileTreeItem
-              key={child.path ?? `${item.name}/${child.name}`}
-              activeFile={activeFile}
-              item={child}
-              level={level + 1}
-              onActiveFileChange={onActiveFileChange}
-            />
-          ))}
-        </div>
-      </div>
-    )
-  }
+  const filePathSet = React.useMemo(() => new Set(paths), [paths])
+  const preparedInput = React.useMemo(
+    () =>
+      prepareFileTreeInput(paths, {
+        flattenEmptyDirectories: true,
+        sort: "default",
+      }),
+    [paths]
+  )
+  const { model } = useFileTree({
+    flattenEmptyDirectories: true,
+    initialExpansion: "open",
+    initialSelectedPaths: activeFile ? [activeFile] : [],
+    itemHeight: 28,
+    overscan: 12,
+    preparedInput,
+    unsafeCSS: `
+      button[data-type='item'][data-item-selected] {
+        background: color-mix(in oklab, var(--color-code-foreground) 16%, transparent);
+      }
+    `,
+    onSelectionChange: (selectedPaths) => {
+      const nextPath = selectedPaths.find((path) => filePathSet.has(path))
+      if (nextPath) {
+        onActiveFileChange(nextPath)
+      }
+    },
+  })
 
-  if (!item.path) return null
+  React.useEffect(() => {
+    if (!activeFile) return
+
+    const item = model.getItem(activeFile)
+    if (!item) return
+
+    item.select()
+    model.scrollToPath(activeFile, { focus: false, offset: "nearest" })
+  }, [activeFile, model])
 
   return (
-    <button
-      type="button"
-      className={cn(
-        "flex h-7 w-full items-center gap-1.5 rounded-md px-2 text-left text-xs text-code-foreground/80 outline-none hover:bg-muted-foreground/15 hover:text-code-foreground focus-visible:ring-2 focus-visible:ring-ring/45",
-        activeFile === item.path && "bg-muted-foreground/15 text-code-foreground"
-      )}
-      style={{ paddingLeft: `${level * 0.75 + 0.5}rem` }}
-      onClick={() => onActiveFileChange(item.path!)}
-    >
-      <HugeiconsIcon icon={File01Icon} className="size-3.5 shrink-0 opacity-70" />
-      <span className="truncate">{item.name}</span>
-    </button>
+    <PierreFileTree
+      model={model}
+      className="block h-[calc(680px-3rem)]"
+      style={
+        {
+          "--trees-bg-override": "var(--color-code)",
+          "--trees-border-color-override": "var(--color-border)",
+          "--trees-fg-override": "color-mix(in oklab, var(--color-code-foreground) 78%, transparent)",
+          "--trees-selected-bg-override":
+            "color-mix(in oklab, var(--color-code-foreground) 16%, transparent)",
+        } as React.CSSProperties
+      }
+    />
   )
-}
-
-function createBlockFileTree(paths: string[]) {
-  const root: BlockFileTreeNode[] = []
-
-  for (const filePath of paths) {
-    const parts = filePath.split("/")
-    let currentLevel = root
-
-    parts.forEach((part, index) => {
-      const isFile = index === parts.length - 1
-      const existingNode = currentLevel.find((node) => node.name === part)
-
-      if (existingNode) {
-        if (isFile) {
-          existingNode.path = filePath
-        } else {
-          currentLevel = existingNode.children ?? []
-        }
-        return
-      }
-
-      const nextNode: BlockFileTreeNode = isFile
-        ? { name: part, path: filePath }
-        : { children: [], name: part }
-
-      currentLevel.push(nextNode)
-
-      if (!isFile) {
-        currentLevel = nextNode.children!
-      }
-    })
-  }
-
-  return root
 }

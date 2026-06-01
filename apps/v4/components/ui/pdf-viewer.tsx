@@ -349,7 +349,6 @@ function PDFSidebarThumbnail({
         />
       }
       renderDocumentPreview={false}
-      showMetadata={false}
       className="w-[92px] rounded-md border-0 shadow-xs ring-0"
     />
   )

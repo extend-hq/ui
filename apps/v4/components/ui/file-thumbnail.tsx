@@ -23,7 +23,6 @@ export type ThumbnailSource = string | File | Blob
 export type ThumbnailFile = {
   name: string
   type: string
-  size?: string | number
   source?: ThumbnailSource
   url?: string
 }
@@ -41,13 +40,11 @@ export type FileThumbnailProps = {
   renderDocumentPreview?: boolean
   isLoading?: boolean
   hasError?: boolean
-  showMetadata?: boolean
 }
 
 type NormalizedThumbnailFile = {
   name: string
   type: string
-  size?: string | number
   source?: ThumbnailSource
   url?: string
 }
@@ -65,10 +62,6 @@ function isFileLike(value: unknown): value is File {
 function normalizeFile(file: ThumbnailFile | File): NormalizedThumbnailFile {
   return {
     name: file.name,
-    size:
-      typeof file.size === "number"
-        ? formatBytes(file.size)
-        : (file.size as string | undefined),
     source: isFileLike(file) ? file : (file as ThumbnailFile).source,
     type: file.type,
     url: (file as ThumbnailFile).url,
@@ -80,23 +73,6 @@ function getThumbnailSource(
   source?: ThumbnailSource
 ): ThumbnailSource | undefined {
   return source ?? file.source ?? file.url
-}
-
-function formatBytes(bytes: number) {
-  if (!Number.isFinite(bytes) || bytes <= 0) return undefined
-
-  const units = ["B", "KB", "MB", "GB"]
-  let value = bytes
-  let unitIndex = 0
-
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024
-    unitIndex += 1
-  }
-
-  const formatted =
-    value >= 10 || unitIndex === 0 ? Math.round(value) : value.toFixed(1)
-  return `${formatted} ${units[unitIndex]}`
 }
 
 function isImageFile(file: NormalizedThumbnailFile) {
@@ -288,9 +264,9 @@ function FileThumbnailShell({
   previewClassName,
   previewContent,
   previewImageUrl,
+  hiddenPreviewRenderer,
   isLoading = false,
   hasError = false,
-  showMetadata = true,
 }: {
   file: NormalizedThumbnailFile
   className?: string
@@ -298,9 +274,9 @@ function FileThumbnailShell({
   previewClassName?: string
   previewContent?: React.ReactNode
   previewImageUrl?: string | null
+  hiddenPreviewRenderer?: React.ReactNode
   isLoading?: boolean
   hasError?: boolean
-  showMetadata?: boolean
 }) {
   const imageRef = React.useRef<HTMLImageElement | null>(null)
   const revealFrameRef = React.useRef<number | null>(null)
@@ -429,19 +405,7 @@ function FileThumbnailShell({
           </div>
         ) : null}
       </div>
-      {showMetadata ? (
-        <div className="flex items-center gap-2 border-t px-3 py-2">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-md border bg-muted text-muted-foreground">
-            <FileKindIcon file={file} />
-          </div>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-medium">{file.name}</div>
-            <div className="truncate text-xs text-muted-foreground">
-              {file.size ?? file.type}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {hiddenPreviewRenderer}
     </div>
   )
 }
@@ -453,7 +417,6 @@ function ImageFileThumbnail({
   isLoading,
   previewClassName,
   previewAspectRatio,
-  showMetadata,
   source,
 }: {
   className?: string
@@ -462,7 +425,6 @@ function ImageFileThumbnail({
   isLoading?: boolean
   previewAspectRatio?: number
   previewClassName?: string
-  showMetadata?: boolean
   source: ThumbnailSource
 }) {
   const imageUrl = useSourceObjectUrl(source)
@@ -476,7 +438,6 @@ function ImageFileThumbnail({
       className={className}
       previewAspectRatio={previewAspectRatio}
       previewClassName={previewClassName}
-      showMetadata={showMetadata}
     />
   )
 }
@@ -489,7 +450,6 @@ function PdfFileThumbnail({
   isLoading: externalIsLoading,
   previewClassName,
   previewAspectRatio,
-  showMetadata,
   source,
   thumbnailWidth,
 }: {
@@ -500,7 +460,6 @@ function PdfFileThumbnail({
   isLoading?: boolean
   previewAspectRatio?: number
   previewClassName?: string
-  showMetadata: boolean
   source: ThumbnailSource
   thumbnailWidth: number
 }) {
@@ -558,52 +517,51 @@ function PdfFileThumbnail({
   }, [isActive, objectUrl, reactPdf])
 
   return (
-    <>
-      <FileThumbnailShell
-        file={file}
-        previewImageUrl={objectUrl}
-        isLoading={Boolean(externalIsLoading || (isLoading && !objectUrl))}
-        hasError={Boolean(externalHasError || hasError)}
-        className={className}
-        previewAspectRatio={previewAspectRatio}
-        previewClassName={previewClassName}
-        showMetadata={showMetadata}
-      />
-      {shouldRenderPdf ? (
-        <div
-          ref={rootRef}
-          aria-hidden="true"
-          className="pointer-events-none fixed top-0 left-0 -z-10 w-[560px] overflow-hidden bg-white opacity-0 [contain:layout_paint]"
-        >
-          <reactPdf.Document
-            file={sourceUrl}
-            loading={null}
-            error={null}
-            noData={null}
-            onLoadError={() => {
-              setHasError(true)
-              setIsLoading(false)
-            }}
+    <FileThumbnailShell
+      file={file}
+      previewImageUrl={objectUrl}
+      isLoading={Boolean(externalIsLoading || (isLoading && !objectUrl))}
+      hasError={Boolean(externalHasError || hasError)}
+      className={className}
+      previewAspectRatio={previewAspectRatio}
+      previewClassName={previewClassName}
+      hiddenPreviewRenderer={
+        shouldRenderPdf ? (
+          <div
+            ref={rootRef}
+            aria-hidden="true"
+            className="pointer-events-none fixed top-0 left-0 -z-10 w-[560px] overflow-hidden bg-white opacity-0 [contain:layout_paint]"
           >
-            <reactPdf.Thumbnail
-              pageNumber={1}
-              width={thumbnailWidth}
+            <reactPdf.Document
+              file={sourceUrl}
               loading={null}
               error={null}
-              onRenderSuccess={() => {
-                window.requestAnimationFrame(() => {
-                  capturePdfCanvas()
-                })
-              }}
-              onRenderError={() => {
+              noData={null}
+              onLoadError={() => {
                 setHasError(true)
                 setIsLoading(false)
               }}
-            />
-          </reactPdf.Document>
-        </div>
-      ) : null}
-    </>
+            >
+              <reactPdf.Thumbnail
+                pageNumber={1}
+                width={thumbnailWidth}
+                loading={null}
+                error={null}
+                onRenderSuccess={() => {
+                  window.requestAnimationFrame(() => {
+                    capturePdfCanvas()
+                  })
+                }}
+                onRenderError={() => {
+                  setHasError(true)
+                  setIsLoading(false)
+                }}
+              />
+            </reactPdf.Document>
+          </div>
+        ) : null
+      }
+    />
   )
 }
 
@@ -615,7 +573,6 @@ function DocxFileThumbnail({
   isLoading: externalIsLoading,
   previewClassName,
   previewAspectRatio,
-  showMetadata,
   source,
   thumbnailWidth,
 }: {
@@ -626,7 +583,6 @@ function DocxFileThumbnail({
   isLoading?: boolean
   previewAspectRatio?: number
   previewClassName?: string
-  showMetadata: boolean
   source: ThumbnailSource
   thumbnailWidth: number
 }) {
@@ -818,37 +774,36 @@ function DocxFileThumbnail({
   ) : null
 
   return (
-    <>
-      <FileThumbnailShell
-        file={file}
-        previewContent={previewContent}
-        isLoading={Boolean(externalIsLoading || (!isReady && !hasError))}
-        hasError={Boolean(externalHasError || hasError)}
-        className={className}
-        previewAspectRatio={previewAspectRatio}
-        previewClassName={cn("bg-white", previewClassName)}
-        showMetadata={showMetadata}
-      />
-      {isActive && !hasError ? (
-        <div
-          ref={hiddenDocxViewerRef}
-          aria-hidden="true"
-          className="pointer-events-none fixed top-0 left-0 -z-10 h-[1056px] w-[816px] overflow-hidden bg-white opacity-0 [contain:layout_paint]"
-        >
-          <div className="w-[816px]">
-            <DocxEditorViewer
-              editor={editor}
-              mode="read-only"
-              pageBackgroundColor="#ffffff"
-              pageGapBackgroundColor="transparent"
-              visiblePageRange={{ endPageIndex: 0, startPageIndex: 0 }}
-              pageVirtualization={{ enabled: false }}
-              deferInitialPaginationPaint={false}
-            />
+    <FileThumbnailShell
+      file={file}
+      previewContent={previewContent}
+      isLoading={Boolean(externalIsLoading || (!isReady && !hasError))}
+      hasError={Boolean(externalHasError || hasError)}
+      className={className}
+      previewAspectRatio={previewAspectRatio}
+      previewClassName={cn("bg-white", previewClassName)}
+      hiddenPreviewRenderer={
+        isActive && !hasError ? (
+          <div
+            ref={hiddenDocxViewerRef}
+            aria-hidden="true"
+            className="pointer-events-none fixed top-0 left-0 -z-10 h-[1056px] w-[816px] overflow-hidden bg-white opacity-0 [contain:layout_paint]"
+          >
+            <div className="w-[816px]">
+              <DocxEditorViewer
+                editor={editor}
+                mode="read-only"
+                pageBackgroundColor="#ffffff"
+                pageGapBackgroundColor="transparent"
+                visiblePageRange={{ endPageIndex: 0, startPageIndex: 0 }}
+                pageVirtualization={{ enabled: false }}
+                deferInitialPaginationPaint={false}
+              />
+            </div>
           </div>
-        </div>
-      ) : null}
-    </>
+        ) : null
+      }
+    />
   )
 }
 
@@ -860,7 +815,6 @@ function XlsxFileThumbnail({
   isLoading: externalIsLoading,
   previewClassName,
   previewAspectRatio,
-  showMetadata,
   source,
   thumbnailWidth,
 }: {
@@ -871,7 +825,6 @@ function XlsxFileThumbnail({
   isLoading?: boolean
   previewAspectRatio?: number
   previewClassName?: string
-  showMetadata: boolean
   source: ThumbnailSource
   thumbnailWidth: number
 }) {
@@ -897,7 +850,6 @@ function XlsxFileThumbnail({
           "bg-white [&>img]:object-left-top",
           previewClassName
         )}
-        showMetadata={showMetadata}
       />
       {isActive && sourceUrl && !imageUrl && !hasError ? (
         <XlsxThumbnailGenerator
@@ -1002,7 +954,6 @@ export function FileThumbnail({
   renderDocumentPreview = true,
   isLoading = false,
   hasError = false,
-  showMetadata = true,
 }: FileThumbnailProps) {
   const file = React.useMemo(() => normalizeFile(rawFile), [rawFile])
   const source = getThumbnailSource(file, explicitSource)
@@ -1019,7 +970,6 @@ export function FileThumbnail({
         className={className}
         previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
-        showMetadata={showMetadata}
       />
     )
   }
@@ -1034,7 +984,6 @@ export function FileThumbnail({
         className={className}
         previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
-        showMetadata={showMetadata}
       />
     )
   }
@@ -1050,7 +999,6 @@ export function FileThumbnail({
         className={className}
         previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
-        showMetadata={showMetadata}
         thumbnailWidth={thumbnailWidth ?? 520}
       />
     )
@@ -1067,7 +1015,6 @@ export function FileThumbnail({
         className={className}
         previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
-        showMetadata={showMetadata}
         thumbnailWidth={thumbnailWidth ?? 520}
       />
     )
@@ -1084,7 +1031,6 @@ export function FileThumbnail({
         className={className}
         previewAspectRatio={previewAspectRatio}
         previewClassName={previewClassName}
-        showMetadata={showMetadata}
         thumbnailWidth={thumbnailWidth ?? 680}
       />
     )
@@ -1098,7 +1044,6 @@ export function FileThumbnail({
       className={className}
       previewAspectRatio={previewAspectRatio}
       previewClassName={previewClassName}
-      showMetadata={showMetadata}
     />
   )
 }

@@ -280,13 +280,11 @@ export function FileUpload({
                 file={{
                   name: file.name,
                   type: file.type,
-                  size: formatBytes(file.size),
                 }}
                 previewImageUrl={
                   file.type.startsWith("image/") ? file.url : null
                 }
                 className="size-10 shrink-0 rounded-lg"
-                showMetadata={false}
               />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{file.name}</div>

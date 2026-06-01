@@ -1,6 +1,5 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
-import { fileURLToPath } from "node:url"
 
 import { highlightCode } from "@/lib/highlight-code"
 
@@ -57,10 +56,7 @@ const blockCodeDependencies: Record<string, string[]> = {
   "docx-editor-block": ["docx-editor", "file-thumbnail"],
 }
 
-const appRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../"
-)
+const appRoot = process.cwd()
 
 export async function getBlockCodeFileManifest(): Promise<
   Record<string, BlockCodeFile[]>
@@ -95,7 +91,7 @@ export async function getLoadedBlockCodeFile({
   if (!file) return null
 
   const language = getCodeLanguage(file.path)
-  const content = await fs.readFile(path.join(appRoot, file.path), "utf8")
+  const content = await fs.readFile(resolveSourceFilePath(file.path), "utf8")
   const highlightedContent =
     content.length <= LARGE_CODE_HIGHLIGHT_LIMIT
       ? await highlightCode(content, language)
@@ -175,4 +171,20 @@ function normalizeRegistryTarget(file: RegistryFile) {
   }
 
   return target
+}
+
+function resolveSourceFilePath(filePath: string) {
+  if (filePath.startsWith("components/")) {
+    return path.join(appRoot, "components", filePath.slice("components/".length))
+  }
+
+  if (filePath.startsWith("hooks/")) {
+    return path.join(appRoot, "hooks", filePath.slice("hooks/".length))
+  }
+
+  if (filePath.startsWith("registry/")) {
+    return path.join(appRoot, "registry", filePath.slice("registry/".length))
+  }
+
+  throw new Error(`Unexpected registry source path: ${filePath}`)
 }

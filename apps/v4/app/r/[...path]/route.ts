@@ -1,13 +1,25 @@
-import {
-  loadRegistry,
-  loadRegistryItem,
-  RegistryItemNotFoundError,
-} from "shadcn/registry"
+import { readFile } from "node:fs/promises"
+import path from "node:path"
 
 export const dynamic = "force-dynamic"
 
-type RegistryCatalog = Awaited<ReturnType<typeof loadRegistry>>
-type RegistryItem = Awaited<ReturnType<typeof loadRegistryItem>>
+type RegistryCatalog = {
+  items: Array<{ name: string }>
+  [key: string]: unknown
+}
+
+type RegistryItem = {
+  registryDependencies?: string[]
+  [key: string]: unknown
+}
+
+class RegistryJsonNotFoundError extends Error {
+  constructor(readonly fileName: string) {
+    super(`Registry JSON file "${fileName}" was not found.`)
+  }
+}
+
+const registryJsonCache = new Map<string, Promise<unknown>>()
 
 function getRegistryItemNames(registry: RegistryCatalog) {
   return new Set(registry.items.map((item) => item.name))
@@ -54,6 +66,53 @@ function parseRegistryPath(pathSegments: string[]) {
   return { name: match[1], type: "item" as const }
 }
 
+function isFileNotFoundError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "ENOENT"
+  )
+}
+
+function getRegistryDirectories() {
+  const cwd = process.cwd()
+
+  return Array.from(
+    new Set([
+      path.join(cwd, ".registry", "r"),
+      path.join(cwd, "apps", "v4", ".registry", "r"),
+    ])
+  )
+}
+
+async function readRegistryJson<T>(fileName: string): Promise<T> {
+  for (const registryDirectory of getRegistryDirectories()) {
+    try {
+      const file = await readFile(path.join(registryDirectory, fileName), "utf8")
+
+      return JSON.parse(file) as T
+    } catch (error) {
+      if (!isFileNotFoundError(error)) {
+        throw error
+      }
+    }
+  }
+
+  throw new RegistryJsonNotFoundError(fileName)
+}
+
+function loadBuiltRegistryJson<T>(fileName: string) {
+  let jsonPromise = registryJsonCache.get(fileName) as Promise<T> | undefined
+
+  if (!jsonPromise) {
+    jsonPromise = readRegistryJson<T>(fileName)
+    registryJsonCache.set(fileName, jsonPromise)
+  }
+
+  return jsonPromise
+}
+
 export async function GET(
   request: Request,
   context: {
@@ -69,12 +128,14 @@ export async function GET(
 
   try {
     if (parsedPath.type === "catalog") {
-      return Response.json(await loadRegistry())
+      return Response.json(
+        await loadBuiltRegistryJson<RegistryCatalog>("registry.json")
+      )
     }
 
     const [registry, item] = await Promise.all([
-      loadRegistry(),
-      loadRegistryItem(parsedPath.name),
+      loadBuiltRegistryJson<RegistryCatalog>("registry.json"),
+      loadBuiltRegistryJson<RegistryItem>(`${parsedPath.name}.json`),
     ])
 
     return Response.json(
@@ -85,7 +146,7 @@ export async function GET(
       )
     )
   } catch (error) {
-    if (error instanceof RegistryItemNotFoundError) {
+    if (error instanceof RegistryJsonNotFoundError) {
       return Response.json(
         {
           error:

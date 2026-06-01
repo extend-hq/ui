@@ -702,7 +702,6 @@ function DocxSidebarThumbnail({
       renderDocumentPreview={false}
       isLoading={isLoading}
       hasError={hasError}
-      showMetadata={false}
       className={cn(
         "w-[92px] rounded-md border-0 shadow-xs ring-0 transition-shadow duration-150",
         isActive && "shadow-sm"
