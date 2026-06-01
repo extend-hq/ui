@@ -303,26 +303,62 @@ function FileThumbnailShell({
   showMetadata?: boolean
 }) {
   const imageRef = React.useRef<HTMLImageElement | null>(null)
-  const [isImageLoading, setIsImageLoading] = React.useState(
-    Boolean(previewImageUrl)
+  const revealFrameRef = React.useRef<number | null>(null)
+  const [loadedPreviewImageUrl, setLoadedPreviewImageUrl] = React.useState<
+    string | null
+  >(null)
+  const [failedPreviewImageUrl, setFailedPreviewImageUrl] = React.useState<
+    string | null
+  >(null)
+  const imageFailed = Boolean(
+    previewImageUrl && failedPreviewImageUrl === previewImageUrl
   )
-  const [imageFailed, setImageFailed] = React.useState(false)
+  const isImageLoading = Boolean(
+    previewImageUrl &&
+      loadedPreviewImageUrl !== previewImageUrl &&
+      !imageFailed
+  )
   const showLoading = isLoading || isImageLoading
   const hasPreviewContent = Boolean(previewContent)
   const showFallback =
     !showLoading &&
     (hasError || imageFailed || (!previewImageUrl && !hasPreviewContent))
-  const markImageLoaded = React.useCallback((image: HTMLImageElement) => {
-    const didLoad = image.naturalWidth > 0 && image.naturalHeight > 0
+  const cancelImageReveal = React.useCallback(() => {
+    if (revealFrameRef.current === null) return
 
-    setImageFailed(!didLoad)
-    setIsImageLoading(false)
+    window.cancelAnimationFrame(revealFrameRef.current)
+    revealFrameRef.current = null
   }, [])
+  const markImageLoaded = React.useCallback(
+    (image: HTMLImageElement, imageUrl: string | null | undefined) => {
+      if (!imageUrl) return
+
+      const didLoad = image.naturalWidth > 0 && image.naturalHeight > 0
+
+      setFailedPreviewImageUrl(didLoad ? null : imageUrl)
+      if (didLoad) {
+        cancelImageReveal()
+        revealFrameRef.current = window.requestAnimationFrame(() => {
+          revealFrameRef.current = window.requestAnimationFrame(() => {
+            setLoadedPreviewImageUrl(imageUrl)
+            revealFrameRef.current = null
+          })
+        })
+      }
+    },
+    [cancelImageReveal]
+  )
 
   React.useEffect(() => {
-    setIsImageLoading(Boolean(previewImageUrl))
-    setImageFailed(false)
-  }, [previewImageUrl])
+    cancelImageReveal()
+
+    if (previewImageUrl) return
+
+    setLoadedPreviewImageUrl(null)
+    setFailedPreviewImageUrl(null)
+  }, [cancelImageReveal, previewImageUrl])
+
+  React.useEffect(() => cancelImageReveal, [cancelImageReveal])
 
   React.useEffect(() => {
     const image = imageRef.current
@@ -330,7 +366,7 @@ function FileThumbnailShell({
     if (!image || !previewImageUrl) return
 
     if (image.complete) {
-      markImageLoaded(image)
+      markImageLoaded(image, previewImageUrl)
     }
   }, [markImageLoaded, previewImageUrl])
 
@@ -367,11 +403,16 @@ function FileThumbnailShell({
                 : "blur-0 scale-100 opacity-100"
             )}
             onLoad={(event) => {
-              markImageLoaded(event.currentTarget)
+              markImageLoaded(event.currentTarget, previewImageUrl)
             }}
             onError={() => {
-              setImageFailed(true)
-              setIsImageLoading(false)
+              if (previewImageUrl) {
+                cancelImageReveal()
+                setFailedPreviewImageUrl(previewImageUrl)
+                setLoadedPreviewImageUrl((currentUrl) =>
+                  currentUrl === previewImageUrl ? null : currentUrl
+                )
+              }
             }}
           />
         ) : null}

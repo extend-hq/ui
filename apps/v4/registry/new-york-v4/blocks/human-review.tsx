@@ -29,6 +29,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MultiFileDiff, Virtualizer } from "@pierre/diffs/react"
+import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
 import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
@@ -690,20 +691,18 @@ function HumanReviewTextOverlayEditor({
     input.addEventListener("beforeinput", stopTextInputPropagation, true)
     input.addEventListener("keydown", handleKeyDown, true)
 
-    if (!readOnly) {
-      input.focus()
+    input.focus()
 
-      if (validatedSelection !== undefined) {
-        const selectionRange =
-          typeof validatedSelection === "number"
-            ? [validatedSelection, validatedSelection]
-            : validatedSelection
-        input.setSelectionRange(selectionRange[0], selectionRange[1])
-      } else if (isHighlighted) {
-        input.setSelectionRange(0, input.value.length)
-      } else {
-        input.setSelectionRange(input.value.length, input.value.length)
-      }
+    if (validatedSelection !== undefined) {
+      const selectionRange =
+        typeof validatedSelection === "number"
+          ? [validatedSelection, validatedSelection]
+          : validatedSelection
+      input.setSelectionRange(selectionRange[0], selectionRange[1])
+    } else if (isHighlighted) {
+      input.setSelectionRange(0, input.value.length)
+    } else {
+      input.setSelectionRange(input.value.length, input.value.length)
     }
 
     return () => {
@@ -746,7 +745,8 @@ function HumanReviewTextOverlayEditor({
       ref={inputRef}
       className="gdg-input"
       defaultValue={initialValue}
-      disabled={readOnly}
+      readOnly={readOnly}
+      aria-readonly={readOnly}
       dir="auto"
       style={{ height: "100%", minHeight: 32, resize: "none", width: "100%" }}
     />
@@ -1061,13 +1061,6 @@ function HumanReviewArrayValueGrid({
     React.useState<GridSelection>(emptyGridSelection)
   const fastTextOverlayOpenRef = React.useRef(false)
   const nestedStack = sharedNestedStack ?? localNestedStack
-  const syncedGridSelection = sharedGridSelection ?? localGridSelection
-  const gridSelection =
-    sharedGridSelection &&
-    (activeSelectionSide !== viewSide ||
-      selectionDepth !== nestedStackBaseDepth)
-      ? emptyGridSelection
-      : syncedGridSelection
   const visibleNestedStack = nestedStack.slice(nestedStackBaseDepth)
   const activeNestedView = visibleNestedStack[0] ?? null
   const activeNestedValue = activeNestedView
@@ -1139,23 +1132,34 @@ function HumanReviewArrayValueGrid({
 
   const handleGridSelectionChange = React.useCallback(
     (selection: GridSelection) => {
+      flushSync(() => {
+        setLocalGridSelection((current) =>
+          areGridSelectionsEqual(current, selection) ? current : selection
+        )
+      })
+
       if (onGridSelectionChange) {
         if (
+          activeSelectionSide === viewSide &&
           sharedGridSelection &&
           areGridSelectionsEqual(sharedGridSelection, selection)
         ) {
           return
         }
 
-        onGridSelectionChange(selection, viewSide, nestedStackBaseDepth)
+        React.startTransition(() => {
+          onGridSelectionChange(selection, viewSide, nestedStackBaseDepth)
+        })
         return
       }
-
-      setLocalGridSelection((current) =>
-        areGridSelectionsEqual(current, selection) ? current : selection
-      )
     },
-    [nestedStackBaseDepth, onGridSelectionChange, sharedGridSelection, viewSide]
+    [
+      activeSelectionSide,
+      nestedStackBaseDepth,
+      onGridSelectionChange,
+      sharedGridSelection,
+      viewSide,
+    ]
   )
 
   const columns = React.useMemo<GridColumn[]>(() => {
@@ -1211,7 +1215,7 @@ function HumanReviewArrayValueGrid({
           allowOverlay: false,
           readonly: true,
           cursor: "pointer",
-          activationBehaviorOverride: "double-click",
+          activationBehaviorOverride: "second-click",
           themeOverride: {
             textDark: blueCellText,
             ...(nestedCellTheme ?? {}),
@@ -1235,6 +1239,7 @@ function HumanReviewArrayValueGrid({
           displayData: typeof cellValue === "number" ? String(cellValue) : "",
           allowOverlay: true,
           readonly: false,
+          activationBehaviorOverride: readOnly ? "single-click" : undefined,
         }
       }
 
@@ -1254,6 +1259,7 @@ function HumanReviewArrayValueGrid({
             : String(cellValue),
         allowOverlay: true,
         readonly: false,
+        activationBehaviorOverride: readOnly ? "single-click" : undefined,
       }
     },
     [
@@ -1411,8 +1417,8 @@ function HumanReviewArrayValueGrid({
             columns={columns}
             rows={rows.length}
             getCellContent={getCellContent}
-            cellActivationBehavior="double-click"
-            gridSelection={gridSelection}
+            cellActivationBehavior={readOnly ? "single-click" : "second-click"}
+            gridSelection={localGridSelection}
             highlightRegions={mirroredHighlightRegions}
             onCellEdited={updateCellValue}
             onCellActivated={openNestedCell}
