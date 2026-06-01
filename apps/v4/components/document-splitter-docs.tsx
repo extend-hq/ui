@@ -87,6 +87,8 @@ const DEFAULT_THUMBNAIL_SIZE = {
 } satisfies ThumbnailSize
 const SHEET_THUMBNAIL_WIDTH = 112
 const SHEET_THUMBNAIL_HEIGHT = 76
+const SHEET_THUMBNAIL_PREVIEW_CLASS_NAME =
+  "size-full !aspect-auto bg-white [&>img]:!h-auto [&>img]:!w-full [&>img]:object-left-top"
 const DEFAULT_ZOOM = 0.75
 const DEFAULT_PREVIEW_PAGE_COUNT = 15
 const DEFAULT_PREVIEW_SHEET_COUNT = 8
@@ -299,7 +301,11 @@ const PageThumbnailPreview = React.memo(function PageThumbnailPreview({
         <FileThumbnail
           file={itemFile}
           previewImageUrl={imageUrl}
-          previewClassName="h-full aspect-auto"
+          previewClassName={
+            labelPlacement === "bottom"
+              ? SHEET_THUMBNAIL_PREVIEW_CLASS_NAME
+              : "h-full aspect-auto"
+          }
           className="size-full rounded-[inherit] border-0"
           isLoading={!imageUrl}
         />
@@ -556,7 +562,11 @@ function PageDragOverlay({
       <FileThumbnail
         file={getItemFile(pageId)}
         previewImageUrl={imageUrl}
-        previewClassName="h-full aspect-auto"
+        previewClassName={
+          labelPlacement === "bottom"
+            ? SHEET_THUMBNAIL_PREVIEW_CLASS_NAME
+            : "h-full aspect-auto"
+        }
         className="size-full rounded-[inherit] border-0"
         isLoading={!imageUrl}
       />

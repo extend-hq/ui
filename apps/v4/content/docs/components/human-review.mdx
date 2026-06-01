@@ -19,6 +19,24 @@ the last child of your app's `<body>` before using the component:
 <div id="portal" className="fixed top-0 left-0 z-[9999]" />
 ```
 
+<Callout variant="info" title="Next.js SSR">
+Glide Data Grid uses browser-only APIs. If you see SSR errors, render Human
+Review through `next/dynamic` with `ssr: false`.
+
+```tsx
+"use client"
+
+import dynamic from "next/dynamic"
+
+const HumanReviewPanel = dynamic(
+  () =>
+    import("@/components/ui/human-review").then((mod) => mod.HumanReviewPanel),
+  { ssr: false }
+)
+```
+
+</Callout>
+
 <CodeTabs>
 
 <TabsList>

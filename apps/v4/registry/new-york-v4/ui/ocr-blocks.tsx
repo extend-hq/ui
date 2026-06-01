@@ -19,23 +19,21 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
 import remarkGfm from "remark-gfm"
 
 import { cn } from "@/lib/utils"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
 
-type Point = {
+export type Point = {
   x: number
   y: number
 }
 
-type BoundingBox = {
+export type BoundingBox = {
   left: number
   top: number
   right: number
   bottom: number
 }
 
-type OcrBlockType =
+export type OcrBlockType =
   | "heading"
   | "paragraph"
   | "list"
@@ -45,7 +43,7 @@ type OcrBlockType =
   | "footer"
   | "page_number"
 
-type ParsedOcrBlock = {
+export type ParsedOcrBlock = {
   id: string
   type: string
   content: string
@@ -63,13 +61,13 @@ type ParsedOcrBlock = {
   boundingBox?: BoundingBox
 }
 
-type ParsedOcrOutput = {
+export type ParsedOcrOutput = {
   chunks: {
     blocks: ParsedOcrBlock[]
   }[]
 }
 
-type OcrBlock = {
+export type OcrBlock = {
   id: string
   type: OcrBlockType
   text: string
@@ -81,7 +79,7 @@ type OcrBlock = {
   boundingBox?: BoundingBox
 }
 
-const PDF_URL = "/samples/attention-rotated.pdf"
+export const PDF_URL = "/samples/attention-rotated.pdf"
 const OCR_BLOCK_ROW_ESTIMATE = 132
 const OCR_BLOCK_LIST_PADDING = 12
 const OCR_MARKDOWN_SCHEMA = {
@@ -105,7 +103,7 @@ const OCR_MARKDOWN_REMARK_PLUGINS: NonNullable<
 > = [remarkGfm]
 const OCR_MARKDOWN_FIGURE_CAPTION_PATTERN = /<\/?caption>/gi
 
-const ATTENTION_OCR_OUTPUT = {
+export const ATTENTION_OCR_OUTPUT = {
   chunks: [
     {
       blocks: [
@@ -8021,7 +8019,7 @@ function getBlockType(block: ParsedOcrBlock): OcrBlockType | undefined {
   }
 }
 
-function getOcrBlocks(output: ParsedOcrOutput): OcrBlock[] {
+export function getOcrBlocks(output: ParsedOcrOutput): OcrBlock[] {
   return output.chunks.flatMap((chunk) =>
     chunk.blocks.flatMap((block) => {
       const type = getBlockType(block)
@@ -8065,7 +8063,7 @@ function getBoundingBox(block: OcrBlock): BoundingBox {
   return { left, top, right, bottom }
 }
 
-function blockToArea(block: OcrBlock): React.CSSProperties {
+export function blockToArea(block: OcrBlock): React.CSSProperties {
   const { left, top, right, bottom } = getBoundingBox(block)
 
   return {
@@ -8179,18 +8177,46 @@ function OcrBlockButton({
   )
 }
 
-export function OcrBlocksBlock({
-  file = PDF_URL,
-  output = ATTENTION_OCR_OUTPUT,
+export function OcrBlockOverlay({
+  block,
+  isActive,
 }: {
-  file?: string
-  output?: ParsedOcrOutput
+  block: OcrBlock
+  isActive?: boolean
 }) {
-  const blocks = React.useMemo(() => getOcrBlocks(output), [output])
+  const style = BLOCK_STYLES[block.type]
+
+  return (
+    <div
+      className={cn(
+        "pointer-events-none absolute z-10 border",
+        isActive ? style.overlay : style.mutedOverlay
+      )}
+      style={blockToArea(block)}
+    />
+  )
+}
+
+export function OcrBlocksPanel({
+  activeBlockId,
+  blocks,
+  className,
+  onBlockFocus,
+}: {
+  activeBlockId?: string
+  blocks: OcrBlock[]
+  className?: string
+  onBlockFocus?: (block: OcrBlock) => void
+}) {
   const scrollViewportRef = React.useRef<HTMLDivElement | null>(null)
-  const [activeBlockId, setActiveBlockId] = React.useState(blocks[0]?.id)
-  const viewerRef = React.useRef<PDFViewerHandle>(null)
-  const activeBlock = blocks.find((block) => block.id === activeBlockId)
+  const [localActiveBlockId, setLocalActiveBlockId] = React.useState(
+    activeBlockId ?? blocks[0]?.id
+  )
+  const firstBlock = blocks[0]
+  const activeBlock =
+    blocks.find(
+      (block) => block.id === (activeBlockId ?? localActiveBlockId)
+    ) ?? firstBlock
   const virtualizer = useVirtualizer({
     count: blocks.length,
     estimateSize: () => OCR_BLOCK_ROW_ESTIMATE,
@@ -8199,106 +8225,81 @@ export function OcrBlocksBlock({
     overscan: 8,
   })
 
+  const focusBlock = React.useCallback(
+    (block: OcrBlock) => {
+      setLocalActiveBlockId(block.id)
+      onBlockFocus?.(block)
+    },
+    [onBlockFocus]
+  )
+
   React.useEffect(() => {
-    if (!blocks.length || blocks.some((block) => block.id === activeBlockId)) {
+    if (!firstBlock) return
+    if (
+      activeBlockId ||
+      blocks.some((block) => block.id === localActiveBlockId)
+    ) {
       return
     }
 
-    setActiveBlockId(blocks[0].id)
-  }, [activeBlockId, blocks])
-
-  const focusBlock = React.useCallback((block: OcrBlock) => {
-    const area = blockToArea(block)
-
-    setActiveBlockId(block.id)
-    viewerRef.current?.scrollToPageArea(block.page, {
-      left: Number.parseFloat(String(area.left)),
-      top: Number.parseFloat(String(area.top)),
-      width: Number.parseFloat(String(area.width)),
-      height: Number.parseFloat(String(area.height)),
-    })
-  }, [])
+    setLocalActiveBlockId(firstBlock.id)
+  }, [activeBlockId, blocks, firstBlock, localActiveBlockId])
 
   return (
-    <PdfBlockResizableShell
-      autoSaveId="pdf-block-ocr"
-      left={
-        <PDFViewer
-          ref={viewerRef}
-          file={file}
-          defaultZoom={0.75}
-          renderPageOverlay={({ pageNumber }) =>
-            blocks
-              .filter((block) => block.page === pageNumber)
-              .map((block) => {
-                const style = BLOCK_STYLES[block.type]
-
-                return (
-                  <div
-                    key={block.id}
-                    className={cn(
-                      "pointer-events-none absolute z-10 border",
-                      block.id === activeBlock?.id
-                        ? style.overlay
-                        : style.mutedOverlay
-                    )}
-                    style={blockToArea(block)}
-                  />
-                )
-              })
-          }
-        />
-      }
-      right={
-        <aside className="min-h-0 bg-background">
-          <ScrollArea
-            className="h-full"
-            scrollFade
-            viewportRef={scrollViewportRef}
+    <aside
+      className={cn("flex h-[420px] min-h-0 flex-col bg-background", className)}
+    >
+      <ScrollArea
+        className="min-h-0 flex-1"
+        scrollFade
+        viewportRef={scrollViewportRef}
+      >
+        {blocks.length ? (
+          <div
+            className="relative"
+            style={{
+              height: virtualizer.getTotalSize() + OCR_BLOCK_LIST_PADDING * 2,
+            }}
           >
-            {blocks.length ? (
-              <div
-                className="relative"
-                style={{
-                  height:
-                    virtualizer.getTotalSize() + OCR_BLOCK_LIST_PADDING * 2,
-                }}
-              >
-                {virtualizer.getVirtualItems().map((virtualRow) => {
-                  const block = blocks[virtualRow.index]
-                  if (!block) return null
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const block = blocks[virtualRow.index]
+              if (!block) return null
 
-                  return (
-                    <div
-                      key={virtualRow.key}
-                      ref={virtualizer.measureElement}
-                      data-index={virtualRow.index}
-                      className="absolute top-0 right-3 left-3"
-                      style={{
-                        transform: `translateY(${
-                          virtualRow.start + OCR_BLOCK_LIST_PADDING
-                        }px)`,
-                      }}
-                    >
-                      <OcrBlockButton
-                        block={block}
-                        isActive={block.id === activeBlock?.id}
-                        onFocusBlock={focusBlock}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="p-3">
-                <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-                  No OCR blocks found.
+              return (
+                <div
+                  key={virtualRow.key}
+                  ref={virtualizer.measureElement}
+                  data-index={virtualRow.index}
+                  className="absolute top-0 right-3 left-3"
+                  style={{
+                    transform: `translateY(${
+                      virtualRow.start + OCR_BLOCK_LIST_PADDING
+                    }px)`,
+                  }}
+                >
+                  <OcrBlockButton
+                    block={block}
+                    isActive={block.id === activeBlock?.id}
+                    onFocusBlock={focusBlock}
+                  />
                 </div>
-              </div>
-            )}
-          </ScrollArea>
-        </aside>
-      }
-    />
+              )
+            })}
+          </div>
+        ) : (
+          <div className="p-3">
+            <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+              No OCR blocks found.
+            </div>
+          </div>
+        )}
+      </ScrollArea>
+    </aside>
+  )
+}
+
+export function OcrBlocks() {
+  return (
+    <OcrBlocksPanel blocks={getOcrBlocks(ATTENTION_OCR_OUTPUT).slice(0, 12)} />
   )
 }

@@ -17,7 +17,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { prepareFileTreeInput } from "@pierre/trees"
 import { FileTree as PierreFileTree, useFileTree } from "@pierre/trees/react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import type { ImperativePanelHandle } from "react-resizable-panels"
+import type { PanelImperativeHandle } from "react-resizable-panels"
 
 import { siteConfig } from "@/lib/config"
 import { cn } from "@/lib/utils"
@@ -51,6 +51,17 @@ type LoadedBlockCodeSample = BlockCodeSample & {
   lineCount: number
 }
 
+type PdfViewerBlock = {
+  id: string
+  title: string
+  description: string
+  command: string
+  docsHref: string
+  component: React.ComponentType
+  hideHeader?: boolean
+  previewHeightClassName?: string
+}
+
 type BlockViewportSize = "desktop" | "tablet" | "mobile"
 type BlockView = "preview" | "code"
 
@@ -79,13 +90,13 @@ const OcrBlocksBlock = dynamic(
   }
 )
 
-const pdfViewerBlocks = [
+const pdfViewerBlocks: PdfViewerBlock[] = [
   {
     id: "human-review",
     title: "Human Review",
     description:
       "Extraction review cards connected to source evidence in the PDF viewer.",
-    command: getRegistryAddCommand("human-review"),
+    command: getRegistryAddCommand("human-review-block"),
     docsHref: "/docs/components/human-review",
     component: HumanReviewBlock,
   },
@@ -104,7 +115,7 @@ const pdfViewerBlocks = [
     description:
       "Structured OCR review with typed blocks, confidence, and page overlays.",
     hideHeader: true,
-    command: getRegistryAddCommand("ocr-blocks"),
+    command: getRegistryAddCommand("ocr-blocks-block"),
     docsHref: "/docs/components/ocr-blocks",
     component: OcrBlocksBlock,
   },
@@ -123,7 +134,7 @@ const pdfViewerBlocks = [
     title: "Document Splits",
     description:
       "Lazy page thumbnails, draggable split groups, and PDF navigation.",
-    command: getRegistryAddCommand("document-splits"),
+    command: getRegistryAddCommand("document-splits-block"),
     docsHref: "/docs/components/document-splits",
     component: DocumentSplitsBlock,
   },
@@ -144,6 +155,7 @@ const pdfViewerBlocks = [
     command: getRegistryAddCommand("docx-editor-block"),
     docsHref: "/docs/components/docx-editor",
     component: DocxEditorBlock,
+    previewHeightClassName: "h-[720px]",
   },
 ]
 
@@ -182,10 +194,12 @@ function PdfViewerBlockPreview({
     codeSamples[0]?.targetPath ?? null
   )
   const isMounted = useMounted()
-  const previewPanelRef = React.useRef<ImperativePanelHandle>(null)
+  const previewPanelRef = React.useRef<PanelImperativeHandle>(null)
   const codePanelMountFrameRef = React.useRef<number | null>(null)
   const Preview = block.component
   const isDesktopViewport = useMediaQuery("(min-width: 768px)")
+  const previewHeightClassName =
+    block.previewHeightClassName ?? BLOCK_VIEWPORT_HEIGHT_CLASS
 
   const scheduleCodePanelMount = React.useCallback(() => {
     if (hasOpenedCode || codePanelMountFrameRef.current !== null) return
@@ -211,7 +225,7 @@ function PdfViewerBlockPreview({
   function resizeViewport(viewport: (typeof blockViewportSizes)[number]) {
     setView("preview")
     setActiveViewport(viewport.id)
-    previewPanelRef.current?.resize(viewport.panelSize)
+    previewPanelRef.current?.resize(`${viewport.panelSize}%`)
   }
 
   React.useEffect(() => {
@@ -336,17 +350,17 @@ function PdfViewerBlockPreview({
         </div>
         <div className={view === "preview" ? "block" : "hidden"}>
           <div
-            className={`relative hidden ${BLOCK_VIEWPORT_HEIGHT_CLASS} overflow-hidden rounded-xl border bg-muted/30 md:block`}
+            className={`relative hidden ${previewHeightClassName} box-content overflow-hidden rounded-xl border bg-muted/30 md:block`}
           >
             <div className="absolute inset-0 right-4 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:20px_20px]" />
             <ResizablePanelGroup
-              direction="horizontal"
+              orientation="horizontal"
               className="relative z-10 h-full"
             >
               <ResizablePanel
                 ref={previewPanelRef}
-                defaultSize={100}
-                minSize={30}
+                defaultSize="100%"
+                minSize="30%"
                 className="min-w-0 overflow-hidden rounded-xl bg-background"
               >
                 <BlockPreviewSurface
@@ -357,7 +371,7 @@ function PdfViewerBlockPreview({
                 />
               </ResizablePanel>
               <ResizableHandle className="relative w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-1.5 after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all after:hover:h-10" />
-              <ResizablePanel defaultSize={0} minSize={0} />
+              <ResizablePanel defaultSize="0%" minSize="0%" />
             </ResizablePanelGroup>
           </div>
           <div className="overflow-hidden rounded-xl border bg-background md:hidden">

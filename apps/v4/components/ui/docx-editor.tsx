@@ -1631,6 +1631,9 @@ function DocxEditorContent({
       : 0
   const controlsDisabled =
     !hasDocument || isLoadingDocument || Boolean(loadError)
+  const thumbnailSidebarOpen = Boolean(
+    sidebarOpen && (pageCount || isLoadingDocument)
+  )
   const handlePageCountChange = React.useCallback((nextPageCount: number) => {
     setReportedPageCount(Math.max(1, Math.round(nextPageCount || 1)))
   }, [])
@@ -1891,9 +1894,14 @@ function DocxEditorContent({
         ) : null}
         <DocumentViewerThumbnailSidebar
           inline={sidebarInline}
-          open={Boolean(sidebarOpen && (pageCount || isLoadingDocument))}
+          open={thumbnailSidebarOpen}
         >
-          <div className="h-full overflow-auto">
+          <div
+            className={cn(
+              "h-full overscroll-contain",
+              thumbnailSidebarOpen ? "overflow-auto" : "overflow-hidden"
+            )}
+          >
             <div className="p-4">
               {isLoadingDocument ? (
                 <>
@@ -1946,7 +1954,7 @@ function DocxEditorContent({
         <div
           ref={viewportRef}
           className={cn(
-            "min-h-0 flex-1 overflow-auto p-4",
+            "min-h-0 flex-1 overflow-auto overscroll-contain p-4",
             rounded && "rounded-b-lg"
           )}
           style={{ backgroundColor: viewerBackgroundColor }}

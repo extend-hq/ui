@@ -42,7 +42,7 @@ export function PdfDropzoneBlock() {
 
   if (!pdfFile) {
     return (
-      <div className="grid h-[720px] place-items-center bg-background p-4">
+      <div className="grid h-full min-h-[680px] place-items-center bg-background p-4">
         <FileUpload
           accept={PDF_ACCEPT}
           acceptedFileTypes={[{ label: "PDF", icon: FileUploadIcon }]}
@@ -60,7 +60,7 @@ export function PdfDropzoneBlock() {
   }
 
   return (
-    <div className="h-[720px] bg-background">
+    <div className="h-full min-h-[680px] bg-background">
       <PDFViewer
         key={pdfFile.url}
         file={pdfFile.url}

@@ -34,8 +34,6 @@ import { MultiFileDiff, Virtualizer } from "@pierre/diffs/react"
 import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 import { Button } from "@/registry/new-york-v4/ui/button"
 import { Input } from "@/registry/new-york-v4/ui/input"
 import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
@@ -232,7 +230,7 @@ function useHumanReviewGridTheme() {
   )
 }
 
-const REVIEW_FIELDS: ReviewField[] = [
+export const REVIEW_FIELDS: ReviewField[] = [
   {
     key: "statement_period",
     schema: {
@@ -396,7 +394,7 @@ function getCitationLocation(
   }
 }
 
-function getMetadataLocation(
+export function getMetadataLocation(
   metadata: Record<string, ReviewMetadataEntry> | undefined,
   metadataPath: string | undefined
 ) {
@@ -409,7 +407,7 @@ function getMetadataLocation(
   return citation ? getCitationLocation(citation) : undefined
 }
 
-function getReviewFieldLocation(
+export function getReviewFieldLocation(
   field: ReviewField | undefined,
   resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
 ) {
@@ -422,7 +420,7 @@ function getReviewFieldLocation(
   )
 }
 
-function getReviewLocationKey(location: ReviewLocation | undefined) {
+export function getReviewLocationKey(location: ReviewLocation | undefined) {
   if (!location) return null
 
   const { area } = location
@@ -508,7 +506,7 @@ function countReviewFields(fields: ReviewField[]): number {
   }, 0)
 }
 
-function findReviewField(
+export function findReviewField(
   fields: ReviewField[],
   fieldKey: string | undefined
 ): ReviewField | undefined {
@@ -1913,7 +1911,11 @@ function HumanReviewFieldCardBase({
   )
 }
 
-function HumanReviewHighlight({ location }: { location: ReviewLocation }) {
+export function HumanReviewHighlight({
+  location,
+}: {
+  location: ReviewLocation
+}) {
   const area = location.area
 
   return (
@@ -2091,112 +2093,5 @@ export function HumanReviewPanel({
         </TabsContent>
       </Tabs>
     </TooltipProvider>
-  )
-}
-
-export function HumanReviewBlock({
-  file,
-  fields = REVIEW_FIELDS,
-  className,
-  metadata,
-  resolveArrayItemMetadataPath,
-  resolveLocation,
-  theme,
-}: {
-  file?: string
-  fields?: ReviewField[]
-  className?: string
-  metadata?: Record<string, ReviewMetadataEntry>
-  resolveArrayItemMetadataPath?: (
-    metadataPath: string,
-    rowIndex: number,
-    rowValue: JsonValue
-  ) => string | undefined
-  resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
-  theme?: HumanReviewTheme
-}) {
-  const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0]?.key)
-  const [hoverLocation, setHoverLocation] =
-    React.useState<ReviewLocation | null>(null)
-  const viewerRef = React.useRef<PDFViewerHandle>(null)
-  const hoverLocationKeyRef = React.useRef<string | null>(null)
-  const resolveFieldLocation = React.useCallback(
-    (metadataPath: string) =>
-      resolveLocation?.(metadataPath) ??
-      getMetadataLocation(metadata, metadataPath),
-    [metadata, resolveLocation]
-  )
-  const activeField = findReviewField(fields, activeFieldKey) ?? fields[0]
-  const activeLocation =
-    hoverLocation ?? getReviewFieldLocation(activeField, resolveFieldLocation)
-
-  React.useEffect(() => {
-    if (activeFieldKey || !fields[0]) return
-    setActiveFieldKey(fields[0].key)
-  }, [activeFieldKey, fields])
-
-  const focusField = React.useCallback(
-    (field: ReviewField) => {
-      if (field.key === activeFieldKey) return
-
-      setActiveFieldKey(field.key)
-
-      const location = getReviewFieldLocation(field, resolveFieldLocation)
-      if (location) {
-        viewerRef.current?.scrollToPageArea(location.page, location.area)
-      }
-    },
-    [activeFieldKey, resolveFieldLocation]
-  )
-  const handleLocationHover = React.useCallback((location?: ReviewLocation) => {
-    setHoverLocation(location ?? null)
-
-    const locationKey = getReviewLocationKey(location)
-    if (!location) {
-      hoverLocationKeyRef.current = null
-      return
-    }
-    if (locationKey === hoverLocationKeyRef.current) return
-
-    hoverLocationKeyRef.current = locationKey
-    viewerRef.current?.scrollToPageArea(location.page, location.area, {
-      behavior: "auto",
-    })
-  }, [])
-
-  return (
-    <PdfBlockResizableShell
-      autoSaveId="pdf-block-human-review"
-      className={className}
-      rightDefaultSize={42}
-      rightMaxSize={60}
-      rightMinSize={30}
-      left={
-        <PDFViewer
-          ref={viewerRef}
-          file={file}
-          defaultZoom={DEFAULT_ZOOM}
-          renderPageOverlay={({ pageNumber }) =>
-            activeLocation?.page === pageNumber ? (
-              <HumanReviewHighlight location={activeLocation} />
-            ) : null
-          }
-        />
-      }
-      right={
-        <aside className="min-h-0 bg-background">
-          <HumanReviewPanel
-            fields={fields}
-            activeFieldKey={activeField?.key}
-            className="h-full min-h-0"
-            theme={theme}
-            onFieldFocus={focusField}
-            onLocationHover={handleLocationHover}
-            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
-            resolveLocation={resolveFieldLocation}
-          />
-        </aside>
-      }
-    />
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useDefaultLayout } from "react-resizable-panels"
 
 import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -23,6 +24,10 @@ type PdfBlockResizableShellProps = {
   rightMinSize?: number
 }
 
+function toPercentSize(size: number) {
+  return `${size}%`
+}
+
 export function PdfBlockResizableShell({
   autoSaveId,
   className,
@@ -36,35 +41,49 @@ export function PdfBlockResizableShell({
   rightMinSize = 24,
 }: PdfBlockResizableShellProps) {
   const isDesktop = useMediaQuery("lg")
-  const direction = isDesktop ? "horizontal" : "vertical"
+  const orientation = isDesktop ? "horizontal" : "vertical"
   const resolvedLeftDefaultSize =
     leftDefaultSize ?? (isDesktop ? 100 - rightDefaultSize : 62)
+  const layoutId = `${autoSaveId}-${orientation}`
+  const leftPanelId = `${layoutId}-left`
+  const rightPanelId = `${layoutId}-right`
+  const panelIds = React.useMemo(
+    () => [leftPanelId, rightPanelId],
+    [leftPanelId, rightPanelId]
+  )
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: layoutId,
+    panelIds,
+  })
 
   return (
     <div
       className={cn(
         heightClassName,
-        "relative max-h-[calc(100vh-8rem)] min-h-[420px] overflow-hidden bg-background",
+        "relative min-h-[420px] overflow-hidden bg-background",
         className
       )}
     >
       <ResizablePanelGroup
-        direction={direction}
-        autoSaveId={`${autoSaveId}-${direction}`}
+        orientation={orientation}
+        defaultLayout={defaultLayout}
+        onLayoutChanged={onLayoutChanged}
         className="h-full min-h-0"
       >
         <ResizablePanel
-          defaultSize={resolvedLeftDefaultSize}
-          minSize={leftMinSize ?? (isDesktop ? 42 : 34)}
+          id={leftPanelId}
+          defaultSize={toPercentSize(resolvedLeftDefaultSize)}
+          minSize={toPercentSize(leftMinSize ?? (isDesktop ? 42 : 34))}
           className="min-h-0 min-w-0 overflow-hidden"
         >
           {left}
         </ResizablePanel>
         <ResizableHandle className="group z-[1000]" withHandle />
         <ResizablePanel
-          defaultSize={isDesktop ? rightDefaultSize : 38}
-          minSize={isDesktop ? rightMinSize : 24}
-          maxSize={isDesktop ? rightMaxSize : 66}
+          id={rightPanelId}
+          defaultSize={toPercentSize(isDesktop ? rightDefaultSize : 38)}
+          minSize={toPercentSize(isDesktop ? rightMinSize : 24)}
+          maxSize={toPercentSize(isDesktop ? rightMaxSize : 66)}
           className="min-h-0 min-w-0 overflow-hidden"
         >
           {right}

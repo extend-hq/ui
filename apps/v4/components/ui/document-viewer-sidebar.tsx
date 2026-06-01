@@ -44,13 +44,33 @@ export function DocumentViewerThumbnailSidebar({
   inline: boolean
   open: boolean
 }) {
+  const [transitionsReady, setTransitionsReady] = React.useState(false)
+  const shouldAnimateSidebar = transitionsReady && open
+
+  React.useEffect(() => {
+    let secondFrameId = 0
+    const firstFrameId = window.requestAnimationFrame(() => {
+      secondFrameId = window.requestAnimationFrame(() => {
+        setTransitionsReady(true)
+      })
+    })
+
+    return () => {
+      window.cancelAnimationFrame(firstFrameId)
+      window.cancelAnimationFrame(secondFrameId)
+    }
+  }, [])
+
   return (
     <aside
       data-document-thumbnail-sidebar=""
       data-sidebar-mode={inline ? "inline" : "overlay"}
       data-sidebar-open={open ? "true" : "false"}
       className={cn(
-        "absolute inset-y-0 left-0 z-30 w-40 shrink-0 overflow-hidden border-r bg-sidebar shadow-lg transition-[translate,margin-left,border-color] duration-200 ease-out",
+        "absolute inset-y-0 left-0 z-30 w-40 shrink-0 overflow-hidden border-r bg-sidebar shadow-lg",
+        shouldAnimateSidebar
+          ? "transition-[translate,margin-left,border-color] duration-200 ease-out"
+          : "transition-none",
         inline && "relative z-auto translate-x-0 shadow-none",
         open
           ? "ml-0 translate-x-0"
