@@ -513,6 +513,48 @@ function formatValue(value: JsonValue) {
   return String(value)
 }
 
+function areGridRangesEqual(
+  left: Readonly<Rectangle> | undefined,
+  right: Readonly<Rectangle> | undefined
+) {
+  return (
+    left === right ||
+    (left !== undefined &&
+      right !== undefined &&
+      left.x === right.x &&
+      left.y === right.y &&
+      left.width === right.width &&
+      left.height === right.height)
+  )
+}
+
+function areGridRangeStacksEqual(
+  left: readonly Readonly<Rectangle>[] | undefined,
+  right: readonly Readonly<Rectangle>[] | undefined
+) {
+  if (left === right) return true
+  if (!left || !right || left.length !== right.length) return false
+
+  return left.every((range, index) => areGridRangesEqual(range, right[index]))
+}
+
+function areGridSelectionsEqual(left: GridSelection, right: GridSelection) {
+  const leftCurrent = left.current
+  const rightCurrent = right.current
+
+  return (
+    leftCurrent?.cell[0] === rightCurrent?.cell[0] &&
+    leftCurrent?.cell[1] === rightCurrent?.cell[1] &&
+    areGridRangesEqual(leftCurrent?.range, rightCurrent?.range) &&
+    areGridRangeStacksEqual(
+      leftCurrent?.rangeStack,
+      rightCurrent?.rangeStack
+    ) &&
+    left.columns.equals(right.columns) &&
+    left.rows.equals(right.rows)
+  )
+}
+
 function getFieldIcon(type: SchemaPropertyType) {
   if (type === "number" || type === "integer") return InputNumericIcon
   if (type === "boolean") return TextCheckIcon
@@ -917,7 +959,9 @@ function HumanReviewArrayValueGrid({
         return
       }
 
-      setLocalGridSelection(selection)
+      setLocalGridSelection((current) =>
+        areGridSelectionsEqual(current, selection) ? current : selection
+      )
     },
     [nestedStackBaseDepth, onGridSelectionChange, viewSide]
   )
@@ -1009,7 +1053,7 @@ function HumanReviewArrayValueGrid({
           kind: GridCellKind.Number,
           data: typeof cellValue === "number" ? cellValue : undefined,
           displayData: typeof cellValue === "number" ? String(cellValue) : "",
-          allowOverlay: !readOnly,
+          allowOverlay: true,
           readonly: readOnly,
           ...(selectionCellTheme ? { themeOverride: selectionCellTheme } : {}),
         }
@@ -1029,7 +1073,7 @@ function HumanReviewArrayValueGrid({
           isJsonArray(cellValue)
             ? ""
             : String(cellValue),
-        allowOverlay: !readOnly,
+        allowOverlay: true,
         readonly: readOnly,
         ...(selectionCellTheme ? { themeOverride: selectionCellTheme } : {}),
       }
@@ -1406,11 +1450,19 @@ function HumanReviewFieldCardBase({
   )
   const updateSyncedArraySelection = React.useCallback(
     (gridSelection: GridSelection, side: ArrayReviewSide, depth: number) => {
-      setSyncedArraySelection({
-        activeSide: gridSelection.current ? side : null,
-        depth,
-        gridSelection,
-      })
+      const activeSide = gridSelection.current ? side : null
+
+      setSyncedArraySelection((current) =>
+        current.activeSide === activeSide &&
+        current.depth === depth &&
+        areGridSelectionsEqual(current.gridSelection, gridSelection)
+          ? current
+          : {
+              activeSide,
+              depth,
+              gridSelection,
+            }
+      )
     },
     []
   )
@@ -1787,16 +1839,21 @@ export function HumanReviewBlock({
     setActiveFieldKey(fields[0].key)
   }, [activeFieldKey, fields])
 
-  const focusField = React.useCallback((field: ReviewField) => {
-    setActiveFieldKey(field.key)
+  const focusField = React.useCallback(
+    (field: ReviewField) => {
+      if (field.key === activeFieldKey) return
 
-    if (field.location) {
-      viewerRef.current?.scrollToPageArea(
-        field.location.page,
-        field.location.area
-      )
-    }
-  }, [])
+      setActiveFieldKey(field.key)
+
+      if (field.location) {
+        viewerRef.current?.scrollToPageArea(
+          field.location.page,
+          field.location.area
+        )
+      }
+    },
+    [activeFieldKey]
+  )
 
   return (
     <PdfBlockResizableShell
