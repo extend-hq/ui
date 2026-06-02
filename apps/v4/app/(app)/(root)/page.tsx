@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 export default function IndexPage() {
   return (
     <div className="flex flex-1 flex-col">
-      <PageHeader className="[&_.container]:pt-12 md:[&_.container]:pt-16 lg:[&_.container]:pt-20">
+      <PageHeader className="[&_.container]:pt-4 md:[&_.container]:pt-8 lg:[&_.container]:pt-10">
         <RootLiquidLogo />
         <PageHeaderHeading className="max-w-4xl">{title}</PageHeaderHeading>
         <PageHeaderDescription>{description}</PageHeaderDescription>
