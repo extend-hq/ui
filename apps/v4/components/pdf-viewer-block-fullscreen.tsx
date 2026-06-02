@@ -16,7 +16,12 @@ import { ESignatureBlock } from "@/components/e-signature-docs"
 import { HumanReviewBlock } from "@/components/human-review-docs"
 import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
-const OcrBlocksBlock = dynamic(
+type PdfViewerBlockFullscreenPreviewProps = {
+  defaultViewerZoom?: number
+  heightClassName?: string
+}
+
+const OcrBlocksBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
   () =>
     import("@/components/ocr-blocks-docs").then((mod) => mod.OcrBlocksBlock),
   {
@@ -32,7 +37,10 @@ const blockComponents = {
   "document-splits": DocumentSplitsBlock,
   "excel-document-splits": XlsxDocumentSplitsBlock,
   "docx-editor-block": DocxEditorBlock,
-} satisfies Record<PdfViewerBlockId, React.ComponentType>
+} satisfies Record<
+  PdfViewerBlockId,
+  React.ComponentType<PdfViewerBlockFullscreenPreviewProps>
+>
 
 function BlockViewPlaceholder() {
   return <div className="h-dvh bg-muted/20" />
@@ -47,7 +55,7 @@ export function PdfViewerBlockFullscreen({ blockId }: { blockId: string }) {
 
   return (
     <main className="h-dvh min-h-0 overflow-hidden bg-background [&>*]:h-full [&>*]:min-h-0">
-      <Preview />
+      <Preview key={block.id} defaultViewerZoom={1} heightClassName="h-full" />
     </main>
   )
 }

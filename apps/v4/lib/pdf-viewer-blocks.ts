@@ -3,6 +3,7 @@ import { siteConfig } from "@/lib/config"
 type PdfViewerBlockConfig = {
   id: string
   title: string
+  badge?: string
   description: string
   command: string
   docsHref: string
@@ -75,6 +76,7 @@ export const PDF_VIEWER_BLOCKS = [
   {
     id: "docx-editor-block",
     title: "DOCX Editor",
+    badge: "Experimental",
     description:
       "A Word-style document editor with formatting controls, page thumbnails, and DOCX export.",
     command: getRegistryAddCommand("docx-editor-block"),

@@ -2594,7 +2594,11 @@ function HumanReviewPanel({
   )
 }
 
-export function HumanReviewBlock() {
+export function HumanReviewBlock({
+  defaultViewerZoom = DEFAULT_ZOOM,
+}: {
+  defaultViewerZoom?: number
+} = {}) {
   const { resolvedTheme } = useTheme()
   const fields = BLOCK_REVIEW_SCHEMA
   const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0].key)
@@ -2644,7 +2648,7 @@ export function HumanReviewBlock() {
         <PDFViewer
           ref={viewerRef}
           file={BLOCK_REVIEW_PDF_URL}
-          defaultZoom={DEFAULT_ZOOM}
+          defaultZoom={defaultViewerZoom}
           renderPageOverlay={({ pageNumber }) =>
             activeLocation?.page === pageNumber ? (
               <HumanReviewHighlight location={activeLocation} />

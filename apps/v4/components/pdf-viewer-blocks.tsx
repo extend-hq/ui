@@ -218,12 +218,19 @@ function PdfViewerBlockPreview({
       >
         <div className="flex min-h-11 flex-wrap items-center gap-2 px-2 pb-2">
           <BlockViewToggle view={view} onViewChange={setBlockView} />
-          <a
-            href={`#${block.id}`}
-            className="min-w-0 flex-1 truncate text-sm font-medium underline-offset-2 hover:underline"
-          >
-            {block.title}
-          </a>
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <a
+              href={`#${block.id}`}
+              className="min-w-0 truncate text-sm font-medium underline-offset-2 hover:underline"
+            >
+              {block.title}
+            </a>
+            {block.badge ? (
+              <span className="shrink-0 rounded-full border bg-background px-1.5 text-[0.625rem] leading-4 tracking-wide text-muted-foreground uppercase">
+                {block.badge}
+              </span>
+            ) : null}
+          </div>
           <div className="ml-auto flex min-w-0 items-center gap-2">
             <div className="hidden items-center gap-1 rounded-md border bg-background p-0.5 sm:flex">
               {blockViewportSizes.map((viewport) => (

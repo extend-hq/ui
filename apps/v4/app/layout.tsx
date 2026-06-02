@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 
@@ -73,7 +74,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={fontVariables}>
       <head>
-        <script
+        <Script
+          id="theme-layout-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               try {

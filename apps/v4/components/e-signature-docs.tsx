@@ -81,16 +81,26 @@ function normalizeBoundingBox(
   start: { x: number; y: number },
   end: { x: number; y: number }
 ): BoundingBox {
-  const x = Math.min(start.x, end.x)
-  const y = Math.min(start.y, end.y)
-  const width = Math.abs(end.x - start.x)
-  const height = Math.abs(end.y - start.y)
+  const isDraggingRight = end.x >= start.x
+  const isDraggingDown = end.y >= start.y
+  const maxWidth = isDraggingRight ? PAGE_WIDTH - start.x : start.x
+  const maxHeight = isDraggingDown ? PAGE_HEIGHT - start.y : start.y
+  const width = Math.min(
+    Math.max(Math.abs(end.x - start.x), Math.min(MIN_FIELD_WIDTH, maxWidth)),
+    maxWidth
+  )
+  const height = Math.min(
+    Math.max(Math.abs(end.y - start.y), Math.min(MIN_FIELD_HEIGHT, maxHeight)),
+    maxHeight
+  )
+  const x = isDraggingRight ? start.x : start.x - width
+  const y = isDraggingDown ? start.y : start.y - height
 
   return {
-    x: clamp(x, 0, PAGE_WIDTH - MIN_FIELD_WIDTH),
-    y: clamp(y, 0, PAGE_HEIGHT - MIN_FIELD_HEIGHT),
-    width: clamp(width, MIN_FIELD_WIDTH, PAGE_WIDTH - x),
-    height: clamp(height, MIN_FIELD_HEIGHT, PAGE_HEIGHT - y),
+    x: clamp(x, 0, PAGE_WIDTH),
+    y: clamp(y, 0, PAGE_HEIGHT),
+    width: clamp(width, 0, PAGE_WIDTH - x),
+    height: clamp(height, 0, PAGE_HEIGHT - y),
   }
 }
 
@@ -149,70 +159,20 @@ function getSignatureGuideSize({
   }
 }
 
-function getCroppedSignatureDataUrl(canvas: HTMLCanvasElement): string {
-  const context = canvas.getContext("2d")
-  if (!context) {
-    return canvas.toDataURL("image/png")
-  }
-
-  const { width, height } = canvas
-  const imageData = context.getImageData(0, 0, width, height)
-  const { data } = imageData
-  let minX = width
-  let minY = height
-  let maxX = -1
-  let maxY = -1
-
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const alpha = data[(y * width + x) * 4 + 3]
-      if (alpha === 0) continue
-
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x)
-      maxY = Math.max(maxY, y)
-    }
-  }
-
-  if (maxX < minX || maxY < minY) {
-    return canvas.toDataURL("image/png")
-  }
-
-  const croppedWidth = maxX - minX + 1
-  const croppedHeight = maxY - minY + 1
-  const croppedCanvas = document.createElement("canvas")
-  croppedCanvas.width = croppedWidth
-  croppedCanvas.height = croppedHeight
-
-  const croppedContext = croppedCanvas.getContext("2d")
-  if (!croppedContext) {
-    return canvas.toDataURL("image/png")
-  }
-
-  croppedContext.drawImage(
-    canvas,
-    minX,
-    minY,
-    croppedWidth,
-    croppedHeight,
-    0,
-    0,
-    croppedWidth,
-    croppedHeight
-  )
-
-  return croppedCanvas.toDataURL("image/png")
+function getSignatureDataUrl(canvas: HTMLCanvasElement): string {
+  return canvas.toDataURL("image/png")
 }
 
 function SignatureDialog({
   open,
   fieldBbox,
+  initialValue,
   onOpenChange,
   onConfirm,
 }: {
   open: boolean
   fieldBbox: BoundingBox
+  initialValue?: string
   onOpenChange: (open: boolean) => void
   onConfirm: (value: string) => void
 }) {
@@ -331,8 +291,8 @@ function SignatureDialog({
       if (cancelled) return
 
       const signaturePad = new SignaturePadConstructor(canvas, {
-        minWidth: 1.4,
-        maxWidth: 2.8,
+        minWidth: 1,
+        maxWidth: 2,
         penColor: SIGNATURE_PAD_PEN_COLOR,
       })
 
@@ -351,7 +311,7 @@ function SignatureDialog({
         setHasSignature(false)
       }
 
-      await loadSignature()
+      await loadSignature(initialValue)
       if (cancelled) return
 
       signaturePad.addEventListener("endStroke", () => {
@@ -384,7 +344,7 @@ function SignatureDialog({
       signaturePadRef.current = null
       setIsReady(false)
     }
-  }, [open, guideSize])
+  }, [open, guideSize, initialValue])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -396,14 +356,14 @@ function SignatureDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogPanel>
-          <div className="rounded-xl border bg-muted/30 p-3">
+          <div className="rounded-xl border bg-white p-3 text-slate-950 shadow-xs dark:bg-white dark:text-slate-950">
             <div
               ref={canvasContainerRef}
-              className="flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border bg-muted/40 p-2"
+              className="flex h-56 w-full items-center justify-center overflow-hidden rounded-lg bg-white p-2 dark:bg-white"
             >
               <div
                 className={cn(
-                  "relative overflow-hidden rounded-md border border-dashed border-input bg-white shadow-xs",
+                  "relative overflow-hidden rounded-[3px] border border-dashed border-blue-500/70 bg-white",
                   isReady ? "cursor-crosshair" : "cursor-wait"
                 )}
                 style={{
@@ -455,7 +415,7 @@ function SignatureDialog({
                 const canvas = canvasRef.current
                 if (!canvas) return
 
-                onConfirm(getCroppedSignatureDataUrl(canvas))
+                onConfirm(getSignatureDataUrl(canvas))
                 onOpenChange(false)
               }}
             >
@@ -491,7 +451,7 @@ function SignatureFieldOverlay({
         <img
           src={field.imageDataUrl}
           alt=""
-          className="size-full object-contain"
+          className="size-full object-fill"
           draggable={false}
         />
       ) : (
@@ -519,24 +479,14 @@ async function downloadSignedPdf(field: SignatureField) {
     const scaleY = pageHeight / PAGE_HEIGHT
     const fieldWidth = field.bbox.width * scaleX
     const fieldHeight = field.bbox.height * scaleY
-    const imageAspectRatio = signatureImage.width / signatureImage.height
-    const fieldAspectRatio = fieldWidth / fieldHeight
-    const drawWidth =
-      fieldAspectRatio > imageAspectRatio
-        ? fieldHeight * imageAspectRatio
-        : fieldWidth
-    const drawHeight =
-      fieldAspectRatio > imageAspectRatio
-        ? fieldHeight
-        : fieldWidth / imageAspectRatio
     const fieldX = field.bbox.x * scaleX
     const fieldY = pageHeight - (field.bbox.y + field.bbox.height) * scaleY
 
     page.drawImage(signatureImage, {
-      x: fieldX + (fieldWidth - drawWidth) / 2,
-      y: fieldY + (fieldHeight - drawHeight) / 2,
-      width: drawWidth,
-      height: drawHeight,
+      x: fieldX,
+      y: fieldY,
+      width: fieldWidth,
+      height: fieldHeight,
     })
   }
 
@@ -608,6 +558,7 @@ function SignatureFieldsPanel({
       <SignatureDialog
         open={dialogOpen}
         fieldBbox={field.bbox}
+        initialValue={field.imageDataUrl}
         onOpenChange={setDialogOpen}
         onConfirm={(imageDataUrl) => {
           onFieldChange({ ...field, imageDataUrl })
@@ -623,7 +574,11 @@ export function ESignature() {
   return <SignatureFieldsPanel field={field} onFieldChange={setField} />
 }
 
-export function ESignatureBlock() {
+export function ESignatureBlock({
+  defaultViewerZoom = DEFAULT_ZOOM,
+}: {
+  defaultViewerZoom?: number
+} = {}) {
   const [field, setField] = React.useState<SignatureField>(INITIAL_FIELD)
   const [isDrawing, setIsDrawing] = React.useState(false)
   const [drawStart, setDrawStart] = React.useState<{
@@ -743,7 +698,7 @@ export function ESignatureBlock() {
       left={
         <PDFViewer
           file={PDF_URL}
-          defaultZoom={DEFAULT_ZOOM}
+          defaultZoom={defaultViewerZoom}
           pageWidth={PAGE_WIDTH}
           pageHeight={PAGE_HEIGHT}
           pageClassName={() =>
@@ -1007,7 +962,7 @@ export function ESignatureExample() {
 }`
 
 const eSignatureSourceCode =
-  '"use client"\n\nimport * as React from "react"\nimport {\n  Download01Icon,\n  FilePenIcon,\n  Pen01Icon,\n} from "@hugeicons/core-free-icons"\nimport { HugeiconsIcon } from "@hugeicons/react"\nimport type SignaturePad from "signature_pad"\n\nimport { cn } from "@/lib/utils"\nimport { PDFViewer } from "@/components/ui/pdf-viewer"\nimport { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"\nimport { Button } from "@/registry/new-york-v4/ui/button"\nimport {\n  Dialog,\n  DialogContent,\n  DialogDescription,\n  DialogFooter,\n  DialogHeader,\n  DialogPanel,\n  DialogTitle,\n} from "@/registry/new-york-v4/ui/dialog"\nimport { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"\n\ntype BoundingBox = {\n  x: number\n  y: number\n  width: number\n  height: number\n}\n\ntype SignatureField = {\n  id: string\n  label: string\n  page: number\n  bbox: BoundingBox\n  imageDataUrl?: string\n}\n\nconst PAGE_WIDTH = 612\nconst PAGE_HEIGHT = 792\nconst DEFAULT_ZOOM = 0.75\nconst SIGNATURE_PAD_PADDING = 8\nconst SIGNATURE_PAD_BACKGROUND_COLOR = "#ffffff"\nconst SIGNATURE_PAD_PEN_COLOR = "#000000"\nconst DEFAULT_SIGNATURE_ASPECT_RATIO = 3\n\nconst INITIAL_FIELD: SignatureField = {\n  id: "signature-1",\n  label: "Signature",\n  page: 1,\n  bbox: { x: 300, y: 504, width: 250, height: 58 },\n}\n\nfunction bboxToStyle(bbox: BoundingBox): React.CSSProperties {\n  return {\n    left: `${(bbox.x / PAGE_WIDTH) * 100}%`,\n    top: `${(bbox.y / PAGE_HEIGHT) * 100}%`,\n    width: `${(bbox.width / PAGE_WIDTH) * 100}%`,\n    height: `${(bbox.height / PAGE_HEIGHT) * 100}%`,\n  }\n}\n\nfunction getSignatureAspectRatio(bbox?: BoundingBox): number {\n  if (!bbox || bbox.width <= 0 || bbox.height <= 0) {\n    return DEFAULT_SIGNATURE_ASPECT_RATIO\n  }\n\n  return bbox.width / bbox.height\n}\n\nfunction getSignatureGuideSize({\n  containerWidth,\n  containerHeight,\n  aspectRatio,\n}: {\n  containerWidth: number\n  containerHeight: number\n  aspectRatio: number\n}): { width: number; height: number } {\n  const maxWidth = Math.max(containerWidth - SIGNATURE_PAD_PADDING * 2, 1)\n  const maxHeight = Math.max(containerHeight - SIGNATURE_PAD_PADDING * 2, 1)\n\n  if (maxWidth / maxHeight > aspectRatio) {\n    const height = maxHeight\n    return {\n      width: height * aspectRatio,\n      height,\n    }\n  }\n\n  const width = maxWidth\n  return {\n    width,\n    height: width / aspectRatio,\n  }\n}\n\nfunction getCroppedSignatureDataUrl(canvas: HTMLCanvasElement): string {\n  const context = canvas.getContext("2d")\n  if (!context) {\n    return canvas.toDataURL("image/png")\n  }\n\n  const { width, height } = canvas\n  const imageData = context.getImageData(0, 0, width, height)\n  const { data } = imageData\n  let minX = width\n  let minY = height\n  let maxX = -1\n  let maxY = -1\n\n  for (let y = 0; y < height; y += 1) {\n    for (let x = 0; x < width; x += 1) {\n      const alpha = data[(y * width + x) * 4 + 3]\n      if (alpha === 0) continue\n\n      minX = Math.min(minX, x)\n      minY = Math.min(minY, y)\n      maxX = Math.max(maxX, x)\n      maxY = Math.max(maxY, y)\n    }\n  }\n\n  if (maxX < minX || maxY < minY) {\n    return canvas.toDataURL("image/png")\n  }\n\n  const croppedWidth = maxX - minX + 1\n  const croppedHeight = maxY - minY + 1\n  const croppedCanvas = document.createElement("canvas")\n  croppedCanvas.width = croppedWidth\n  croppedCanvas.height = croppedHeight\n\n  const croppedContext = croppedCanvas.getContext("2d")\n  if (!croppedContext) {\n    return canvas.toDataURL("image/png")\n  }\n\n  croppedContext.drawImage(\n    canvas,\n    minX,\n    minY,\n    croppedWidth,\n    croppedHeight,\n    0,\n    0,\n    croppedWidth,\n    croppedHeight\n  )\n\n  return croppedCanvas.toDataURL("image/png")\n}\n\nfunction SignatureDialog({\n  open,\n  fieldBbox,\n  initialValue,\n  onOpenChange,\n  onConfirm,\n}: {\n  open: boolean\n  fieldBbox: BoundingBox\n  initialValue?: string\n  onOpenChange: (open: boolean) => void\n  onConfirm: (value: string) => void\n}) {\n  const canvasContainerRef = React.useRef<HTMLDivElement>(null)\n  const canvasRef = React.useRef<HTMLCanvasElement>(null)\n  const signaturePadRef = React.useRef<SignaturePad | null>(null)\n  const [isReady, setIsReady] = React.useState(false)\n  const [hasSignature, setHasSignature] = React.useState(false)\n  const [guideSize, setGuideSize] = React.useState<{\n    width: number\n    height: number\n  } | null>(null)\n  const signatureAspectRatio = React.useMemo(\n    () => getSignatureAspectRatio(fieldBbox),\n    [fieldBbox]\n  )\n\n  React.useEffect(() => {\n    if (!open) {\n      setGuideSize(null)\n      return\n    }\n\n    let frameId = 0\n    let resizeObserver: ResizeObserver | null = null\n\n    const updateGuideSize = (container?: HTMLDivElement | null) => {\n      const currentContainer = container ?? canvasContainerRef.current\n      if (\n        !currentContainer ||\n        currentContainer.clientWidth <= 0 ||\n        currentContainer.clientHeight <= 0\n      ) {\n        return false\n      }\n\n      const nextSize = getSignatureGuideSize({\n        containerWidth: currentContainer.clientWidth,\n        containerHeight: currentContainer.clientHeight,\n        aspectRatio: signatureAspectRatio,\n      })\n\n      setGuideSize((previousSize) => {\n        if (\n          previousSize &&\n          Math.abs(previousSize.width - nextSize.width) < 0.5 &&\n          Math.abs(previousSize.height - nextSize.height) < 0.5\n        ) {\n          return previousSize\n        }\n\n        return nextSize\n      })\n\n      return true\n    }\n\n    const connect = () => {\n      const container = canvasContainerRef.current\n      if (!updateGuideSize(container)) {\n        frameId = window.requestAnimationFrame(connect)\n        return\n      }\n\n      if (container) {\n        resizeObserver = new ResizeObserver(() => {\n          updateGuideSize(container)\n        })\n        resizeObserver.observe(container)\n      }\n    }\n\n    connect()\n\n    return () => {\n      window.cancelAnimationFrame(frameId)\n      resizeObserver?.disconnect()\n    }\n  }, [open, signatureAspectRatio])\n\n  React.useEffect(() => {\n    if (!open || !guideSize || guideSize.width <= 1 || guideSize.height <= 1) {\n      signaturePadRef.current?.off()\n      signaturePadRef.current = null\n      setIsReady(false)\n      if (!open) {\n        setHasSignature(false)\n      }\n      return\n    }\n\n    let cancelled = false\n    let resizeObserver: ResizeObserver | null = null\n\n    const syncCanvasSize = (canvas: HTMLCanvasElement) => {\n      const width = Math.max(canvas.offsetWidth, 1)\n      const height = Math.max(canvas.offsetHeight, 1)\n      const ratio = Math.max(window.devicePixelRatio || 1, 1)\n\n      canvas.style.width = `${width}px`\n      canvas.style.height = `${height}px`\n      canvas.width = Math.floor(width * ratio)\n      canvas.height = Math.floor(height * ratio)\n      const context = canvas.getContext("2d")\n      context?.setTransform(1, 0, 0, 1, 0, 0)\n      context?.scale(ratio, ratio)\n\n      return { width, height, ratio }\n    }\n\n    const initialize = async () => {\n      const canvas = canvasRef.current\n      if (!canvas) return\n\n      const { default: SignaturePadConstructor } = await import("signature_pad")\n      if (cancelled) return\n\n      const signaturePad = new SignaturePadConstructor(canvas, {\n        minWidth: 1.4,\n        maxWidth: 2.8,\n        penColor: SIGNATURE_PAD_PEN_COLOR,\n      })\n\n      signaturePadRef.current = signaturePad\n\n      const loadSignature = async (dataUrl?: string) => {\n        const size = syncCanvasSize(canvas)\n\n        if (dataUrl) {\n          await signaturePad.fromDataURL(dataUrl, size)\n          setHasSignature(true)\n          return\n        }\n\n        signaturePad.clear()\n        setHasSignature(false)\n      }\n\n      await loadSignature(initialValue)\n      if (cancelled) return\n\n      signaturePad.addEventListener("endStroke", () => {\n        setHasSignature(true)\n      })\n\n      resizeObserver = new ResizeObserver(() => {\n        const currentCanvas = canvasRef.current\n        const currentSignaturePad = signaturePadRef.current\n        if (!currentCanvas || !currentSignaturePad) return\n\n        const previousSignature = currentSignaturePad.isEmpty()\n          ? undefined\n          : currentSignaturePad.toDataURL("image/png")\n        void loadSignature(previousSignature)\n      })\n      resizeObserver.observe(canvas)\n      setIsReady(true)\n    }\n\n    const animationFrame = window.requestAnimationFrame(() => {\n      void initialize()\n    })\n\n    return () => {\n      cancelled = true\n      window.cancelAnimationFrame(animationFrame)\n      resizeObserver?.disconnect()\n      signaturePadRef.current?.off()\n      signaturePadRef.current = null\n      setIsReady(false)\n    }\n  }, [open, guideSize, initialValue])\n\n  return (\n    <Dialog open={open} onOpenChange={onOpenChange}>\n      <DialogContent className="max-w-xl">\n        <DialogHeader>\n          <DialogTitle>Add signature</DialogTitle>\n          <DialogDescription>\n            Draw a signature to place it into the selected PDF field.\n          </DialogDescription>\n        </DialogHeader>\n        <DialogPanel>\n          <div className="rounded-xl border bg-muted/30 p-3">\n            <div\n              ref={canvasContainerRef}\n              className="flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border bg-muted/40 p-2"\n            >\n              <div\n                className={cn(\n                  "relative overflow-hidden rounded-md border border-dashed border-input bg-white shadow-xs",\n                  isReady ? "cursor-crosshair" : "cursor-wait"\n                )}\n                style={{\n                  width: guideSize ? `${guideSize.width}px` : undefined,\n                  height: guideSize ? `${guideSize.height}px` : undefined,\n                  opacity: guideSize ? 1 : 0,\n                  backgroundColor: SIGNATURE_PAD_BACKGROUND_COLOR,\n                }}\n              >\n                <canvas\n                  ref={canvasRef}\n                  className={cn(\n                    "absolute inset-0 size-full touch-none",\n                    !isReady && "pointer-events-none"\n                  )}\n                  style={{\n                    backgroundColor: SIGNATURE_PAD_BACKGROUND_COLOR,\n                    touchAction: "none",\n                  }}\n                />\n              </div>\n            </div>\n          </div>\n        </DialogPanel>\n        <DialogFooter className="sm:justify-between">\n          <Button\n            type="button"\n            variant="outline"\n            disabled={!isReady}\n            onClick={() => {\n              signaturePadRef.current?.clear()\n              setHasSignature(false)\n            }}\n          >\n            Clear\n          </Button>\n          <div className="flex flex-col-reverse gap-2 sm:flex-row">\n            <Button\n              type="button"\n              variant="outline"\n              onClick={() => onOpenChange(false)}\n            >\n              Cancel\n            </Button>\n            <Button\n              type="button"\n              disabled={!isReady || !hasSignature}\n              onClick={() => {\n                const canvas = canvasRef.current\n                if (!canvas) return\n\n                onConfirm(getCroppedSignatureDataUrl(canvas))\n                onOpenChange(false)\n              }}\n            >\n              Confirm\n            </Button>\n          </div>\n        </DialogFooter>\n      </DialogContent>\n    </Dialog>\n  )\n}\n\nfunction SignatureFieldOverlay({\n  field,\n  onOpen,\n}: {\n  field: SignatureField\n  onOpen: () => void\n}) {\n  return (\n    <button\n      type="button"\n      className={cn(\n        "absolute z-20 overflow-hidden rounded-[3px] border border-blue-500/70 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",\n        field.imageDataUrl\n          ? "bg-transparent shadow-none hover:bg-blue-500/5"\n          : "bg-blue-500/10 hover:bg-blue-500/15"\n      )}\n      style={bboxToStyle(field.bbox)}\n      onClick={onOpen}\n    >\n      {field.imageDataUrl ? (\n        <img\n          src={field.imageDataUrl}\n          alt=""\n          className="size-full object-contain"\n          draggable={false}\n        />\n      ) : (\n        <span className="flex size-full items-center justify-center gap-1.5 px-2 text-[11px] font-medium text-blue-700 dark:text-blue-300">\n          <HugeiconsIcon icon={Pen01Icon} className="size-3.5" />\n          Signature\n        </span>\n      )}\n    </button>\n  )\n}\n\nasync function downloadSignedPdf({\n  file,\n  field,\n}: {\n  file: string\n  field: SignatureField\n}) {\n  const { PDFDocument } = await import("pdf-lib")\n  const existingPdfBytes = await fetch(file).then((response) =>\n    response.arrayBuffer()\n  )\n  const pdfDocument = await PDFDocument.load(existingPdfBytes)\n  const page = pdfDocument.getPage(field.page - 1)\n\n  if (field.imageDataUrl) {\n    const signatureImage = await pdfDocument.embedPng(field.imageDataUrl)\n    const { width: pageWidth, height: pageHeight } = page.getSize()\n    const scaleX = pageWidth / PAGE_WIDTH\n    const scaleY = pageHeight / PAGE_HEIGHT\n    const fieldWidth = field.bbox.width * scaleX\n    const fieldHeight = field.bbox.height * scaleY\n    const imageAspectRatio = signatureImage.width / signatureImage.height\n    const fieldAspectRatio = fieldWidth / fieldHeight\n    const drawWidth =\n      fieldAspectRatio > imageAspectRatio\n        ? fieldHeight * imageAspectRatio\n        : fieldWidth\n    const drawHeight =\n      fieldAspectRatio > imageAspectRatio\n        ? fieldHeight\n        : fieldWidth / imageAspectRatio\n    const fieldX = field.bbox.x * scaleX\n    const fieldY = pageHeight - (field.bbox.y + field.bbox.height) * scaleY\n\n    page.drawImage(signatureImage, {\n      x: fieldX + (fieldWidth - drawWidth) / 2,\n      y: fieldY + (fieldHeight - drawHeight) / 2,\n      width: drawWidth,\n      height: drawHeight,\n    })\n  }\n\n  const bytes = await pdfDocument.save()\n  const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" })\n  const url = URL.createObjectURL(blob)\n  const anchor = document.createElement("a")\n  anchor.href = url\n  anchor.download = "signed-document.pdf"\n  anchor.click()\n  URL.revokeObjectURL(url)\n}\n\nfunction SignatureFieldsPanel({\n  field,\n  className,\n  canExport,\n  isDownloading,\n  onSign,\n  onClear,\n  onDownload,\n}: {\n  field: SignatureField\n  className?: string\n  canExport: boolean\n  isDownloading: boolean\n  onSign: () => void\n  onClear: () => void\n  onDownload: () => void\n}) {\n  return (\n    <aside className={cn("flex min-h-0 flex-col bg-background", className)}>\n      <ScrollArea className="min-h-0 flex-1" scrollFade>\n        <div className="space-y-4 p-4">\n          <div className="space-y-1">\n            <h3 className="text-sm font-medium">Signature fields</h3>\n            <p className="text-xs text-muted-foreground">\n              Review fields, collect signatures, and export a signed PDF.\n            </p>\n          </div>\n          <div className="rounded-lg border bg-background p-3">\n            <div className="flex items-start gap-3">\n              <div className="grid size-9 shrink-0 place-items-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-300">\n                <HugeiconsIcon icon={FilePenIcon} className="size-4" />\n              </div>\n              <div className="min-w-0 flex-1">\n                <div className="flex items-center justify-between gap-2">\n                  <div className="text-sm font-medium">{field.label}</div>\n                  <div\n                    className={cn(\n                      "rounded-full px-2 py-0.5 text-xs",\n                      field.imageDataUrl\n                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"\n                        : "bg-muted text-muted-foreground"\n                    )}\n                  >\n                    {field.imageDataUrl ? "Signed" : "Unsigned"}\n                  </div>\n                </div>\n                <div className="mt-2 text-xs text-muted-foreground">\n                  {Math.round(field.bbox.width)} x{" "}\n                  {Math.round(field.bbox.height)} on page {field.page}\n                </div>\n                <div className="mt-3 flex gap-2">\n                  <Button\n                    type="button"\n                    size="sm"\n                    variant={field.imageDataUrl ? "outline" : "default"}\n                    className="flex-1"\n                    onClick={onSign}\n                  >\n                    <HugeiconsIcon icon={Pen01Icon} className="size-4" />\n                    {field.imageDataUrl ? "Edit" : "Sign"}\n                  </Button>\n                  {field.imageDataUrl ? (\n                    <Button\n                      type="button"\n                      size="sm"\n                      variant="outline"\n                      onClick={onClear}\n                    >\n                      Clear\n                    </Button>\n                  ) : null}\n                </div>\n              </div>\n            </div>\n          </div>\n          <Button\n            type="button"\n            className="w-full"\n            disabled={!canExport || isDownloading}\n            onClick={onDownload}\n          >\n            <HugeiconsIcon icon={Download01Icon} className="size-4" />\n            {isDownloading ? "Exporting..." : "Export signed PDF"}\n          </Button>\n        </div>\n      </ScrollArea>\n    </aside>\n  )\n}\n\nexport function ESignatureBlock({ file }: { file?: string }) {\n  const [field, setField] = React.useState<SignatureField>(INITIAL_FIELD)\n  const [dialogOpen, setDialogOpen] = React.useState(false)\n  const [isDownloading, setIsDownloading] = React.useState(false)\n\n  const handleDownload = React.useCallback(async () => {\n    if (!file || !field.imageDataUrl) return\n\n    setIsDownloading(true)\n    try {\n      await downloadSignedPdf({ file, field })\n    } finally {\n      setIsDownloading(false)\n    }\n  }, [field, file])\n\n  return (\n    <>\n      <PdfBlockResizableShell\n        autoSaveId="pdf-block-e-signature"\n        left={\n          <PDFViewer\n            file={file}\n            defaultZoom={DEFAULT_ZOOM}\n            pageWidth={PAGE_WIDTH}\n            pageHeight={PAGE_HEIGHT}\n            toolbarActions={\n              <Button\n                type="button"\n                size="sm"\n                variant="outline"\n                disabled={!file || !field.imageDataUrl || isDownloading}\n                onClick={handleDownload}\n              >\n                <HugeiconsIcon icon={Download01Icon} className="size-4" />\n                Download\n              </Button>\n            }\n            renderPageOverlay={({ pageNumber }) =>\n              pageNumber === field.page ? (\n                <SignatureFieldOverlay\n                  field={field}\n                  onOpen={() => setDialogOpen(true)}\n                />\n              ) : null\n            }\n          />\n        }\n        right={\n          <SignatureFieldsPanel\n            field={field}\n            canExport={Boolean(file && field.imageDataUrl)}\n            isDownloading={isDownloading}\n            onSign={() => setDialogOpen(true)}\n            onClear={() =>\n              setField((previousField) => ({\n                ...previousField,\n                imageDataUrl: undefined,\n              }))\n            }\n            onDownload={handleDownload}\n          />\n        }\n      />\n      <SignatureDialog\n        open={dialogOpen}\n        fieldBbox={field.bbox}\n        initialValue={field.imageDataUrl}\n        onOpenChange={setDialogOpen}\n        onConfirm={(imageDataUrl) => {\n          setField((previousField) => ({ ...previousField, imageDataUrl }))\n        }}\n      />\n    </>\n  )\n}\n'
+  '"use client"\n\nimport * as React from "react"\nimport {\n  Download01Icon,\n  FilePenIcon,\n  Pen01Icon,\n} from "@hugeicons/core-free-icons"\nimport { HugeiconsIcon } from "@hugeicons/react"\nimport type SignaturePad from "signature_pad"\n\nimport { cn } from "@/lib/utils"\nimport { PDFViewer } from "@/components/ui/pdf-viewer"\nimport { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"\nimport { Button } from "@/registry/new-york-v4/ui/button"\nimport {\n  Dialog,\n  DialogContent,\n  DialogDescription,\n  DialogFooter,\n  DialogHeader,\n  DialogPanel,\n  DialogTitle,\n} from "@/registry/new-york-v4/ui/dialog"\nimport { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"\n\ntype BoundingBox = {\n  x: number\n  y: number\n  width: number\n  height: number\n}\n\ntype SignatureField = {\n  id: string\n  label: string\n  page: number\n  bbox: BoundingBox\n  imageDataUrl?: string\n}\n\nconst PAGE_WIDTH = 612\nconst PAGE_HEIGHT = 792\nconst DEFAULT_ZOOM = 0.75\nconst SIGNATURE_PAD_PADDING = 8\nconst SIGNATURE_PAD_BACKGROUND_COLOR = "#ffffff"\nconst SIGNATURE_PAD_PEN_COLOR = "#000000"\nconst DEFAULT_SIGNATURE_ASPECT_RATIO = 3\n\nconst INITIAL_FIELD: SignatureField = {\n  id: "signature-1",\n  label: "Signature",\n  page: 1,\n  bbox: { x: 300, y: 504, width: 250, height: 58 },\n}\n\nfunction bboxToStyle(bbox: BoundingBox): React.CSSProperties {\n  return {\n    left: `${(bbox.x / PAGE_WIDTH) * 100}%`,\n    top: `${(bbox.y / PAGE_HEIGHT) * 100}%`,\n    width: `${(bbox.width / PAGE_WIDTH) * 100}%`,\n    height: `${(bbox.height / PAGE_HEIGHT) * 100}%`,\n  }\n}\n\nfunction getSignatureAspectRatio(bbox?: BoundingBox): number {\n  if (!bbox || bbox.width <= 0 || bbox.height <= 0) {\n    return DEFAULT_SIGNATURE_ASPECT_RATIO\n  }\n\n  return bbox.width / bbox.height\n}\n\nfunction getSignatureGuideSize({\n  containerWidth,\n  containerHeight,\n  aspectRatio,\n}: {\n  containerWidth: number\n  containerHeight: number\n  aspectRatio: number\n}): { width: number; height: number } {\n  const maxWidth = Math.max(containerWidth - SIGNATURE_PAD_PADDING * 2, 1)\n  const maxHeight = Math.max(containerHeight - SIGNATURE_PAD_PADDING * 2, 1)\n\n  if (maxWidth / maxHeight > aspectRatio) {\n    const height = maxHeight\n    return {\n      width: height * aspectRatio,\n      height,\n    }\n  }\n\n  const width = maxWidth\n  return {\n    width,\n    height: width / aspectRatio,\n  }\n}\n\nfunction getSignatureDataUrl(canvas: HTMLCanvasElement): string {\n  return canvas.toDataURL("image/png")\n}\n\nfunction SignatureDialog({\n  open,\n  fieldBbox,\n  initialValue,\n  onOpenChange,\n  onConfirm,\n}: {\n  open: boolean\n  fieldBbox: BoundingBox\n  initialValue?: string\n  onOpenChange: (open: boolean) => void\n  onConfirm: (value: string) => void\n}) {\n  const canvasContainerRef = React.useRef<HTMLDivElement>(null)\n  const canvasRef = React.useRef<HTMLCanvasElement>(null)\n  const signaturePadRef = React.useRef<SignaturePad | null>(null)\n  const [isReady, setIsReady] = React.useState(false)\n  const [hasSignature, setHasSignature] = React.useState(false)\n  const [guideSize, setGuideSize] = React.useState<{\n    width: number\n    height: number\n  } | null>(null)\n  const signatureAspectRatio = React.useMemo(\n    () => getSignatureAspectRatio(fieldBbox),\n    [fieldBbox]\n  )\n\n  React.useEffect(() => {\n    if (!open) {\n      setGuideSize(null)\n      return\n    }\n\n    let frameId = 0\n    let resizeObserver: ResizeObserver | null = null\n\n    const updateGuideSize = (container?: HTMLDivElement | null) => {\n      const currentContainer = container ?? canvasContainerRef.current\n      if (\n        !currentContainer ||\n        currentContainer.clientWidth <= 0 ||\n        currentContainer.clientHeight <= 0\n      ) {\n        return false\n      }\n\n      const nextSize = getSignatureGuideSize({\n        containerWidth: currentContainer.clientWidth,\n        containerHeight: currentContainer.clientHeight,\n        aspectRatio: signatureAspectRatio,\n      })\n\n      setGuideSize((previousSize) => {\n        if (\n          previousSize &&\n          Math.abs(previousSize.width - nextSize.width) < 0.5 &&\n          Math.abs(previousSize.height - nextSize.height) < 0.5\n        ) {\n          return previousSize\n        }\n\n        return nextSize\n      })\n\n      return true\n    }\n\n    const connect = () => {\n      const container = canvasContainerRef.current\n      if (!updateGuideSize(container)) {\n        frameId = window.requestAnimationFrame(connect)\n        return\n      }\n\n      if (container) {\n        resizeObserver = new ResizeObserver(() => {\n          updateGuideSize(container)\n        })\n        resizeObserver.observe(container)\n      }\n    }\n\n    connect()\n\n    return () => {\n      window.cancelAnimationFrame(frameId)\n      resizeObserver?.disconnect()\n    }\n  }, [open, signatureAspectRatio])\n\n  React.useEffect(() => {\n    if (!open || !guideSize || guideSize.width <= 1 || guideSize.height <= 1) {\n      signaturePadRef.current?.off()\n      signaturePadRef.current = null\n      setIsReady(false)\n      if (!open) {\n        setHasSignature(false)\n      }\n      return\n    }\n\n    let cancelled = false\n    let resizeObserver: ResizeObserver | null = null\n\n    const syncCanvasSize = (canvas: HTMLCanvasElement) => {\n      const width = Math.max(canvas.offsetWidth, 1)\n      const height = Math.max(canvas.offsetHeight, 1)\n      const ratio = Math.max(window.devicePixelRatio || 1, 1)\n\n      canvas.style.width = `${width}px`\n      canvas.style.height = `${height}px`\n      canvas.width = Math.floor(width * ratio)\n      canvas.height = Math.floor(height * ratio)\n      const context = canvas.getContext("2d")\n      context?.setTransform(1, 0, 0, 1, 0, 0)\n      context?.scale(ratio, ratio)\n\n      return { width, height, ratio }\n    }\n\n    const initialize = async () => {\n      const canvas = canvasRef.current\n      if (!canvas) return\n\n      const { default: SignaturePadConstructor } = await import("signature_pad")\n      if (cancelled) return\n\n      const signaturePad = new SignaturePadConstructor(canvas, {\n        minWidth: 1,\n        maxWidth: 2,\n        penColor: SIGNATURE_PAD_PEN_COLOR,\n      })\n\n      signaturePadRef.current = signaturePad\n\n      const loadSignature = async (dataUrl?: string) => {\n        const size = syncCanvasSize(canvas)\n\n        if (dataUrl) {\n          await signaturePad.fromDataURL(dataUrl, size)\n          setHasSignature(true)\n          return\n        }\n\n        signaturePad.clear()\n        setHasSignature(false)\n      }\n\n      await loadSignature(initialValue)\n      if (cancelled) return\n\n      signaturePad.addEventListener("endStroke", () => {\n        setHasSignature(true)\n      })\n\n      resizeObserver = new ResizeObserver(() => {\n        const currentCanvas = canvasRef.current\n        const currentSignaturePad = signaturePadRef.current\n        if (!currentCanvas || !currentSignaturePad) return\n\n        const previousSignature = currentSignaturePad.isEmpty()\n          ? undefined\n          : currentSignaturePad.toDataURL("image/png")\n        void loadSignature(previousSignature)\n      })\n      resizeObserver.observe(canvas)\n      setIsReady(true)\n    }\n\n    const animationFrame = window.requestAnimationFrame(() => {\n      void initialize()\n    })\n\n    return () => {\n      cancelled = true\n      window.cancelAnimationFrame(animationFrame)\n      resizeObserver?.disconnect()\n      signaturePadRef.current?.off()\n      signaturePadRef.current = null\n      setIsReady(false)\n    }\n  }, [open, guideSize, initialValue])\n\n  return (\n    <Dialog open={open} onOpenChange={onOpenChange}>\n      <DialogContent className="max-w-xl">\n        <DialogHeader>\n          <DialogTitle>Add signature</DialogTitle>\n          <DialogDescription>\n            Draw a signature to place it into the selected PDF field.\n          </DialogDescription>\n        </DialogHeader>\n        <DialogPanel>\n          <div className="rounded-xl border bg-white p-3 text-slate-950 shadow-xs dark:bg-white dark:text-slate-950">\n            <div\n              ref={canvasContainerRef}\n              className="flex h-56 w-full items-center justify-center overflow-hidden rounded-lg bg-white p-2 dark:bg-white"\n            >\n              <div\n                className={cn(\n                  "relative overflow-hidden rounded-[3px] border border-dashed border-blue-500/70 bg-white",\n                  isReady ? "cursor-crosshair" : "cursor-wait"\n                )}\n                style={{\n                  width: guideSize ? `${guideSize.width}px` : undefined,\n                  height: guideSize ? `${guideSize.height}px` : undefined,\n                  opacity: guideSize ? 1 : 0,\n                  backgroundColor: SIGNATURE_PAD_BACKGROUND_COLOR,\n                }}\n              >\n                <canvas\n                  ref={canvasRef}\n                  className={cn(\n                    "absolute inset-0 size-full touch-none",\n                    !isReady && "pointer-events-none"\n                  )}\n                  style={{\n                    backgroundColor: SIGNATURE_PAD_BACKGROUND_COLOR,\n                    touchAction: "none",\n                  }}\n                />\n              </div>\n            </div>\n          </div>\n        </DialogPanel>\n        <DialogFooter className="sm:justify-between">\n          <Button\n            type="button"\n            variant="outline"\n            disabled={!isReady}\n            onClick={() => {\n              signaturePadRef.current?.clear()\n              setHasSignature(false)\n            }}\n          >\n            Clear\n          </Button>\n          <div className="flex flex-col-reverse gap-2 sm:flex-row">\n            <Button\n              type="button"\n              variant="outline"\n              onClick={() => onOpenChange(false)}\n            >\n              Cancel\n            </Button>\n            <Button\n              type="button"\n              disabled={!isReady || !hasSignature}\n              onClick={() => {\n                const canvas = canvasRef.current\n                if (!canvas) return\n\n                onConfirm(getSignatureDataUrl(canvas))\n                onOpenChange(false)\n              }}\n            >\n              Confirm\n            </Button>\n          </div>\n        </DialogFooter>\n      </DialogContent>\n    </Dialog>\n  )\n}\n\nfunction SignatureFieldOverlay({\n  field,\n  onOpen,\n}: {\n  field: SignatureField\n  onOpen: () => void\n}) {\n  return (\n    <button\n      type="button"\n      className={cn(\n        "absolute z-20 overflow-hidden rounded-[3px] border border-blue-500/70 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",\n        field.imageDataUrl\n          ? "bg-transparent shadow-none hover:bg-blue-500/5"\n          : "bg-blue-500/10 hover:bg-blue-500/15"\n      )}\n      style={bboxToStyle(field.bbox)}\n      onClick={onOpen}\n    >\n      {field.imageDataUrl ? (\n        <img\n          src={field.imageDataUrl}\n          alt=""\n          className="size-full object-fill"\n          draggable={false}\n        />\n      ) : (\n        <span className="flex size-full items-center justify-center gap-1.5 px-2 text-[11px] font-medium text-blue-700 dark:text-blue-300">\n          <HugeiconsIcon icon={Pen01Icon} className="size-3.5" />\n          Signature\n        </span>\n      )}\n    </button>\n  )\n}\n\nasync function downloadSignedPdf({\n  file,\n  field,\n}: {\n  file: string\n  field: SignatureField\n}) {\n  const { PDFDocument } = await import("pdf-lib")\n  const existingPdfBytes = await fetch(file).then((response) =>\n    response.arrayBuffer()\n  )\n  const pdfDocument = await PDFDocument.load(existingPdfBytes)\n  const page = pdfDocument.getPage(field.page - 1)\n\n  if (field.imageDataUrl) {\n    const signatureImage = await pdfDocument.embedPng(field.imageDataUrl)\n    const { width: pageWidth, height: pageHeight } = page.getSize()\n    const scaleX = pageWidth / PAGE_WIDTH\n    const scaleY = pageHeight / PAGE_HEIGHT\n    const fieldWidth = field.bbox.width * scaleX\n    const fieldHeight = field.bbox.height * scaleY\n    const fieldX = field.bbox.x * scaleX\n    const fieldY = pageHeight - (field.bbox.y + field.bbox.height) * scaleY\n\n    page.drawImage(signatureImage, {\n      x: fieldX,\n      y: fieldY,\n      width: fieldWidth,\n      height: fieldHeight,\n    })\n  }\n\n  const bytes = await pdfDocument.save()\n  const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" })\n  const url = URL.createObjectURL(blob)\n  const anchor = document.createElement("a")\n  anchor.href = url\n  anchor.download = "signed-document.pdf"\n  anchor.click()\n  URL.revokeObjectURL(url)\n}\n\nfunction SignatureFieldsPanel({\n  field,\n  className,\n  canExport,\n  isDownloading,\n  onSign,\n  onClear,\n  onDownload,\n}: {\n  field: SignatureField\n  className?: string\n  canExport: boolean\n  isDownloading: boolean\n  onSign: () => void\n  onClear: () => void\n  onDownload: () => void\n}) {\n  return (\n    <aside className={cn("flex min-h-0 flex-col bg-background", className)}>\n      <ScrollArea className="min-h-0 flex-1" scrollFade>\n        <div className="space-y-4 p-4">\n          <div className="space-y-1">\n            <h3 className="text-sm font-medium">Signature fields</h3>\n            <p className="text-xs text-muted-foreground">\n              Review fields, collect signatures, and export a signed PDF.\n            </p>\n          </div>\n          <div className="rounded-lg border bg-background p-3">\n            <div className="flex items-start gap-3">\n              <div className="grid size-9 shrink-0 place-items-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-300">\n                <HugeiconsIcon icon={FilePenIcon} className="size-4" />\n              </div>\n              <div className="min-w-0 flex-1">\n                <div className="flex items-center justify-between gap-2">\n                  <div className="text-sm font-medium">{field.label}</div>\n                  <div\n                    className={cn(\n                      "rounded-full px-2 py-0.5 text-xs",\n                      field.imageDataUrl\n                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"\n                        : "bg-muted text-muted-foreground"\n                    )}\n                  >\n                    {field.imageDataUrl ? "Signed" : "Unsigned"}\n                  </div>\n                </div>\n                <div className="mt-2 text-xs text-muted-foreground">\n                  {Math.round(field.bbox.width)} x{" "}\n                  {Math.round(field.bbox.height)} on page {field.page}\n                </div>\n                <div className="mt-3 flex gap-2">\n                  <Button\n                    type="button"\n                    size="sm"\n                    variant={field.imageDataUrl ? "outline" : "default"}\n                    className="flex-1"\n                    onClick={onSign}\n                  >\n                    <HugeiconsIcon icon={Pen01Icon} className="size-4" />\n                    {field.imageDataUrl ? "Edit" : "Sign"}\n                  </Button>\n                  {field.imageDataUrl ? (\n                    <Button\n                      type="button"\n                      size="sm"\n                      variant="outline"\n                      onClick={onClear}\n                    >\n                      Clear\n                    </Button>\n                  ) : null}\n                </div>\n              </div>\n            </div>\n          </div>\n          <Button\n            type="button"\n            className="w-full"\n            disabled={!canExport || isDownloading}\n            onClick={onDownload}\n          >\n            <HugeiconsIcon icon={Download01Icon} className="size-4" />\n            {isDownloading ? "Exporting..." : "Export signed PDF"}\n          </Button>\n        </div>\n      </ScrollArea>\n    </aside>\n  )\n}\n\nexport function ESignatureBlock({ file }: { file?: string }) {\n  const [field, setField] = React.useState<SignatureField>(INITIAL_FIELD)\n  const [dialogOpen, setDialogOpen] = React.useState(false)\n  const [isDownloading, setIsDownloading] = React.useState(false)\n\n  const handleDownload = React.useCallback(async () => {\n    if (!file || !field.imageDataUrl) return\n\n    setIsDownloading(true)\n    try {\n      await downloadSignedPdf({ file, field })\n    } finally {\n      setIsDownloading(false)\n    }\n  }, [field, file])\n\n  return (\n    <>\n      <PdfBlockResizableShell\n        autoSaveId="pdf-block-e-signature"\n        left={\n          <PDFViewer\n            file={file}\n            defaultZoom={DEFAULT_ZOOM}\n            pageWidth={PAGE_WIDTH}\n            pageHeight={PAGE_HEIGHT}\n            toolbarActions={\n              <Button\n                type="button"\n                size="sm"\n                variant="outline"\n                disabled={!file || !field.imageDataUrl || isDownloading}\n                onClick={handleDownload}\n              >\n                <HugeiconsIcon icon={Download01Icon} className="size-4" />\n                Download\n              </Button>\n            }\n            renderPageOverlay={({ pageNumber }) =>\n              pageNumber === field.page ? (\n                <SignatureFieldOverlay\n                  field={field}\n                  onOpen={() => setDialogOpen(true)}\n                />\n              ) : null\n            }\n          />\n        }\n        right={\n          <SignatureFieldsPanel\n            field={field}\n            canExport={Boolean(file && field.imageDataUrl)}\n            isDownloading={isDownloading}\n            onSign={() => setDialogOpen(true)}\n            onClear={() =>\n              setField((previousField) => ({\n                ...previousField,\n                imageDataUrl: undefined,\n              }))\n            }\n            onDownload={handleDownload}\n          />\n        }\n      />\n      <SignatureDialog\n        open={dialogOpen}\n        fieldBbox={field.bbox}\n        initialValue={field.imageDataUrl}\n        onOpenChange={setDialogOpen}\n        onConfirm={(imageDataUrl) => {\n          setField((previousField) => ({ ...previousField, imageDataUrl }))\n        }}\n      />\n    </>\n  )\n}\n'
 
 export function ESignatureSource() {
   return <HighlightedCodeBlock code={eSignatureSourceCode} />

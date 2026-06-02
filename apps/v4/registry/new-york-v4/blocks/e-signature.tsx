@@ -98,60 +98,8 @@ function getSignatureGuideSize({
   }
 }
 
-function getCroppedSignatureDataUrl(canvas: HTMLCanvasElement): string {
-  const context = canvas.getContext("2d")
-  if (!context) {
-    return canvas.toDataURL("image/png")
-  }
-
-  const { width, height } = canvas
-  const imageData = context.getImageData(0, 0, width, height)
-  const { data } = imageData
-  let minX = width
-  let minY = height
-  let maxX = -1
-  let maxY = -1
-
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const alpha = data[(y * width + x) * 4 + 3]
-      if (alpha === 0) continue
-
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x)
-      maxY = Math.max(maxY, y)
-    }
-  }
-
-  if (maxX < minX || maxY < minY) {
-    return canvas.toDataURL("image/png")
-  }
-
-  const croppedWidth = maxX - minX + 1
-  const croppedHeight = maxY - minY + 1
-  const croppedCanvas = document.createElement("canvas")
-  croppedCanvas.width = croppedWidth
-  croppedCanvas.height = croppedHeight
-
-  const croppedContext = croppedCanvas.getContext("2d")
-  if (!croppedContext) {
-    return canvas.toDataURL("image/png")
-  }
-
-  croppedContext.drawImage(
-    canvas,
-    minX,
-    minY,
-    croppedWidth,
-    croppedHeight,
-    0,
-    0,
-    croppedWidth,
-    croppedHeight
-  )
-
-  return croppedCanvas.toDataURL("image/png")
+function getSignatureDataUrl(canvas: HTMLCanvasElement): string {
+  return canvas.toDataURL("image/png")
 }
 
 function SignatureDialog({
@@ -282,8 +230,8 @@ function SignatureDialog({
       if (cancelled) return
 
       const signaturePad = new SignaturePadConstructor(canvas, {
-        minWidth: 1.4,
-        maxWidth: 2.8,
+        minWidth: 1,
+        maxWidth: 2,
         penColor: SIGNATURE_PAD_PEN_COLOR,
       })
 
@@ -347,14 +295,14 @@ function SignatureDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogPanel>
-          <div className="rounded-xl border bg-muted/30 p-3">
+          <div className="rounded-xl border bg-white p-3 text-slate-950 shadow-xs dark:bg-white dark:text-slate-950">
             <div
               ref={canvasContainerRef}
-              className="flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border bg-muted/40 p-2"
+              className="flex h-56 w-full items-center justify-center overflow-hidden rounded-lg bg-white p-2 dark:bg-white"
             >
               <div
                 className={cn(
-                  "relative overflow-hidden rounded-md border border-dashed border-input bg-white shadow-xs",
+                  "relative overflow-hidden rounded-[3px] border border-dashed border-blue-500/70 bg-white",
                   isReady ? "cursor-crosshair" : "cursor-wait"
                 )}
                 style={{
@@ -406,7 +354,7 @@ function SignatureDialog({
                 const canvas = canvasRef.current
                 if (!canvas) return
 
-                onConfirm(getCroppedSignatureDataUrl(canvas))
+                onConfirm(getSignatureDataUrl(canvas))
                 onOpenChange(false)
               }}
             >
@@ -442,7 +390,7 @@ function SignatureFieldOverlay({
         <img
           src={field.imageDataUrl}
           alt=""
-          className="size-full object-contain"
+          className="size-full object-fill"
           draggable={false}
         />
       ) : (
@@ -476,24 +424,14 @@ async function downloadSignedPdf({
     const scaleY = pageHeight / PAGE_HEIGHT
     const fieldWidth = field.bbox.width * scaleX
     const fieldHeight = field.bbox.height * scaleY
-    const imageAspectRatio = signatureImage.width / signatureImage.height
-    const fieldAspectRatio = fieldWidth / fieldHeight
-    const drawWidth =
-      fieldAspectRatio > imageAspectRatio
-        ? fieldHeight * imageAspectRatio
-        : fieldWidth
-    const drawHeight =
-      fieldAspectRatio > imageAspectRatio
-        ? fieldHeight
-        : fieldWidth / imageAspectRatio
     const fieldX = field.bbox.x * scaleX
     const fieldY = pageHeight - (field.bbox.y + field.bbox.height) * scaleY
 
     page.drawImage(signatureImage, {
-      x: fieldX + (fieldWidth - drawWidth) / 2,
-      y: fieldY + (fieldHeight - drawHeight) / 2,
-      width: drawWidth,
-      height: drawHeight,
+      x: fieldX,
+      y: fieldY,
+      width: fieldWidth,
+      height: fieldHeight,
     })
   }
 

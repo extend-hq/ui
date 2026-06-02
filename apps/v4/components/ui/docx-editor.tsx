@@ -344,6 +344,13 @@ function getNextZoomScale(currentZoomScale: number, direction: 1 | -1) {
   return ZOOM_OPTIONS[nextIndex] ?? currentZoomScale
 }
 
+function normalizeDocxZoomScale(value: number | undefined): number {
+  return typeof value === "number" &&
+    ZOOM_OPTIONS.includes(value as (typeof ZOOM_OPTIONS)[number])
+    ? value
+    : DOCX_EDITOR_DEFAULT_ZOOM_SCALE
+}
+
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   const [showSpinner, setShowSpinner] = React.useState(false)
 
@@ -1502,6 +1509,7 @@ function DocxEditorToolbar({
 export function DocxEditorPreview({
   className,
   defaultIsDark = false,
+  defaultZoomScale = DOCX_EDITOR_DEFAULT_ZOOM_SCALE,
   fileName,
   isDark: controlledIsDark,
   onIsDarkChange,
@@ -1510,6 +1518,7 @@ export function DocxEditorPreview({
 }: {
   className?: string
   defaultIsDark?: boolean
+  defaultZoomScale?: number
   fileName?: string
   isDark?: boolean
   onIsDarkChange?: (isDark: boolean) => void
@@ -1525,6 +1534,7 @@ export function DocxEditorPreview({
   return (
     <DocxEditorContent
       className={className}
+      defaultZoomScale={defaultZoomScale}
       effectiveIsDark={effectiveIsDark}
       fileName={fileName}
       rounded={rounded}
@@ -1537,6 +1547,7 @@ export function DocxEditorPreview({
 
 function DocxEditorContent({
   className,
+  defaultZoomScale,
   effectiveIsDark,
   fileName,
   rounded,
@@ -1545,6 +1556,7 @@ function DocxEditorContent({
   url,
 }: {
   className?: string
+  defaultZoomScale?: number
   effectiveIsDark: boolean
   fileName?: string
   rounded: boolean
@@ -1560,8 +1572,9 @@ function DocxEditorContent({
     React.useState<UploadedDocxFile | null>(null)
   const [activePage, setActivePage] = React.useState(1)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
+  const resolvedDefaultZoomScale = normalizeDocxZoomScale(defaultZoomScale)
   const [zoomScale, setZoomScale] = React.useState<number>(
-    DOCX_EDITOR_DEFAULT_ZOOM_SCALE
+    resolvedDefaultZoomScale
   )
   const [loadError, setLoadError] = React.useState<string>()
   const [isLoadingDocument, setIsLoadingDocument] = React.useState(true)
@@ -1641,10 +1654,10 @@ function DocxEditorContent({
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
   React.useEffect(() => {
-    setZoomScale(DOCX_EDITOR_DEFAULT_ZOOM_SCALE)
+    setZoomScale(resolvedDefaultZoomScale)
     setActivePage(1)
     viewportRef.current?.scrollTo({ top: 0, left: 0 })
-  }, [url])
+  }, [resolvedDefaultZoomScale, url])
 
   React.useEffect(() => {
     setDocumentTheme(effectiveIsDark ? "dark" : "light")
@@ -1790,7 +1803,7 @@ function DocxEditorContent({
 
     if (!file) return
 
-    setZoomScale(DOCX_EDITOR_DEFAULT_ZOOM_SCALE)
+    setZoomScale(resolvedDefaultZoomScale)
     setActivePage(1)
     setReportedPageCount(0)
     setUploadedDocxFile({

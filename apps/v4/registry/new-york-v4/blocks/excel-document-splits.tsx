@@ -9,11 +9,17 @@ import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
 
 const SHEETS = ["Overview", "Chart review", "Format checks", "Exceptions"]
 
-export function ExcelDocumentSplitsBlock({ file }: { file?: string }) {
+export function ExcelDocumentSplitsBlock({
+  file,
+  heightClassName = "h-[720px]",
+}: {
+  file?: string
+  heightClassName?: string
+}) {
   return (
     <PdfBlockResizableShell
       autoSaveId="xlsx-block-document-splits"
-      heightClassName="h-[720px]"
+      heightClassName={heightClassName}
       rightDefaultSize={48}
       rightMaxSize={64}
       rightMinSize={30}

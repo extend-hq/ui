@@ -16,7 +16,11 @@ function isPdfFile(file: File) {
   )
 }
 
-export function PdfDropzoneBlock() {
+export function PdfDropzoneBlock({
+  defaultViewerZoom = DEFAULT_ZOOM,
+}: {
+  defaultViewerZoom?: number
+} = {}) {
   const [pdfFile, setPdfFile] = React.useState<{
     name: string
     url: string
@@ -92,7 +96,7 @@ export function PdfDropzoneBlock() {
       <PDFViewer
         key={pdfFile.url}
         file={pdfFile.url}
-        defaultZoom={DEFAULT_ZOOM}
+        defaultZoom={defaultViewerZoom}
         downloadFileName={pdfFile.name}
         onPdfUpload={(file) => loadPdf([file])}
         toolbarActions={

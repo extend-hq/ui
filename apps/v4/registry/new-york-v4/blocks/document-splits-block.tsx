@@ -2,9 +2,6 @@
 
 import * as React from "react"
 
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
-
 import {
   createInitialSplits,
   DocumentSplits,
@@ -12,12 +9,16 @@ import {
   type DocumentSplit,
   type DocumentSplitPageId,
 } from "@/components/ui/document-splits"
+import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
+import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 
 export function DocumentSplitsBlock({
   file,
+  heightClassName = "h-[720px]",
   thumbnailImages,
 }: {
   file?: string
+  heightClassName?: string
   thumbnailImages?: Record<DocumentSplitPageId, string>
 }) {
   const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)
@@ -62,7 +63,7 @@ export function DocumentSplitsBlock({
   return (
     <PdfBlockResizableShell
       autoSaveId="pdf-block-document-splits"
-      heightClassName="h-[720px]"
+      heightClassName={heightClassName}
       rightDefaultSize={50}
       rightMaxSize={66}
       rightMinSize={30}

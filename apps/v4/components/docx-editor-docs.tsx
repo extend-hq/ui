@@ -77,8 +77,19 @@ export function DocxEditorDemo() {
   )
 }
 
-export function DocxEditorBlock({ file }: { file?: string }) {
-  return <DocxEditorPreview src={file ?? "/samples/demo.docx"} />
+export function DocxEditorBlock({
+  defaultViewerZoom = 0.75,
+  file,
+}: {
+  defaultViewerZoom?: number
+  file?: string
+}) {
+  return (
+    <DocxEditorPreview
+      src={file ?? "/samples/demo.docx"}
+      defaultZoomScale={Math.round(defaultViewerZoom * 100)}
+    />
+  )
 }
 
 const docxEditorUsageCode = `"use client";

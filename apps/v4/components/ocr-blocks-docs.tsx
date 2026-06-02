@@ -8374,9 +8374,11 @@ export function OcrBlocks() {
 }
 
 export function OcrBlocksBlock({
+  defaultViewerZoom = DEFAULT_ZOOM,
   file = PDF_URL,
   output = ATTENTION_OCR_OUTPUT,
 }: {
+  defaultViewerZoom?: number
   file?: string
   output?: ParsedOcrOutput
 }) {
@@ -8408,7 +8410,7 @@ export function OcrBlocksBlock({
         <PDFViewer
           ref={viewerRef}
           file={file}
-          defaultZoom={DEFAULT_ZOOM}
+          defaultZoom={defaultViewerZoom}
           renderPageOverlay={({ pageNumber }) =>
             blocks
               .filter((block) => block.page === pageNumber)
