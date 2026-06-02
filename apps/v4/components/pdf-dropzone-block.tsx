@@ -8,6 +8,7 @@ import { FileUpload } from "@/components/file-upload-docs"
 
 const PDF_ACCEPT = "application/pdf,.pdf"
 const DEFAULT_ZOOM = 0.75
+const PDF_UPLOAD_DROPZONE_SELECTOR = "[data-pdf-upload-dropzone]"
 
 function isPdfFile(file: File) {
   return (
@@ -50,19 +51,38 @@ export function PdfDropzoneBlock() {
 
   if (!pdfFile) {
     return (
-      <div className="grid h-full min-h-[680px] place-items-center bg-background p-4">
-        <FileUpload
-          accept={PDF_ACCEPT}
-          acceptedFileTypes={[{ label: "PDF", icon: FileUploadIcon }]}
-          browseLabel="Browse PDF"
-          className="w-full max-w-xl"
-          description="PDF files only"
-          draggingLabel="Drop PDF"
-          multiple={false}
-          showFileList={false}
-          title="Drop a PDF to preview"
-          onFilesAccepted={loadPdf}
-        />
+      <div
+        className="grid h-full min-h-[680px] place-items-center bg-background p-4"
+        onDragEnter={(event) => event.preventDefault()}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault()
+          const target = event.target
+          if (
+            target instanceof Element &&
+            target.closest(PDF_UPLOAD_DROPZONE_SELECTOR)
+          ) {
+            return
+          }
+          if (event.dataTransfer.files.length > 0) {
+            loadPdf(Array.from(event.dataTransfer.files))
+          }
+        }}
+      >
+        <div data-pdf-upload-dropzone className="w-full max-w-xl">
+          <FileUpload
+            accept={PDF_ACCEPT}
+            acceptedFileTypes={[{ label: "PDF", icon: FileUploadIcon }]}
+            browseLabel="Browse PDF"
+            className="w-full"
+            description="PDF files only"
+            draggingLabel="Drop PDF"
+            multiple={false}
+            showFileList={false}
+            title="Drop a PDF to preview"
+            onFilesAccepted={loadPdf}
+          />
+        </div>
       </div>
     )
   }

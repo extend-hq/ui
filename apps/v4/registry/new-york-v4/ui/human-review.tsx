@@ -270,6 +270,32 @@ export const REVIEW_FIELDS: ReviewField[] = [
             type: "string",
             title: "Category",
           },
+          merchant: {
+            type: "object",
+            title: "Merchant",
+            properties: {
+              name: {
+                type: "string",
+                title: "Name",
+              },
+              city: {
+                type: "string",
+                title: "City",
+              },
+              risk_level: {
+                type: "string",
+                title: "Risk level",
+              },
+            },
+          },
+          tags: {
+            type: "array",
+            title: "Tags",
+            items: {
+              type: "string",
+              title: "Tag",
+            },
+          },
         },
       },
     },
@@ -279,12 +305,24 @@ export const REVIEW_FIELDS: ReviewField[] = [
         description: "ACH CREDIT PAYROLL",
         amount: 4250,
         category: "Deposit",
+        merchant: {
+          name: "Acme Payroll",
+          city: "New York",
+          risk_level: "low",
+        },
+        tags: ["payroll", "recurring"],
       },
       {
         date: "2026-01-12",
         description: "POS PURCHASE GROCERY MART",
         amount: -86.42,
         category: "Debit",
+        merchant: {
+          name: "Grocery Mart",
+          city: "Brooklyn",
+          risk_level: "medium",
+        },
+        tags: ["card", "groceries"],
       },
     ],
     expected: [
@@ -293,12 +331,24 @@ export const REVIEW_FIELDS: ReviewField[] = [
         description: "ACH CREDIT PAYROLL",
         amount: 4250,
         category: "Deposit",
+        merchant: {
+          name: "Acme Payroll",
+          city: "New York",
+          risk_level: "low",
+        },
+        tags: ["payroll", "recurring"],
       },
       {
         date: "2026-01-12",
         description: "POS PURCHASE GROCERY MART",
         amount: -68.42,
         category: "Debit",
+        merchant: {
+          name: "Grocery Mart",
+          city: "Brooklyn",
+          risk_level: "low",
+        },
+        tags: ["card", "groceries", "needs_review"],
       },
     ],
     location: {
@@ -353,17 +403,78 @@ export const REVIEW_FIELDS: ReviewField[] = [
           type: "string",
           title: "Account type",
         },
+        mailing_address: {
+          type: "object",
+          title: "Mailing address",
+          properties: {
+            line_1: {
+              type: "string",
+              title: "Line 1",
+            },
+            city: {
+              type: "string",
+              title: "City",
+            },
+            state: {
+              type: "string",
+              title: "State",
+            },
+          },
+        },
+        linked_accounts: {
+          type: "array",
+          title: "Linked accounts",
+          items: {
+            type: "object",
+            properties: {
+              nickname: {
+                type: "string",
+                title: "Nickname",
+              },
+              last_four: {
+                type: "string",
+                title: "Last four",
+              },
+            },
+          },
+        },
       },
     },
     actual: {
       holder_name: "Jordan Lee",
       account_last_four: "4821",
       account_type: "Checking",
+      mailing_address: {
+        line_1: "42 Market Street",
+        city: "Brooklyn",
+        state: "NY",
+      },
+      linked_accounts: [
+        {
+          nickname: "Operations reserve",
+          last_four: "1842",
+        },
+      ],
     },
     expected: {
       holder_name: "Jordan Lee",
       account_last_four: "4821",
       account_type: "Premier Checking",
+      mailing_address: {
+        line_1: "42 Market Street",
+        city: "New York",
+        state: "NY",
+      },
+      linked_accounts: [
+        {
+          nickname: "Operations reserve",
+          last_four: "1842",
+        },
+        {
+          nickname: "Payroll sweep",
+          last_four: "9174",
+        },
+      ],
     },
   },
 ]

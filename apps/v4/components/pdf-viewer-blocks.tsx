@@ -4,8 +4,8 @@ import * as React from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import {
-  ArrowUpRight01Icon,
   CodeIcon,
+  FullScreenIcon,
   LaptopIcon,
   Refresh01Icon,
   SmartPhone01Icon,
@@ -19,7 +19,11 @@ import { FileTree as PierreFileTree, useFileTree } from "@pierre/trees/react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import type { PanelImperativeHandle } from "react-resizable-panels"
 
-import { siteConfig } from "@/lib/config"
+import {
+  PDF_VIEWER_BLOCKS,
+  type PdfViewerBlockId,
+  type PdfViewerBlockMetadata,
+} from "@/lib/pdf-viewer-blocks"
 import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useMounted } from "@/hooks/use-mounted"
@@ -51,23 +55,12 @@ type LoadedBlockCodeSample = BlockCodeSample & {
   lineCount: number
 }
 
-type PdfViewerBlock = {
-  id: string
-  title: string
-  description: string
-  command: string
-  docsHref: string
+type PdfViewerBlock = PdfViewerBlockMetadata & {
   component: React.ComponentType
-  hideHeader?: boolean
-  previewHeightClassName?: string
 }
 
 type BlockViewportSize = "desktop" | "tablet" | "mobile"
 type BlockView = "preview" | "code"
-
-function getRegistryAddCommand(name: string) {
-  return `npx shadcn@latest add ${siteConfig.url}/r/${name}.json`
-}
 
 const blockViewportSizes: Array<{
   id: BlockViewportSize
@@ -90,74 +83,20 @@ const OcrBlocksBlock = dynamic(
   }
 )
 
-const pdfViewerBlocks: PdfViewerBlock[] = [
-  {
-    id: "human-review",
-    title: "Human Review",
-    description:
-      "Extraction review cards connected to source evidence in the PDF viewer.",
-    command: getRegistryAddCommand("human-review-block"),
-    docsHref: "/docs/components/human-review",
-    component: HumanReviewBlock,
-  },
-  {
-    id: "pdf-dropzone",
-    title: "PDF Dropzone",
-    description:
-      "A PDF-only upload dropzone that opens the dropped file in the shared viewer.",
-    command: getRegistryAddCommand("pdf-dropzone"),
-    docsHref: "/docs/components/file-upload",
-    component: PdfDropzoneBlock,
-  },
-  {
-    id: "ocr-blocks",
-    title: "OCR Blocks",
-    description:
-      "Structured OCR review with typed blocks, confidence, and page overlays.",
-    hideHeader: true,
-    command: getRegistryAddCommand("ocr-blocks-block"),
-    docsHref: "/docs/components/ocr-blocks",
-    component: OcrBlocksBlock,
-  },
-  {
-    id: "e-signature",
-    title: "E-Signature",
-    description:
-      "Signature fields connected to the PDF canvas and signed PDF export.",
-    hideHeader: true,
-    command: getRegistryAddCommand("e-signature"),
-    docsHref: "/docs/components/e-signature",
-    component: ESignatureBlock,
-  },
-  {
-    id: "document-splits",
-    title: "Document Splits",
-    description:
-      "Lazy page thumbnails, draggable split groups, and PDF navigation.",
-    command: getRegistryAddCommand("document-splits-block"),
-    docsHref: "/docs/components/document-splits",
-    component: DocumentSplitsBlock,
-  },
-  {
-    id: "excel-document-splits",
-    title: "Excel Document Splits",
-    description:
-      "Workbook sheets split into draggable groups with thumbnails from the XLSX viewer.",
-    command: getRegistryAddCommand("excel-document-splits"),
-    docsHref: "/docs/components/xlsx-viewer",
-    component: XlsxDocumentSplitsBlock,
-  },
-  {
-    id: "docx-editor-block",
-    title: "DOCX Editor",
-    description:
-      "A Word-style document editor with formatting controls, page thumbnails, and DOCX export.",
-    command: getRegistryAddCommand("docx-editor-block"),
-    docsHref: "/docs/components/docx-editor",
-    component: DocxEditorBlock,
-    previewHeightClassName: "h-[720px]",
-  },
-]
+const blockComponents = {
+  "human-review": HumanReviewBlock,
+  "pdf-dropzone": PdfDropzoneBlock,
+  "ocr-blocks": OcrBlocksBlock,
+  "e-signature": ESignatureBlock,
+  "document-splits": DocumentSplitsBlock,
+  "excel-document-splits": XlsxDocumentSplitsBlock,
+  "docx-editor-block": DocxEditorBlock,
+} satisfies Record<PdfViewerBlockId, React.ComponentType>
+
+const pdfViewerBlocks: PdfViewerBlock[] = PDF_VIEWER_BLOCKS.map((block) => ({
+  ...block,
+  component: blockComponents[block.id],
+}))
 
 export function PdfViewerBlocks({
   codeSamples,
@@ -308,11 +247,11 @@ function PdfViewerBlockPreview({
                 variant="ghost"
                 size="icon-sm"
                 className="size-7"
-                title="Open in New Tab"
-                aria-label={`Open ${block.title} in new tab`}
-                render={<Link href={block.docsHref} target="_blank" />}
+                title="Open Fullscreen Preview"
+                aria-label={`Open ${block.title} fullscreen preview`}
+                render={<Link href={block.viewHref} target="_blank" />}
               >
-                <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-4" />
+                <HugeiconsIcon icon={FullScreenIcon} className="size-4" />
               </Button>
               <Button
                 type="button"
@@ -426,7 +365,7 @@ function BlockViewToggle({
             role="tab"
             aria-selected={isActive}
             className={cn(
-              "flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium whitespace-nowrap outline-none transition-colors hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring",
+              "flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium whitespace-nowrap transition-colors outline-none hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring",
               isActive &&
                 "bg-background text-foreground shadow-sm/5 dark:bg-input"
             )}
@@ -668,9 +607,7 @@ function VirtualizedCodeBlock({ code }: { code: string }) {
             <span className="w-12 shrink-0 pr-4 text-right text-code-foreground/45 select-none">
               {virtualLine.index + 1}
             </span>
-            <code className="pr-8">
-              {lines[virtualLine.index] || " "}
-            </code>
+            <code className="pr-8">{lines[virtualLine.index] || " "}</code>
           </div>
         ))}
       </div>
@@ -758,7 +695,8 @@ function PierreBlockFileTree({
         {
           "--trees-bg-override": "var(--color-code)",
           "--trees-border-color-override": "var(--color-border)",
-          "--trees-fg-override": "color-mix(in oklab, var(--color-code-foreground) 78%, transparent)",
+          "--trees-fg-override":
+            "color-mix(in oklab, var(--color-code-foreground) 78%, transparent)",
           "--trees-selected-bg-override":
             "color-mix(in oklab, var(--color-code-foreground) 16%, transparent)",
         } as React.CSSProperties

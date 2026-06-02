@@ -57,7 +57,7 @@ export function MobileRootPreview() {
       />
       <Image
         src="/images/root-components-showcase-dark-v2.png"
-       width={1566}
+        width={1566}
         height={1114}
         alt="Document component previews"
         className="hidden w-[160vw] max-w-none dark:block"
@@ -114,14 +114,7 @@ function CsvViewerTile() {
 }
 
 function FileUploadTile() {
-  return (
-    <ComponentCrop className="h-[280px]">
-      <FileUpload
-        className="h-full [&>label]:h-full [&>label]:min-h-0 [&>label]:rounded-lg"
-        showBorderBeam={false}
-      />
-    </ComponentCrop>
-  )
+  return <FileUpload showFileList={false} />
 }
 
 function FileThumbnailTile() {
