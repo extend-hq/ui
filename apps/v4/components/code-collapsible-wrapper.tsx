@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { CopyButton } from "@/components/copy-button"
+import { CodeHeaderCopyButton } from "@/components/copy-button"
 import { getIconForLanguageExtension } from "@/components/icons"
 import {
   Collapsible,
@@ -38,12 +38,12 @@ export function CodeCollapsibleWrapper({
       open={isOpened}
       onOpenChange={setIsOpened}
       className={cn(
-        "group/collapsible relative overflow-hidden rounded-lg border bg-code md:-mx-1",
+        "group/collapsible relative overflow-hidden rounded-lg bg-code md:-mx-1",
         className
       )}
       {...props}
     >
-      <div className="flex min-h-10 items-center justify-between gap-3 border-b bg-code px-3 text-code-foreground">
+      <div className="flex min-h-10 items-center justify-between gap-3 bg-code px-3 text-code-foreground">
         <div className="flex min-w-0 items-center gap-2 text-sm [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-code-foreground [&_svg]:opacity-70">
           {getIconForLanguageExtension(language)}
           <span className="truncate">{title}</span>
@@ -60,10 +60,7 @@ export function CodeCollapsibleWrapper({
           </CollapsibleTrigger>
           <Separator orientation="vertical" className="mx-1.5 h-4!" />
           {copyValue ? (
-            <CopyButton
-              value={copyValue}
-              className="static z-auto size-7 shrink-0 bg-transparent opacity-100"
-            />
+            <CodeHeaderCopyButton value={copyValue} />
           ) : null}
         </div>
       </div>
@@ -72,7 +69,7 @@ export function CodeCollapsibleWrapper({
           {children}
         </CollapsibleContent>
       ) : (
-        <div className="relative max-h-64 overflow-hidden [content-visibility:auto] [&>figure]:mt-0 [&>figure]:md:mx-0!">
+        <div className="relative h-64 max-h-64 overflow-hidden [&>figure]:mt-0 [&>figure]:md:mx-0!">
           {closedContent}
         </div>
       )}

@@ -20,14 +20,14 @@ export function Callout({
     <Alert
       data-variant={variant}
       className={cn(
-        "mt-6 w-auto rounded-xl border-surface bg-surface text-surface-foreground md:-mx-1",
+        "mt-6 w-auto min-w-0 grid-cols-[minmax(0,1fr)] rounded-xl border-surface bg-surface text-surface-foreground md:-mx-1",
         className
       )}
       {...props}
     >
       {icon}
-      {title && <AlertTitle>{title}</AlertTitle>}
-      <AlertDescription className="text-card-foreground/80">
+      {title && <AlertTitle className="min-w-0">{title}</AlertTitle>}
+      <AlertDescription className="min-w-0 text-card-foreground/80">
         {children}
       </AlertDescription>
     </Alert>

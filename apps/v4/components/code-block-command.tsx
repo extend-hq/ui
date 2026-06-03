@@ -4,9 +4,8 @@ import * as React from "react"
 import { IconTerminal } from "@tabler/icons-react"
 
 import { useConfig } from "@/hooks/use-config"
-import { Button } from "@/components/ui/button"
 import {
-  CopyButtonIcon,
+  CodeHeaderCopyButton,
   copyToClipboardWithMeta,
 } from "@/components/copy-button"
 import {
@@ -15,11 +14,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/registry/new-york-v4/ui/tabs"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/registry/new-york-v4/ui/tooltip"
 
 export function CodeBlockCommand({
   __npm__,
@@ -81,23 +75,31 @@ export function CodeBlockCommand({
           })
         }}
       >
-        <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1">
-          <div className="flex size-4 items-center justify-center rounded-[1px] bg-foreground opacity-70">
-            <IconTerminal className="size-3 text-code" />
+        <div className="flex min-h-10 items-center justify-between gap-3 border-b border-border/50 px-3 py-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex size-4 shrink-0 items-center justify-center rounded-[1px] bg-foreground opacity-70">
+              <IconTerminal className="size-3 text-code" />
+            </div>
+            <TabsList className="min-w-0 rounded-none bg-transparent p-0">
+              {Object.entries(tabs).map(([key]) => {
+                return (
+                  <TabsTrigger
+                    key={key}
+                    value={key}
+                    className="h-7 border border-transparent pt-0.5 shadow-none! data-[state=active]:border-input data-[state=active]:bg-background!"
+                  >
+                    {key}
+                  </TabsTrigger>
+                )
+              })}
+            </TabsList>
           </div>
-          <TabsList className="rounded-none bg-transparent p-0">
-            {Object.entries(tabs).map(([key]) => {
-              return (
-                <TabsTrigger
-                  key={key}
-                  value={key}
-                  className="h-7 border border-transparent pt-0.5 shadow-none! data-[state=active]:border-input data-[state=active]:bg-background!"
-                >
-                  {key}
-                </TabsTrigger>
-              )
-            })}
-          </TabsList>
+          <CodeHeaderCopyButton
+            value={tabs[packageManager] ?? ""}
+            copied={hasCopied}
+            disabled={hasCopied}
+            onClick={copyCommand}
+          />
         </div>
         <div className="no-scrollbar overflow-x-auto">
           {Object.entries(tabs).map(([key, value]) => {
@@ -116,19 +118,6 @@ export function CodeBlockCommand({
           })}
         </div>
       </Tabs>
-      <Button
-        data-slot="copy-button"
-        data-copied={hasCopied}
-        aria-label={hasCopied ? "Copied" : "Copy to clipboard"}
-        disabled={hasCopied}
-        size="icon"
-        variant="ghost"
-        className="absolute top-2 right-2 z-10 size-7 opacity-70 transition-all duration-200 ease-out hover:opacity-100 focus-visible:opacity-100 active:scale-[0.97] disabled:opacity-100"
-        onClick={copyCommand}
-      >
-        <span className="sr-only">{hasCopied ? "Copied" : "Copy"}</span>
-        <CopyButtonIcon copied={hasCopied} />
-      </Button>
     </div>
   )
 }

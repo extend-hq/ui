@@ -32,7 +32,10 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
-import { CopyButton, copyToClipboardWithMeta } from "@/components/copy-button"
+import {
+  CodeHeaderCopyButton,
+  copyToClipboardWithMeta,
+} from "@/components/copy-button"
 import {
   DocumentSplitsBlock,
   XlsxDocumentSplitsBlock,
@@ -457,9 +460,9 @@ function BlockCodePanel({
         <div className="flex h-12 items-center gap-2 border-b px-4 text-sm">
           <HugeiconsIcon icon={CodeIcon} className="size-4 opacity-70" />
           <span className="truncate">{activeCodeSample.targetPath}</span>
-          <CopyButton
+          <CodeHeaderCopyButton
             value={activeCodeSample.content}
-            className="static ml-auto size-7 bg-transparent"
+            className="ml-auto"
             event="copy_block_code"
           />
         </div>

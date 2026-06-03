@@ -104,19 +104,26 @@ export function CopyButtonIcon({
   )
 }
 
+export const codeHeaderCopyButtonClassName =
+  "static z-auto shrink-0 bg-transparent"
+
 export function CopyButton({
   value,
   className,
+  copied,
   variant = "ghost",
   event,
+  onClick,
   ...props
 }: React.ComponentProps<typeof Button> & {
   value: string
   src?: string
   event?: Event["name"]
   tooltip?: string
+  copied?: boolean
 }) {
   const [hasCopied, setHasCopied] = React.useState(false)
+  const isCopied = copied ?? hasCopied
 
   React.useEffect(() => {
     if (hasCopied) {
@@ -128,16 +135,21 @@ export function CopyButton({
   return (
     <Button
       data-slot="copy-button"
-      data-copied={hasCopied}
-      aria-label={hasCopied ? "Copied" : "Copy to clipboard"}
-      disabled={hasCopied}
+      data-copied={isCopied}
+      aria-label={isCopied ? "Copied" : "Copy to clipboard"}
+      disabled={isCopied}
       size="icon"
       variant={variant}
       className={cn(
-        "absolute top-3 right-2 z-10 size-7 bg-code transition-all duration-200 ease-out hover:opacity-100 focus-visible:opacity-100 active:scale-[0.97] disabled:opacity-100",
+        "absolute top-3 right-2 z-10 size-7 bg-code opacity-70 transition-all duration-200 ease-out hover:opacity-100 focus-visible:opacity-100 active:scale-[0.97] disabled:opacity-100",
         className
       )}
-      onClick={async () => {
+      onClick={async (event_) => {
+        if (onClick) {
+          onClick(event_)
+          return
+        }
+
         const hasCopied = await copyToClipboardWithMeta(
           value,
           event
@@ -156,8 +168,20 @@ export function CopyButton({
       }}
       {...props}
     >
-      <span className="sr-only">{hasCopied ? "Copied" : "Copy"}</span>
-      <CopyButtonIcon copied={hasCopied} />
+      <span className="sr-only">{isCopied ? "Copied" : "Copy"}</span>
+      <CopyButtonIcon copied={isCopied} />
     </Button>
+  )
+}
+
+export function CodeHeaderCopyButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof CopyButton>) {
+  return (
+    <CopyButton
+      className={cn(codeHeaderCopyButtonClassName, className)}
+      {...props}
+    />
   )
 }

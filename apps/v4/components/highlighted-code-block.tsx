@@ -187,26 +187,73 @@ function syncVirtualizerBuffers(
   })
 }
 
+function handleCodeBlockWheel(event: WheelEvent, container: HTMLElement) {
+  if (event.deltaY === 0 && event.deltaX === 0) {
+    return
+  }
+
+  const scrollElement = container.querySelector<HTMLElement>(".no-scrollbar")
+
+  if (!scrollElement) {
+    return
+  }
+
+  const maxScrollTop = scrollElement.scrollHeight - scrollElement.clientHeight
+  const maxScrollLeft = scrollElement.scrollWidth - scrollElement.clientWidth
+  const canScrollVertically = maxScrollTop > 0
+  const canScrollHorizontally = maxScrollLeft > 0
+  const canScrollDown =
+    canScrollVertically && scrollElement.scrollTop < maxScrollTop
+  const canScrollUp = canScrollVertically && scrollElement.scrollTop > 0
+  const canScrollRight =
+    canScrollHorizontally && scrollElement.scrollLeft < maxScrollLeft
+  const canScrollLeft = canScrollHorizontally && scrollElement.scrollLeft > 0
+  const shouldHandleVertical =
+    (event.deltaY > 0 && canScrollDown) || (event.deltaY < 0 && canScrollUp)
+  const shouldHandleHorizontal =
+    (event.deltaX > 0 && canScrollRight) ||
+    (event.deltaX < 0 && canScrollLeft)
+
+  if (!shouldHandleVertical && !shouldHandleHorizontal) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+  event.stopImmediatePropagation()
+  scrollElement.scrollBy({
+    left: shouldHandleHorizontal ? event.deltaX : 0,
+    top: shouldHandleVertical ? event.deltaY : 0,
+  })
+}
+
 export function HighlightedCodeBlock({
   code,
   className,
+  copyButtonClassName,
   fileName = "component.tsx",
   language = "tsx",
   lazy = true,
   maxHeightClassName = "max-h-[34rem]",
   previewLines,
+  renderFallbackCode = false,
   showCopy = true,
 }: {
   code: string
   className?: string
+  copyButtonClassName?: string
   fileName?: string
   language?: string
   lazy?: boolean
   maxHeightClassName?: string
   previewLines?: number
+  renderFallbackCode?: boolean
   showCopy?: boolean
 }) {
   const [isVisible, setIsVisible] = React.useState(!lazy)
+  const [renderedCodeKey, setRenderedCodeKey] = React.useState<string | null>(
+    null
+  )
   const codeThemeType = useCodeThemeType()
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const visibleCode = React.useMemo(() => {
@@ -224,6 +271,10 @@ export function HighlightedCodeBlock({
     }),
     [fileName, language, visibleCode]
   )
+  const codeRenderKey = `${file.cacheKey}:${codeThemeType}`
+  const hasRenderedCode = renderedCodeKey === codeRenderKey
+  const shouldShowFallback =
+    renderFallbackCode && isVisible && !hasRenderedCode
 
   const fileOptions = React.useMemo(
     () => ({
@@ -236,10 +287,11 @@ export function HighlightedCodeBlock({
       themeType: codeThemeType,
       onPostRender: (fileContainer: HTMLElement) => {
         syncVirtualizerBuffers(fileContainer, lastRenderableLineIndex)
+        setRenderedCodeKey(codeRenderKey)
       },
       unsafeCSS: CODE_FILE_UNSAFE_CSS,
     }),
-    [codeThemeType, lastRenderableLineIndex]
+    [codeRenderKey, codeThemeType, lastRenderableLineIndex]
   )
 
   React.useEffect(() => {
@@ -271,6 +323,24 @@ export function HighlightedCodeBlock({
     return () => observer.disconnect()
   }, [lazy])
 
+  React.useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const onWheel = (event: WheelEvent) => {
+      handleCodeBlockWheel(event, container)
+    }
+
+    container.addEventListener("wheel", onWheel, {
+      capture: true,
+      passive: false,
+    })
+
+    return () => {
+      container.removeEventListener("wheel", onWheel, { capture: true })
+    }
+  }, [])
+
   return (
     <div
       ref={containerRef}
@@ -280,27 +350,46 @@ export function HighlightedCodeBlock({
         className
       )}
     >
-      {showCopy && <CopyButton value={code} />}
-      {isVisible ? (
-        <WorkerPoolContextProvider
-          poolOptions={CODE_WORKER_POOL_OPTIONS}
-          highlighterOptions={CODE_HIGHLIGHTER_OPTIONS}
+      {showCopy && <CopyButton value={code} className={copyButtonClassName} />}
+      {shouldShowFallback ? (
+        <pre
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-0 z-[1] m-0 overflow-hidden px-4 py-3.5 font-mono text-[0.8rem] leading-[1.625] whitespace-pre text-code-foreground",
+            maxHeightClassName
+          )}
         >
-          <Virtualizer
-            className={cn(
-              "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto outline-none",
-              maxHeightClassName
-            )}
-            contentClassName="min-w-full"
+          <code>{visibleCode}</code>
+        </pre>
+      ) : null}
+      {isVisible ? (
+        <div
+          aria-hidden={shouldShowFallback}
+          className={cn(
+            "h-full min-h-0 transition-opacity",
+            shouldShowFallback && "opacity-0"
+          )}
+        >
+          <WorkerPoolContextProvider
+            poolOptions={CODE_WORKER_POOL_OPTIONS}
+            highlighterOptions={CODE_HIGHLIGHTER_OPTIONS}
           >
-            <File
-              file={file}
-              metrics={CODE_VIRTUAL_FILE_METRICS}
-              style={CODE_FILE_THEME}
-              options={fileOptions}
-            />
-          </Virtualizer>
-        </WorkerPoolContextProvider>
+            <Virtualizer
+              className={cn(
+                "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-contain outline-none",
+                maxHeightClassName
+              )}
+              contentClassName="min-w-full"
+            >
+              <File
+                file={file}
+                metrics={CODE_VIRTUAL_FILE_METRICS}
+                style={CODE_FILE_THEME}
+                options={fileOptions}
+              />
+            </Virtualizer>
+          </WorkerPoolContextProvider>
+        </div>
       ) : (
         <div className={cn("min-h-72 bg-code", maxHeightClassName)} />
       )}

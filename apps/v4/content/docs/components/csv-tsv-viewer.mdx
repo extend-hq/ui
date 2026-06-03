@@ -21,16 +21,17 @@ the last child of your app's `<body>` before using the component:
 Glide Data Grid uses browser-only APIs. If you see SSR errors, render the CSV
 Viewer through `next/dynamic` with `ssr: false`.
 
-```tsx
-"use client"
+<DocsMdxCodeBlock
+  language="tsx"
+  code={`"use client"
 
 import dynamic from "next/dynamic"
 
 const CsvViewer = dynamic(
   () => import("@/components/ui/csv-viewer").then((mod) => mod.CsvViewer),
   { ssr: false }
-)
-```
+)`}
+/>
 
 </Callout>
 
@@ -64,9 +65,11 @@ npm install @glideapps/glide-data-grid@6.0.4-alpha24 papaparse
 
 <Step>Add the Glide Data Grid styles.</Step>
 
-```tsx
-import "@glideapps/glide-data-grid/dist/index.css"
-```
+<DocsMdxCodeBlock
+  language="tsx"
+  copyButtonClassName="top-0.5"
+  code={`import "@glideapps/glide-data-grid/dist/index.css"`}
+/>
 
 <Step>Update the import paths to match your project setup.</Step>
 
