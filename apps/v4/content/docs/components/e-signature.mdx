@@ -30,6 +30,12 @@ npx shadcn@latest add https://ui.extend.ai/r/e-signature.json
 
 <Steps className="mb-0 pt-2">
 
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 pdf-lib@^1.17.1 signature_pad@^5.1.3
+```
+
 <Step>Copy and paste the following code into your project.</Step>
 
 <ESignatureSource />
@@ -51,18 +57,10 @@ npx shadcn@latest add https://ui.extend.ai/r/e-signature.json
 
 ## API Reference
 
-### SignatureFieldCard
+### ESignatureBlock
 
-The SignatureFieldCard component renders a signature field summary with status, recipient context, and an optional action.
+The ESignatureBlock component renders a PDF signing workflow with a document preview, signature field panel, signature dialog, and signed-PDF export.
 
-| Prop            | Type                                   | Default                                             | Required |
-| --------------- | -------------------------------------- | --------------------------------------------------- | -------- |
-| `label`         | `string`                               | `-`                                                 | Yes      |
-| `status`        | `"unsigned" \| "signed" \| "optional"` | `"unsigned"`                                        | No       |
-| `pageLabel`     | `string`                               | `-`                                                 | No       |
-| `description`   | `string`                               | `-`                                                 | No       |
-| `iconClassName` | `string`                               | `"bg-blue-500/10 text-blue-600 dark:text-blue-300"` | No       |
-| `actionLabel`   | `string`                               | `"Sign"` or `"Edit signature"`                      | No       |
-| `onAction`      | `() => void`                           | `-`                                                 | No       |
-| `className`     | `string`                               | `-`                                                 | No       |
-| `...props`      | `React.HTMLAttributes<HTMLDivElement>` | `-`                                                 | No       |
+| Prop   | Type     | Default | Required |
+| ------ | -------- | ------- | -------- |
+| `file` | `string` | `-`     | No       |

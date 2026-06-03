@@ -33,7 +33,7 @@ npx shadcn@latest add https://ui.extend.ai/r/ocr-blocks.json
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install react-markdown
+npm install @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 @tanstack/react-virtual@^3.13.26 react-markdown@^10.1.0 rehype-raw@^7.0.0 rehype-sanitize@^6.0.0 remark-gfm@^4.0.1
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -57,19 +57,13 @@ npm install react-markdown
 
 ## API Reference
 
-### OcrBlockCard
+### OcrBlocksPanel
 
-The OcrBlockCard component renders a selectable OCR result with type, markdown text, confidence, and page context.
+The OcrBlocksPanel component renders selectable OCR results with type, markdown text, confidence, and page context.
 
-| Prop              | Type                                                 | Default                                                             | Required |
-| ----------------- | ---------------------------------------------------- | ------------------------------------------------------------------- | -------- |
-| `kind`            | `string`                                             | `-`                                                                 | Yes      |
-| `text`            | `string`                                             | `-`                                                                 | Yes      |
-| `confidence`      | `number`                                             | `-`                                                                 | No       |
-| `pageLabel`       | `string`                                             | `-`                                                                 | No       |
-| `icon`            | `React.ComponentProps<typeof HugeiconsIcon>["icon"]` | `ParagraphIcon`                                                     | No       |
-| `active`          | `boolean`                                            | `false`                                                             | No       |
-| `badgeClassName`  | `string`                                             | `"bg-blue-50 text-blue-600 dark:bg-blue-300/10 dark:text-blue-300"` | No       |
-| `activeClassName` | `string`                                             | `"border-blue-500/60 bg-blue-500/5"`                                | No       |
-| `className`       | `string`                                             | `-`                                                                 | No       |
-| `...props`        | `React.ButtonHTMLAttributes<HTMLButtonElement>`      | `-`                                                                 | No       |
+| Prop            | Type                        | Default | Required |
+| --------------- | --------------------------- | ------- | -------- |
+| `activeBlockId` | `string`                    | `-`     | No       |
+| `blocks`        | `OcrBlock[]`                | `-`     | Yes      |
+| `className`     | `string`                    | `-`     | No       |
+| `onBlockFocus`  | `(block: OcrBlock) => void` | `-`     | No       |

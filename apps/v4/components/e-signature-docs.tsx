@@ -900,27 +900,10 @@ export function ESignatureDemo() {
 
 const eSignatureUsageCode = `"use client";
 
-import { SignatureFieldCard } from "@/components/ui/signature-field-card";
+import { ESignatureBlock } from "@/components/blocks/e-signature";
 
 export function ESignatureExample() {
-  return (
-    <div className="flex h-[420px] flex-col gap-2 bg-background p-3">
-      <SignatureFieldCard
-        label="Loan originator signature"
-        pageLabel="p. 1"
-        description="294 x 42 field"
-        onAction={() => {}}
-      />
-      <SignatureFieldCard
-        label="Initials"
-        status="signed"
-        pageLabel="p. 2"
-        description="Completed by Andrew"
-        iconClassName="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-        onAction={() => {}}
-      />
-    </div>
-  );
+  return <ESignatureBlock file="/path/to/document.pdf" />;
 }`
 
 const eSignatureSourceCode =
@@ -930,7 +913,7 @@ export function ESignatureSource() {
   return (
     <DocsSourceCodeBlock
       code={eSignatureSourceCode}
-      fileName="components/ui/e-signature.tsx"
+      fileName="components/blocks/e-signature.tsx"
     />
   )
 }
