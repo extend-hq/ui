@@ -2,14 +2,15 @@
 
 import * as React from "react"
 import {
-  CodeView,
+  File,
+  Virtualizer,
   WorkerPoolContextProvider,
-  type CodeViewItem,
-  type CodeViewLayout,
+  type FileContents,
   type SupportedLanguages,
   type WorkerInitializationRenderOptions,
   type WorkerPoolOptions,
 } from "@pierre/diffs/react"
+import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
 import { CopyButton } from "@/components/copy-button"
@@ -27,7 +28,7 @@ const CODE_FILE_THEME = {
   "--diffs-line-height": "1.625",
 } as React.CSSProperties
 
-const CODE_VIEW_HIGHLIGHTER_OPTIONS = {
+const CODE_HIGHLIGHTER_OPTIONS = {
   theme: {
     light: "pierre-light-soft",
     dark: "pierre-dark-soft",
@@ -45,18 +46,25 @@ const CODE_VIEW_HIGHLIGHTER_OPTIONS = {
   ],
 } satisfies WorkerInitializationRenderOptions
 
-const CODE_VIEW_WORKER_POOL_OPTIONS = {
+const CODE_WORKER_POOL_OPTIONS = {
   workerFactory: () =>
     new Worker(new URL("@pierre/diffs/worker/worker.js", import.meta.url), {
       type: "module",
     }),
 } satisfies WorkerPoolOptions
 
-const CODE_VIEW_LAYOUT = {
-  paddingTop: 0,
-  paddingBottom: 8,
-  gap: 8,
-} satisfies CodeViewLayout
+type CodeThemeType = "light" | "dark"
+
+function useCodeThemeType(): CodeThemeType {
+  const { resolvedTheme } = useTheme()
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  return isMounted && resolvedTheme === "dark" ? "dark" : "light"
+}
 
 function getCodeCacheKey(code: string, fileName: string) {
   let hash = 0
@@ -86,6 +94,7 @@ export function HighlightedCodeBlock({
   showCopy?: boolean
 }) {
   const [isVisible, setIsVisible] = React.useState(false)
+  const codeThemeType = useCodeThemeType()
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const visibleCode = React.useMemo(() => {
     if (!previewLines) {
@@ -95,19 +104,26 @@ export function HighlightedCodeBlock({
     return code.split("\n").slice(0, previewLines).join("\n")
   }, [code, previewLines])
   const file = React.useMemo(
-    (): CodeViewItem[] => [
-      {
-        id: getCodeCacheKey(visibleCode, fileName),
-        type: "file",
-        file: {
-          name: fileName,
-          contents: visibleCode,
-          lang: language as SupportedLanguages,
-          cacheKey: getCodeCacheKey(visibleCode, fileName),
-        },
-      },
-    ],
+    (): FileContents => ({
+      name: fileName,
+      contents: visibleCode,
+      lang: language as SupportedLanguages,
+      cacheKey: getCodeCacheKey(visibleCode, fileName),
+    }),
     [fileName, language, visibleCode]
+  )
+
+  const fileOptions = React.useMemo(
+    () => ({
+      disableFileHeader: true,
+      overflow: "scroll" as const,
+      theme: {
+        light: "pierre-light-soft",
+        dark: "pierre-dark-soft",
+      },
+      themeType: codeThemeType,
+    }),
+    [codeThemeType]
   )
 
   React.useEffect(() => {
@@ -146,28 +162,18 @@ export function HighlightedCodeBlock({
       {showCopy && <CopyButton value={code} />}
       {isVisible ? (
         <WorkerPoolContextProvider
-          poolOptions={CODE_VIEW_WORKER_POOL_OPTIONS}
-          highlighterOptions={CODE_VIEW_HIGHLIGHTER_OPTIONS}
+          poolOptions={CODE_WORKER_POOL_OPTIONS}
+          highlighterOptions={CODE_HIGHLIGHTER_OPTIONS}
         >
-          <CodeView
-            items={file}
+          <Virtualizer
             className={cn(
               "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto outline-none",
               maxHeightClassName
             )}
-            style={CODE_FILE_THEME}
-            options={{
-              disableBackground: true,
-              disableFileHeader: true,
-              overflow: "scroll",
-              layout: CODE_VIEW_LAYOUT,
-              theme: {
-                light: "pierre-light-soft",
-                dark: "pierre-dark-soft",
-              },
-              themeType: "system",
-            }}
-          />
+            contentClassName="min-w-full"
+          >
+            <File file={file} style={CODE_FILE_THEME} options={fileOptions} />
+          </Virtualizer>
         </WorkerPoolContextProvider>
       ) : (
         <div className={cn("min-h-72 bg-code", maxHeightClassName)} />
