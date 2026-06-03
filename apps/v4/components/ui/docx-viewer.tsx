@@ -277,9 +277,9 @@ function DocxToolbar({
   const canZoomOut = zoomScale > ZOOM_OPTIONS[0]
 
   return (
-    <div className="flex min-h-12 items-center justify-between gap-3 overflow-x-auto overflow-y-hidden border-b bg-background px-3">
+    <div className="flex min-h-12 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2">
       <TooltipProvider>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <ToolbarTooltip label="Toggle thumbnails">
             <Button
               type="button"
@@ -296,7 +296,7 @@ function DocxToolbar({
             Page {pageCount ? activePage : 1} of {pageCount || "-"}
           </div>
         </div>
-        <div className="ml-auto flex shrink-0 items-center gap-1">
+        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
           {showNightRenderToggle ? (
             <>
               <Separator

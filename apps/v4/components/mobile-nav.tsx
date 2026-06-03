@@ -23,6 +23,7 @@ const TOP_LEVEL_SECTIONS = [
     href: "/docs/components",
   },
 ]
+const EXCLUDED_PAGES = ["/docs"]
 
 export function MobileNav({
   tree,
@@ -117,7 +118,20 @@ export function MobileNav({
             <div className="flex flex-col gap-8">
               {tree?.children?.map((group, index) => {
                 if (group.type === "folder") {
-                  const pages = getPagesFromFolder(group, currentBase)
+                  const pages = getPagesFromFolder(group, currentBase).filter(
+                    (page) => {
+                      if (!showMcpDocs && page.url.includes("/mcp")) {
+                        return false
+                      }
+
+                      return !EXCLUDED_PAGES.includes(page.url)
+                    }
+                  )
+
+                  if (pages.length === 0) {
+                    return null
+                  }
+
                   return (
                     <div key={index} className="flex flex-col gap-4">
                       <div className="text-sm font-medium text-muted-foreground">
@@ -125,9 +139,6 @@ export function MobileNav({
                       </div>
                       <div className="flex flex-col gap-3">
                         {pages.map((item) => {
-                          if (!showMcpDocs && item.url.includes("/mcp")) {
-                            return null
-                          }
                           return (
                             <MobileLink
                               key={`${item.url}-${index}`}

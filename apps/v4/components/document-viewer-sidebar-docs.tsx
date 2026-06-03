@@ -12,7 +12,10 @@ import {
   useElementWidth,
   useInlineThumbnailSidebar,
 } from "@/components/ui/document-viewer-sidebar"
-import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
+import {
+  DocsSourceCodeBlock,
+  DocsViewCodeBlock,
+} from "@/components/docs-code-block"
 
 const demoPages = [
   { id: 1, label: "Invoice summary" },
@@ -158,54 +161,13 @@ function DocumentViewerSidebarPreview() {
 }
 
 export function DocumentViewerSidebarDemo() {
-  const [isCodeVisible, setIsCodeVisible] = React.useState(false)
-
   return (
     <div
       data-slot="component-preview"
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
       <DocumentViewerSidebarPreview />
-      <div
-        data-slot="code"
-        data-mobile-code-visible={isCodeVisible}
-        className="relative overflow-hidden **:data-[slot=copy-button]:right-4 **:data-[slot=copy-button]:hidden data-[mobile-code-visible=true]:**:data-[slot=copy-button]:flex [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-t-none [&_[data-rehype-pretty-code-figure]]:border-t [&_pre]:max-h-72"
-      >
-        {isCodeVisible ? (
-          <HighlightedCodeBlock
-            code={documentViewerSidebarUsageCode}
-            className="rounded-none border-x-0 border-b-0"
-          />
-        ) : (
-          <div className="relative">
-            <HighlightedCodeBlock
-              code={documentViewerSidebarUsageCode}
-              className="rounded-none border-x-0 border-b-0"
-              maxHeightClassName="max-h-56"
-              previewLines={10}
-              showCopy={false}
-            />
-            <div className="absolute inset-0 flex items-center justify-center pb-4">
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to top, var(--color-code), color-mix(in oklab, var(--color-code) 60%, transparent), transparent)",
-                }}
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="docs-view-code-button relative z-10 rounded-lg"
-                onClick={() => setIsCodeVisible(true)}
-              >
-                View Code
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      <DocsViewCodeBlock code={documentViewerSidebarUsageCode} />
     </div>
   )
 }
@@ -362,5 +324,10 @@ export function DocumentViewerSidebarSkeleton({ inline }: { inline: boolean }) {
 }`
 
 export function DocumentViewerSidebarSource() {
-  return <HighlightedCodeBlock code={documentViewerSidebarSourceCode} />
+  return (
+    <DocsSourceCodeBlock
+      code={documentViewerSidebarSourceCode}
+      fileName="components/ui/document-viewer-sidebar.tsx"
+    />
+  )
 }

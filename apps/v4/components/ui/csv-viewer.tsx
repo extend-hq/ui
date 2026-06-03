@@ -302,9 +302,9 @@ export function CsvViewer({ className, data }: CsvViewerProps) {
         className
       )}
     >
-      <div className="flex min-h-12 items-center justify-end gap-3 border-b px-3">
+      <div className="flex min-h-12 flex-wrap items-center justify-end gap-2 border-b bg-background px-3 py-2">
         <TooltipProvider>
-          <div className="ml-auto flex shrink-0 items-center gap-1">
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
             <ToolbarTooltip label="Zoom out">
               <Button
                 variant="ghost"

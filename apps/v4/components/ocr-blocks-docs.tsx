@@ -22,7 +22,10 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
+import {
+  DocsSourceCodeBlock,
+  DocsViewCodeBlock,
+} from "@/components/docs-code-block"
 import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 
 type Point = {
@@ -8527,54 +8530,13 @@ function OcrBlocksExample() {
 }
 
 export function OcrBlocksDemo() {
-  const [isCodeVisible, setIsCodeVisible] = React.useState(false)
-
   return (
     <div
       data-slot="component-preview"
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
       <OcrBlocksExample />
-      <div
-        data-slot="code"
-        data-mobile-code-visible={isCodeVisible}
-        className="relative overflow-hidden **:data-[slot=copy-button]:right-4 **:data-[slot=copy-button]:hidden data-[mobile-code-visible=true]:**:data-[slot=copy-button]:flex [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-t-none [&_[data-rehype-pretty-code-figure]]:border-t [&_pre]:max-h-72"
-      >
-        {isCodeVisible ? (
-          <HighlightedCodeBlock
-            code={ocrBlocksUsageCode}
-            className="rounded-none border-x-0 border-b-0"
-          />
-        ) : (
-          <div className="relative">
-            <HighlightedCodeBlock
-              code={ocrBlocksUsageCode}
-              className="rounded-none border-x-0 border-b-0"
-              maxHeightClassName="max-h-56"
-              previewLines={10}
-              showCopy={false}
-            />
-            <div className="absolute inset-0 flex items-center justify-center pb-4">
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to top, var(--color-code), color-mix(in oklab, var(--color-code) 60%, transparent), transparent)",
-                }}
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="docs-view-code-button relative z-10 rounded-lg"
-                onClick={() => setIsCodeVisible(true)}
-              >
-                View Code
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      <DocsViewCodeBlock code={ocrBlocksUsageCode} />
     </div>
   )
 }
@@ -8621,5 +8583,10 @@ const ocrBlocksSourceCode =
   '"use client"\n\nimport * as React from "react"\n\nimport { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"\nimport { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"\n\ntype BoundingBox = {\n  left: number\n  top: number\n  right: number\n  bottom: number\n}\n\ntype ParsedOcrBlock = {\n  id: string\n  type: string\n  content: string\n  metadata: {\n    page: { number: number; width: number; height: number }\n    layoutClass?: string\n    avgOcrConfidence?: number\n  }\n  boundingBox?: BoundingBox\n}\n\ntype ParsedOcrOutput = {\n  chunks: { blocks: ParsedOcrBlock[] }[]\n}\n\nconst sampleOutput = {\n  chunks: [\n    {\n      blocks: [\n        {\n          id: "block_1_eo9AoV",\n          type: "heading",\n          content: "# Attention Is All You Need",\n          metadata: {\n            page: { number: 1, width: 1275, height: 1651 },\n            layoutClass: "Heading",\n            avgOcrConfidence: 0.994,\n          },\n          boundingBox: {\n            left: 440.0215455215343,\n            top: 312.01490975860366,\n            right: 831.4373211268961,\n            bottom: 339.0022611402928,\n          },\n        },\n      ],\n    },\n  ],\n} satisfies ParsedOcrOutput\n\nfunction blockToArea(block: ParsedOcrBlock) {\n  const box = block.boundingBox\n  const { page } = block.metadata\n\n  if (!box) return undefined\n\n  return {\n    left: (box.left / page.width) * 100 + "%",\n    top: (box.top / page.height) * 100 + "%",\n    width: ((box.right - box.left) / page.width) * 100 + "%",\n    height: ((box.bottom - box.top) / page.height) * 100 + "%",\n  }\n}\n\nexport function OcrBlocksBlock({\n  file,\n  output = sampleOutput,\n}: {\n  file?: string\n  output?: ParsedOcrOutput\n}) {\n  const blocks = output.chunks.flatMap((chunk) => chunk.blocks)\n  const [activeBlockId, setActiveBlockId] = React.useState(blocks[0]?.id)\n  const viewerRef = React.useRef<PDFViewerHandle>(null)\n\n  return (\n    <PdfBlockResizableShell\n      autoSaveId="pdf-block-ocr"\n      left={\n        <PDFViewer\n          ref={viewerRef}\n          file={file}\n          defaultZoom={0.75}\n          renderPageOverlay={({ pageNumber }) =>\n            blocks\n              .filter((block) => block.metadata.page.number === pageNumber)\n              .map((block) => (\n                <div\n                  key={block.id}\n                  className="pointer-events-none absolute z-10 border border-blue-500/70 bg-blue-500/10"\n                  style={blockToArea(block)}\n                />\n              ))\n          }\n        />\n      }\n      right={\n        <aside className="min-h-0 bg-background">\n          {blocks.map((block) => (\n            <button\n              key={block.id}\n              type="button"\n              onClick={() => {\n                setActiveBlockId(block.id)\n                const area = blockToArea(block)\n                if (!area) return\n                viewerRef.current?.scrollToPageArea(block.metadata.page.number, {\n                  top: Number.parseFloat(area.top),\n                })\n              }}\n              data-active={block.id === activeBlockId}\n            >\n              {block.content}\n            </button>\n          ))}\n        </aside>\n      }\n    />\n  )\n}'
 
 export function OcrBlocksSource() {
-  return <HighlightedCodeBlock code={ocrBlocksSourceCode} />
+  return (
+    <DocsSourceCodeBlock
+      code={ocrBlocksSourceCode}
+      fileName="components/ui/ocr-blocks.tsx"
+    />
+  )
 }
