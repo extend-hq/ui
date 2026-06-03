@@ -2089,8 +2089,8 @@ export function JsonDiffView({
             overflow: "wrap",
             themeType: theme,
             theme: {
-              light: "pierre-light",
-              dark: "pierre-dark",
+              light: "pierre-light-soft",
+              dark: "pierre-dark-soft",
             },
           }}
         />

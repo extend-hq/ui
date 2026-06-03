@@ -28,7 +28,7 @@
     "@hugeicons/core-free-icons": "^4.2.0",
     "@hugeicons/react": "^1.1.6",
     "@paper-design/shaders-react": "^0.0.76",
-    "@pierre/diffs": "^1.1.22",
+    "@pierre/diffs": "^1.2.7",
     "@pierre/trees": "1.0.0-beta.4",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "3.13.26",

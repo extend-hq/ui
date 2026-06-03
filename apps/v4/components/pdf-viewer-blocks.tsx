@@ -14,10 +14,6 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  File as PierreCodeFile,
-  Virtualizer as PierreVirtualizer,
-} from "@pierre/diffs/react"
 import { prepareFileTreeInput } from "@pierre/trees"
 import { FileTree as PierreFileTree, useFileTree } from "@pierre/trees/react"
 import type { PanelImperativeHandle } from "react-resizable-panels"
@@ -43,6 +39,7 @@ import {
 } from "@/components/document-splitter-docs"
 import { DocxEditorBlock } from "@/components/docx-editor-docs"
 import { ESignatureBlock } from "@/components/e-signature-docs"
+import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
 import { HumanReviewBlock } from "@/components/human-review-docs"
 import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
@@ -73,19 +70,6 @@ const blockViewportSizes: Array<{
 ]
 
 const BLOCK_VIEWPORT_HEIGHT_CLASS = "h-[680px]"
-
-const BLOCK_CODE_FILE_THEME = {
-  "--diffs-light-bg": "var(--color-code)",
-  "--diffs-dark-bg": "var(--color-code)",
-  "--diffs-light": "var(--color-code-foreground)",
-  "--diffs-dark": "var(--color-code-foreground)",
-  "--diffs-bg-context-override": "var(--color-code)",
-  "--diffs-bg-context-gutter-override": "var(--color-code)",
-  "--diffs-bg-buffer-override": "var(--color-code)",
-  "--diffs-fg-number-override": "var(--color-muted-foreground)",
-  "--diffs-font-size": "0.8rem",
-  "--diffs-line-height": "1.625",
-} as React.CSSProperties
 
 const OcrBlocksBlock = dynamic(
   () =>
@@ -486,51 +470,16 @@ function BlockCodePanel({
 }
 
 function BlockCodeContent({ code }: { code: BlockCodeSample }) {
-  return <BlockDiffsCodeBlock code={code} />
-}
-
-function getBlockCodeCacheKey(code: BlockCodeSample) {
-  let hash = 0
-
-  for (let index = 0; index < code.content.length; index += 1) {
-    hash = (hash * 31 + code.content.charCodeAt(index)) | 0
-  }
-
-  return `${code.targetPath}:${code.content.length}:${hash >>> 0}`
-}
-
-function BlockDiffsCodeBlock({ code }: { code: BlockCodeSample }) {
-  const file = React.useMemo(
-    () => ({
-      name: code.targetPath,
-      contents: code.content,
-      cacheKey: getBlockCodeCacheKey(code),
-    }),
-    [code]
-  )
-
   return (
-    <PierreVirtualizer
-      data-rehype-pretty-code-figure
-      className="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto bg-code text-code-foreground outline-none"
-      contentClassName="min-w-full"
-    >
-      <PierreCodeFile
-        key={code.targetPath}
-        file={file}
-        className="block min-w-full"
-        style={BLOCK_CODE_FILE_THEME}
-        options={{
-          disableFileHeader: true,
-          overflow: "scroll",
-          theme: {
-            light: "pierre-light",
-            dark: "pierre-dark",
-          },
-          themeType: "system",
-        }}
-      />
-    </PierreVirtualizer>
+    <HighlightedCodeBlock
+      key={code.targetPath}
+      code={code.content}
+      fileName={code.targetPath}
+      language={code.language}
+      showCopy={false}
+      className="min-h-0 flex-1 rounded-none border-0"
+      maxHeightClassName="h-full max-h-none"
+    />
   )
 }
 

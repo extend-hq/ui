@@ -181,6 +181,26 @@ export function PdfViewerExample() {
   );
 }`
 
+const PdfViewerSourceCode = dynamic(
+  () =>
+    import("@/components/pdf-viewer-source-code").then(
+      (mod) => mod.PdfViewerSourceCode
+    ),
+  {
+    ssr: false,
+    loading: () => <PdfViewerSourceShell />,
+  }
+)
+
+function PdfViewerSourceShell() {
+  return (
+    <div
+      data-slot="pdf-viewer-source-shell"
+      className="h-72 rounded-lg border bg-code"
+    />
+  )
+}
+
 export function PdfViewerDemo() {
   const [isCodeVisible, setIsCodeVisible] = React.useState(false)
 
@@ -235,5 +255,36 @@ export function PdfViewerDemo() {
 }
 
 export function PdfViewerSource() {
-  return <HighlightedCodeBlock code={pdfViewerSourceCode} />
+  const [shouldLoadSource, setShouldLoadSource] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+
+  React.useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    if (!("IntersectionObserver" in window)) {
+      setShouldLoadSource(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return
+
+        setShouldLoadSource(true)
+        observer.disconnect()
+      },
+      { rootMargin: "700px 0px" }
+    )
+
+    observer.observe(container)
+
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div ref={containerRef}>
+      {shouldLoadSource ? <PdfViewerSourceCode /> : <PdfViewerSourceShell />}
+    </div>
+  )
 }
