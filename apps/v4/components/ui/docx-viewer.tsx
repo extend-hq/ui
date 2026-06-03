@@ -299,86 +299,80 @@ function DocxToolbar({
         </div>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
           {showNightRenderToggle ? (
-            <>
-              <Separator
-                orientation="vertical"
-                className="mx-1 h-4 self-center"
-              />
-              <ToolbarTooltip
-                label={isDark ? "Use light document" : "Use dark document"}
+            <ToolbarTooltip
+              label={isDark ? "Use light document" : "Use dark document"}
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={controlsDisabled}
+                aria-label={isDark ? "Use light document" : "Use dark document"}
+                onClick={() => onIsDarkChange(!isDark)}
               >
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  disabled={controlsDisabled}
-                  aria-label={
-                    isDark ? "Use light document" : "Use dark document"
-                  }
-                  onClick={() => onIsDarkChange(!isDark)}
-                >
-                  <HugeiconsIcon
-                    icon={isDark ? Sun03Icon : Moon02Icon}
-                    className="size-4"
-                  />
-                </Button>
-              </ToolbarTooltip>
-            </>
+                <HugeiconsIcon
+                  icon={isDark ? Sun03Icon : Moon02Icon}
+                  className="size-4"
+                />
+              </Button>
+            </ToolbarTooltip>
           ) : null}
           <Separator orientation="vertical" className="mx-1 h-4 self-center" />
-          <ToolbarTooltip label="Zoom out">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled={controlsDisabled || !canZoomOut}
-              aria-label="Zoom out"
-              onClick={() =>
-                setZoomScale((currentZoomScale) =>
-                  getNextZoomScale(currentZoomScale, -1)
-                )
-              }
+          <div className="flex flex-none items-center gap-1">
+            <ToolbarTooltip label="Zoom out">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={controlsDisabled || !canZoomOut}
+                aria-label="Zoom out"
+                onClick={() =>
+                  setZoomScale((currentZoomScale) =>
+                    getNextZoomScale(currentZoomScale, -1)
+                  )
+                }
+              >
+                <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
+              </Button>
+            </ToolbarTooltip>
+            <Select
+              value={zoomScale.toString()}
+              onValueChange={(value) => setZoomScale(Number(value))}
+              disabled={controlsDisabled}
+              modal={false}
             >
-              <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
-            </Button>
-          </ToolbarTooltip>
-          <Select
-            value={zoomScale.toString()}
-            onValueChange={(value) => setZoomScale(Number(value))}
-            disabled={controlsDisabled}
-            modal={false}
-          >
-            <SelectTrigger
-              size="sm"
-              className="w-[84px] min-w-[84px]"
-              aria-label="Zoom level"
-            >
-              <SelectValue>{Math.round(zoomScale)}%</SelectValue>
-            </SelectTrigger>
-            <SelectContent align="end" alignItemWithTrigger={false}>
-              {ZOOM_OPTIONS.map((value) => (
-                <SelectItem key={value} value={value.toString()}>
-                  {value}%
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <ToolbarTooltip label="Zoom in">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled={controlsDisabled || !canZoomIn}
-              aria-label="Zoom in"
-              onClick={() =>
-                setZoomScale((currentZoomScale) =>
-                  getNextZoomScale(currentZoomScale, 1)
-                )
-              }
-            >
-              <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
-            </Button>
-          </ToolbarTooltip>
+              <SelectTrigger
+                size="sm"
+                className="w-[84px] min-w-[84px]"
+                aria-label="Zoom level"
+              >
+                <SelectValue>{Math.round(zoomScale)}%</SelectValue>
+              </SelectTrigger>
+              <SelectContent align="end" alignItemWithTrigger={false}>
+                {ZOOM_OPTIONS.map((value) => (
+                  <SelectItem key={value} value={value.toString()}>
+                    {value}%
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <ToolbarTooltip label="Zoom in">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={controlsDisabled || !canZoomIn}
+                aria-label="Zoom in"
+                onClick={() =>
+                  setZoomScale((currentZoomScale) =>
+                    getNextZoomScale(currentZoomScale, 1)
+                  )
+                }
+              >
+                <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+              </Button>
+            </ToolbarTooltip>
+          </div>
           <Separator orientation="vertical" className="mx-1 h-4 self-center" />
           <ToolbarTooltip label="Upload DOCX">
             <Button

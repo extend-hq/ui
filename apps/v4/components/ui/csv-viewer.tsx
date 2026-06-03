@@ -305,50 +305,55 @@ export function CsvViewer({ className, data }: CsvViewerProps) {
       <div className="flex min-h-12 flex-wrap items-center justify-end gap-2 border-b bg-background px-3 py-2">
         <TooltipProvider>
           <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
-            <ToolbarTooltip label="Zoom out">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Zoom out"
-                disabled={zoom <= ZOOM_OPTIONS[0]}
-                onClick={() => stepZoom(-1)}
+            <div className="flex flex-none items-center gap-1">
+              <ToolbarTooltip label="Zoom out">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Zoom out"
+                  disabled={zoom <= ZOOM_OPTIONS[0]}
+                  onClick={() => stepZoom(-1)}
+                >
+                  <HugeiconsIcon
+                    icon={MinusSignCircleIcon}
+                    className="size-4"
+                  />
+                </Button>
+              </ToolbarTooltip>
+              <Select
+                value={zoom.toString()}
+                onValueChange={(value) =>
+                  setZoom(Number(value) as (typeof ZOOM_OPTIONS)[number])
+                }
+                modal={false}
               >
-                <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
-              </Button>
-            </ToolbarTooltip>
-            <Select
-              value={zoom.toString()}
-              onValueChange={(value) =>
-                setZoom(Number(value) as (typeof ZOOM_OPTIONS)[number])
-              }
-              modal={false}
-            >
-              <SelectTrigger
-                size="sm"
-                className="w-[84px] min-w-[84px]"
-                aria-label="Zoom level"
-              >
-                <SelectValue>{Math.round(zoom * 100)}%</SelectValue>
-              </SelectTrigger>
-              <SelectContent align="end" alignItemWithTrigger={false}>
-                {ZOOM_OPTIONS.map((option) => (
-                  <SelectItem key={option} value={option.toString()}>
-                    {Math.round(option * 100)}%
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <ToolbarTooltip label="Zoom in">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Zoom in"
-                disabled={zoom >= ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]}
-                onClick={() => stepZoom(1)}
-              >
-                <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
-              </Button>
-            </ToolbarTooltip>
+                <SelectTrigger
+                  size="sm"
+                  className="w-[84px] min-w-[84px]"
+                  aria-label="Zoom level"
+                >
+                  <SelectValue>{Math.round(zoom * 100)}%</SelectValue>
+                </SelectTrigger>
+                <SelectContent align="end" alignItemWithTrigger={false}>
+                  {ZOOM_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option.toString()}>
+                      {Math.round(option * 100)}%
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <ToolbarTooltip label="Zoom in">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Zoom in"
+                  disabled={zoom >= ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]}
+                  onClick={() => stepZoom(1)}
+                >
+                  <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+                </Button>
+              </ToolbarTooltip>
+            </div>
             <Separator
               orientation="vertical"
               className="mx-1 h-4 self-center"

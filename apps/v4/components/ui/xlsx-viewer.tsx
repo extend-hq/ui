@@ -303,80 +303,74 @@ function WorkbookToolbar({
       <TooltipProvider>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
           {showNightRenderToggle ? (
-            <>
-              <Separator
-                orientation="vertical"
-                className="mx-1 h-4 self-center"
-              />
-              <ToolbarTooltip
-                label={isDark ? "Use light workbook" : "Use dark workbook"}
+            <ToolbarTooltip
+              label={isDark ? "Use light workbook" : "Use dark workbook"}
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={isDark ? "Use light workbook" : "Use dark workbook"}
+                onClick={() => onIsDarkChange(!isDark)}
               >
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={
-                    isDark ? "Use light workbook" : "Use dark workbook"
-                  }
-                  onClick={() => onIsDarkChange(!isDark)}
-                >
-                  <HugeiconsIcon
-                    icon={isDark ? Sun03Icon : Moon02Icon}
-                    className="size-4"
-                  />
-                </Button>
-              </ToolbarTooltip>
-            </>
+                <HugeiconsIcon
+                  icon={isDark ? Sun03Icon : Moon02Icon}
+                  className="size-4"
+                />
+              </Button>
+            </ToolbarTooltip>
           ) : null}
           <Separator orientation="vertical" className="mx-1 h-4 self-center" />
-          <ToolbarTooltip label="Zoom out">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled={!canZoomOut}
-              aria-label="Zoom out"
-              onClick={zoomOut}
+          <div className="flex flex-none items-center gap-1">
+            <ToolbarTooltip label="Zoom out">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={!canZoomOut}
+                aria-label="Zoom out"
+                onClick={zoomOut}
+              >
+                <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
+              </Button>
+            </ToolbarTooltip>
+            <Select
+              value={currentZoom.toString()}
+              onValueChange={(value) => setZoomScale(Number(value))}
+              modal={false}
             >
-              <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
-            </Button>
-          </ToolbarTooltip>
-          <Select
-            value={currentZoom.toString()}
-            onValueChange={(value) => setZoomScale(Number(value))}
-            modal={false}
-          >
-            <SelectTrigger
-              size="sm"
-              className="w-[84px] min-w-[84px]"
-              aria-label="Zoom level"
-            >
-              <SelectValue>{currentZoom}%</SelectValue>
-            </SelectTrigger>
-            <SelectContent
-              align="end"
-              alignItemWithTrigger={false}
-              className={XLSX_DROPDOWN_Z_INDEX_CLASS}
-            >
-              {ZOOM_OPTIONS.map((value) => (
-                <SelectItem key={value} value={value.toString()}>
-                  {value}%
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <ToolbarTooltip label="Zoom in">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled={!canZoomIn}
-              aria-label="Zoom in"
-              onClick={zoomIn}
-            >
-              <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
-            </Button>
-          </ToolbarTooltip>
+              <SelectTrigger
+                size="sm"
+                className="w-[84px] min-w-[84px]"
+                aria-label="Zoom level"
+              >
+                <SelectValue>{currentZoom}%</SelectValue>
+              </SelectTrigger>
+              <SelectContent
+                align="end"
+                alignItemWithTrigger={false}
+                className={XLSX_DROPDOWN_Z_INDEX_CLASS}
+              >
+                {ZOOM_OPTIONS.map((value) => (
+                  <SelectItem key={value} value={value.toString()}>
+                    {value}%
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <ToolbarTooltip label="Zoom in">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={!canZoomIn}
+                aria-label="Zoom in"
+                onClick={zoomIn}
+              >
+                <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+              </Button>
+            </ToolbarTooltip>
+          </div>
           {showUploadButton ? (
             <>
               <Separator

@@ -11,7 +11,6 @@ import {
   SmartPhone01Icon,
   Tablet01Icon,
   TerminalIcon,
-  Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { prepareFileTreeInput } from "@pierre/trees"
@@ -34,6 +33,7 @@ import {
 } from "@/components/ui/resizable"
 import {
   CodeHeaderCopyButton,
+  CopyButtonIcon,
   copyToClipboardWithMeta,
 } from "@/components/copy-button"
 import {
@@ -283,9 +283,10 @@ function PdfViewerBlockPreview({
               }
               onClick={copyInstallCommand}
             >
-              <HugeiconsIcon
-                icon={isCommandCopied ? Tick02Icon : TerminalIcon}
-                className="size-4 shrink-0"
+              <CopyButtonIcon
+                copied={isCommandCopied}
+                icon={TerminalIcon}
+                className="shrink-0"
               />
               <span className="truncate font-mono text-xs">
                 {block.command}

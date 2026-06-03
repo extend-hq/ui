@@ -80,7 +80,11 @@ export type OcrBlock = {
 }
 
 export const PDF_URL = "/samples/attention-rotated.pdf"
-const OCR_BLOCK_ROW_ESTIMATE = 132
+const OCR_BLOCK_ROW_MIN_ESTIMATE = 92
+const OCR_BLOCK_ROW_VERTICAL_CHROME = 62
+const OCR_BLOCK_LINE_HEIGHT = 20
+const OCR_BLOCK_ESTIMATED_CHARS_PER_LINE = 42
+const OCR_BLOCK_ROW_GAP = 8
 const OCR_BLOCK_LIST_PADDING = 12
 const OCR_MARKDOWN_SCHEMA = {
   ...defaultSchema,
@@ -102,6 +106,30 @@ const OCR_MARKDOWN_REMARK_PLUGINS: NonNullable<
   React.ComponentProps<typeof ReactMarkdown>["remarkPlugins"]
 > = [remarkGfm]
 const OCR_MARKDOWN_FIGURE_CAPTION_PATTERN = /<\/?caption>/gi
+
+function getEstimatedOcrBlockRowHeight(block: OcrBlock) {
+  const plainText = block.text
+    .replace(OCR_MARKDOWN_FIGURE_CAPTION_PATTERN, "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  const explicitLineCount = block.text.split(/\n+/).filter(Boolean).length
+  const wrappedLineCount = Math.max(
+    explicitLineCount,
+    Math.ceil(plainText.length / OCR_BLOCK_ESTIMATED_CHARS_PER_LINE)
+  )
+  const contentHeight = Math.max(1, wrappedLineCount) * OCR_BLOCK_LINE_HEIGHT
+  const typeExtraHeight =
+    block.type === "figure" ? 44 : block.type === "table" ? 28 : 0
+
+  return Math.max(
+    OCR_BLOCK_ROW_MIN_ESTIMATE,
+    OCR_BLOCK_ROW_VERTICAL_CHROME +
+      contentHeight +
+      typeExtraHeight +
+      OCR_BLOCK_ROW_GAP
+  )
+}
 
 export const ATTENTION_OCR_OUTPUT = {
   chunks: [
@@ -8155,7 +8183,7 @@ function OcrBlockButton({
       onClick={() => onFocusBlock(block)}
       onFocus={() => onFocusBlock(block)}
       className={cn(
-        "mb-2 w-full rounded-lg border bg-background p-3 text-left transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        "w-full rounded-lg border bg-background p-3 text-left transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         isActive && style.ring
       )}
     >
@@ -8227,12 +8255,21 @@ export function OcrBlocksPanel({
     blocks.find(
       (block) => block.id === (activeBlockId ?? localActiveBlockId)
     ) ?? firstBlock
+  const estimateBlockSize = React.useCallback(
+    (index: number) => {
+      const block = blocks[index]
+      return block
+        ? getEstimatedOcrBlockRowHeight(block)
+        : OCR_BLOCK_ROW_MIN_ESTIMATE
+    },
+    [blocks]
+  )
   const virtualizer = useVirtualizer({
     count: blocks.length,
-    estimateSize: () => OCR_BLOCK_ROW_ESTIMATE,
+    estimateSize: estimateBlockSize,
     getItemKey: (index) => blocks[index]?.id ?? index,
     getScrollElement: () => scrollViewportRef.current,
-    overscan: 8,
+    overscan: 12,
   })
 
   const focusBlock = React.useCallback(
@@ -8280,7 +8317,7 @@ export function OcrBlocksPanel({
                   key={virtualRow.key}
                   ref={virtualizer.measureElement}
                   data-index={virtualRow.index}
-                  className="absolute top-0 right-3 left-3"
+                  className="absolute top-0 right-3 left-3 pb-2 [contain:layout_paint]"
                   style={{
                     transform: `translateY(${
                       virtualRow.start + OCR_BLOCK_LIST_PADDING

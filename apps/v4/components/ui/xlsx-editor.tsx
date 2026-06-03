@@ -351,7 +351,7 @@ function EditorToolbar({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex flex-none items-center gap-1">
             <ToolbarTooltip label="Zoom out">
               <Button
                 type="button"

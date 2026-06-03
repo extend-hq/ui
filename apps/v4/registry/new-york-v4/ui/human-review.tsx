@@ -21,7 +21,6 @@ import {
 import {
   ArrowLeft01Icon,
   CancelCircleIcon,
-  FileDiffIcon,
   InputNumericIcon,
   InputTextIcon,
   SecondBracketIcon,
@@ -596,25 +595,6 @@ function getPrimitiveValue(value: JsonValue): JsonPrimitive {
 
 function jsonValuesEqual(left: JsonValue, right: JsonValue) {
   return formatJson(left) === formatJson(right)
-}
-
-function countReviewFields(fields: ReviewField[]): number {
-  return fields.reduce((count, field) => {
-    if (field.schema.type !== "object") return count + 1
-
-    const properties = field.schema.properties ?? {}
-    const childFields = Object.entries(properties).map(
-      ([key, schema]): ReviewField => ({
-        key: `${field.key}.${key}`,
-        schema,
-        actual: getObjectValue(field.actual, key),
-        expected: getObjectValue(field.expected, key),
-        metadataPath: `${field.metadataPath ?? field.key}.${key}`,
-      })
-    )
-
-    return count + Math.max(countReviewFields(childFields), 1)
-  }, 0)
 }
 
 export function findReviewField(
@@ -2084,6 +2064,7 @@ export function JsonDiffView({
           newFile={newFile}
           options={{
             diffStyle: "split",
+            disableFileHeader: true,
             diffIndicators: "bars",
             hunkSeparators: "line-info-basic",
             overflow: "wrap",
@@ -2144,7 +2125,6 @@ export function HumanReviewPanel({
       Object.is(current[key], value) ? current : { ...current, [key]: value }
     )
   }, [])
-  const fieldCount = React.useMemo(() => countReviewFields(fields), [fields])
 
   return (
     <TooltipProvider delay={200}>
@@ -2164,10 +2144,6 @@ export function HumanReviewPanel({
               JSON
             </TabsTrigger>
           </TabsList>
-          <div className="flex h-8 items-center gap-1 rounded-md border bg-muted/40 px-2 text-xs text-muted-foreground sm:h-7">
-            <HugeiconsIcon icon={FileDiffIcon} className="size-3.5" />
-            {fieldCount} fields
-          </div>
         </div>
         <TabsContent value="form" keepMounted className="min-h-0 flex-1">
           <ScrollArea className="h-full" scrollFade>

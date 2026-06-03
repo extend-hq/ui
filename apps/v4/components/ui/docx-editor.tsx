@@ -1452,7 +1452,7 @@ function DocxEditorToolbar({
             </ToolbarTooltip>
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1">
+          <div className="ml-auto flex flex-none items-center gap-1">
             <ToolbarIconButton
               label="Zoom out"
               disabled={controlsDisabled || !canZoomOut}

@@ -1010,101 +1010,110 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
             <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
               {showRotateControls ? (
                 <>
-                  <ToolbarTooltip label="Rotate page counterclockwise">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Rotate page counterclockwise"
-                      disabled={controlsDisabled}
-                      onClick={() => rotateActivePage(-90)}
-                    >
-                      <HugeiconsIcon
-                        icon={RotateClockwiseIcon}
-                        className="size-4 -scale-x-100"
-                      />
-                    </Button>
-                  </ToolbarTooltip>
-                  <ToolbarTooltip label="Rotate page clockwise">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Rotate page clockwise"
-                      disabled={controlsDisabled}
-                      onClick={() => rotateActivePage(90)}
-                    >
-                      <HugeiconsIcon
-                        icon={RotateClockwiseIcon}
-                        className="size-4"
-                      />
-                    </Button>
-                  </ToolbarTooltip>
+                  <div className="flex flex-none items-center gap-1">
+                    <ToolbarTooltip label="Rotate page counterclockwise">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Rotate page counterclockwise"
+                        disabled={controlsDisabled}
+                        onClick={() => rotateActivePage(-90)}
+                      >
+                        <HugeiconsIcon
+                          icon={RotateClockwiseIcon}
+                          className="size-4 -scale-x-100"
+                        />
+                      </Button>
+                    </ToolbarTooltip>
+                    <ToolbarTooltip label="Rotate page clockwise">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Rotate page clockwise"
+                        disabled={controlsDisabled}
+                        onClick={() => rotateActivePage(90)}
+                      >
+                        <HugeiconsIcon
+                          icon={RotateClockwiseIcon}
+                          className="size-4"
+                        />
+                      </Button>
+                    </ToolbarTooltip>
+                  </div>
                   <Separator
                     orientation="vertical"
                     className="mx-1 h-4 self-center"
                   />
                 </>
               ) : null}
-              <ToolbarTooltip label="Zoom out">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Zoom out"
-                  disabled={controlsDisabled || zoom <= ZOOM_OPTIONS[0]}
-                  onClick={() => {
-                    const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
-                    setZoom(ZOOM_OPTIONS[Math.max(0, currentIndex - 1)] ?? zoom)
-                  }}
+              <div className="flex flex-none items-center gap-1">
+                <ToolbarTooltip label="Zoom out">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Zoom out"
+                    disabled={controlsDisabled || zoom <= ZOOM_OPTIONS[0]}
+                    onClick={() => {
+                      const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
+                      setZoom(
+                        ZOOM_OPTIONS[Math.max(0, currentIndex - 1)] ?? zoom
+                      )
+                    }}
+                  >
+                    <HugeiconsIcon
+                      icon={MinusSignCircleIcon}
+                      className="size-4"
+                    />
+                  </Button>
+                </ToolbarTooltip>
+                <Select
+                  value={String(zoom)}
+                  onValueChange={(value) => setZoom(Number(value))}
+                  disabled={controlsDisabled}
+                  modal={false}
                 >
-                  <HugeiconsIcon
-                    icon={MinusSignCircleIcon}
-                    className="size-4"
-                  />
-                </Button>
-              </ToolbarTooltip>
-              <Select
-                value={String(zoom)}
-                onValueChange={(value) => setZoom(Number(value))}
-                disabled={controlsDisabled}
-                modal={false}
-              >
-                <SelectTrigger size="sm" className="w-[84px] min-w-[84px]">
-                  <SelectValue placeholder="Zoom">
-                    {Math.round(zoom * 100)}%
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent alignItemWithTrigger={false}>
-                  {ZOOM_OPTIONS.map((option) => (
-                    <SelectItem key={option} value={String(option)}>
-                      {Math.round(option * 100)}%
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <ToolbarTooltip label="Zoom in">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Zoom in"
-                  disabled={
-                    controlsDisabled ||
-                    zoom >= ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]
-                  }
-                  onClick={() => {
-                    const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
-                    setZoom(
-                      ZOOM_OPTIONS[
-                        Math.min(ZOOM_OPTIONS.length - 1, currentIndex + 1)
-                      ] ?? zoom
-                    )
-                  }}
-                >
-                  <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
-                </Button>
-              </ToolbarTooltip>
+                  <SelectTrigger size="sm" className="w-[84px] min-w-[84px]">
+                    <SelectValue placeholder="Zoom">
+                      {Math.round(zoom * 100)}%
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent alignItemWithTrigger={false}>
+                    {ZOOM_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={String(option)}>
+                        {Math.round(option * 100)}%
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <ToolbarTooltip label="Zoom in">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Zoom in"
+                    disabled={
+                      controlsDisabled ||
+                      zoom >= ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]
+                    }
+                    onClick={() => {
+                      const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
+                      setZoom(
+                        ZOOM_OPTIONS[
+                          Math.min(ZOOM_OPTIONS.length - 1, currentIndex + 1)
+                        ] ?? zoom
+                      )
+                    }}
+                  >
+                    <HugeiconsIcon
+                      icon={PlusSignCircleIcon}
+                      className="size-4"
+                    />
+                  </Button>
+                </ToolbarTooltip>
+              </div>
               <Separator
                 orientation="vertical"
                 className="mx-1 h-4 self-center"

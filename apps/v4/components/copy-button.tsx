@@ -68,9 +68,11 @@ export async function copyToClipboardWithMeta(value: string, event?: Event) {
 export function CopyButtonIcon({
   copied,
   className,
+  icon = Copy01Icon,
 }: {
   copied: boolean
   className?: string
+  icon?: React.ComponentProps<typeof HugeiconsIcon>["icon"]
 }) {
   return (
     <span
@@ -98,7 +100,7 @@ export function CopyButtonIcon({
             : "scale-100 opacity-100 blur-none"
         )}
       >
-        <HugeiconsIcon icon={Copy01Icon} className="size-4" />
+        <HugeiconsIcon icon={icon} className="size-4" />
       </span>
     </span>
   )

@@ -509,11 +509,6 @@
           "path": "components/pdf-block-resizable-shell.tsx",
           "type": "registry:component",
           "target": "@components/pdf-block-resizable-shell.tsx"
-        },
-        {
-          "path": "hooks/use-media-query.ts",
-          "type": "registry:hook",
-          "target": "@hooks/use-media-query.ts"
         }
       ]
     },
