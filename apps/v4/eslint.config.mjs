@@ -25,6 +25,7 @@ const eslintConfig = tseslint.config(
     rules: {
       "react-hooks/incompatible-library": "off",
       "react-hooks/purity": "off",
+      "react-hooks/set-state-in-effect": "off",
       "@next/next/no-html-link-for-pages": "off",
       "@next/next/no-img-element": "off",
       "@typescript-eslint/no-unused-vars": "off",
