@@ -155,15 +155,18 @@ const ARRAY_SCALAR_TYPES: SchemaBuilderArrayScalarType[] = [
 const ROOT_SCHEMA_CONTAINER_ID = "schema-root"
 const SCHEMA_PROPERTY_DRAG_TYPE = "schema-property"
 const ENUM_VALUE_DRAG_TYPE = "enum-value"
+const SCHEMA_PROPERTY_BLOCK_ATTRIBUTE = "data-schema-builder-property-id"
+const SCHEMA_PROPERTY_ROW_ATTRIBUTE = "data-schema-builder-property-row-id"
 const PROPERTY_REORDER_EDGE_THRESHOLD_PX = 18
 const SCHEMA_DND_MEASURING = {
   droppable: {
     strategy: MeasuringStrategy.WhileDragging,
   },
 }
+type SchemaCollisionArgs = Parameters<CollisionDetection>[0]
 
 function getDroppableRectArea(
-  droppableRects: Parameters<CollisionDetection>[0]["droppableRects"],
+  droppableRects: SchemaCollisionArgs["droppableRects"],
   id: UniqueIdentifier
 ) {
   const rect = droppableRects.get(id)
@@ -173,7 +176,7 @@ function getDroppableRectArea(
 function getProjectedPropertyChildContainerId(
   properties: SchemaBuilderProperty[],
   propertyId: UniqueIdentifier,
-  args: Parameters<CollisionDetection>[0]
+  args: SchemaCollisionArgs
 ) {
   const overLocation = findPropertyLocation(properties, String(propertyId))
   const childContainerId = overLocation
@@ -191,6 +194,32 @@ function getProjectedPropertyChildContainerId(
   }
 
   return null
+}
+
+function getSchemaPropertyElementRect(attribute: string, id: UniqueIdentifier) {
+  if (typeof document === "undefined") return null
+
+  for (const element of document.querySelectorAll<HTMLElement>(
+    `[${attribute}]`
+  )) {
+    if (element.getAttribute(attribute) === String(id)) {
+      return element.getBoundingClientRect()
+    }
+  }
+
+  return null
+}
+
+function getPropertyBlockRect(id: UniqueIdentifier, args: SchemaCollisionArgs) {
+  return (
+    getSchemaPropertyElementRect(SCHEMA_PROPERTY_BLOCK_ATTRIBUTE, id) ??
+    args.droppableRects.get(id) ??
+    null
+  )
+}
+
+function getPropertyRowRect(id: UniqueIdentifier) {
+  return getSchemaPropertyElementRect(SCHEMA_PROPERTY_ROW_ATTRIBUTE, id)
 }
 
 const TYPE_LABELS: Record<
@@ -908,14 +937,14 @@ function isSameContainerPropertyReorderReady(
   properties: SchemaBuilderProperty[],
   activeId: UniqueIdentifier,
   overId: UniqueIdentifier,
-  args: Parameters<CollisionDetection>[0]
+  args: SchemaCollisionArgs
 ) {
   const activeLocation = findPropertyLocation(properties, String(activeId))
   const overLocation = findPropertyLocation(properties, String(overId))
   if (!activeLocation || !overLocation) return true
   if (activeLocation.containerId !== overLocation.containerId) return true
 
-  const overRect = args.droppableRects.get(overId)
+  const overRect = getPropertyBlockRect(overId, args)
   if (!overRect || !args.pointerCoordinates) return true
 
   const threshold = Math.min(
@@ -938,7 +967,7 @@ function isSchemaCollisionCandidate(
   properties: SchemaBuilderProperty[],
   id: UniqueIdentifier,
   activeId: UniqueIdentifier,
-  args: Parameters<CollisionDetection>[0]
+  args: SchemaCollisionArgs
 ) {
   if (id === activeId) return false
 
@@ -955,15 +984,62 @@ function isSchemaCollisionCandidate(
 
 function isPointerBelowLastContainerProperty(
   containerProperties: SchemaBuilderProperty[],
-  args: Parameters<CollisionDetection>[0]
+  args: SchemaCollisionArgs
 ) {
   const lastProperty = containerProperties.at(-1)
   if (!lastProperty || !args.pointerCoordinates) return true
 
-  const lastPropertyRect = args.droppableRects.get(lastProperty.id)
+  const lastPropertyRect = getPropertyBlockRect(lastProperty.id, args)
   if (!lastPropertyRect) return false
 
   return args.pointerCoordinates.y >= lastPropertyRect.bottom
+}
+
+function getNextPropertyInsertionId(
+  properties: SchemaBuilderProperty[],
+  location: PropertyLocation
+) {
+  const targetProperties = getContainerProperties(
+    properties,
+    location.containerId
+  )
+
+  return targetProperties[location.index + 1]?.id ?? location.containerId
+}
+
+function resolveCrossContainerPropertyInsertionId(
+  properties: SchemaBuilderProperty[],
+  activeId: UniqueIdentifier,
+  overId: UniqueIdentifier,
+  args: SchemaCollisionArgs
+) {
+  const activeLocation = findPropertyLocation(properties, String(activeId))
+  const overLocation = findPropertyLocation(properties, String(overId))
+  if (!activeLocation || !overLocation || !args.pointerCoordinates) {
+    return overId
+  }
+
+  if (activeLocation.containerId === overLocation.containerId) {
+    return overId
+  }
+
+  const overRowRect = getPropertyRowRect(overId)
+  if (overRowRect) {
+    const overRowMiddle = overRowRect.top + overRowRect.height / 2
+
+    return args.pointerCoordinates.y < overRowMiddle
+      ? overId
+      : getNextPropertyInsertionId(properties, overLocation)
+  }
+
+  const overBlockRect = getPropertyBlockRect(overId, args)
+  if (!overBlockRect) return overId
+
+  const overBlockMiddle = overBlockRect.top + overBlockRect.height / 2
+
+  return args.pointerCoordinates.y < overBlockMiddle
+    ? overId
+    : getNextPropertyInsertionId(properties, overLocation)
 }
 
 function useSchemaBuilderSensors() {
@@ -1652,6 +1728,7 @@ function SortablePropertyRows({
   return (
     <tbody
       ref={setNodeRef}
+      data-schema-builder-property-id={property.id}
       className={cn(isDragging && "relative z-10 opacity-70")}
       style={{
         transform: CSS.Translate.toString(transform),
@@ -1659,6 +1736,7 @@ function SortablePropertyRows({
       }}
     >
       <tr
+        data-schema-builder-property-row-id={property.id}
         className={cn(
           "group/property-row border-b",
           hasNestedEditor && "bg-muted/20"
@@ -2210,6 +2288,12 @@ export function SchemaBuilderPanel({
           }
         }
 
+        overId = resolveCrossContainerPropertyInsertionId(
+          schema.properties,
+          args.active.id,
+          overId,
+          args
+        )
         lastSchemaOverIdRef.current = overId
 
         return [{ id: overId }]
