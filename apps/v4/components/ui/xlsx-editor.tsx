@@ -27,7 +27,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Group, GroupText } from "@/components/ui/group"
+import { Group, GroupSeparator, GroupText } from "@/components/ui/group"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -57,6 +57,8 @@ const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
 const ZOOM_OPTIONS = [50, 75, 100, 125, 150, 200, 400] as const
 const XLSX_EDITOR_SELECT_CHROME_CLASS =
   "shadow-none before:shadow-none not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-none dark:not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-none"
+const XLSX_EDITOR_FORMULA_INPUT_CHROME_CLASS =
+  "has-disabled:opacity-100 dark:has-disabled:before:shadow-[0_-1px_--theme(--color-white/6%)]"
 
 type UploadedWorkbook = {
   buffer: ArrayBuffer
@@ -409,15 +411,23 @@ function EditorToolbar({
         <div className="border-t bg-background px-2 py-1">
           <Group className="w-full">
             <Input
-              className="h-8 w-[92px] shrink-0 font-mono text-xs"
+              className={cn(
+                "h-8 w-[92px] shrink-0 font-mono text-xs",
+                XLSX_EDITOR_FORMULA_INPUT_CHROME_CLASS
+              )}
               readOnly
               value={activeCellAddress ?? ""}
             />
+            <GroupSeparator />
             <GroupText className="h-8 w-9 shrink-0 justify-center px-0 text-[11px] font-semibold italic">
               fx
             </GroupText>
+            <GroupSeparator />
             <Input
-              className="h-8 flex-1"
+              className={cn(
+                "h-8 flex-1",
+                XLSX_EDITOR_FORMULA_INPUT_CHROME_CLASS
+              )}
               disabled={!hasActiveCell || readOnly}
               value={formulaDraft}
               onBlur={() => {

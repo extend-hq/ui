@@ -1,7 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { useDefaultLayout, type LayoutStorage } from "react-resizable-panels"
+import {
+  useDefaultLayout,
+  type GroupImperativeHandle,
+  type LayoutStorage,
+} from "react-resizable-panels"
 
 import { cn } from "@/lib/utils"
 import {
@@ -28,6 +32,18 @@ type PdfBlockResizableShellProps = {
 
 function toPercentSize(size: number) {
   return `${size}%`
+}
+
+function getLayoutSize(
+  layout: React.ComponentProps<typeof ResizablePanelGroup>["defaultLayout"],
+  panelId: string,
+  fallbackSize: number
+) {
+  const size = layout?.[panelId]
+
+  return typeof size === "number" && Number.isFinite(size)
+    ? size
+    : fallbackSize
 }
 
 const HORIZONTAL_LAYOUT_MIN_WIDTH = 900
@@ -173,13 +189,14 @@ function PdfBlockResizableShellWithSavedLayout({
     panelIds,
     storage: layoutStorage,
   })
+  const resolvedRightDefaultSize = isHorizontal ? rightDefaultSize : 38
 
   return (
     <PdfBlockResizableShellLayout
       className={className}
       containerRef={containerRef}
       defaultLayout={defaultLayout}
-      groupKey={layoutId}
+      groupId={autoSaveId}
       heightClassName={heightClassName}
       left={left}
       leftDefaultSize={resolvedLeftDefaultSize}
@@ -188,10 +205,23 @@ function PdfBlockResizableShellWithSavedLayout({
       onLayoutChanged={onLayoutChanged}
       orientation={orientation}
       right={right}
-      rightDefaultSize={isHorizontal ? rightDefaultSize : 38}
+      rightDefaultSize={resolvedRightDefaultSize}
       rightMaxSize={isHorizontal ? rightMaxSize : 66}
       rightMinSize={isHorizontal ? rightMinSize : 24}
       rightPanelId={rightPanelId}
+      targetLayout={{
+        key: `${layoutId}:${defaultLayout ? "saved" : "default"}`,
+        leftSize: getLayoutSize(
+          defaultLayout,
+          leftPanelId,
+          resolvedLeftDefaultSize
+        ),
+        rightSize: getLayoutSize(
+          defaultLayout,
+          rightPanelId,
+          resolvedRightDefaultSize
+        ),
+      }}
     />
   )
 }
@@ -200,7 +230,7 @@ function PdfBlockResizableShellLayout({
   className,
   containerRef,
   defaultLayout,
-  groupKey,
+  groupId,
   heightClassName,
   left,
   leftDefaultSize,
@@ -213,20 +243,41 @@ function PdfBlockResizableShellLayout({
   rightMaxSize = 52,
   rightMinSize = 24,
   rightPanelId,
+  targetLayout,
 }: Omit<PdfBlockResizableShellProps, "autoSaveId"> & {
   containerRef?: React.Ref<HTMLDivElement>
   defaultLayout?: React.ComponentProps<
     typeof ResizablePanelGroup
   >["defaultLayout"]
-  groupKey?: React.Key
+  groupId?: string
   leftPanelId?: string
   onLayoutChanged?: React.ComponentProps<
     typeof ResizablePanelGroup
   >["onLayoutChanged"]
   orientation?: React.ComponentProps<typeof ResizablePanelGroup>["orientation"]
   rightPanelId?: string
+  targetLayout?: {
+    key: string
+    leftSize: number
+    rightSize: number
+  }
 }) {
   const resolvedLeftDefaultSize = leftDefaultSize ?? 62
+  const groupRef = React.useRef<GroupImperativeHandle | null>(null)
+  const appliedTargetLayoutKeyRef = React.useRef<string | null>(null)
+
+  React.useLayoutEffect(() => {
+    if (!targetLayout || !leftPanelId || !rightPanelId) return
+
+    const targetLayoutKey = `${targetLayout.key}:${targetLayout.leftSize}:${targetLayout.rightSize}`
+    if (appliedTargetLayoutKeyRef.current === targetLayoutKey) return
+
+    appliedTargetLayoutKeyRef.current = targetLayoutKey
+    groupRef.current?.setLayout({
+      [leftPanelId]: targetLayout.leftSize,
+      [rightPanelId]: targetLayout.rightSize,
+    })
+  }, [leftPanelId, rightPanelId, targetLayout])
 
   return (
     <div
@@ -238,7 +289,8 @@ function PdfBlockResizableShellLayout({
       )}
     >
       <ResizablePanelGroup
-        key={groupKey ?? orientation}
+        id={groupId}
+        groupRef={groupRef}
         orientation={orientation}
         defaultLayout={defaultLayout}
         onLayoutChanged={onLayoutChanged}
