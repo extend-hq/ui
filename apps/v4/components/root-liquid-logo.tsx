@@ -1,8 +1,20 @@
 "use client"
 
+import * as React from "react"
 import { GemSmoke } from "@paper-design/shaders-react"
+import { useTheme } from "next-themes"
 
 export function RootLiquidLogo() {
+  const { resolvedTheme } = useTheme()
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  const colorInner =
+    isMounted && resolvedTheme === "dark" ? "#000000" : "#ffffff"
+
   return (
     <div
       aria-hidden="true"
@@ -14,7 +26,7 @@ export function RootLiquidLogo() {
         image="/extend-logo.svg"
         colors={["#004CFF", "#FF8C00", "#FFB066", "#0084FF"]}
         colorBack="#00000000"
-        colorInner="#000000"
+        colorInner={colorInner}
         shape={undefined}
         innerDistortion={0.48}
         outerDistortion={0}

@@ -4,6 +4,7 @@ import type * as React from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
 
+import { cn } from "@/lib/utils"
 import { Spinner } from "@/components/ui/spinner"
 import { CsvViewerPreviewClient } from "@/components/csv-viewer-docs"
 import {
@@ -99,7 +100,7 @@ export function RootComponentsCollage() {
 
 function PdfViewerTile() {
   return (
-    <ComponentCrop className="h-[560px] border bg-background">
+    <ComponentCrop label="PDF Viewer" className="h-[560px] bg-background">
       <PdfViewerPreview file="/samples/knicks.pdf" showRotateControls={false} />
     </ComponentCrop>
   )
@@ -107,19 +108,23 @@ function PdfViewerTile() {
 
 function CsvViewerTile() {
   return (
-    <ComponentCrop className="h-[400px] border bg-background">
+    <ComponentCrop label="CSV Viewer" className="h-[400px] bg-background">
       <CsvViewerPreviewClient />
     </ComponentCrop>
   )
 }
 
 function FileUploadTile() {
-  return <FileUpload showFileList={false} />
+  return (
+    <ComponentCrop label="File Upload" className="bg-background p-3">
+      <FileUpload showFileList={false} />
+    </ComponentCrop>
+  )
 }
 
 function FileThumbnailTile() {
   return (
-    <ComponentCrop className="border bg-background">
+    <ComponentCrop label="File Thumbnail" className="bg-background">
       <RootFileThumbnailGrid />
     </ComponentCrop>
   )
@@ -127,7 +132,7 @@ function FileThumbnailTile() {
 
 function DocxViewerTile() {
   return (
-    <ComponentCrop className="h-[560px] border bg-background">
+    <ComponentCrop label="DOCX Viewer" className="h-[560px] bg-background">
       <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
     </ComponentCrop>
   )
@@ -135,7 +140,7 @@ function DocxViewerTile() {
 
 function XlsxViewerTile() {
   return (
-    <ComponentCrop className="h-[560px] border bg-background">
+    <ComponentCrop label="XLSX Viewer" className="h-[560px] bg-background">
       <XlsxViewerPreview
         className="h-full"
         src="/samples/crazy-chart-zoo.xlsx"
@@ -146,7 +151,7 @@ function XlsxViewerTile() {
 
 function OcrBlocksTile() {
   return (
-    <ComponentCrop className="h-[430px]">
+    <ComponentCrop label="OCR Blocks" className="h-[430px]">
       <OcrBlocks />
     </ComponentCrop>
   )
@@ -178,14 +183,19 @@ function ViewerPreviewLoading() {
 
 function ComponentCrop({
   className,
+  label,
   children,
 }: {
   className?: string
+  label: string
   children: React.ReactNode
 }) {
   return (
-    <div className={["overflow-hidden rounded-lg", className].join(" ")}>
-      {children}
+    <div className="overflow-hidden rounded-lg border bg-background">
+      <div className="flex h-8 items-center rounded-t-[inherit] border-b bg-muted/45 px-3 text-xs font-medium text-muted-foreground">
+        {label}
+      </div>
+      <div className={cn("overflow-hidden", className)}>{children}</div>
     </div>
   )
 }
