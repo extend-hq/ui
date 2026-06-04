@@ -100,7 +100,7 @@ export function RootComponentsCollage() {
 function PdfViewerTile() {
   return (
     <ComponentCrop className="h-[560px] border bg-background">
-      <PdfViewerPreview showRotateControls={false} />
+      <PdfViewerPreview file="/samples/knicks.pdf" showRotateControls={false} />
     </ComponentCrop>
   )
 }
