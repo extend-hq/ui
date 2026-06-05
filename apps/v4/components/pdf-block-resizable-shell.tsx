@@ -8,7 +8,6 @@ import {
 } from "react-resizable-panels"
 
 import { cn } from "@/lib/utils"
-import { useMounted } from "@/hooks/use-mounted"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -75,6 +74,16 @@ function useElementWidth<T extends HTMLElement>() {
   }, [node])
 
   return [setNode, width] as const
+}
+
+function useMounted() {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  return mounted
 }
 
 function getSavedLayout(key: string) {
