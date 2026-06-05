@@ -42,9 +42,10 @@ import {
   TextCheckIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Virtualizer as DiffsVirtualizer } from "@pierre/diffs"
 import {
   File,
-  Virtualizer,
+  VirtualizerContext,
   WorkerPoolContextProvider,
   type VirtualFileMetrics,
   type WorkerInitializationRenderOptions,
@@ -72,12 +73,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export type SchemaBuilderScalarType =
   | "string"
@@ -356,6 +352,76 @@ const CODE_WORKER_POOL_OPTIONS = {
       type: "module",
     }),
 } satisfies WorkerPoolOptions
+
+function ScrollAreaVirtualizer({
+  children,
+  className,
+  contentClassName,
+  contentStyle,
+  scrollFade = true,
+}: {
+  children: React.ReactNode
+  className?: string
+  contentClassName?: string
+  contentStyle?: React.CSSProperties
+  scrollFade?: boolean
+}) {
+  const [virtualizer] = React.useState(() =>
+    typeof window !== "undefined" ? new DiffsVirtualizer() : undefined
+  )
+  const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const contentRef = React.useRef<HTMLDivElement | null>(null)
+  const syncVirtualizer = React.useCallback(() => {
+    if (!virtualizer) return
+
+    const viewport = viewportRef.current
+    const content = contentRef.current
+
+    if (viewport && content) {
+      virtualizer.setup(viewport, content)
+      return
+    }
+
+    virtualizer.cleanUp()
+  }, [virtualizer])
+  const setViewportRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      viewportRef.current = node
+      syncVirtualizer()
+    },
+    [syncVirtualizer]
+  )
+  const setContentRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node
+      syncVirtualizer()
+    },
+    [syncVirtualizer]
+  )
+
+  React.useEffect(() => {
+    return () => virtualizer?.cleanUp()
+  }, [virtualizer])
+
+  return (
+    <VirtualizerContext.Provider value={virtualizer}>
+      <ScrollArea
+        className={className}
+        scrollFade={scrollFade}
+        scrollbarOverflowOnly
+        viewportRef={setViewportRef}
+      >
+        <div
+          ref={setContentRef}
+          className={contentClassName}
+          style={contentStyle}
+        >
+          {children}
+        </div>
+      </ScrollArea>
+    </VirtualizerContext.Provider>
+  )
+}
 
 function useResolvedCodeThemeType(theme?: SchemaBuilderTheme) {
   const { resolvedTheme } = useTheme()
@@ -2110,9 +2176,9 @@ export function SchemaJsonView({
         poolOptions={CODE_WORKER_POOL_OPTIONS}
         highlighterOptions={CODE_HIGHLIGHTER_OPTIONS}
       >
-        <Virtualizer
+        <ScrollAreaVirtualizer
           key={`${file.cacheKey}:${codeThemeType}:${String(scrollResetKey)}`}
-          className="no-scrollbar h-full min-w-0 overflow-auto overscroll-contain outline-none"
+          className="h-full min-w-0"
           contentClassName="min-w-full"
         >
           <File
@@ -2131,7 +2197,7 @@ export function SchemaJsonView({
               },
             }}
           />
-        </Virtualizer>
+        </ScrollAreaVirtualizer>
       </WorkerPoolContextProvider>
     </div>
   )

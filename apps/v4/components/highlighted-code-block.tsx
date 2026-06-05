@@ -1,9 +1,11 @@
 "use client"
 
 import * as React from "react"
+import { Virtualizer as DiffsVirtualizer } from "@pierre/diffs"
 import {
   File,
-  Virtualizer,
+  Virtualizer as ReactVirtualizer,
+  VirtualizerContext,
   WorkerPoolContextProvider,
   type FileContents,
   type SupportedLanguages,
@@ -14,6 +16,7 @@ import {
 import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { CopyButton } from "@/components/copy-button"
 
 const CODE_FILE_THEME = {
@@ -74,6 +77,76 @@ const CODE_WORKER_POOL_OPTIONS = {
 } satisfies WorkerPoolOptions
 
 type CodeThemeType = "light" | "dark"
+
+function ScrollAreaVirtualizer({
+  children,
+  className,
+  contentClassName,
+  contentStyle,
+  scrollFade = true,
+}: {
+  children: React.ReactNode
+  className?: string
+  contentClassName?: string
+  contentStyle?: React.CSSProperties
+  scrollFade?: boolean
+}) {
+  const [virtualizer] = React.useState(() =>
+    typeof window !== "undefined" ? new DiffsVirtualizer() : undefined
+  )
+  const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const contentRef = React.useRef<HTMLDivElement | null>(null)
+  const syncVirtualizer = React.useCallback(() => {
+    if (!virtualizer) return
+
+    const viewport = viewportRef.current
+    const content = contentRef.current
+
+    if (viewport && content) {
+      virtualizer.setup(viewport, content)
+      return
+    }
+
+    virtualizer.cleanUp()
+  }, [virtualizer])
+  const setViewportRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      viewportRef.current = node
+      syncVirtualizer()
+    },
+    [syncVirtualizer]
+  )
+  const setContentRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node
+      syncVirtualizer()
+    },
+    [syncVirtualizer]
+  )
+
+  React.useEffect(() => {
+    return () => virtualizer?.cleanUp()
+  }, [virtualizer])
+
+  return (
+    <VirtualizerContext.Provider value={virtualizer}>
+      <ScrollArea
+        className={className}
+        scrollFade={scrollFade}
+        scrollbarOverflowOnly
+        viewportRef={setViewportRef}
+      >
+        <div
+          ref={setContentRef}
+          className={contentClassName}
+          style={contentStyle}
+        >
+          {children}
+        </div>
+      </ScrollArea>
+    </VirtualizerContext.Provider>
+  )
+}
 
 function useCodeThemeType(): CodeThemeType {
   const { resolvedTheme } = useTheme()
@@ -192,7 +265,7 @@ function handleCodeBlockWheel(event: WheelEvent, container: HTMLElement) {
     return
   }
 
-  const scrollElement = container.querySelector<HTMLElement>(".no-scrollbar")
+  const scrollElement = getCodeBlockScrollElement(container)
 
   if (!scrollElement) {
     return
@@ -211,8 +284,7 @@ function handleCodeBlockWheel(event: WheelEvent, container: HTMLElement) {
   const shouldHandleVertical =
     (event.deltaY > 0 && canScrollDown) || (event.deltaY < 0 && canScrollUp)
   const shouldHandleHorizontal =
-    (event.deltaX > 0 && canScrollRight) ||
-    (event.deltaX < 0 && canScrollLeft)
+    (event.deltaX > 0 && canScrollRight) || (event.deltaX < 0 && canScrollLeft)
 
   if (!shouldHandleVertical && !shouldHandleHorizontal) {
     return
@@ -227,10 +299,22 @@ function handleCodeBlockWheel(event: WheelEvent, container: HTMLElement) {
   })
 }
 
+function getCodeBlockScrollElement(container: HTMLElement | null) {
+  return (
+    container?.querySelector<HTMLElement>(
+      '[data-slot="scroll-area-viewport"]'
+    ) ??
+    container?.querySelector<HTMLElement>(".no-scrollbar") ??
+    null
+  )
+}
+
 function resetCodeBlockScroll(container: HTMLElement | null) {
-  container
-    ?.querySelector<HTMLElement>(".no-scrollbar")
-    ?.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  getCodeBlockScrollElement(container)?.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "auto",
+  })
 }
 
 export function HighlightedCodeBlock({
@@ -245,6 +329,7 @@ export function HighlightedCodeBlock({
   renderFallbackCode = false,
   showCopy = true,
   scrollResetKey,
+  useScrollArea = false,
 }: {
   code: string
   className?: string
@@ -257,6 +342,7 @@ export function HighlightedCodeBlock({
   renderFallbackCode?: boolean
   showCopy?: boolean
   scrollResetKey?: React.Key
+  useScrollArea?: boolean
 }) {
   const [isVisible, setIsVisible] = React.useState(!lazy)
   const [renderedCodeKey, setRenderedCodeKey] = React.useState<string | null>(
@@ -286,8 +372,7 @@ export function HighlightedCodeBlock({
       ? codeRenderKey
       : `${codeRenderKey}:${String(scrollResetKey)}`
   const hasRenderedCode = renderedCodeKey === codeRenderKey
-  const shouldShowFallback =
-    renderFallbackCode && isVisible && !hasRenderedCode
+  const shouldShowFallback = renderFallbackCode && isVisible && !hasRenderedCode
 
   React.useLayoutEffect(() => {
     setRenderedCodeKey(null)
@@ -421,22 +506,38 @@ export function HighlightedCodeBlock({
             poolOptions={CODE_WORKER_POOL_OPTIONS}
             highlighterOptions={CODE_HIGHLIGHTER_OPTIONS}
           >
-            <Virtualizer
-              key={virtualizerKey}
-              className={cn(
-                "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-contain outline-none",
-                maxHeightClassName
-              )}
-              contentClassName="min-w-full"
-            >
-              <File
-                key={codeRenderKey}
-                file={file}
-                metrics={CODE_VIRTUAL_FILE_METRICS}
-                style={CODE_FILE_THEME}
-                options={fileOptions}
-              />
-            </Virtualizer>
+            {useScrollArea ? (
+              <ScrollAreaVirtualizer
+                key={virtualizerKey}
+                className={cn("min-w-0", maxHeightClassName)}
+                contentClassName="min-w-full"
+              >
+                <File
+                  key={codeRenderKey}
+                  file={file}
+                  metrics={CODE_VIRTUAL_FILE_METRICS}
+                  style={CODE_FILE_THEME}
+                  options={fileOptions}
+                />
+              </ScrollAreaVirtualizer>
+            ) : (
+              <ReactVirtualizer
+                key={virtualizerKey}
+                className={cn(
+                  "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-contain outline-none",
+                  maxHeightClassName
+                )}
+                contentClassName="min-w-full"
+              >
+                <File
+                  key={codeRenderKey}
+                  file={file}
+                  metrics={CODE_VIRTUAL_FILE_METRICS}
+                  style={CODE_FILE_THEME}
+                  options={fileOptions}
+                />
+              </ReactVirtualizer>
+            )}
           </WorkerPoolContextProvider>
         </div>
       ) : (

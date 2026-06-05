@@ -29,19 +29,15 @@ import {
   Undo02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { MultiFileDiff, Virtualizer } from "@pierre/diffs/react"
+import { Virtualizer as DiffsVirtualizer } from "@pierre/diffs"
+import { MultiFileDiff, VirtualizerContext } from "@pierre/diffs/react"
 import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
@@ -102,6 +98,76 @@ export type ReviewCitation = {
 
 export type ReviewMetadataEntry = {
   citations?: ReviewCitation[]
+}
+
+function ScrollAreaVirtualizer({
+  children,
+  className,
+  contentClassName,
+  contentStyle,
+  scrollFade = true,
+}: {
+  children: React.ReactNode
+  className?: string
+  contentClassName?: string
+  contentStyle?: React.CSSProperties
+  scrollFade?: boolean
+}) {
+  const [virtualizer] = React.useState(() =>
+    typeof window !== "undefined" ? new DiffsVirtualizer() : undefined
+  )
+  const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const contentRef = React.useRef<HTMLDivElement | null>(null)
+  const syncVirtualizer = React.useCallback(() => {
+    if (!virtualizer) return
+
+    const viewport = viewportRef.current
+    const content = contentRef.current
+
+    if (viewport && content) {
+      virtualizer.setup(viewport, content)
+      return
+    }
+
+    virtualizer.cleanUp()
+  }, [virtualizer])
+  const setViewportRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      viewportRef.current = node
+      syncVirtualizer()
+    },
+    [syncVirtualizer]
+  )
+  const setContentRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node
+      syncVirtualizer()
+    },
+    [syncVirtualizer]
+  )
+
+  React.useEffect(() => {
+    return () => virtualizer?.cleanUp()
+  }, [virtualizer])
+
+  return (
+    <VirtualizerContext.Provider value={virtualizer}>
+      <ScrollArea
+        className={className}
+        scrollFade={scrollFade}
+        scrollbarOverflowOnly
+        viewportRef={setViewportRef}
+      >
+        <div
+          ref={setContentRef}
+          className={contentClassName}
+          style={contentStyle}
+        >
+          {children}
+        </div>
+      </ScrollArea>
+    </VirtualizerContext.Provider>
+  )
 }
 
 const DEFAULT_ZOOM = 0.75
@@ -2022,8 +2088,8 @@ export function JsonDiffView({
   )
 
   return (
-    <Virtualizer
-      className="h-full overflow-auto bg-surface/60"
+    <ScrollAreaVirtualizer
+      className="h-full bg-surface/60"
       contentClassName="min-w-full"
     >
       <div className="human-review-diff h-full text-xs">
@@ -2045,7 +2111,7 @@ export function JsonDiffView({
           }}
         />
       </div>
-    </Virtualizer>
+    </ScrollAreaVirtualizer>
   )
 }
 
