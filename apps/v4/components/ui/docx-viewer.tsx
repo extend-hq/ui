@@ -34,8 +34,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
 import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Tooltip,
   TooltipContent,
@@ -45,69 +45,29 @@ import {
 
 const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-const DOCX_SOURCE_CACHE_LIMIT = 3
 const DOCX_LOADING_INDICATOR_DELAY_MS = 300
 const DOCX_THUMBNAIL_WIDTH = 92
 const ZOOM_OPTIONS = [10, 25, 50, 75, 100, 125, 150, 175, 200, 400] as const
 const DOCX_PADDING_WARNING_TEXT = "a style property during rerender"
-
-const docxFileCache = new Map<string, File>()
-const docxFilePromiseCache = new Map<string, Promise<File>>()
 
 type UploadedDocxFile = {
   file: File
   identity: string
 }
 
-function getDocumentCacheKey(url: string, fileName?: string) {
-  return `${url.split("?")[0] ?? url}::${fileName ?? ""}`
-}
-
-function rememberDocxFile(cacheKey: string, file: File) {
-  if (docxFileCache.has(cacheKey)) {
-    docxFileCache.delete(cacheKey)
-  }
-
-  docxFileCache.set(cacheKey, file)
-
-  while (docxFileCache.size > DOCX_SOURCE_CACHE_LIMIT) {
-    const oldestKey = docxFileCache.keys().next().value
-    if (!oldestKey) break
-    docxFileCache.delete(oldestKey)
-  }
-}
-
-async function loadCachedDocxFile(
+async function loadDocxFile(
   url: string,
-  displayFileName: string,
-  cacheKey: string
+  displayFileName: string
 ): Promise<File> {
-  const cachedFile = docxFileCache.get(cacheKey)
-  if (cachedFile) return cachedFile
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch DOCX (${response.status})`)
+  }
 
-  const pendingRequest = docxFilePromiseCache.get(cacheKey)
-  if (pendingRequest) return pendingRequest
-
-  const nextRequest = fetch(url)
-    .then(async (response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to fetch DOCX (${response.status})`)
-      }
-
-      const blob = await response.blob()
-      const docxFile = new File([blob], displayFileName, {
-        type: blob.type || DOCX_MIME_TYPE,
-      })
-
-      rememberDocxFile(cacheKey, docxFile)
-      return docxFile
-    })
-    .finally(() => {
-      docxFilePromiseCache.delete(cacheKey)
-    })
-
-  docxFilePromiseCache.set(cacheKey, nextRequest)
-  return nextRequest
+  const blob = await response.blob()
+  return new File([blob], displayFileName, {
+    type: blob.type || DOCX_MIME_TYPE,
+  })
 }
 
 function formatDocumentName(fileName: string | undefined, url: string) {
@@ -514,12 +474,6 @@ function DocxViewerContent({
       (url ? formatDocumentName(fileName, url) : (fileName ?? "document.docx")),
     [fileName, uploadedDocxFile?.file.name, url]
   )
-  const cacheKey = React.useMemo(
-    () =>
-      uploadedDocxFile?.identity ??
-      (url ? getDocumentCacheKey(url, displayFileName) : "docx-empty"),
-    [displayFileName, uploadedDocxFile?.identity, url]
-  )
   const [initialDocumentTheme] = React.useState<DocxDocumentTheme>(() =>
     effectiveIsDark ? "dark" : "light"
   )
@@ -538,7 +492,7 @@ function DocxViewerContent({
       ...editor,
       totalPages: Math.max(editor.totalPages, reportedPageCount),
     }),
-    [editor, editor.totalPages, reportedPageCount]
+    [editor, reportedPageCount]
   )
   const thumbnailOptions = React.useMemo(
     () => ({
@@ -615,9 +569,7 @@ function DocxViewerContent({
       try {
         const docxFile =
           uploadedDocxFile?.file ??
-          (url
-            ? await loadCachedDocxFile(url, displayFileName, cacheKey)
-            : null)
+          (url ? await loadDocxFile(url, displayFileName) : null)
         if (!docxFile) return
         await importDocxFile(docxFile)
 
@@ -641,7 +593,7 @@ function DocxViewerContent({
     return () => {
       isCurrent = false
     }
-  }, [cacheKey, displayFileName, importDocxFile, uploadedDocxFile, url])
+  }, [displayFileName, importDocxFile, uploadedDocxFile, url])
 
   React.useEffect(() => {
     if (url) {

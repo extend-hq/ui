@@ -24,16 +24,6 @@ import { createPortal } from "react-dom"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +32,17 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
@@ -50,7 +50,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-const XLSX_SOURCE_CACHE_LIMIT = 3
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
 const ZOOM_OPTIONS = [10, 25, 50, 75, 100, 125, 150, 175, 200, 400] as const
@@ -64,59 +63,10 @@ const XLSX_SHEET_TAB_THUMBNAIL_OPTIONS = {
   },
 } as const
 
-const xlsxWorkbookBufferCache = new Map<string, ArrayBuffer>()
-const xlsxWorkbookBufferPromiseCache = new Map<string, Promise<ArrayBuffer>>()
-
 type UploadedWorkbook = {
   buffer: ArrayBuffer
   fileName: string
   identity: string
-}
-
-function getWorkbookCacheKey(url: string, fileName?: string) {
-  return `${url.split("?")[0] ?? url}::${fileName ?? ""}`
-}
-
-function rememberWorkbookBuffer(cacheKey: string, workbookBuffer: ArrayBuffer) {
-  if (xlsxWorkbookBufferCache.has(cacheKey)) {
-    xlsxWorkbookBufferCache.delete(cacheKey)
-  }
-
-  xlsxWorkbookBufferCache.set(cacheKey, workbookBuffer)
-
-  while (xlsxWorkbookBufferCache.size > XLSX_SOURCE_CACHE_LIMIT) {
-    const oldestKey = xlsxWorkbookBufferCache.keys().next().value
-    if (!oldestKey) break
-    xlsxWorkbookBufferCache.delete(oldestKey)
-  }
-}
-
-async function loadCachedWorkbookBuffer(
-  url: string,
-  cacheKey: string
-): Promise<ArrayBuffer> {
-  const cachedWorkbookBuffer = xlsxWorkbookBufferCache.get(cacheKey)
-  if (cachedWorkbookBuffer) return cachedWorkbookBuffer
-
-  const pendingRequest = xlsxWorkbookBufferPromiseCache.get(cacheKey)
-  if (pendingRequest) return pendingRequest
-
-  const nextRequest = fetch(url)
-    .then(async (response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to fetch XLSX (${response.status})`)
-      }
-
-      const workbookBuffer = await response.arrayBuffer()
-      rememberWorkbookBuffer(cacheKey, workbookBuffer)
-      return workbookBuffer
-    })
-    .finally(() => {
-      xlsxWorkbookBufferPromiseCache.delete(cacheKey)
-    })
-
-  xlsxWorkbookBufferPromiseCache.set(cacheKey, nextRequest)
-  return nextRequest
 }
 
 function formatWorkbookName(fileName: string | undefined, url: string) {
@@ -803,22 +753,16 @@ function XlsxViewerContent({
       url ? formatWorkbookName(fileName, url) : (fileName ?? "workbook.xlsx"),
     [fileName, url]
   )
-  const sourceCacheKey = React.useMemo(
-    () => (url ? getWorkbookCacheKey(url, sourceFileName) : "xlsx-empty"),
-    [sourceFileName, url]
-  )
   const displayFileName = React.useMemo(
     () => uploadedWorkbook?.fileName ?? sourceFileName,
     [sourceFileName, uploadedWorkbook?.fileName]
   )
-  const cacheKey = React.useMemo(
-    () => uploadedWorkbook?.identity ?? sourceCacheKey,
-    [sourceCacheKey, uploadedWorkbook?.identity]
+  const workbookIdentity = React.useMemo(
+    () => uploadedWorkbook?.identity ?? `${url ?? "empty"}::${displayFileName}`,
+    [displayFileName, uploadedWorkbook?.identity, url]
   )
   const [workbookBuffer, setWorkbookBuffer] =
-    React.useState<ArrayBuffer | null>(
-      () => xlsxWorkbookBufferCache.get(cacheKey) ?? null
-    )
+    React.useState<ArrayBuffer | null>(null)
   const [loadError, setLoadError] = React.useState<string>()
   const shouldShowLoadingSpinner = useDelayedLoadingIndicator(
     !workbookBuffer && !loadError && !uploadedWorkbook,
@@ -838,14 +782,16 @@ function XlsxViewerContent({
         return
       }
 
-      setWorkbookBuffer(xlsxWorkbookBufferCache.get(sourceCacheKey) ?? null)
+      setWorkbookBuffer(null)
       setLoadError(undefined)
 
       try {
-        const nextWorkbookBuffer = await loadCachedWorkbookBuffer(
-          url,
-          sourceCacheKey
-        )
+        const response = await fetch(url)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch XLSX (${response.status})`)
+        }
+
+        const nextWorkbookBuffer = await response.arrayBuffer()
         if (!isCurrent) return
 
         setWorkbookBuffer(nextWorkbookBuffer)
@@ -863,7 +809,7 @@ function XlsxViewerContent({
     return () => {
       isCurrent = false
     }
-  }, [sourceCacheKey, url])
+  }, [url])
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -882,7 +828,7 @@ function XlsxViewerContent({
 
   const activeBuffer = uploadedWorkbook?.buffer ?? workbookBuffer
   const activeFileName = uploadedWorkbook?.fileName ?? displayFileName
-  const activeIdentity = uploadedWorkbook?.identity ?? cacheKey
+  const activeIdentity = workbookIdentity
 
   if (!url && !uploadedWorkbook) {
     return (

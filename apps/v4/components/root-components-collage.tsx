@@ -1,19 +1,23 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
 
 import { cn } from "@/lib/utils"
+import {
+  DocumentSplits,
+  INITIAL_SPLITS,
+  type DocumentSplit,
+} from "@/components/ui/document-splits"
+import { SchemaBuilderPanel } from "@/components/ui/schema-builder"
 import { Spinner } from "@/components/ui/spinner"
-import { CsvViewerPreviewClient } from "@/components/csv-viewer-docs"
 import {
   DocumentAwareFileThumbnail,
   getFileKindLabel,
   SAMPLE_FILES,
 } from "@/components/file-thumbnail-docs"
 import { FileUpload } from "@/components/file-upload-docs"
-import { OcrBlocks } from "@/components/ocr-blocks-docs"
 
 const PdfViewerPreview = dynamic(
   () =>
@@ -72,44 +76,47 @@ export function MobileRootPreview() {
 
 export function RootComponentsCollage() {
   return (
-    <div className="mx-auto columns-2 gap-4 py-1 lg:columns-3">
-      <div className="mb-4 break-inside-avoid">
-        <PdfViewerTile />
+    <>
+      <div className="mx-auto hidden items-start gap-4 py-1 md:grid md:grid-cols-2 lg:hidden">
+        <div className="flex flex-col gap-4">
+          <PdfViewerTile />
+          <DocumentSplitsTile />
+          <XlsxViewerTile />
+        </div>
+        <div className="flex flex-col gap-4">
+          <FileUploadTile />
+          <DocxViewerTile />
+          <FileThumbnailTile />
+          <SchemaBuilderTile />
+        </div>
       </div>
-      <div className="mb-4 break-inside-avoid">
-        <CsvViewerTile />
+
+      <div className="mx-auto hidden items-start gap-4 py-1 lg:grid lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
+          <PdfViewerTile />
+          <DocumentSplitsTile />
+        </div>
+        <div className="flex flex-col gap-4">
+          <FileUploadTile />
+          <DocxViewerTile />
+          <FileThumbnailTile />
+        </div>
+        <div className="flex flex-col gap-4">
+          <XlsxViewerTile />
+          <SchemaBuilderTile />
+        </div>
       </div>
-      <div className="mb-4 break-inside-avoid">
-        <FileUploadTile />
-      </div>
-      <div className="mb-4 break-inside-avoid">
-        <FileThumbnailTile />
-      </div>
-      <div className="mb-4 break-inside-avoid">
-        <DocxViewerTile />
-      </div>
-      <div className="mb-4 break-inside-avoid">
-        <XlsxViewerTile />
-      </div>
-      <div className="mb-4 break-inside-avoid">
-        <OcrBlocksTile />
-      </div>
-    </div>
+    </>
   )
 }
 
 function PdfViewerTile() {
   return (
     <ComponentCrop label="PDF Viewer" className="h-[560px] bg-background">
-      <PdfViewerPreview file="/samples/knicks.pdf" showRotateControls={false} />
-    </ComponentCrop>
-  )
-}
-
-function CsvViewerTile() {
-  return (
-    <ComponentCrop label="CSV Viewer" className="h-[400px] bg-background">
-      <CsvViewerPreviewClient />
+      <PdfViewerPreview
+        file="/samples/attention.pdf"
+        showRotateControls={false}
+      />
     </ComponentCrop>
   )
 }
@@ -140,7 +147,10 @@ function DocxViewerTile() {
 
 function XlsxViewerTile() {
   return (
-    <ComponentCrop label="XLSX Viewer" className="h-[560px] bg-background">
+    <ComponentCrop
+      label="XLSX Viewer"
+      className="h-[540px] bg-background 4xl:h-[500px]"
+    >
       <XlsxViewerPreview
         className="h-full"
         src="/samples/crazy-chart-zoo.xlsx"
@@ -149,13 +159,37 @@ function XlsxViewerTile() {
   )
 }
 
-function OcrBlocksTile() {
+function DocumentSplitsTile() {
+  const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)
+
   return (
-    <ComponentCrop label="OCR Blocks" className="h-[430px]">
-      <OcrBlocks />
+    <ComponentCrop label="Document Splits" className="h-[500px] bg-background">
+      <DocumentSplits
+        className="h-full"
+        splits={splits}
+        thumbnailImages={ROOT_DOCUMENT_SPLIT_THUMBNAILS}
+        withFrameDivider={false}
+        onSelectPage={() => {}}
+        onSplitsChange={setSplits}
+      />
     </ComponentCrop>
   )
 }
+
+function SchemaBuilderTile() {
+  return (
+    <ComponentCrop label="Schema Builder" className="h-[560px] bg-background">
+      <SchemaBuilderPanel className="h-full" />
+    </ComponentCrop>
+  )
+}
+
+const ROOT_DOCUMENT_SPLIT_THUMBNAILS = Object.fromEntries(
+  INITIAL_SPLITS.flatMap((split) => split.pages).map((pageId) => [
+    pageId,
+    "/samples/attention-page-1.png",
+  ])
+) as Record<DocumentSplit["pages"][number], string>
 
 function RootFileThumbnailGrid() {
   return (

@@ -32,7 +32,7 @@ npx shadcn@latest add https://ui.extend.ai/r/pdf-viewer.json
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 pdf-lib@^1.17.1 pdfjs-dist@5.4.296 react-pdf@^10.4.1
+npm install @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 @tanstack/react-virtual@^3.13.26 pdf-lib@^1.17.1 pdfjs-dist@5.4.296 react-pdf@^10.4.1
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -45,6 +45,26 @@ npm install @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 pdf-lib@^1
   language="tsx"
   copyButtonClassName="top-0.5"
   code={`import "react-pdf/dist/Page/TextLayer.css"`}
+/>
+
+<Step>Self-host PDF.js assets if your app cannot fetch from unpkg.</Step>
+
+The viewer uses version-matched PDF.js CMaps and standard fonts from unpkg by
+default so PDFs with CID fonts can render without extra setup. To avoid external
+asset requests, copy `pdfjs-dist/cmaps` and `pdfjs-dist/standard_fonts` into
+your public assets and pass `documentOptions`.
+
+<DocsMdxCodeBlock
+  language="tsx"
+  copyButtonClassName="top-0.5"
+  code={`<PDFViewer
+  file="/path/to/document.pdf"
+  documentOptions={{
+    cMapPacked: true,
+    cMapUrl: "/pdfjs/cmaps/",
+    standardFontDataUrl: "/pdfjs/standard_fonts/",
+  }}
+/>`}
 />
 
 <Step>Update the import paths to match your project setup.</Step>
@@ -72,12 +92,14 @@ The PDFViewer component renders a scrollable PDF surface with toolbar controls, 
 | ----------------------------- | ------------------------------------------------------------------------- | ------- | -------- |
 | `file`                        | `string`                                                                  | `-`     | No       |
 | `className`                   | `string`                                                                  | `-`     | No       |
+| `documentOptions`             | `ReactPdf.DocumentProps["options"]`                                       | CDN     | No       |
 | `defaultThumbnailSidebarOpen` | `boolean`                                                                 | `false` | No       |
 | `defaultZoom`                 | `number`                                                                  | `0.75`  | No       |
 | `pageWidth`                   | `number`                                                                  | `612`   | No       |
 | `pageHeight`                  | `number`                                                                  | `792`   | No       |
 | `pageNumbers`                 | `number[]`                                                                | `-`     | No       |
-| `pageRenderBuffer`            | `number`                                                                  | `2`     | No       |
+| `pageRenderBuffer`            | `number`                                                                  | `4`     | No       |
+| `setRenderRange`              | `(visiblePagesRange: PDFViewerVisiblePagesRange) => PDFViewerRenderRange` | `-`     | No       |
 | `showRotateControls`          | `boolean`                                                                 | `true`  | No       |
 | `showUpload`                  | `boolean`                                                                 | `true`  | No       |
 | `toolbarActions`              | `React.ReactNode`                                                         | `-`     | No       |

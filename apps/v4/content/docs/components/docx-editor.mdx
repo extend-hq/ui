@@ -61,7 +61,7 @@ npx shadcn@latest add https://ui.extend.ai/r/file-thumbnail.json
 - Toolbar controls cover import, export, undo, redo, zoom, theme, read-only mode, tracked changes, text styles, color, highlight, links, alignment, lists, borders, images, and tables.
 - Page thumbnails stay in the left rail and scroll the editor viewport to the selected page.
 - The editor uses `useDocxEditor` and `DocxEditorViewer`, so mutations flow through the public `react-docx` controller API.
-- Uploaded files replace the current document while URL-loaded DOCX files are cached across mounts.
+- Uploaded files replace the current document while URL-loaded DOCX files are fetched from the provided `src`.
 
 ## API Reference
 
