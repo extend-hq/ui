@@ -16,13 +16,13 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { DocsViewCodeBlock } from "@/components/docs-code-block"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
+import { Separator } from "@/components/ui/separator"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/new-york-v4/ui/tooltip"
+} from "@/components/ui/tooltip"
 
 function ToolbarTooltip({
   label,

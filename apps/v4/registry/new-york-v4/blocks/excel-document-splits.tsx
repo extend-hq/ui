@@ -5,7 +5,7 @@ import * as React from "react"
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
 import { XlsxViewerPreview } from "@/components/ui/xlsx-viewer"
 import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
-import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const SHEETS = ["Overview", "Chart review", "Format checks", "Exceptions"]
 

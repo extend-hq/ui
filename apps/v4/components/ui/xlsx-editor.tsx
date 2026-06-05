@@ -43,13 +43,13 @@ import {
   WorkbookSheetTabs,
   WorkbookTableHeaderMenu,
 } from "@/components/ui/xlsx-viewer"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
+import { Separator } from "@/components/ui/separator"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/new-york-v4/ui/tooltip"
+} from "@/components/ui/tooltip"
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_EDITOR_READ_ONLY_THRESHOLD_BYTES = 5 * 1024 * 1024

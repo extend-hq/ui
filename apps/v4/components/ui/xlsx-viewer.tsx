@@ -41,14 +41,14 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/registry/new-york-v4/ui/dropdown-menu"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
+} from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/new-york-v4/ui/tooltip"
+} from "@/components/ui/tooltip"
 
 const XLSX_SOURCE_CACHE_LIMIT = 3
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300

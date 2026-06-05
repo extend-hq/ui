@@ -27,13 +27,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
+import { Separator } from "@/components/ui/separator"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/new-york-v4/ui/tooltip"
+} from "@/components/ui/tooltip"
 
 const ZOOM_OPTIONS = [0.75, 1, 1.25, 1.5, 2] as const
 

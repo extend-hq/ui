@@ -53,12 +53,12 @@ import {
 import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
 import {
   Collapsible,
   CollapsiblePanel,
   CollapsibleTrigger,
-} from "@/registry/new-york-v4/ui/collapsible"
+} from "@/components/ui/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,14 +70,14 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/registry/new-york-v4/ui/dropdown-menu"
-import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
+} from "@/components/ui/dropdown-menu"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/new-york-v4/ui/tabs"
+} from "@/components/ui/tabs"
 
 export type SchemaBuilderScalarType =
   | "string"
@@ -1148,9 +1148,12 @@ function SchemaTypeMenu({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 w-full justify-between rounded-md px-2"
+          className="h-8 w-full min-w-0 justify-between overflow-hidden rounded-md px-2"
         >
-          <SchemaTypeBadge type={getTypeStyleKey(property)} />
+          <SchemaTypeBadge
+            className="max-w-full shrink"
+            type={getTypeStyleKey(property)}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-44">
@@ -1633,10 +1636,10 @@ function SchemaBuilderTable({
       <table className="w-full table-fixed border-collapse text-sm">
         <thead>
           <tr className="border-b bg-muted/55 text-xs text-muted-foreground">
-            <th className="w-[28%] px-3 py-2 text-left font-medium">
+            <th className="w-[24%] px-3 py-2 text-left font-medium sm:w-[27%]">
               Property key
             </th>
-            <th className="w-[22%] border-l px-3 py-2 text-left font-medium">
+            <th className="w-[36%] border-l px-3 py-2 text-left font-medium sm:w-[23%]">
               Type
             </th>
             <th className="border-l px-3 py-2 text-left font-medium">

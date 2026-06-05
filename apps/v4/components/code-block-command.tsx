@@ -13,7 +13,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/new-york-v4/ui/tabs"
+} from "@/components/ui/tabs"
 
 export function CodeBlockCommand({
   __npm__,

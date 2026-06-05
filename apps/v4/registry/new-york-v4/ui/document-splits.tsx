@@ -31,8 +31,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
-import { Button } from "@/registry/new-york-v4/ui/button"
-import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export type DocumentSplitPageId = `page-${number}`
 export type DocumentSplit = {

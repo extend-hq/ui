@@ -17,7 +17,7 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/registry/new-york-v4/ui/sidebar"
+} from "@/components/ui/sidebar"
 
 const TOP_LEVEL_SECTIONS = [
   { name: "Introduction", href: "/docs" },

@@ -10,8 +10,8 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/registry/new-york-v4/ui/collapsible"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
+} from "@/components/ui/collapsible"
+import { Separator } from "@/components/ui/separator"
 
 export function CodeCollapsibleWrapper({
   className,

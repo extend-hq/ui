@@ -12,7 +12,7 @@ import type SignaturePad from "signature_pad"
 import { cn } from "@/lib/utils"
 import { PDFViewer } from "@/components/ui/pdf-viewer"
 import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
-import { Button } from "@/registry/new-york-v4/ui/button"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -21,8 +21,8 @@ import {
   DialogHeader,
   DialogPanel,
   DialogTitle,
-} from "@/registry/new-york-v4/ui/dialog"
-import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
+} from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 type BoundingBox = {
   x: number

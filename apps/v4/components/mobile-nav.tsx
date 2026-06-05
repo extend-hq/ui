@@ -14,7 +14,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/new-york-v4/ui/popover"
+} from "@/components/ui/popover"
 
 const TOP_LEVEL_SECTIONS = [
   { name: "Introduction", href: "/docs" },

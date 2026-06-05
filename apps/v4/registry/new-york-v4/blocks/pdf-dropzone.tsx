@@ -4,7 +4,7 @@ import * as React from "react"
 import { FileUploadIcon } from "@hugeicons/core-free-icons"
 
 import { PDFViewer } from "@/components/ui/pdf-viewer"
-import { FileUpload } from "@/registry/new-york-v4/ui/file-upload"
+import { FileUpload } from "@/components/ui/file-upload"
 
 const PDF_ACCEPT = "application/pdf,.pdf"
 const PDF_UPLOAD_DROPZONE_SELECTOR = "[data-pdf-upload-dropzone]"

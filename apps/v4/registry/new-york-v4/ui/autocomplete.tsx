@@ -6,8 +6,8 @@ import { ArrowUpDownIcon, Cancel01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
-import { Input } from "@/registry/new-york-v4/ui/input"
-import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export const Autocomplete: typeof AutocompletePrimitive.Root =
   AutocompletePrimitive.Root

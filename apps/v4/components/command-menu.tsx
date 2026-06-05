@@ -28,7 +28,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/registry/new-york-v4/ui/command"
+} from "@/components/ui/command"
 import {
   DialogContent as BaseDialogContent,
   Dialog,
@@ -36,9 +36,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/new-york-v4/ui/dialog"
-import { Separator } from "@/registry/new-york-v4/ui/separator"
-import { Spinner } from "@/registry/new-york-v4/ui/spinner"
+} from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
 
 function getRegistryItemUrl(name: string) {
   return `${siteConfig.url}/r/${name}.json`

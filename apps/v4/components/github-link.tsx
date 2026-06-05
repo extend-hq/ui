@@ -4,7 +4,7 @@ import Link from "next/link"
 import { siteConfig } from "@/lib/config"
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/icons"
-import { Skeleton } from "@/registry/new-york-v4/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const GITHUB_REPO = "extend-hq/ui"
 

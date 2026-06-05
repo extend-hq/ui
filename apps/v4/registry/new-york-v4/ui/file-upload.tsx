@@ -12,7 +12,7 @@ import { BorderBeam } from "border-beam"
 
 import { cn } from "@/lib/utils"
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
-import { Card } from "@/registry/new-york-v4/ui/card"
+import { Card } from "@/components/ui/card"
 
 type FileUploadItem = {
   id: string

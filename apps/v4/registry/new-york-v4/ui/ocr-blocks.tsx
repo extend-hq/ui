@@ -19,7 +19,7 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
 import remarkGfm from "remark-gfm"
 
 import { cn } from "@/lib/utils"
-import { ScrollArea } from "@/registry/new-york-v4/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export type Point = {
   x: number
