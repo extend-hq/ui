@@ -3,8 +3,12 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
+import Link from "next/link"
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   DocumentSplits,
   INITIAL_SPLITS,
@@ -112,7 +116,11 @@ export function RootComponentsCollage() {
 
 function PdfViewerTile() {
   return (
-    <ComponentCrop label="PDF Viewer" className="h-[560px] bg-background">
+    <ComponentCrop
+      label="PDF Viewer"
+      viewHref="/docs/components/pdf-viewer"
+      className="h-[560px] bg-background"
+    >
       <PdfViewerPreview
         file="/samples/attention.pdf"
         showRotateControls={false}
@@ -123,7 +131,11 @@ function PdfViewerTile() {
 
 function FileUploadTile() {
   return (
-    <ComponentCrop label="File Upload" className="bg-background p-3">
+    <ComponentCrop
+      label="File Upload"
+      viewHref="/docs/components/file-upload"
+      className="bg-background p-3"
+    >
       <FileUpload showFileList={false} />
     </ComponentCrop>
   )
@@ -131,7 +143,11 @@ function FileUploadTile() {
 
 function FileThumbnailTile() {
   return (
-    <ComponentCrop label="File Thumbnail" className="bg-background">
+    <ComponentCrop
+      label="File Thumbnail"
+      viewHref="/docs/components/file-thumbnail"
+      className="bg-background"
+    >
       <RootFileThumbnailGrid />
     </ComponentCrop>
   )
@@ -139,7 +155,11 @@ function FileThumbnailTile() {
 
 function DocxViewerTile() {
   return (
-    <ComponentCrop label="DOCX Viewer" className="h-[560px] bg-background">
+    <ComponentCrop
+      label="DOCX Viewer"
+      viewHref="/docs/components/docx-viewer"
+      className="h-[560px] bg-background"
+    >
       <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
     </ComponentCrop>
   )
@@ -149,6 +169,7 @@ function XlsxViewerTile() {
   return (
     <ComponentCrop
       label="XLSX Viewer"
+      viewHref="/docs/components/xlsx-viewer"
       className="h-[540px] bg-background 4xl:h-[500px]"
     >
       <XlsxViewerPreview
@@ -163,7 +184,11 @@ function DocumentSplitsTile() {
   const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)
 
   return (
-    <ComponentCrop label="Document Splits" className="h-[500px] bg-background">
+    <ComponentCrop
+      label="Document Splits"
+      viewHref="/docs/components/document-splits"
+      className="h-[500px] bg-background"
+    >
       <DocumentSplits
         className="h-full"
         splits={splits}
@@ -178,7 +203,11 @@ function DocumentSplitsTile() {
 
 function SchemaBuilderTile() {
   return (
-    <ComponentCrop label="Schema Builder" className="h-[560px] bg-background">
+    <ComponentCrop
+      label="Schema Builder"
+      viewHref="/docs/components/schema-builder"
+      className="h-[560px] bg-background"
+    >
       <SchemaBuilderPanel className="h-full" />
     </ComponentCrop>
   )
@@ -218,16 +247,27 @@ function ViewerPreviewLoading() {
 function ComponentCrop({
   className,
   label,
+  viewHref,
   children,
 }: {
   className?: string
   label: string
+  viewHref: string
   children: React.ReactNode
 }) {
   return (
     <div className="overflow-hidden rounded-lg border bg-background">
-      <div className="flex h-8 items-center rounded-t-[inherit] border-b bg-muted/45 px-3 text-xs font-medium text-muted-foreground">
-        {label}
+      <div className="flex h-8 items-center justify-between gap-2 rounded-t-[inherit] border-b bg-muted/45 px-3 text-xs font-medium text-muted-foreground">
+        <span className="min-w-0 truncate">{label}</span>
+        <Button
+          size="xs"
+          variant="ghost"
+          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+          render={<Link href={viewHref} aria-label={`View ${label}`} />}
+        >
+          View
+          <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
+        </Button>
       </div>
       <div className={cn("overflow-hidden", className)}>{children}</div>
     </div>
