@@ -31,7 +31,7 @@ import dynamic from "next/dynamic"
 
 const HumanReviewPanel = dynamic(
 () =>
-import("@/components/ui/human-review").then((mod) => mod.HumanReviewPanel),
+import("@/components/ui/bounding-box-citations").then((mod) => mod.HumanReviewPanel),
 { ssr: false }
 )`}
 />
@@ -47,7 +47,7 @@ import("@/components/ui/human-review").then((mod) => mod.HumanReviewPanel),
 <TabsContent value="cli">
 
 ```bash
-npx shadcn@latest add @extend/human-review
+npx shadcn@latest add @extend/bounding-box-citations
 ```
 
 </TabsContent>

@@ -31,6 +31,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { HumanReviewBlock } from "@/components/bounding-box-citations-docs"
 import {
   CodeHeaderCopyButton,
   CopyButtonIcon,
@@ -43,7 +44,6 @@ import {
 import { DocxEditorBlock } from "@/components/docx-editor-docs"
 import { ESignatureBlock } from "@/components/e-signature-docs"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
-import { HumanReviewBlock } from "@/components/human-review-docs"
 import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
 type BlockCodeSample = {
@@ -77,7 +77,7 @@ const BLOCK_PREVIEW_LAZY_ROOT_MARGIN = "900px 0px"
 
 const OcrBlocksBlock = dynamic(
   () =>
-    import("@/components/ocr-blocks-docs").then((mod) => mod.OcrBlocksBlock),
+    import("@/components/layout-blocks-docs").then((mod) => mod.OcrBlocksBlock),
   {
     loading: () => <BlockPreviewPlaceholder />,
   }

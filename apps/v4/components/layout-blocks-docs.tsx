@@ -8456,7 +8456,7 @@ export function OcrBlocksBlock({
 
   return (
     <PdfBlockResizableShell
-      autoSaveId="pdf-block-ocr-blocks"
+      autoSaveId="pdf-block-layout-blocks"
       left={
         <PDFViewer
           ref={viewerRef}
@@ -8591,7 +8591,7 @@ export function OcrBlocksDemo() {
 
 const ocrBlocksUsageCode = `"use client";
 
-import { OcrBlocks } from "@/components/ui/ocr-blocks";
+import { OcrBlocks } from "@/components/ui/layout-blocks";
 
 export function OcrBlocksExample() {
   return <OcrBlocks />;
@@ -8604,7 +8604,7 @@ export function OcrBlocksSource() {
   return (
     <DocsSourceCodeBlock
       code={ocrBlocksSourceCode}
-      fileName="components/ui/ocr-blocks.tsx"
+      fileName="components/ui/layout-blocks.tsx"
     />
   )
 }

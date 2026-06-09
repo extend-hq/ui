@@ -147,8 +147,8 @@ function collectRegistryFiles(
 }
 
 const blockCodeRegistryItems: Record<string, string> = {
-  "layout-blocks": "ocr-blocks-block",
-  "bounding-box-citations": "human-review-block",
+  "layout-blocks": "layout-blocks-block",
+  "bounding-box-citations": "bounding-box-citations-block",
 }
 
 function dedupeFiles(files: RegistryFile[]) {

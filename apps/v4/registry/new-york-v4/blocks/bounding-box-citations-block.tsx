@@ -15,7 +15,7 @@ import {
   type ReviewField,
   type ReviewLocation,
   type ReviewMetadataEntry,
-} from "@/components/ui/human-review"
+} from "@/components/ui/bounding-box-citations"
 import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
 import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 
@@ -95,7 +95,7 @@ export function HumanReviewBlock({
 
   return (
     <PdfBlockResizableShell
-      autoSaveId="pdf-block-human-review"
+      autoSaveId="pdf-block-bounding-box-citations"
       className={className}
       rightDefaultSize={42}
       rightMaxSize={60}

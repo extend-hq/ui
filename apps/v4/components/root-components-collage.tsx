@@ -56,7 +56,7 @@ const XlsxViewerPreview = dynamic(
 
 const LayoutBlocksBlock = dynamic(
   () =>
-    import("@/components/ocr-blocks-docs").then((mod) => mod.OcrBlocksBlock),
+    import("@/components/layout-blocks-docs").then((mod) => mod.OcrBlocksBlock),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,
@@ -65,7 +65,7 @@ const LayoutBlocksBlock = dynamic(
 
 const BoundingBoxCitationsBlock = dynamic(
   () =>
-    import("@/components/human-review-docs").then(
+    import("@/components/bounding-box-citations-docs").then(
       (mod) => mod.HumanReviewBlock
     ),
   {
@@ -175,7 +175,7 @@ function PdfViewerTile() {
       className="h-[560px] bg-background"
     >
       <PdfViewerPreview
-        file={withBasePath("/samples/attention.pdf")}
+        file="/samples/attention.pdf"
         showRotateControls={false}
       />
     </ComponentCrop>
@@ -213,10 +213,7 @@ function DocxViewerTile() {
       viewHref="/docs/components/docx-viewer"
       className="h-[560px] bg-background"
     >
-      <DocxViewerPreview
-        className="h-full"
-        src={withBasePath("/samples/demo.docx")}
-      />
+      <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
     </ComponentCrop>
   )
 }
@@ -230,7 +227,7 @@ function ComponentXlsxViewerTile() {
     >
       <XlsxViewerPreview
         className="h-full"
-        src={withBasePath("/samples/crazy-chart-zoo.xlsx")}
+        src="/samples/crazy-chart-zoo.xlsx"
       />
     </ComponentCrop>
   )
@@ -359,7 +356,7 @@ function ESignatureTile() {
 const ROOT_DOCUMENT_SPLIT_THUMBNAILS = Object.fromEntries(
   INITIAL_SPLITS.flatMap((split) => split.pages).map((pageId) => [
     pageId,
-    withBasePath("/samples/attention-page-1.png"),
+    "/samples/attention-page-1.png",
   ])
 ) as Record<DocumentSplit["pages"][number], string>
 

@@ -2,9 +2,6 @@
 
 import * as React from "react"
 
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
-
 import {
   ATTENTION_OCR_OUTPUT,
   blockToArea,
@@ -14,7 +11,9 @@ import {
   PDF_URL,
   type OcrBlock,
   type ParsedOcrOutput,
-} from "@/components/ui/ocr-blocks"
+} from "@/components/ui/layout-blocks"
+import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
+import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 
 export function OcrBlocksBlock({
   file = PDF_URL,

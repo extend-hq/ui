@@ -749,7 +749,7 @@
       ]
     },
     {
-      "name": "ocr-blocks",
+      "name": "layout-blocks",
       "type": "registry:ui",
       "title": "Layout Blocks",
       "description": "A structured layout review panel with typed blocks and confidence cards.",
@@ -766,28 +766,28 @@
       "categories": ["documents"],
       "files": [
         {
-          "path": "registry/new-york-v4/ui/ocr-blocks.tsx",
+          "path": "registry/new-york-v4/ui/layout-blocks.tsx",
           "type": "registry:ui",
-          "target": "@ui/ocr-blocks.tsx"
+          "target": "@ui/layout-blocks.tsx"
         }
       ]
     },
     {
-      "name": "ocr-blocks-block",
+      "name": "layout-blocks-block",
       "type": "registry:block",
       "title": "Layout Blocks",
       "description": "A structured layout review block with confidence cards and PDF region overlays.",
       "registryDependencies": [
-        "@extend/ocr-blocks",
+        "@extend/layout-blocks",
         "@extend/pdf-block-resizable-shell",
         "@extend/pdf-viewer"
       ],
       "categories": ["documents", "blocks"],
       "files": [
         {
-          "path": "registry/new-york-v4/blocks/ocr-blocks-block.tsx",
+          "path": "registry/new-york-v4/blocks/layout-blocks-block.tsx",
           "type": "registry:component",
-          "target": "@components/blocks/ocr-blocks-block.tsx"
+          "target": "@components/blocks/layout-blocks-block.tsx"
         }
       ]
     },
@@ -820,7 +820,7 @@
       ]
     },
     {
-      "name": "human-review",
+      "name": "bounding-box-citations",
       "type": "registry:ui",
       "title": "Bounding Box Citations",
       "description": "An extraction citation panel connected to source bounding boxes and editable values.",
@@ -841,9 +841,9 @@
       "categories": ["documents"],
       "files": [
         {
-          "path": "registry/new-york-v4/ui/human-review.tsx",
+          "path": "registry/new-york-v4/ui/bounding-box-citations.tsx",
           "type": "registry:ui",
-          "target": "@ui/human-review.tsx"
+          "target": "@ui/bounding-box-citations.tsx"
         }
       ]
     },
@@ -879,21 +879,21 @@
       ]
     },
     {
-      "name": "human-review-block",
+      "name": "bounding-box-citations-block",
       "type": "registry:block",
       "title": "Bounding Box Citations",
       "description": "An extraction citation block linked to source PDF bounding boxes.",
       "registryDependencies": [
-        "@extend/human-review",
+        "@extend/bounding-box-citations",
         "@extend/pdf-block-resizable-shell",
         "@extend/pdf-viewer"
       ],
       "categories": ["documents", "blocks"],
       "files": [
         {
-          "path": "registry/new-york-v4/blocks/human-review-block.tsx",
+          "path": "registry/new-york-v4/blocks/bounding-box-citations-block.tsx",
           "type": "registry:component",
-          "target": "@components/blocks/human-review-block.tsx"
+          "target": "@components/blocks/bounding-box-citations-block.tsx"
         }
       ]
     },

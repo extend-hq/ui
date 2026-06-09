@@ -21,7 +21,7 @@ export const PDF_VIEWER_BLOCKS = [
     description:
       "Structured layout review with typed blocks, confidence, and page overlays.",
     hideHeader: true,
-    command: getRegistryAddCommand("ocr-blocks-block"),
+    command: getRegistryAddCommand("layout-blocks-block"),
     docsHref: "/docs/components/layout-blocks",
     viewHref: "/view/blocks/layout-blocks",
   },
@@ -30,7 +30,7 @@ export const PDF_VIEWER_BLOCKS = [
     title: "Bounding Box Citations",
     description:
       "Extraction citations connected to source bounding boxes in the PDF viewer.",
-    command: getRegistryAddCommand("human-review-block"),
+    command: getRegistryAddCommand("bounding-box-citations-block"),
     docsHref: "/docs/components/bounding-box-citations",
     viewHref: "/view/blocks/bounding-box-citations",
   },

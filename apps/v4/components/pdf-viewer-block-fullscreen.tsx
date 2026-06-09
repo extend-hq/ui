@@ -7,13 +7,13 @@ import {
   getPdfViewerBlock,
   type PdfViewerBlockId,
 } from "@/lib/pdf-viewer-blocks"
+import { HumanReviewBlock } from "@/components/bounding-box-citations-docs"
 import {
   DocumentSplitsBlock,
   XlsxDocumentSplitsBlock,
 } from "@/components/document-splitter-docs"
 import { DocxEditorBlock } from "@/components/docx-editor-docs"
 import { ESignatureBlock } from "@/components/e-signature-docs"
-import { HumanReviewBlock } from "@/components/human-review-docs"
 import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
 type PdfViewerBlockFullscreenPreviewProps = {
@@ -23,7 +23,7 @@ type PdfViewerBlockFullscreenPreviewProps = {
 
 const OcrBlocksBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
   () =>
-    import("@/components/ocr-blocks-docs").then((mod) => mod.OcrBlocksBlock),
+    import("@/components/layout-blocks-docs").then((mod) => mod.OcrBlocksBlock),
   {
     loading: () => <BlockViewPlaceholder />,
   }

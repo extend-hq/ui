@@ -5,6 +5,21 @@ import Link from "next/link"
 import { type PageTreeFolder } from "@/lib/page-tree"
 import { source } from "@/lib/source"
 import { cn } from "@/lib/utils"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { Button } from "@/components/ui/button"
+import { Kbd } from "@/components/ui/kbd"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  HumanReviewDemo,
+  HumanReviewSource,
+} from "@/components/bounding-box-citations-docs"
 import { Callout } from "@/components/callout"
 import { CodeBlockCommand } from "@/components/code-block-command"
 import { CodeCollapsibleWrapper } from "@/components/code-collapsible-wrapper"
@@ -29,12 +44,8 @@ import {
   FileThumbnailSource,
 } from "@/components/file-thumbnail-docs"
 import { FileUploadDemo, FileUploadSource } from "@/components/file-upload-docs"
-import {
-  HumanReviewDemo,
-  HumanReviewSource,
-} from "@/components/human-review-docs"
 import { getIconForLanguageExtension } from "@/components/icons"
-import { OcrBlocksDemo, OcrBlocksSource } from "@/components/ocr-blocks-docs"
+import { OcrBlocksDemo, OcrBlocksSource } from "@/components/layout-blocks-docs"
 import { PdfViewerDemo, PdfViewerSource } from "@/components/pdf-viewer-docs"
 import {
   SchemaBuilderDemo,
@@ -42,26 +53,6 @@ import {
 } from "@/components/schema-builder-docs"
 import { XlsxEditorDemo, XlsxEditorSource } from "@/components/xlsx-editor-docs"
 import { XlsxViewerDemo, XlsxViewerSource } from "@/components/xlsx-viewer-docs"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert"
-import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { Button } from "@/components/ui/button"
-import { Kbd } from "@/components/ui/kbd"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
 
 // Wrapper component that passes the components folder from the server.
 // This is only used on /docs/components/ index page, so default to radix.

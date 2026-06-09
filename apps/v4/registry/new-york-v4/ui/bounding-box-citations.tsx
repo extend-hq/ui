@@ -30,7 +30,15 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Virtualizer as DiffsVirtualizer } from "@pierre/diffs"
-import { MultiFileDiff, VirtualizerContext } from "@pierre/diffs/react"
+import {
+  File,
+  MultiFileDiff,
+  VirtualizerContext,
+  WorkerPoolContextProvider,
+  type VirtualFileMetrics,
+  type WorkerInitializationRenderOptions,
+  type WorkerPoolOptions,
+} from "@pierre/diffs/react"
 import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
@@ -173,6 +181,46 @@ function ScrollAreaVirtualizer({
 const DEFAULT_ZOOM = 0.75
 const REVIEW_HIGHLIGHT_STYLE =
   "border-blue-500/70 bg-blue-500/12 shadow-[0_4px_16px_rgb(59_130_246_/_10%)]"
+
+const CODE_FILE_THEME = {
+  "--diffs-light-bg": "var(--color-code)",
+  "--diffs-dark-bg": "var(--color-code)",
+  "--diffs-light": "var(--color-code-foreground)",
+  "--diffs-dark": "var(--color-code-foreground)",
+  "--diffs-bg-context-override": "var(--color-code)",
+  "--diffs-bg-context-gutter-override": "var(--color-code)",
+  "--diffs-bg-buffer-override": "var(--color-code)",
+  "--diffs-fg-number-override": "var(--color-muted-foreground)",
+  "--diffs-font-size": "0.8rem",
+  "--diffs-line-height": "1.625",
+} as React.CSSProperties
+
+const CODE_FONT_SIZE_PX = 12.8
+const CODE_LINE_HEIGHT_PX = CODE_FONT_SIZE_PX * 1.625
+
+const CODE_VIRTUAL_FILE_METRICS = {
+  hunkLineCount: 50,
+  lineHeight: CODE_LINE_HEIGHT_PX,
+  diffHeaderHeight: 44,
+  spacing: 8,
+  paddingTop: 0,
+  paddingBottom: 8,
+} satisfies VirtualFileMetrics
+
+const CODE_HIGHLIGHTER_OPTIONS = {
+  theme: {
+    light: "pierre-light-soft",
+    dark: "pierre-dark-soft",
+  },
+  langs: ["json"],
+} satisfies WorkerInitializationRenderOptions
+
+const CODE_WORKER_POOL_OPTIONS = {
+  workerFactory: () =>
+    new Worker(new URL("@pierre/diffs/worker/worker.js", import.meta.url), {
+      type: "module",
+    }),
+} satisfies WorkerPoolOptions
 
 function readIsDarkTheme() {
   return (
@@ -2101,7 +2149,7 @@ export function JsonDiffView({
       className="h-full bg-surface/60"
       contentClassName="min-w-full"
     >
-      <div className="human-review-diff h-full text-xs">
+      <div className="bounding-box-citations-diff h-full text-xs">
         <MultiFileDiff
           className="block min-w-full"
           oldFile={oldFile}
@@ -2121,6 +2169,62 @@ export function JsonDiffView({
         />
       </div>
     </ScrollAreaVirtualizer>
+  )
+}
+
+export function JsonCodeView({
+  name = "actual.json",
+  theme = "light",
+  value,
+}: {
+  name?: string
+  theme?: HumanReviewTheme
+  value: JsonValue
+}) {
+  const file = React.useMemo(() => {
+    const contents = formatJson(value)
+
+    return {
+      name,
+      contents,
+      lang: "json" as const,
+      cacheKey: contents,
+    }
+  }, [name, value])
+
+  return (
+    <div
+      data-rehype-pretty-code-figure
+      className="relative m-0! h-full overflow-hidden rounded-none! bg-code text-code-foreground"
+    >
+      <WorkerPoolContextProvider
+        poolOptions={CODE_WORKER_POOL_OPTIONS}
+        highlighterOptions={CODE_HIGHLIGHTER_OPTIONS}
+      >
+        <ScrollAreaVirtualizer
+          key={`${file.cacheKey}:${theme}`}
+          className="h-full min-w-0"
+          contentClassName="min-w-full"
+        >
+          <File
+            key={`${file.cacheKey}:${theme}`}
+            className="block min-w-full"
+            file={file}
+            metrics={CODE_VIRTUAL_FILE_METRICS}
+            style={CODE_FILE_THEME}
+            options={{
+              disableFileHeader: true,
+              overflow: "scroll",
+              themeType: theme,
+              theme: {
+                light: "pierre-light-soft",
+                dark: "pierre-dark-soft",
+              },
+            }}
+          />
+        </ScrollAreaVirtualizer>
+      </WorkerPoolContextProvider>
+    </div>
   )
 }
 
@@ -2166,12 +2270,6 @@ export function HumanReviewPanel({
     setExpected(initialExpectedValues)
   }, [initialExpectedValues])
 
-  React.useEffect(() => {
-    if (!showExpected && activeTab === "json") {
-      setActiveTab("form")
-    }
-  }, [activeTab, showExpected])
-
   const updateValue = React.useCallback((key: string, value: JsonValue) => {
     setExpected((current) =>
       Object.is(current[key], value) ? current : { ...current, [key]: value }
@@ -2191,12 +2289,10 @@ export function HumanReviewPanel({
               <HugeiconsIcon icon={TextCheckIcon} className="size-4" />
               Form
             </TabsTrigger>
-            {showExpected ? (
-              <TabsTrigger value="json" className="h-7 sm:h-6">
-                <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />
-                JSON
-              </TabsTrigger>
-            ) : null}
+            <TabsTrigger value="json" className="h-7 sm:h-6">
+              <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />
+              JSON
+            </TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="form" keepMounted className="min-h-0 flex-1">
@@ -2228,15 +2324,17 @@ export function HumanReviewPanel({
             </div>
           </ScrollArea>
         </TabsContent>
-        {showExpected ? (
-          <TabsContent value="json" keepMounted className="min-h-0 flex-1">
+        <TabsContent value="json" keepMounted className="min-h-0 flex-1">
+          {showExpected ? (
             <JsonDiffView
               actual={actualValues}
               expected={expected}
               theme={theme}
             />
-          </TabsContent>
-        ) : null}
+          ) : (
+            <JsonCodeView value={actualValues} theme={theme} />
+          )}
+        </TabsContent>
       </Tabs>
     </TooltipProvider>
   )
