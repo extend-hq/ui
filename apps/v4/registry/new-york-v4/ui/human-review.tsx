@@ -1745,6 +1745,7 @@ type HumanReviewFieldCardProps = {
   active?: boolean
   activeFieldKey?: string
   readOnly?: boolean
+  showExpected?: boolean
   onChange: (value: JsonValue) => void
   onFieldFocus?: (field: ReviewField) => void
   onLocationHover?: (location?: ReviewLocation) => void
@@ -1769,6 +1770,7 @@ function areHumanReviewFieldCardPropsEqual(
     previous.active === next.active &&
     previous.activeFieldKey === next.activeFieldKey &&
     previous.readOnly === next.readOnly &&
+    previous.showExpected === next.showExpected &&
     previous.onFieldFocus === next.onFieldFocus &&
     previous.onLocationHover === next.onLocationHover &&
     previous.resolveArrayItemMetadataPath ===
@@ -1789,6 +1791,7 @@ function HumanReviewFieldCardBase({
   active,
   activeFieldKey,
   readOnly = false,
+  showExpected = true,
   onChange,
   onFieldFocus,
   onLocationHover,
@@ -1797,7 +1800,8 @@ function HumanReviewFieldCardBase({
   resolveArrayItemMetadataPath,
   resolveLocation,
 }: HumanReviewFieldCardProps) {
-  const modified = !jsonValuesEqual(value, originalValue)
+  const isExpectedEditable = showExpected && !readOnly
+  const modified = showExpected && !jsonValuesEqual(value, originalValue)
   const Icon = getFieldIcon(field.schema.type)
   const propertyEntries = Object.entries(field.schema.properties ?? {})
   const [syncedArrayNestedView, setSyncedArrayNestedView] =
@@ -1875,7 +1879,7 @@ function HumanReviewFieldCardBase({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {!readOnly && modified ? (
+          {isExpectedEditable && modified ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -1892,7 +1896,7 @@ function HumanReviewFieldCardBase({
               <TooltipContent>Revert changes</TooltipContent>
             </Tooltip>
           ) : null}
-          {!readOnly ? (
+          {isExpectedEditable ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -1941,6 +1945,7 @@ function HumanReviewFieldCardBase({
                     active={childField.key === activeFieldKey}
                     activeFieldKey={activeFieldKey}
                     readOnly={readOnly}
+                    showExpected={showExpected}
                     onChange={(childValue) =>
                       onChange(setObjectValue(value, propertyKey, childValue))
                     }
@@ -1986,28 +1991,30 @@ function HumanReviewFieldCardBase({
             onLocationHover={onLocationHover}
             onNestedStackChange={updateSyncedArrayNestedView}
           />
-          <HumanReviewArrayValueGrid
-            activeNestedSide={syncedArrayNestedView.activeSide}
-            activeSelectionSide={syncedArraySelection.activeSide}
-            label="Expected"
-            metadataPath={field.metadataPath ?? field.key}
-            readOnly={readOnly}
-            resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
-            resolveLocation={resolveLocation}
-            schema={field.schema}
-            selectionDepth={syncedArraySelection.depth}
-            sharedGridSelection={syncedArraySelection.gridSelection}
-            sharedNestedStack={syncedArrayNestedView.stack}
-            value={value}
-            viewSide="expected"
-            onChange={onChange}
-            onGridSelectionChange={updateSyncedArraySelection}
-            onLocationHover={onLocationHover}
-            onNestedStackChange={updateSyncedArrayNestedView}
-          />
+          {showExpected ? (
+            <HumanReviewArrayValueGrid
+              activeNestedSide={syncedArrayNestedView.activeSide}
+              activeSelectionSide={syncedArraySelection.activeSide}
+              label="Expected"
+              metadataPath={field.metadataPath ?? field.key}
+              readOnly={readOnly}
+              resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}
+              resolveLocation={resolveLocation}
+              schema={field.schema}
+              selectionDepth={syncedArraySelection.depth}
+              sharedGridSelection={syncedArraySelection.gridSelection}
+              sharedNestedStack={syncedArrayNestedView.stack}
+              value={value}
+              viewSide="expected"
+              onChange={onChange}
+              onGridSelectionChange={updateSyncedArraySelection}
+              onLocationHover={onLocationHover}
+              onNestedStackChange={updateSyncedArrayNestedView}
+            />
+          ) : null}
         </div>
       ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className={cn("grid gap-2", showExpected && "sm:grid-cols-2")}>
           <div className="rounded-md border bg-muted/30 p-2">
             {field.schema.description ? (
               <p className="mb-2 text-xs text-muted-foreground">
@@ -2021,17 +2028,19 @@ function HumanReviewFieldCardBase({
               {formatValue(field.actual)}
             </div>
           </div>
-          <div className="rounded-md border bg-muted/30 p-2">
-            <div className="mb-1 text-[11px] font-medium text-muted-foreground">
-              Expected
+          {showExpected ? (
+            <div className="rounded-md border bg-muted/30 p-2">
+              <div className="mb-1 text-[11px] font-medium text-muted-foreground">
+                Expected
+              </div>
+              <HumanReviewValueInput
+                readOnly={readOnly}
+                schema={field.schema}
+                value={getPrimitiveValue(value)}
+                onChange={onChange}
+              />
             </div>
-            <HumanReviewValueInput
-              readOnly={readOnly}
-              schema={field.schema}
-              value={getPrimitiveValue(value)}
-              onChange={onChange}
-            />
-          </div>
+          ) : null}
         </div>
       )}
     </div>
@@ -2123,6 +2132,7 @@ export function HumanReviewPanel({
   onLocationHover,
   resolveArrayItemMetadataPath,
   resolveLocation,
+  showExpected = true,
   theme = "light",
 }: {
   fields?: ReviewField[]
@@ -2136,6 +2146,7 @@ export function HumanReviewPanel({
     rowValue: JsonValue
   ) => string | undefined
   resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
+  showExpected?: boolean
   theme?: HumanReviewTheme
 } = {}) {
   const [activeTab, setActiveTab] = React.useState("form")
@@ -2154,6 +2165,12 @@ export function HumanReviewPanel({
   React.useEffect(() => {
     setExpected(initialExpectedValues)
   }, [initialExpectedValues])
+
+  React.useEffect(() => {
+    if (!showExpected && activeTab === "json") {
+      setActiveTab("form")
+    }
+  }, [activeTab, showExpected])
 
   const updateValue = React.useCallback((key: string, value: JsonValue) => {
     setExpected((current) =>
@@ -2174,10 +2191,12 @@ export function HumanReviewPanel({
               <HugeiconsIcon icon={TextCheckIcon} className="size-4" />
               Form
             </TabsTrigger>
-            <TabsTrigger value="json" className="h-7 sm:h-6">
-              <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />
-              JSON
-            </TabsTrigger>
+            {showExpected ? (
+              <TabsTrigger value="json" className="h-7 sm:h-6">
+                <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />
+                JSON
+              </TabsTrigger>
+            ) : null}
           </TabsList>
         </div>
         <TabsContent value="form" keepMounted className="min-h-0 flex-1">
@@ -2187,13 +2206,16 @@ export function HumanReviewPanel({
                 <HumanReviewFieldCard
                   key={field.key}
                   field={field}
-                  value={expected[field.key] ?? null}
-                  originalValue={field.expected}
+                  value={
+                    showExpected ? (expected[field.key] ?? null) : field.actual
+                  }
+                  originalValue={showExpected ? field.expected : field.actual}
                   active={
                     field.key === activeFieldKey ||
                     activeFieldKey?.startsWith(`${field.key}.`)
                   }
                   activeFieldKey={activeFieldKey}
+                  showExpected={showExpected}
                   onChange={(value) => updateValue(field.key, value)}
                   onFieldFocus={onFieldFocus}
                   onLocationHover={onLocationHover}
@@ -2206,13 +2228,15 @@ export function HumanReviewPanel({
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="json" keepMounted className="min-h-0 flex-1">
-          <JsonDiffView
-            actual={actualValues}
-            expected={expected}
-            theme={theme}
-          />
-        </TabsContent>
+        {showExpected ? (
+          <TabsContent value="json" keepMounted className="min-h-0 flex-1">
+            <JsonDiffView
+              actual={actualValues}
+              expected={expected}
+              theme={theme}
+            />
+          </TabsContent>
+        ) : null}
       </Tabs>
     </TooltipProvider>
   )

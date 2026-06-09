@@ -8180,7 +8180,7 @@ function OcrBlockButton({
   return (
     <button
       type="button"
-      onClick={() => onFocusBlock(block)}
+      onMouseEnter={() => onFocusBlock(block)}
       onFocus={() => onFocusBlock(block)}
       className={cn(
         "w-full rounded-lg border bg-background p-3 text-left transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
@@ -8251,10 +8251,9 @@ export function OcrBlocksPanel({
     activeBlockId ?? blocks[0]?.id
   )
   const firstBlock = blocks[0]
+  const focusedBlockId = activeBlockId ?? localActiveBlockId
   const activeBlock =
-    blocks.find(
-      (block) => block.id === (activeBlockId ?? localActiveBlockId)
-    ) ?? firstBlock
+    blocks.find((block) => block.id === focusedBlockId) ?? firstBlock
   const estimateBlockSize = React.useCallback(
     (index: number) => {
       const block = blocks[index]
@@ -8274,10 +8273,12 @@ export function OcrBlocksPanel({
 
   const focusBlock = React.useCallback(
     (block: OcrBlock) => {
+      if (block.id === focusedBlockId) return
+
       setLocalActiveBlockId(block.id)
       onBlockFocus?.(block)
     },
-    [onBlockFocus]
+    [focusedBlockId, onBlockFocus]
   )
 
   React.useEffect(() => {
@@ -8336,7 +8337,7 @@ export function OcrBlocksPanel({
         ) : (
           <div className="p-3">
             <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-              No OCR blocks found.
+              No layout blocks found.
             </div>
           </div>
         )}

@@ -84,9 +84,9 @@ const OcrBlocksBlock = dynamic(
 )
 
 const blockComponents = {
-  "human-review": HumanReviewBlock,
+  "bounding-box-citations": () => <HumanReviewBlock showExpected={false} />,
   "pdf-dropzone": PdfDropzoneBlock,
-  "ocr-blocks": OcrBlocksBlock,
+  "layout-blocks": OcrBlocksBlock,
   "e-signature": ESignatureBlock,
   "document-splits": DocumentSplitsBlock,
   "excel-document-splits": XlsxDocumentSplitsBlock,

@@ -2,9 +2,6 @@
 
 import * as React from "react"
 
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
-
 import {
   findReviewField,
   getMetadataLocation,
@@ -19,6 +16,8 @@ import {
   type ReviewLocation,
   type ReviewMetadataEntry,
 } from "@/components/ui/human-review"
+import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
+import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 
 const DEFAULT_ZOOM = 0.75
 
@@ -29,6 +28,7 @@ export function HumanReviewBlock({
   metadata,
   resolveArrayItemMetadataPath,
   resolveLocation,
+  showExpected = true,
   theme,
 }: {
   file?: string
@@ -41,6 +41,7 @@ export function HumanReviewBlock({
     rowValue: JsonValue
   ) => string | undefined
   resolveLocation?: (metadataPath: string) => ReviewLocation | undefined
+  showExpected?: boolean
   theme?: HumanReviewTheme
 }) {
   const [activeFieldKey, setActiveFieldKey] = React.useState(fields[0]?.key)
@@ -118,6 +119,7 @@ export function HumanReviewBlock({
             activeFieldKey={activeField?.key}
             className="h-full min-h-0"
             theme={theme}
+            showExpected={showExpected}
             onFieldFocus={focusField}
             onLocationHover={handleLocationHover}
             resolveArrayItemMetadataPath={resolveArrayItemMetadataPath}

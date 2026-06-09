@@ -16,13 +16,23 @@ function getRegistryAddCommand(name: string) {
 
 export const PDF_VIEWER_BLOCKS = [
   {
-    id: "human-review",
-    title: "Human Review",
+    id: "layout-blocks",
+    title: "Layout Blocks",
     description:
-      "Extraction review cards connected to source evidence in the PDF viewer.",
+      "Structured layout review with typed blocks, confidence, and page overlays.",
+    hideHeader: true,
+    command: getRegistryAddCommand("ocr-blocks-block"),
+    docsHref: "/docs/components/layout-blocks",
+    viewHref: "/view/blocks/layout-blocks",
+  },
+  {
+    id: "bounding-box-citations",
+    title: "Bounding Box Citations",
+    description:
+      "Extraction citations connected to source bounding boxes in the PDF viewer.",
     command: getRegistryAddCommand("human-review-block"),
-    docsHref: "/docs/components/human-review",
-    viewHref: "/view/blocks/human-review",
+    docsHref: "/docs/components/bounding-box-citations",
+    viewHref: "/view/blocks/bounding-box-citations",
   },
   {
     id: "pdf-dropzone",
@@ -32,16 +42,6 @@ export const PDF_VIEWER_BLOCKS = [
     command: getRegistryAddCommand("pdf-dropzone"),
     docsHref: "/docs/components/file-upload",
     viewHref: "/view/blocks/pdf-dropzone",
-  },
-  {
-    id: "ocr-blocks",
-    title: "OCR Blocks",
-    description:
-      "Structured OCR review with typed blocks, confidence, and page overlays.",
-    hideHeader: true,
-    command: getRegistryAddCommand("ocr-blocks-block"),
-    docsHref: "/docs/components/ocr-blocks",
-    viewHref: "/view/blocks/ocr-blocks",
   },
   {
     id: "e-signature",

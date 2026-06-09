@@ -1,12 +1,12 @@
 ---
-title: Human Review
-description: Review extracted values against expected output with form fields and JSON diffing.
+title: Bounding Box Citations
+description: Review extracted values against source bounding box citations with form fields and JSON diffing.
 component: true
 ---
 
-Human Review provides field-level cards for comparing actual and expected extraction output. Use it when reviewers need to correct values while still being able to inspect the raw JSON diff.
+Bounding Box Citations provides field-level cards for comparing extracted values with source PDF bounding boxes. Use it when reviewers need to inspect citations, correct values, and optionally compare against expected output.
 
-See it composed with the PDF Viewer in the [Human Review block](/blocks#human-review).
+See it composed with the PDF Viewer in the [Bounding Box Citations block](/blocks#bounding-box-citations).
 
 <HumanReviewDemo />
 
@@ -20,8 +20,8 @@ the last child of your app's `<body>` before using the component:
 ```
 
 <Callout variant="info" title="Next.js SSR">
-Glide Data Grid uses browser-only APIs. If you see SSR errors, render Human
-Review through `next/dynamic` with `ssr: false`.
+Glide Data Grid uses browser-only APIs. If you see SSR errors, render Bounding
+Box Citations through `next/dynamic` with `ssr: false`.
 
 <DocsMdxCodeBlock
   language="tsx"
@@ -76,12 +76,12 @@ npm install @glideapps/glide-data-grid@6.0.4-alpha24 @hugeicons/core-free-icons@
 
 ## Useful behaviors
 
-- Actual and expected values displayed side by side for each schema field.
+- Actual and expected values displayed side by side for each schema field when `showExpected` is enabled.
 - Array values rendered with Glide Data Grid, including drill-down for nested arrays and objects.
 - Input controls selected from the JSON schema property type.
 - Object schema properties rendered as nested cards in the scrollable form.
-- Per-field undo and Set to NULL actions.
-- Form and JSON diff views for the same reviewed output state.
+- Per-field undo and Set to NULL actions when `showExpected` is enabled.
+- Form and JSON diff views for the same reviewed output state when `showExpected` is enabled.
 
 ## API Reference
 
@@ -95,6 +95,7 @@ The HumanReviewPanel component renders editable review fields and a JSON diff fo
 | `activeFieldKey` | `string`                       | `-`           | No       |
 | `className`      | `string`                       | `-`           | No       |
 | `onFieldFocus`   | `(field: ReviewField) => void` | `-`           | No       |
+| `showExpected`   | `boolean`                      | `true`        | No       |
 | `theme`          | `"light" \| "dark"`            | `"light"`     | No       |
 
 ### ReviewField

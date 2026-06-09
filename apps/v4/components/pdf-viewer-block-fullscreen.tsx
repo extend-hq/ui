@@ -30,9 +30,11 @@ const OcrBlocksBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
 )
 
 const blockComponents = {
-  "human-review": HumanReviewBlock,
+  "bounding-box-citations": (props: PdfViewerBlockFullscreenPreviewProps) => (
+    <HumanReviewBlock {...props} showExpected={false} />
+  ),
   "pdf-dropzone": PdfDropzoneBlock,
-  "ocr-blocks": OcrBlocksBlock,
+  "layout-blocks": OcrBlocksBlock,
   "e-signature": ESignatureBlock,
   "document-splits": DocumentSplitsBlock,
   "excel-document-splits": XlsxDocumentSplitsBlock,

@@ -26,7 +26,12 @@ export function OcrBlocksBlock({
   const blocks = React.useMemo(() => getOcrBlocks(output), [output])
   const [activeBlockId, setActiveBlockId] = React.useState(blocks[0]?.id)
   const viewerRef = React.useRef<PDFViewerHandle>(null)
+  const activeBlockIdRef = React.useRef(activeBlockId)
   const activeBlock = blocks.find((block) => block.id === activeBlockId)
+
+  React.useEffect(() => {
+    activeBlockIdRef.current = activeBlockId
+  }, [activeBlockId])
 
   React.useEffect(() => {
     if (!blocks.length || blocks.some((block) => block.id === activeBlockId)) {
@@ -37,15 +42,22 @@ export function OcrBlocksBlock({
   }, [activeBlockId, blocks])
 
   const focusBlock = React.useCallback((block: OcrBlock) => {
+    if (block.id === activeBlockIdRef.current) return
+
     const area = blockToArea(block)
 
+    activeBlockIdRef.current = block.id
     setActiveBlockId(block.id)
-    viewerRef.current?.scrollToPageArea(block.page, {
-      left: Number.parseFloat(String(area.left)),
-      top: Number.parseFloat(String(area.top)),
-      width: Number.parseFloat(String(area.width)),
-      height: Number.parseFloat(String(area.height)),
-    })
+    viewerRef.current?.scrollToPageArea(
+      block.page,
+      {
+        left: Number.parseFloat(String(area.left)),
+        top: Number.parseFloat(String(area.top)),
+        width: Number.parseFloat(String(area.width)),
+        height: Number.parseFloat(String(area.height)),
+      },
+      { behavior: "auto" }
+    )
   }, [])
 
   return (

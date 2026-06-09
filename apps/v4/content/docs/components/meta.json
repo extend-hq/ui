@@ -9,10 +9,10 @@
     "[Excel Editor](/docs/components/xlsx-editor)",
     "[CSV Viewer](/docs/components/csv-tsv-viewer)",
     "file-upload",
-    "human-review",
+    "bounding-box-citations",
     "schema-builder",
     "file-thumbnail",
-    "ocr-blocks",
+    "layout-blocks",
     "e-signature",
     "document-splits",
     "document-viewer-sidebar"

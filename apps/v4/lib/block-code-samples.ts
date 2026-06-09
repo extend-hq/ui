@@ -24,9 +24,9 @@ export type LoadedBlockCodeFile = BlockCodeFile & {
 }
 
 export const blockIds = [
-  "human-review",
+  "layout-blocks",
+  "bounding-box-citations",
   "pdf-dropzone",
-  "ocr-blocks",
   "e-signature",
   "document-splits",
   "excel-document-splits",
@@ -35,9 +35,17 @@ export const blockIds = [
 
 const blockCodeDependencies: Record<string, string[]> = {
   "pdf-dropzone": ["file-upload", "pdf-viewer", "file-thumbnail"],
-  "ocr-blocks": ["pdf-block-resizable-shell", "pdf-viewer", "file-thumbnail"],
+  "layout-blocks": [
+    "pdf-block-resizable-shell",
+    "pdf-viewer",
+    "file-thumbnail",
+  ],
   "e-signature": ["pdf-block-resizable-shell", "pdf-viewer", "file-thumbnail"],
-  "human-review": ["pdf-block-resizable-shell", "pdf-viewer", "file-thumbnail"],
+  "bounding-box-citations": [
+    "pdf-block-resizable-shell",
+    "pdf-viewer",
+    "file-thumbnail",
+  ],
   "document-splits": [
     "file-thumbnail",
     "pdf-block-resizable-shell",
@@ -129,11 +137,18 @@ function collectRegistryFiles(
   name: string,
   itemsByName: Map<string, RegistryItem>
 ): RegistryFile[] {
-  const sampleItems = [name, ...(blockCodeDependencies[name] ?? [])].flatMap(
-    (itemName) => itemsByName.get(itemName)?.files ?? []
-  )
+  const registryName = blockCodeRegistryItems[name] ?? name
+  const sampleItems = [
+    registryName,
+    ...(blockCodeDependencies[name] ?? []),
+  ].flatMap((itemName) => itemsByName.get(itemName)?.files ?? [])
 
   return dedupeFiles(sampleItems)
+}
+
+const blockCodeRegistryItems: Record<string, string> = {
+  "layout-blocks": "ocr-blocks-block",
+  "bounding-box-citations": "human-review-block",
 }
 
 function dedupeFiles(files: RegistryFile[]) {
@@ -172,7 +187,11 @@ function normalizeRegistryTarget(file: RegistryFile) {
 
 function resolveSourceFilePath(filePath: string) {
   if (filePath.startsWith("components/")) {
-    return path.join(appRoot, "components", filePath.slice("components/".length))
+    return path.join(
+      appRoot,
+      "components",
+      filePath.slice("components/".length)
+    )
   }
 
   if (filePath.startsWith("hooks/")) {

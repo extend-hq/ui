@@ -751,8 +751,8 @@
     {
       "name": "ocr-blocks",
       "type": "registry:ui",
-      "title": "OCR Blocks",
-      "description": "A structured OCR review panel with typed blocks and confidence cards.",
+      "title": "Layout Blocks",
+      "description": "A structured layout review panel with typed blocks and confidence cards.",
       "dependencies": [
         "@hugeicons/core-free-icons@^4.2.0",
         "@hugeicons/react@^1.1.6",
@@ -775,8 +775,8 @@
     {
       "name": "ocr-blocks-block",
       "type": "registry:block",
-      "title": "OCR Blocks",
-      "description": "A structured OCR review block with confidence cards and PDF region overlays.",
+      "title": "Layout Blocks",
+      "description": "A structured layout review block with confidence cards and PDF region overlays.",
       "registryDependencies": [
         "@extend/ocr-blocks",
         "@extend/pdf-block-resizable-shell",
@@ -822,8 +822,8 @@
     {
       "name": "human-review",
       "type": "registry:ui",
-      "title": "Human Review",
-      "description": "A human-in-the-loop extraction review panel with editable fields and a JSON diff.",
+      "title": "Bounding Box Citations",
+      "description": "An extraction citation panel connected to source bounding boxes and editable values.",
       "dependencies": [
         "@glideapps/glide-data-grid@6.0.4-alpha24",
         "@hugeicons/core-free-icons@^4.2.0",
@@ -881,8 +881,8 @@
     {
       "name": "human-review-block",
       "type": "registry:block",
-      "title": "Human Review",
-      "description": "A human-in-the-loop extraction review block linked to source PDF evidence.",
+      "title": "Bounding Box Citations",
+      "description": "An extraction citation block linked to source PDF bounding boxes.",
       "registryDependencies": [
         "@extend/human-review",
         "@extend/pdf-block-resizable-shell",

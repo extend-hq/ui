@@ -4,14 +4,15 @@ import * as React from "react"
 import { GemSmoke, type GemSmokeProps } from "@paper-design/shaders-react"
 import { useTheme } from "next-themes"
 
+import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/hooks/use-media-query"
 
 const SMOKE_COLORS = ["#004CFF", "#FF8C00", "#FFB066", "#FFD29A"]
 
 const smokeLayerClassName =
-  "absolute inset-0 mx-auto h-full w-full max-w-none [mask-image:linear-gradient(to_bottom,transparent_0%,black_14%,black_42%,rgba(0,0,0,0.34)_58%,rgba(0,0,0,0.08)_72%,transparent_84%)] md:max-w-[560px]"
+  "absolute inset-0 mx-auto h-full w-full max-w-none [mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.28)_12%,black_24%,black_34%,rgba(0,0,0,0.22)_48%,rgba(0,0,0,0.06)_58%,transparent_68%)] md:max-w-[560px]"
 
-export function RootLiquidLogo() {
+export function RootLiquidLogo({ className }: { className?: string }) {
   const { resolvedTheme } = useTheme()
   const isMobileViewport = useMediaQuery("max-md")
   const isCoarsePointer = useMediaQuery({ pointer: "coarse" })
@@ -56,7 +57,10 @@ export function RootLiquidLogo() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none relative -mx-6 -mb-16 h-44 w-[calc(100%+3rem)] overflow-hidden sm:-mb-20 sm:h-52 md:mx-0 md:-mb-24 md:h-60 md:w-full"
+      className={cn(
+        "pointer-events-none absolute inset-x-0 top-0 z-0 m-0 h-44 w-full overflow-hidden sm:top-1 sm:h-52 md:top-2 md:h-60",
+        className
+      )}
     >
       <GemSmoke
         {...smokeProps}

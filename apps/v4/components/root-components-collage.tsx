@@ -9,34 +9,24 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  DocumentSplits,
-  INITIAL_SPLITS,
-  type DocumentSplit,
-} from "@/components/ui/document-splits"
-import { SchemaBuilderPanel } from "@/components/ui/schema-builder"
 import { Spinner } from "@/components/ui/spinner"
-import {
-  DocumentAwareFileThumbnail,
-  getFileKindLabel,
-  SAMPLE_FILES,
-} from "@/components/file-thumbnail-docs"
-import { FileUpload } from "@/components/file-upload-docs"
 
-const PdfViewerPreview = dynamic(
+const ROOT_PREVIEW_LAZY_ROOT_MARGIN = "900px 0px"
+
+const LayoutBlocksBlock = dynamic(
   () =>
-    import("@/components/pdf-viewer-preview-client").then(
-      (mod) => mod.PdfViewerPreviewClient
-    ),
+    import("@/components/ocr-blocks-docs").then((mod) => mod.OcrBlocksBlock),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,
   }
 )
 
-const DocxViewerPreview = dynamic(
+const BoundingBoxCitationsBlock = dynamic(
   () =>
-    import("@/components/ui/docx-viewer").then((mod) => mod.DocxViewerPreview),
+    import("@/components/human-review-docs").then(
+      (mod) => mod.HumanReviewBlock
+    ),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,
@@ -46,6 +36,32 @@ const DocxViewerPreview = dynamic(
 const XlsxViewerPreview = dynamic(
   () =>
     import("@/components/ui/xlsx-viewer").then((mod) => mod.XlsxViewerPreview),
+  {
+    ssr: false,
+    loading: () => <ViewerPreviewLoading />,
+  }
+)
+
+const FileUpload = dynamic(
+  () => import("@/components/file-upload-docs").then((mod) => mod.FileUpload),
+  {
+    ssr: false,
+    loading: () => <ViewerPreviewLoading />,
+  }
+)
+
+const DocxEditorBlock = dynamic(
+  () =>
+    import("@/components/docx-editor-docs").then((mod) => mod.DocxEditorBlock),
+  {
+    ssr: false,
+    loading: () => <ViewerPreviewLoading />,
+  }
+)
+
+const ESignatureBlock = dynamic(
+  () =>
+    import("@/components/e-signature-docs").then((mod) => mod.ESignatureBlock),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,
@@ -80,51 +96,46 @@ export function MobileRootPreview() {
 
 export function RootComponentsCollage() {
   return (
-    <>
-      <div className="mx-auto hidden items-start gap-4 py-1 md:grid md:grid-cols-2 lg:hidden">
-        <div className="flex flex-col gap-4">
-          <PdfViewerTile />
-          <DocumentSplitsTile />
-          <XlsxViewerTile />
-        </div>
-        <div className="flex flex-col gap-4">
-          <FileUploadTile />
-          <DocxViewerTile />
-          <FileThumbnailTile />
-          <SchemaBuilderTile />
-        </div>
-      </div>
-
-      <div className="mx-auto hidden items-start gap-4 py-1 lg:grid lg:grid-cols-3">
-        <div className="flex flex-col gap-4">
-          <PdfViewerTile />
-          <DocumentSplitsTile />
-        </div>
-        <div className="flex flex-col gap-4">
-          <FileUploadTile />
-          <DocxViewerTile />
-          <FileThumbnailTile />
-        </div>
-        <div className="flex flex-col gap-4">
-          <XlsxViewerTile />
-          <SchemaBuilderTile />
-        </div>
-      </div>
-    </>
+    <div className="flex w-full flex-col gap-12 py-1">
+      {/*
+        Previous collage layout is intentionally paused for now. This ordered
+        showcase mirrors the blocks/components sequence requested for the
+        landing page.
+      */}
+      <LayoutBlocksTile />
+      <BoundingBoxCitationsTile />
+      <XlsxViewerTile />
+      <FileUploadTile />
+      <DocxEditorTile />
+      <ESignatureTile />
+    </div>
   )
 }
 
-function PdfViewerTile() {
+function LayoutBlocksTile() {
   return (
     <ComponentCrop
-      label="PDF Viewer"
-      viewHref="/docs/components/pdf-viewer"
-      className="h-[560px] bg-background"
+      label="Layout Blocks"
+      viewHref="/blocks#layout-blocks"
+      className="h-[680px] bg-background"
     >
-      <PdfViewerPreview
-        file="/samples/attention.pdf"
-        showRotateControls={false}
-      />
+      <RootPreviewLoader>
+        <LayoutBlocksBlock />
+      </RootPreviewLoader>
+    </ComponentCrop>
+  )
+}
+
+function BoundingBoxCitationsTile() {
+  return (
+    <ComponentCrop
+      label="Bounding Box Citations"
+      viewHref="/blocks#bounding-box-citations"
+      className="h-[680px] bg-background"
+    >
+      <RootPreviewLoader>
+        <BoundingBoxCitationsBlock showExpected={false} />
+      </RootPreviewLoader>
     </ComponentCrop>
   )
 }
@@ -133,34 +144,26 @@ function FileUploadTile() {
   return (
     <ComponentCrop
       label="File Upload"
-      viewHref="/docs/components/file-upload"
+      viewHref="/blocks#pdf-dropzone"
       className="bg-background p-3"
     >
-      <FileUpload showFileList={false} />
+      <RootPreviewLoader>
+        <FileUpload showFileList={false} />
+      </RootPreviewLoader>
     </ComponentCrop>
   )
 }
 
-function FileThumbnailTile() {
+function DocxEditorTile() {
   return (
     <ComponentCrop
-      label="File Thumbnail"
-      viewHref="/docs/components/file-thumbnail"
-      className="bg-background"
+      label="DOCX Editor"
+      viewHref="/blocks#docx-editor-block"
+      className="h-[680px] bg-background"
     >
-      <RootFileThumbnailGrid />
-    </ComponentCrop>
-  )
-}
-
-function DocxViewerTile() {
-  return (
-    <ComponentCrop
-      label="DOCX Viewer"
-      viewHref="/docs/components/docx-viewer"
-      className="h-[560px] bg-background"
-    >
-      <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
+      <RootPreviewLoader>
+        <DocxEditorBlock />
+      </RootPreviewLoader>
     </ComponentCrop>
   )
 }
@@ -169,69 +172,70 @@ function XlsxViewerTile() {
   return (
     <ComponentCrop
       label="XLSX Viewer"
-      viewHref="/docs/components/xlsx-viewer"
-      className="h-[540px] bg-background 4xl:h-[500px]"
+      viewHref="/blocks#excel-document-splits"
+      className="h-[640px] bg-background"
     >
-      <XlsxViewerPreview
-        className="h-full"
-        src="/samples/crazy-chart-zoo.xlsx"
-      />
+      <RootPreviewLoader>
+        <XlsxViewerPreview
+          className="h-full"
+          src="/samples/crazy-chart-zoo.xlsx"
+        />
+      </RootPreviewLoader>
     </ComponentCrop>
   )
 }
 
-function DocumentSplitsTile() {
-  const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)
-
+function ESignatureTile() {
   return (
     <ComponentCrop
-      label="Document Splits"
-      viewHref="/docs/components/document-splits"
-      className="h-[500px] bg-background"
+      label="E-Signature"
+      viewHref="/blocks#e-signature"
+      className="h-[680px] bg-background"
     >
-      <DocumentSplits
-        className="h-full"
-        splits={splits}
-        thumbnailImages={ROOT_DOCUMENT_SPLIT_THUMBNAILS}
-        withFrameDivider={false}
-        onSelectPage={() => {}}
-        onSplitsChange={setSplits}
-      />
+      <RootPreviewLoader>
+        <ESignatureBlock />
+      </RootPreviewLoader>
     </ComponentCrop>
   )
 }
 
-function SchemaBuilderTile() {
-  return (
-    <ComponentCrop
-      label="Schema Builder"
-      viewHref="/docs/components/schema-builder"
-      className="h-[560px] bg-background"
-    >
-      <SchemaBuilderPanel className="h-full" />
-    </ComponentCrop>
-  )
+function useLazyRootPreview() {
+  const [node, setNode] = React.useState<HTMLDivElement | null>(null)
+  const [shouldMountPreview, setShouldMountPreview] = React.useState(false)
+
+  React.useEffect(() => {
+    if (shouldMountPreview) return
+    if (!node) return
+
+    if (!("IntersectionObserver" in window)) {
+      setShouldMountPreview(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return
+
+        setShouldMountPreview(true)
+        observer.disconnect()
+      },
+      { rootMargin: ROOT_PREVIEW_LAZY_ROOT_MARGIN }
+    )
+
+    observer.observe(node)
+
+    return () => observer.disconnect()
+  }, [node, shouldMountPreview])
+
+  return [setNode, shouldMountPreview] as const
 }
 
-const ROOT_DOCUMENT_SPLIT_THUMBNAILS = Object.fromEntries(
-  INITIAL_SPLITS.flatMap((split) => split.pages).map((pageId) => [
-    pageId,
-    "/samples/attention-page-1.png",
-  ])
-) as Record<DocumentSplit["pages"][number], string>
+function RootPreviewLoader({ children }: { children: React.ReactNode }) {
+  const [previewRef, shouldMountPreview] = useLazyRootPreview()
 
-function RootFileThumbnailGrid() {
   return (
-    <div className="flex flex-wrap content-start items-start justify-center gap-3 bg-background px-3 py-4">
-      {SAMPLE_FILES.map((file) => (
-        <div
-          key={file.name}
-          className="min-w-0 basis-[calc(50%-0.375rem)] space-y-1.5 sm:max-w-[7.5rem]"
-        >
-          <div className="text-xs font-medium">{getFileKindLabel(file)}</div>
-          <DocumentAwareFileThumbnail file={file} className="w-full" />
-        </div>
-      ))}
+    <div ref={previewRef} className="h-full min-h-0">
+      {shouldMountPreview ? children : <ViewerPreviewLoading />}
     </div>
   )
 }

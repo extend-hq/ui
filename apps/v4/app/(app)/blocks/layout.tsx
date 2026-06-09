@@ -11,7 +11,7 @@ import {
 
 const title = "Document Blocks"
 const description =
-  "Composed PDF viewer workflows built from OCR blocks, signing fields, and document splits."
+  "Composed PDF viewer workflows built from layout blocks, signing fields, and document splits."
 
 export const metadata: Metadata = {
   title,

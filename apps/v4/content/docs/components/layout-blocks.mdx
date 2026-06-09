@@ -1,12 +1,12 @@
 ---
-title: OCR Blocks
-description: Inspect OCR text blocks, lines, words, and confidence overlays on top of PDF pages.
+title: Layout Blocks
+description: Inspect layout text blocks, lines, words, and confidence overlays on top of PDF pages.
 component: true
 ---
 
-OCR Blocks help users debug and review the text layer behind scanned or image-heavy PDFs. They should show document structure without replacing the original page image.
+Layout Blocks help users debug and review the text layer behind scanned or image-heavy PDFs. They should show document structure without replacing the original page image.
 
-See it composed with the PDF Viewer in the [OCR Blocks block](/blocks#ocr-blocks).
+See it composed with the PDF Viewer in the [Layout Blocks block](/blocks#layout-blocks).
 
 <OcrBlocksDemo />
 
@@ -51,15 +51,15 @@ npm install @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 @tanstack/
 ## Useful behaviors
 
 - Toggleable block, line, and word overlays.
-- Confidence coloring for low-quality OCR regions.
+- Confidence coloring for low-quality layout regions.
 - Hover and selection states that reveal text and geometry.
-- Region navigation from OCR results to the rendered PDF page.
+- Region navigation from layout results to the rendered PDF page.
 
 ## API Reference
 
 ### OcrBlocksPanel
 
-The OcrBlocksPanel component renders selectable OCR results with type, markdown text, confidence, and page context.
+The OcrBlocksPanel component renders selectable layout results with type, markdown text, confidence, and page context.
 
 | Prop            | Type                        | Default | Required |
 | --------------- | --------------------------- | ------- | -------- |
