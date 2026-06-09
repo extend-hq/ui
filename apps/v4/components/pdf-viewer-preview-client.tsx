@@ -1,8 +1,9 @@
 "use client"
 
+import { withBasePath } from "@/lib/utils"
 import { PDFViewer } from "@/components/ui/pdf-viewer"
 
-const SAMPLE_PDF_URL = "/samples/attention.pdf"
+const SAMPLE_PDF_URL = withBasePath("/samples/attention.pdf")
 
 export function PdfViewerPreviewClient({
   file = SAMPLE_PDF_URL,

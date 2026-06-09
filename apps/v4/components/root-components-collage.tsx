@@ -7,7 +7,7 @@ import Link from "next/link"
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import { cn } from "@/lib/utils"
+import { cn, withBasePath } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -72,7 +72,7 @@ export function MobileRootPreview() {
   return (
     <div className="relative bg-background px-4">
       <Image
-        src="/images/root-components-showcase-light-v2.png"
+        src={withBasePath("/images/root-components-showcase-light-v2.png")}
         width={1566}
         height={1114}
         alt="Document component previews"
@@ -81,7 +81,7 @@ export function MobileRootPreview() {
         sizes="150vw"
       />
       <Image
-        src="/images/root-components-showcase-dark-v2.png"
+        src={withBasePath("/images/root-components-showcase-dark-v2.png")}
         width={1566}
         height={1114}
         alt="Document component previews"
@@ -178,7 +178,7 @@ function XlsxViewerTile() {
       <RootPreviewLoader>
         <XlsxViewerPreview
           className="h-full"
-          src="/samples/crazy-chart-zoo.xlsx"
+          src={withBasePath("/samples/crazy-chart-zoo.xlsx")}
         />
       </RootPreviewLoader>
     </ComponentCrop>

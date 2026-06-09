@@ -39,6 +39,9 @@ export async function generateMetadata(props: {
   return {
     title: doc.title,
     description: doc.description,
+    alternates: {
+      canonical: absoluteUrl(page.url),
+    },
     openGraph: {
       title: doc.title,
       description: doc.description,
@@ -46,9 +49,11 @@ export async function generateMetadata(props: {
       url: absoluteUrl(page.url),
       images: [
         {
-          url: `/og?title=${encodeURIComponent(
-            doc.title
-          )}&description=${encodeURIComponent(doc.description)}`,
+          url: absoluteUrl(
+            `/og?title=${encodeURIComponent(
+              doc.title
+            )}&description=${encodeURIComponent(doc.description)}`
+          ),
         },
       ],
     },
@@ -58,9 +63,11 @@ export async function generateMetadata(props: {
       description: doc.description,
       images: [
         {
-          url: `/og?title=${encodeURIComponent(
-            doc.title
-          )}&description=${encodeURIComponent(doc.description)}`,
+          url: absoluteUrl(
+            `/og?title=${encodeURIComponent(
+              doc.title
+            )}&description=${encodeURIComponent(doc.description)}`
+          ),
         },
       ],
     },

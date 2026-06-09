@@ -1,6 +1,7 @@
 import { type Metadata } from "next"
 import Link from "next/link"
 
+import { absoluteUrl } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   PageActions,
@@ -21,12 +22,18 @@ export const revalidate = false
 export const metadata: Metadata = {
   title,
   description,
+  alternates: {
+    canonical: absoluteUrl("/"),
+  },
   openGraph: {
+    url: absoluteUrl("/"),
     images: [
       {
-        url: `/og?title=${encodeURIComponent(
-          title
-        )}&description=${encodeURIComponent(description)}`,
+        url: absoluteUrl(
+          `/og?title=${encodeURIComponent(
+            title
+          )}&description=${encodeURIComponent(description)}`
+        ),
       },
     ],
   },
@@ -34,9 +41,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: [
       {
-        url: `/og?title=${encodeURIComponent(
-          title
-        )}&description=${encodeURIComponent(description)}`,
+        url: absoluteUrl(
+          `/og?title=${encodeURIComponent(
+            title
+          )}&description=${encodeURIComponent(description)}`
+        ),
       },
     ],
   },

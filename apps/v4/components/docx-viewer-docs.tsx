@@ -3,6 +3,7 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 
+import { withBasePath } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -34,7 +35,7 @@ export function DocxViewerDemo() {
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
       <DocxViewerPreview
-        src="/samples/demo.docx"
+        src={withBasePath("/samples/demo.docx")}
         defaultThumbnailSidebarOpen={false}
       />
       <DocsViewCodeBlock code={docxViewerUsageCode} />

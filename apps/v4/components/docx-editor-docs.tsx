@@ -3,6 +3,7 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 
+import { withBasePath } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -33,7 +34,7 @@ export function DocxEditorDemo() {
       data-slot="component-preview"
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
-      <DocxEditorPreview src="/samples/demo.docx" />
+      <DocxEditorPreview src={withBasePath("/samples/demo.docx")} />
       <DocsViewCodeBlock code={docxEditorUsageCode} />
     </div>
   )
@@ -48,7 +49,7 @@ export function DocxEditorBlock({
 }) {
   return (
     <DocxEditorPreview
-      src={file ?? "/samples/demo.docx"}
+      src={file ?? withBasePath("/samples/demo.docx")}
       defaultZoomScale={Math.round(defaultViewerZoom * 100)}
     />
   )

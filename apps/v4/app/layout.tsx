@@ -5,13 +5,13 @@ import { NuqsAdapter } from "nuqs/adapters/next/app"
 
 import { META_THEME_COLORS, siteConfig } from "@/lib/config"
 import { fontVariables } from "@/lib/fonts"
-import { cn } from "@/lib/utils"
+import { cn, withBasePath } from "@/lib/utils"
 import { LayoutProvider } from "@/hooks/use-layout"
+import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { ActiveThemeProvider } from "@/components/active-theme"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
-import { TooltipProvider } from "@/components/ui/tooltip"
 
 import "@/app/globals.css"
 
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     default: siteConfig.name,
     template: `%s - ${siteConfig.name}`,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? siteConfig.url),
+  metadataBase: new URL(siteConfig.url),
   description: siteConfig.description,
   keywords: ["Next.js", "React", "Tailwind CSS", "Documents", "Components"],
   authors: [
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: process.env.NEXT_PUBLIC_APP_URL ?? siteConfig.url,
+    url: siteConfig.url,
     title: siteConfig.name,
     description: siteConfig.description,
     siteName: siteConfig.name,
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_APP_URL ?? siteConfig.url}/opengraph-image.png`,
+        url: siteConfig.ogImage,
         width: 1200,
         height: 630,
         alt: siteConfig.name,
@@ -50,20 +50,26 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [
-      `${process.env.NEXT_PUBLIC_APP_URL ?? siteConfig.url}/opengraph-image.png`,
-    ],
+    images: [siteConfig.ogImage],
   },
   icons: {
     icon: [
-      { url: "/extend.svg", type: "image/svg+xml" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: withBasePath("/extend.svg"), type: "image/svg+xml" },
+      {
+        url: withBasePath("/favicon-32x32.png"),
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: withBasePath("/favicon-16x16.png"),
+        sizes: "16x16",
+        type: "image/png",
+      },
     ],
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    shortcut: withBasePath("/favicon.ico"),
+    apple: withBasePath("/apple-touch-icon.png"),
   },
-  manifest: "/site.webmanifest",
+  manifest: withBasePath("/site.webmanifest"),
 }
 
 export default function RootLayout({

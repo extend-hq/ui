@@ -1,8 +1,19 @@
 import path from "path"
 import { createMDX } from "fumadocs-mdx/next"
 
+function normalizeBasePath(value) {
+  if (!value || value === "/") return ""
+
+  const prefixed = value.startsWith("/") ? value : `/${value}`
+
+  return prefixed.replace(/\/+$/, "")
+}
+
+const basePath = normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  ...(basePath ? { basePath } : {}),
   devIndicators: false,
   typescript: {
     ignoreBuildErrors: true,

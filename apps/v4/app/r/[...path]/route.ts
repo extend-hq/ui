@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
+import { siteConfig } from "@/lib/config"
+
 export const dynamic = "force-dynamic"
 
 type RegistryCatalog = {
@@ -36,7 +38,7 @@ function isExternalDependency(dependency: string) {
 function rewriteLocalRegistryDependencies(
   item: RegistryItem,
   localItemNames: Set<string>,
-  origin: string
+  registryBaseUrl: string
 ) {
   if (!item.registryDependencies) return item
 
@@ -44,7 +46,7 @@ function rewriteLocalRegistryDependencies(
     ...item,
     registryDependencies: item.registryDependencies.map((dependency) =>
       !isExternalDependency(dependency) && localItemNames.has(dependency)
-        ? `${origin}/r/${dependency}.json`
+        ? `${registryBaseUrl}/r/${dependency}.json`
         : dependency
     ),
   }
@@ -91,7 +93,10 @@ function getRegistryDirectories() {
 async function readRegistryJson<T>(fileName: string): Promise<T> {
   for (const registryDirectory of getRegistryDirectories()) {
     try {
-      const file = await readFile(path.join(registryDirectory, fileName), "utf8")
+      const file = await readFile(
+        path.join(registryDirectory, fileName),
+        "utf8"
+      )
 
       return JSON.parse(file) as T
     } catch (error) {
@@ -113,6 +118,12 @@ function loadBuiltRegistryJson<T>(fileName: string) {
   }
 
   return jsonPromise
+}
+
+function getRegistryBaseUrl(request: Request) {
+  if (process.env.NEXT_PUBLIC_APP_URL) return siteConfig.url
+
+  return `${new URL(request.url).origin}${siteConfig.basePath}`
 }
 
 export async function GET(
@@ -144,7 +155,7 @@ export async function GET(
       rewriteLocalRegistryDependencies(
         item,
         getRegistryItemNames(registry),
-        new URL(request.url).origin
+        getRegistryBaseUrl(request)
       )
     )
   } catch (error) {

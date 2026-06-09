@@ -1,7 +1,7 @@
 import { File01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import { cn } from "@/lib/utils"
+import { cn, withBasePath } from "@/lib/utils"
 
 type IconProps = React.HTMLAttributes<SVGElement>
 type LogoProps = React.HTMLAttributes<HTMLSpanElement>
@@ -12,8 +12,10 @@ export const Icons = {
       aria-hidden="true"
       className={cn("inline-block bg-foreground", className)}
       style={{
-        mask: "url('/extend.svg') center / contain no-repeat",
-        WebkitMask: "url('/extend.svg') center / contain no-repeat",
+        mask: `url('${withBasePath("/extend.svg")}') center / contain no-repeat`,
+        WebkitMask: `url('${withBasePath(
+          "/extend.svg"
+        )}') center / contain no-repeat`,
         ...style,
       }}
       {...props}
