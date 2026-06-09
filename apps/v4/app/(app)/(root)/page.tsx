@@ -11,9 +11,10 @@ import {
 import { RootComponentsCollage } from "@/components/root-components-collage"
 import { RootLiquidLogo } from "@/components/root-liquid-logo"
 
-const title = "UI Components for document agents"
+const title = "UI components for document agents"
 const description =
-  "Open source PDF, DOCX, and XLSX viewers, uploads, CSV previews, layout blocks, and e-signing primitives for document processing products."
+  "Open source viewers for PDF, DOCX, XLSX, and CSV, with bounding box citations, file upload, e-signing, and more."
+const tagline = "Ready to drop into user-facing flows, agents, or internal tools."
 
 export const dynamic = "force-static"
 export const revalidate = false
@@ -52,6 +53,9 @@ export default function IndexPage() {
         </PageHeaderHeading>
         <PageHeaderDescription className="relative z-10">
           {description}
+        </PageHeaderDescription>
+        <PageHeaderDescription className="relative z-10">
+          {tagline}
         </PageHeaderDescription>
         <PageActions className="relative z-10">
           <Button
