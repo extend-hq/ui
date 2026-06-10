@@ -19,7 +19,7 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@extend": "https://extend.ai/ui/r/{name}.json",
+    "@extend": "https://www.extend.ai/ui/r/{name}.json",
     "@coss": "https://coss.com/ui/r/{name}.json"
   }
 }
