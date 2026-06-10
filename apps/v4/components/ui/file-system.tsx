@@ -771,32 +771,6 @@ export function FileSystem({
     selectEntry(null)
   }, [selectEntry])
 
-  // Finder shortcuts: ⌘↑ encloses, ⌘↓ opens the selection, ⌘[ / ⌘] navigate
-  // history. Fires for keydown anywhere inside the component — including the
-  // portaled viewer dialog (React events propagate through portals), so bail
-  // while a file is open.
-  const handleRootKeyDown = (event: React.KeyboardEvent) => {
-    if (openedFile) return
-    if (!(event.metaKey || event.ctrlKey)) return
-
-    if (event.key === "ArrowUp") {
-      if (currentPath === "") return
-      navigateTo(pathParent(currentPath))
-    } else if (event.key === "ArrowDown") {
-      if (!selectedEntry) return
-      openEntry(selectedEntry)
-    } else if (event.key === "[") {
-      if (!canGoBack) return
-      goBack()
-    } else if (event.key === "]") {
-      if (!canGoForward) return
-      goForward()
-    } else {
-      return
-    }
-    event.preventDefault()
-  }
-
   const currentEntries = index.children.get(currentPath) ?? []
   const currentFolderName =
     currentPath === "" ? title : pathName(currentPath) || title
@@ -833,7 +807,6 @@ export function FileSystem({
     <div
       ref={rootRef}
       tabIndex={-1}
-      onKeyDown={handleRootKeyDown}
       className={cn(
         "flex h-[480px] min-h-0 flex-col overflow-hidden rounded-xl border bg-background text-foreground outline-none",
         className
@@ -844,7 +817,7 @@ export function FileSystem({
           <button
             type="button"
             aria-label="Back"
-            title="Back (⌘[)"
+            title="Back"
             disabled={!canGoBack}
             onClick={goBack}
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
@@ -854,7 +827,7 @@ export function FileSystem({
           <button
             type="button"
             aria-label="Forward"
-            title="Forward (⌘])"
+            title="Forward"
             disabled={!canGoForward}
             onClick={goForward}
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"

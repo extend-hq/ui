@@ -15,10 +15,11 @@ import {
 } from "@/components/root-components-collage"
 import { RootLiquidLogo } from "@/components/root-liquid-logo"
 
-const title = "UI components for document agents"
+const title = "Open source UI kit for modern document apps"
 const description =
   "Open source viewers for PDF, DOCX, XLSX, and CSV, with bounding box citations, file upload, e-signing, and more."
-const tagline = "Ready to drop into user-facing flows, agents, or internal tools."
+const tagline =
+  "Ready to drop into user-facing flows, agents, or internal tools."
 
 export const dynamic = "force-static"
 export const revalidate = false
