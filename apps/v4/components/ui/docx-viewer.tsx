@@ -9,6 +9,7 @@ import {
   type DocxEditorController,
 } from "@extend-ai/react-docx"
 import {
+  Download01Icon,
   MinusSignCircleIcon,
   Moon02Icon,
   PlusSignCircleIcon,
@@ -81,6 +82,49 @@ function formatDocumentName(fileName: string | undefined, url: string) {
   } catch {
     return rawName
   }
+}
+
+function ensureDocxExtension(fileName: string) {
+  return fileName.toLowerCase().endsWith(".docx")
+    ? fileName
+    : `${fileName}.docx`
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+
+  anchor.href = url
+  anchor.download = fileName
+  anchor.rel = "noopener"
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+async function downloadDocxFile({
+  file,
+  fileName,
+  url,
+}: {
+  file?: File
+  fileName: string
+  url?: string
+}) {
+  if (file) {
+    downloadBlob(file, ensureDocxExtension(fileName))
+    return
+  }
+
+  if (!url) return
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to download DOCX (${response.status})`)
+  }
+
+  downloadBlob(await response.blob(), ensureDocxExtension(fileName))
 }
 
 function getNextZoomScale(currentZoomScale: number, direction: 1 | -1) {
@@ -215,11 +259,14 @@ function DocxToolbar({
   activePage,
   controlsDisabled,
   isDark,
+  isPreparingDownload,
+  onDownload,
   onIsDarkChange,
   onToggleSidebar,
   onUploadClick,
   pageCount,
   setZoomScale,
+  showDownloadButton = true,
   showNightRenderToggle,
   showUploadButton = true,
   toolbarActions,
@@ -228,11 +275,14 @@ function DocxToolbar({
   activePage: number
   controlsDisabled: boolean
   isDark: boolean
+  isPreparingDownload: boolean
+  onDownload: () => void
   onIsDarkChange: (checked: boolean) => void
   onToggleSidebar: () => void
   onUploadClick: () => void
   pageCount: number
   setZoomScale: React.Dispatch<React.SetStateAction<number>>
+  showDownloadButton?: boolean
   showNightRenderToggle: boolean
   showUploadButton?: boolean
   toolbarActions?: React.ReactNode
@@ -337,6 +387,30 @@ function DocxToolbar({
               </Button>
             </ToolbarTooltip>
           </div>
+          {showDownloadButton ? (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-1 h-4 self-center"
+              />
+              <ToolbarTooltip label="Download DOCX">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Download DOCX"
+                  disabled={controlsDisabled || isPreparingDownload}
+                  onClick={onDownload}
+                >
+                  {isPreparingDownload ? (
+                    <Spinner className="size-4" />
+                  ) : (
+                    <HugeiconsIcon icon={Download01Icon} className="size-4" />
+                  )}
+                </Button>
+              </ToolbarTooltip>
+            </>
+          ) : null}
           {showUploadButton ? (
             <>
               <Separator
@@ -426,6 +500,7 @@ export function DocxViewerPreview({
   isDark: controlledIsDark,
   onIsDarkChange,
   rounded = false,
+  showDownload = true,
   showToolbar = true,
   showUpload = true,
   src,
@@ -438,6 +513,7 @@ export function DocxViewerPreview({
   isDark?: boolean
   onIsDarkChange?: (isDark: boolean) => void
   rounded?: boolean
+  showDownload?: boolean
   showToolbar?: boolean
   showUpload?: boolean
   src?: string
@@ -458,6 +534,7 @@ export function DocxViewerPreview({
       rounded={rounded}
       setNightRenderEnabled={setIsDark}
       shouldRenderNightMode
+      showDownload={showDownload}
       showToolbar={showToolbar}
       showUpload={showUpload}
       toolbarActions={toolbarActions}
@@ -474,6 +551,7 @@ function DocxViewerContent({
   rounded,
   setNightRenderEnabled,
   shouldRenderNightMode,
+  showDownload,
   showToolbar = true,
   showUpload,
   toolbarActions,
@@ -486,6 +564,7 @@ function DocxViewerContent({
   rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
+  showDownload: boolean
   showToolbar?: boolean
   showUpload: boolean
   toolbarActions?: React.ReactNode
@@ -546,6 +625,7 @@ function DocxViewerContent({
   const [zoomScale, setZoomScale] = React.useState(100)
   const [loadError, setLoadError] = React.useState<string>()
   const [isLoadingDocument, setIsLoadingDocument] = React.useState(true)
+  const [isPreparingDownload, setIsPreparingDownload] = React.useState(false)
   const shouldShowDocumentSpinner = useDelayedLoadingIndicator(
     isLoadingDocument,
     DOCX_LOADING_INDICATOR_DELAY_MS
@@ -563,6 +643,24 @@ function DocxViewerContent({
   const handlePageCountChange = React.useCallback((nextPageCount: number) => {
     setReportedPageCount(Math.max(1, Math.round(nextPageCount || 1)))
   }, [])
+  const handleDownload = React.useCallback(async () => {
+    if (isPreparingDownload) return
+    if (!uploadedDocxFile && !url) return
+
+    setIsPreparingDownload(true)
+
+    try {
+      await downloadDocxFile({
+        file: uploadedDocxFile?.file,
+        fileName: displayFileName,
+        url,
+      })
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsPreparingDownload(false)
+    }
+  }, [displayFileName, isPreparingDownload, uploadedDocxFile, url])
 
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
@@ -749,11 +847,14 @@ function DocxViewerContent({
           activePage={activePage}
           controlsDisabled={controlsDisabled}
           isDark={effectiveIsDark}
+          isPreparingDownload={isPreparingDownload}
+          onDownload={handleDownload}
           onIsDarkChange={setNightRenderEnabled}
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
           onUploadClick={() => fileInputRef.current?.click()}
           pageCount={pageCount}
           setZoomScale={setZoomScale}
+          showDownloadButton={showDownload}
           showNightRenderToggle={shouldRenderNightMode}
           showUploadButton={showUpload}
           toolbarActions={toolbarActions}

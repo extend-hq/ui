@@ -99,6 +99,17 @@ const ESignatureBlock = dynamic(
   }
 )
 
+const FileSystemBlock = dynamic(
+  () =>
+    import("@/components/file-system-docs").then(
+      (mod) => mod.FileSystemFinderBlock
+    ),
+  {
+    ssr: false,
+    loading: () => <ViewerPreviewLoading />,
+  }
+)
+
 export function MobileRootPreview() {
   return (
     <div className="relative bg-background px-4">
@@ -135,7 +146,7 @@ export function RootComponentsCollage() {
           <ComponentXlsxViewerTile />
         </div>
         <div className="flex flex-col gap-4">
-          <FileUploadTile />
+          <FileSystemTile />
           <DocxViewerTile />
           <FileThumbnailTile />
           <SchemaBuilderTile />
@@ -148,7 +159,7 @@ export function RootComponentsCollage() {
           <DocumentSplitsTile />
         </div>
         <div className="flex flex-col gap-4">
-          <FileUploadTile />
+          <FileSystemTile />
           <DocxViewerTile />
           <FileThumbnailTile />
         </div>
@@ -166,6 +177,7 @@ export function RootBlocksShowcase() {
     <div className="flex w-full flex-col gap-12 py-1">
       <LayoutBlocksTile />
       <BoundingBoxCitationsTile />
+      <BlockFileSystemTile />
       <BlockXlsxViewerTile />
       <BlockFileUploadTile />
       <DocxEditorTile />
@@ -189,14 +201,16 @@ function PdfViewerTile() {
   )
 }
 
-function FileUploadTile() {
+function FileSystemTile() {
   return (
     <ComponentCrop
-      label="File Upload"
-      viewHref="/docs/components/file-upload"
-      className="bg-background p-3"
+      label="File System"
+      viewHref="/docs/components/file-system"
+      className="h-[560px] bg-background"
     >
-      <FileUpload showFileList={false} />
+      <RootPreviewLoader>
+        <FileSystemBlock />
+      </RootPreviewLoader>
     </ComponentCrop>
   )
 }
@@ -307,6 +321,20 @@ function BlockFileUploadTile() {
     >
       <RootPreviewLoader>
         <FileUpload showFileList={false} />
+      </RootPreviewLoader>
+    </ComponentCrop>
+  )
+}
+
+function BlockFileSystemTile() {
+  return (
+    <ComponentCrop
+      label="File System"
+      viewHref="/blocks#file-system"
+      className="h-[680px] bg-background"
+    >
+      <RootPreviewLoader>
+        <FileSystemBlock />
       </RootPreviewLoader>
     </ComponentCrop>
   )

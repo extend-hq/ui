@@ -35,6 +35,15 @@ export const PDF_VIEWER_BLOCKS = [
     viewHref: "/view/blocks/bounding-box-citations",
   },
   {
+    id: "file-system",
+    title: "File System (Finder)",
+    description:
+      "A Finder-style file browser that opens PDF, DOCX, XLSX, and image files in viewer dialogs.",
+    command: getRegistryAddCommand("file-system-block"),
+    docsHref: "/docs/components/file-system",
+    viewHref: "/view/blocks/file-system",
+  },
+  {
     id: "pdf-dropzone",
     title: "PDF Dropzone",
     description:
@@ -81,15 +90,6 @@ export const PDF_VIEWER_BLOCKS = [
     docsHref: "/docs/components/docx-editor",
     viewHref: "/view/blocks/docx-editor-block",
     previewHeightClassName: "h-[720px]",
-  },
-  {
-    id: "file-system",
-    title: "File System (Finder)",
-    description:
-      "A Finder-style file browser that opens PDF, DOCX, XLSX, and image files in viewer dialogs.",
-    command: getRegistryAddCommand("file-system-block"),
-    docsHref: "/docs/components/file-system",
-    viewHref: "/view/blocks/file-system",
   },
 ] as const satisfies readonly PdfViewerBlockConfig[]
 

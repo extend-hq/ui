@@ -12,6 +12,7 @@ import {
   type XlsxTableHeaderMenuRenderProps,
 } from "@extend-ai/react-xlsx"
 import {
+  Download01Icon,
   MinusSignCircleIcon,
   Moon02Icon,
   MoreHorizontalIcon,
@@ -80,6 +81,32 @@ function formatWorkbookName(fileName: string | undefined, url: string) {
   } catch {
     return rawName
   }
+}
+
+function ensureWorkbookExtension(fileName: string) {
+  const lowerFileName = fileName.toLowerCase()
+  return lowerFileName.endsWith(".xlsx") || lowerFileName.endsWith(".xls")
+    ? fileName
+    : `${fileName}.xlsx`
+}
+
+function downloadWorkbookBuffer(buffer: ArrayBuffer, fileName: string) {
+  const resolvedFileName = ensureWorkbookExtension(fileName)
+  const blob = new Blob([buffer], {
+    type: resolvedFileName.toLowerCase().endsWith(".xls")
+      ? "application/vnd.ms-excel"
+      : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+
+  anchor.href = url
+  anchor.download = resolvedFileName
+  anchor.rel = "noopener"
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
@@ -227,16 +254,20 @@ export function WorkbookTableHeaderMenu({
 
 function WorkbookToolbar({
   isDark,
+  onDownload,
   onIsDarkChange,
   onUploadClick,
+  showDownloadButton = true,
   showNightRenderToggle,
   showUploadButton = true,
   toolbarActions,
   workbookIdentity,
 }: {
   isDark: boolean
+  onDownload?: () => void
   onIsDarkChange: (checked: boolean) => void
   onUploadClick: () => void
+  showDownloadButton?: boolean
   showNightRenderToggle: boolean
   showUploadButton?: boolean
   toolbarActions?: React.ReactNode
@@ -323,6 +354,25 @@ function WorkbookToolbar({
               </Button>
             </ToolbarTooltip>
           </div>
+          {showDownloadButton && onDownload ? (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-1 h-4 self-center"
+              />
+              <ToolbarTooltip label="Download XLSX">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Download XLSX"
+                  onClick={onDownload}
+                >
+                  <HugeiconsIcon icon={Download01Icon} className="size-4" />
+                </Button>
+              </ToolbarTooltip>
+            </>
+          ) : null}
           {showUploadButton ? (
             <>
               <Separator
@@ -669,10 +719,12 @@ const WorkbookSheetTabsInner = React.memo(function WorkbookSheetTabsInner({
 export function XlsxWorkbookSurface({
   className,
   isDark,
+  onDownload,
   onIsDarkChange,
   onUploadClick,
   renderTableHeaderMenu,
   rounded,
+  showDownloadButton = true,
   showNightRenderToggle,
   showToolbar = true,
   showUploadButton = true,
@@ -681,12 +733,14 @@ export function XlsxWorkbookSurface({
 }: {
   className?: string
   isDark: boolean
+  onDownload?: () => void
   onIsDarkChange: (checked: boolean) => void
   onUploadClick: () => void
   renderTableHeaderMenu: (
     props: XlsxTableHeaderMenuRenderProps
   ) => React.ReactNode
   rounded: boolean
+  showDownloadButton?: boolean
   showNightRenderToggle: boolean
   showToolbar?: boolean
   showUploadButton?: boolean
@@ -706,8 +760,10 @@ export function XlsxWorkbookSurface({
       {showToolbar ? (
         <WorkbookToolbar
           isDark={isDark}
+          onDownload={onDownload}
           onIsDarkChange={onIsDarkChange}
           onUploadClick={onUploadClick}
+          showDownloadButton={showDownloadButton}
           showNightRenderToggle={showNightRenderToggle}
           showUploadButton={showUploadButton}
           toolbarActions={toolbarActions}
@@ -760,6 +816,7 @@ export function XlsxViewerPreview({
   isDark: controlledIsDark,
   onIsDarkChange,
   rounded = false,
+  showDownload = true,
   showToolbar = true,
   showUpload = true,
   src,
@@ -771,6 +828,7 @@ export function XlsxViewerPreview({
   isDark?: boolean
   onIsDarkChange?: (isDark: boolean) => void
   rounded?: boolean
+  showDownload?: boolean
   showToolbar?: boolean
   showUpload?: boolean
   src?: string
@@ -790,6 +848,7 @@ export function XlsxViewerPreview({
       rounded={rounded}
       setNightRenderEnabled={setIsDark}
       shouldRenderNightMode
+      showDownload={showDownload}
       showToolbar={showToolbar}
       showUpload={showUpload}
       toolbarActions={toolbarActions}
@@ -805,6 +864,7 @@ function XlsxViewerContent({
   rounded,
   setNightRenderEnabled,
   shouldRenderNightMode,
+  showDownload,
   showToolbar = true,
   showUpload,
   toolbarActions,
@@ -816,6 +876,7 @@ function XlsxViewerContent({
   rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
+  showDownload: boolean
   showToolbar?: boolean
   showUpload: boolean
   toolbarActions?: React.ReactNode
@@ -1026,12 +1087,14 @@ function XlsxViewerContent({
         className={className}
         fileName={activeFileName}
         isDark={effectiveIsDark}
+        onDownload={() => downloadWorkbookBuffer(activeBuffer, activeFileName)}
         onIsDarkChange={setNightRenderEnabled}
         onUploadClick={() => fileInputRef.current?.click()}
         renderTableHeaderMenu={(props) => (
           <WorkbookTableHeaderMenu {...props} />
         )}
         rounded={rounded}
+        showDownloadButton={showDownload}
         showNightRenderToggle={shouldRenderNightMode}
         showToolbar={showToolbar}
         showUploadButton={showUpload}
@@ -1047,10 +1110,12 @@ function XlsxWorkbookLoadedViewer({
   className,
   fileName,
   isDark,
+  onDownload,
   onIsDarkChange,
   onUploadClick,
   renderTableHeaderMenu,
   rounded,
+  showDownloadButton,
   showNightRenderToggle,
   showToolbar = true,
   showUploadButton,
@@ -1061,12 +1126,14 @@ function XlsxWorkbookLoadedViewer({
   className?: string
   fileName: string
   isDark: boolean
+  onDownload: () => void
   onIsDarkChange: (checked: boolean) => void
   onUploadClick: () => void
   renderTableHeaderMenu: (
     props: XlsxTableHeaderMenuRenderProps
   ) => React.ReactNode
   rounded: boolean
+  showDownloadButton: boolean
   showNightRenderToggle: boolean
   showToolbar?: boolean
   showUploadButton: boolean
@@ -1092,10 +1159,12 @@ function XlsxWorkbookLoadedViewer({
       <XlsxWorkbookSurface
         className={className}
         isDark={isDark}
+        onDownload={onDownload}
         onIsDarkChange={onIsDarkChange}
         onUploadClick={onUploadClick}
         renderTableHeaderMenu={renderTableHeaderMenu}
         rounded={rounded}
+        showDownloadButton={showDownloadButton}
         showNightRenderToggle={showNightRenderToggle}
         showToolbar={showToolbar}
         showUploadButton={showUploadButton}
