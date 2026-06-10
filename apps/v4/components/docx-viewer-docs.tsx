@@ -3,12 +3,15 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 
+import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import {
   DocsSourceCodeBlock,
   DocsViewCodeBlock,
 } from "@/components/docs-code-block"
+
+const SAMPLE_DOCX_URL = withUiBasePath("/samples/demo.docx")
 
 function ViewerPreviewLoading() {
   return (
@@ -34,7 +37,7 @@ export function DocxViewerDemo() {
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
       <DocxViewerPreview
-        src="/samples/demo.docx"
+        src={SAMPLE_DOCX_URL}
         defaultThumbnailSidebarOpen={false}
       />
       <DocsViewCodeBlock code={docxViewerUsageCode} />

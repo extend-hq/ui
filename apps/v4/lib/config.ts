@@ -1,4 +1,4 @@
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ui.extend.ai"
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://extend.ai/ui"
 
 export const siteConfig = {
   name: "Extend UI",

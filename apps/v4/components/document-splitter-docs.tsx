@@ -37,7 +37,10 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import type * as ReactPdf from "react-pdf"
 
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   FileThumbnail,
   type ThumbnailFile,
@@ -55,8 +58,6 @@ import {
   DocsViewCodeBlock,
 } from "@/components/docs-code-block"
 import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 
 type ReactPdfModule = typeof ReactPdf
 export type DocumentSplitPageId = `page-${number}`
@@ -71,8 +72,8 @@ export type DocumentSplit = {
 }
 type SplitGroup = DocumentSplit
 
-const PDF_URL = "/samples/attention.pdf"
-const XLSX_URL = "/samples/crazy-chart-zoo.xlsx"
+const PDF_URL = withUiBasePath("/samples/attention.pdf")
+const XLSX_URL = withUiBasePath("/samples/crazy-chart-zoo.xlsx")
 const XLSX_THUMBNAIL_FILE = {
   name: "crazy-chart-zoo.xlsx",
   type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1613,7 +1614,7 @@ export function DocumentSplitsDemo() {
       data-slot="component-preview"
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
-      <DocumentSplitsPreview file="/samples/attention.pdf" />
+      <DocumentSplitsPreview file={PDF_URL} />
       <DocsViewCodeBlock code={documentSplitterUsageCode} />
     </div>
   )

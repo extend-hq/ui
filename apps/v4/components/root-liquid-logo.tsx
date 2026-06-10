@@ -5,6 +5,7 @@ import { GemSmoke, type GemSmokeProps } from "@paper-design/shaders-react"
 import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { useMediaQuery } from "@/hooks/use-media-query"
 
 const SMOKE_COLORS = ["#004CFF", "#FF8C00", "#FFB066", "#FFD29A"]
@@ -32,7 +33,7 @@ export function RootLiquidLogo({ className }: { className?: string }) {
   const smokeProps = {
     width: "100%",
     height: "100%",
-    image: "/extend-logo.svg",
+    image: withUiBasePath("/extend-logo.svg"),
     colors: SMOKE_COLORS,
     colorBack: "#00000000",
     colorInner,

@@ -6,12 +6,13 @@ import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { META_THEME_COLORS, siteConfig } from "@/lib/config"
 import { fontVariables } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { LayoutProvider } from "@/hooks/use-layout"
+import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { ActiveThemeProvider } from "@/components/active-theme"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
-import { TooltipProvider } from "@/components/ui/tooltip"
 
 import "@/app/globals.css"
 
@@ -56,14 +57,22 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/extend.svg", type: "image/svg+xml" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: withUiBasePath("/extend.svg"), type: "image/svg+xml" },
+      {
+        url: withUiBasePath("/favicon-32x32.png"),
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: withUiBasePath("/favicon-16x16.png"),
+        sizes: "16x16",
+        type: "image/png",
+      },
     ],
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    shortcut: withUiBasePath("/favicon.ico"),
+    apple: withUiBasePath("/apple-touch-icon.png"),
   },
-  manifest: "/site.webmanifest",
+  manifest: withUiBasePath("/site.webmanifest"),
 }
 
 export default function RootLayout({

@@ -14,6 +14,7 @@ import {
 } from "@extend-ai/react-xlsx"
 import type * as ReactPdf from "react-pdf"
 
+import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
 import {
   FileThumbnail,
@@ -55,28 +56,28 @@ export const SAMPLE_FILES: DemoFile[] = [
     type: "image/png",
     description: "Image",
     kind: "image",
-    url: "/opengraph-image.png",
+    url: withUiBasePath("/opengraph-image.png"),
   },
   {
     name: "attention.pdf",
     type: "application/pdf",
     description: "PDF",
     kind: "pdf",
-    url: "/samples/attention.pdf",
+    url: withUiBasePath("/samples/attention.pdf"),
   },
   {
     name: "demo.docx",
     type: DOCX_MIME_TYPE,
     description: "DOCX",
     kind: "docx",
-    url: "/samples/demo.docx",
+    url: withUiBasePath("/samples/demo.docx"),
   },
   {
     name: "crazy-chart-zoo.xlsx",
     type: XLSX_MIME_TYPE,
     description: "XLSX",
     kind: "xlsx",
-    url: "/samples/crazy-chart-zoo.xlsx",
+    url: withUiBasePath("/samples/crazy-chart-zoo.xlsx"),
   },
 ]
 

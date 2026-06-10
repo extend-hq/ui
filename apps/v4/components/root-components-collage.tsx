@@ -8,6 +8,7 @@ import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
 import {
   DocumentSplits,
@@ -24,6 +25,12 @@ import {
 import { FileUpload } from "@/components/file-upload-docs"
 
 const ROOT_PREVIEW_LAZY_ROOT_MARGIN = "900px 0px"
+const ROOT_ATTENTION_PDF_URL = withUiBasePath("/samples/attention.pdf")
+const ROOT_ATTENTION_THUMBNAIL_URL = withUiBasePath(
+  "/samples/attention-page-1.png"
+)
+const ROOT_DOCX_URL = withUiBasePath("/samples/demo.docx")
+const ROOT_XLSX_URL = withUiBasePath("/samples/crazy-chart-zoo.xlsx")
 
 const PdfViewerPreview = dynamic(
   () =>
@@ -96,7 +103,7 @@ export function MobileRootPreview() {
   return (
     <div className="relative bg-background px-4">
       <Image
-        src="/images/root-components-showcase-light-v2.png"
+        src={withUiBasePath("/images/root-components-showcase-light-v2.png")}
         width={1566}
         height={1114}
         alt="Document component previews"
@@ -105,7 +112,7 @@ export function MobileRootPreview() {
         sizes="150vw"
       />
       <Image
-        src="/images/root-components-showcase-dark-v2.png"
+        src={withUiBasePath("/images/root-components-showcase-dark-v2.png")}
         width={1566}
         height={1114}
         alt="Document component previews"
@@ -175,7 +182,7 @@ function PdfViewerTile() {
       className="h-[560px] bg-background"
     >
       <PdfViewerPreview
-        file="/samples/attention.pdf"
+        file={ROOT_ATTENTION_PDF_URL}
         showRotateControls={false}
       />
     </ComponentCrop>
@@ -213,7 +220,7 @@ function DocxViewerTile() {
       viewHref="/docs/components/docx-viewer"
       className="h-[560px] bg-background"
     >
-      <DocxViewerPreview className="h-full" src="/samples/demo.docx" />
+      <DocxViewerPreview className="h-full" src={ROOT_DOCX_URL} />
     </ComponentCrop>
   )
 }
@@ -225,10 +232,7 @@ function ComponentXlsxViewerTile() {
       viewHref="/docs/components/xlsx-viewer"
       className="h-[540px] bg-background 4xl:h-[500px]"
     >
-      <XlsxViewerPreview
-        className="h-full"
-        src="/samples/crazy-chart-zoo.xlsx"
-      />
+      <XlsxViewerPreview className="h-full" src={ROOT_XLSX_URL} />
     </ComponentCrop>
   )
 }
@@ -330,10 +334,7 @@ function BlockXlsxViewerTile() {
       className="h-[640px] bg-background"
     >
       <RootPreviewLoader>
-        <XlsxViewerPreview
-          className="h-full"
-          src="/samples/crazy-chart-zoo.xlsx"
-        />
+        <XlsxViewerPreview className="h-full" src={ROOT_XLSX_URL} />
       </RootPreviewLoader>
     </ComponentCrop>
   )
@@ -356,7 +357,7 @@ function ESignatureTile() {
 const ROOT_DOCUMENT_SPLIT_THUMBNAILS = Object.fromEntries(
   INITIAL_SPLITS.flatMap((split) => split.pages).map((pageId) => [
     pageId,
-    "/samples/attention-page-1.png",
+    ROOT_ATTENTION_THUMBNAIL_URL,
   ])
 ) as Record<DocumentSplit["pages"][number], string>
 

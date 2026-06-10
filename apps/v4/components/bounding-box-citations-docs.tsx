@@ -43,6 +43,7 @@ import { useTheme } from "next-themes"
 import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { useMounted } from "@/hooks/use-mounted"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -228,8 +229,10 @@ function ScrollAreaVirtualizer({
   )
 }
 
-const PDF_URL = "/samples/attention.pdf"
-const BLOCK_REVIEW_PDF_URL = "/samples/bank-statement-x4uhhi7t.pdf"
+const PDF_URL = withUiBasePath("/samples/attention.pdf")
+const BLOCK_REVIEW_PDF_URL = withUiBasePath(
+  "/samples/bank-statement-x4uhhi7t.pdf"
+)
 const DEFAULT_ZOOM = 1
 const REVIEW_HIGHLIGHT_STYLE =
   "border-blue-500/70 bg-blue-500/12 shadow-[0_4px_16px_rgb(59_130_246_/_10%)]"
