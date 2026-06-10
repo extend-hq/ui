@@ -16,6 +16,7 @@ import type { PDFDocumentProxy } from "pdfjs-dist"
 import type * as ReactPdf from "react-pdf"
 
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { FileSystem, type FileSystemItem } from "@/components/ui/file-system"
 import { DocsViewCodeBlock } from "@/components/docs-code-block"
 import { FileSystemSourceCode } from "@/components/file-system-source-code"
@@ -49,7 +50,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 2215244,
     thumbnail: "pdf",
     updatedAt: "2026-03-24T21:43:00Z",
-    url: "/samples/attention.pdf",
+    url: withUiBasePath("/samples/attention.pdf"),
   },
   {
     contentType: "application/pdf",
@@ -58,7 +59,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 842419,
     thumbnail: "pdf",
     updatedAt: "2026-02-03T19:11:00Z",
-    url: "/samples/knicks.pdf",
+    url: withUiBasePath("/samples/knicks.pdf"),
   },
   {
     contentType: "application/pdf",
@@ -67,7 +68,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 39248,
     thumbnail: "pdf",
     updatedAt: "2026-04-05T21:56:00Z",
-    url: "/samples/loan-application.pdf",
+    url: withUiBasePath("/samples/loan-application.pdf"),
   },
   {
     contentType: DOCX_MIME_TYPE,
@@ -78,7 +79,7 @@ const DEMO_SOURCES: DemoSource[] = [
     // the thumbnail is generated client-side like the PDFs.
     thumbnail: "docx",
     updatedAt: "2026-03-24T17:43:00Z",
-    url: "/samples/demo.docx",
+    url: withUiBasePath("/samples/demo.docx"),
   },
   {
     contentType: XLSX_MIME_TYPE,
@@ -88,7 +89,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 66655,
     thumbnail: "xlsx",
     updatedAt: "2026-02-24T08:52:48Z",
-    url: "/samples/crazy-chart-zoo.xlsx",
+    url: withUiBasePath("/samples/crazy-chart-zoo.xlsx"),
   },
   {
     contentType: "image/png",
@@ -98,7 +99,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 183356,
     thumbnail: "url",
     updatedAt: "2026-03-24T16:06:44Z",
-    url: "/samples/attention-page-1.png",
+    url: withUiBasePath("/samples/attention-page-1.png"),
   },
   {
     contentType: "image/png",
@@ -108,7 +109,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 83838,
     thumbnail: "url",
     updatedAt: "2026-01-08T11:24:00Z",
-    url: "/opengraph-image.png",
+    url: withUiBasePath("/opengraph-image.png"),
   },
   {
     contentType: "application/pdf",
@@ -117,7 +118,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 80096,
     thumbnail: "pdf",
     updatedAt: "2026-04-05T21:57:02Z",
-    url: "/samples/bank-statement-x4uhhi7t.pdf",
+    url: withUiBasePath("/samples/bank-statement-x4uhhi7t.pdf"),
   },
 ]
 
