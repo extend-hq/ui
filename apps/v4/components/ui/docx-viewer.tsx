@@ -221,6 +221,8 @@ function DocxToolbar({
   pageCount,
   setZoomScale,
   showNightRenderToggle,
+  showUploadButton = true,
+  toolbarActions,
   zoomScale,
 }: {
   activePage: number
@@ -232,6 +234,8 @@ function DocxToolbar({
   pageCount: number
   setZoomScale: React.Dispatch<React.SetStateAction<number>>
   showNightRenderToggle: boolean
+  showUploadButton?: boolean
+  toolbarActions?: React.ReactNode
   zoomScale: number
 }) {
   const canZoomIn = zoomScale < ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]
@@ -333,18 +337,34 @@ function DocxToolbar({
               </Button>
             </ToolbarTooltip>
           </div>
-          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
-          <ToolbarTooltip label="Upload DOCX">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Upload DOCX"
-              onClick={onUploadClick}
-            >
-              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-            </Button>
-          </ToolbarTooltip>
+          {showUploadButton ? (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-1 h-4 self-center"
+              />
+              <ToolbarTooltip label="Upload DOCX">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Upload DOCX"
+                  onClick={onUploadClick}
+                >
+                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                </Button>
+              </ToolbarTooltip>
+            </>
+          ) : null}
+          {toolbarActions ? (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-1 h-4 self-center"
+              />
+              {toolbarActions}
+            </>
+          ) : null}
         </div>
       </TooltipProvider>
     </div>
@@ -406,7 +426,10 @@ export function DocxViewerPreview({
   isDark: controlledIsDark,
   onIsDarkChange,
   rounded = false,
+  showToolbar = true,
+  showUpload = true,
   src,
+  toolbarActions,
 }: {
   className?: string
   defaultThumbnailSidebarOpen?: boolean
@@ -415,7 +438,10 @@ export function DocxViewerPreview({
   isDark?: boolean
   onIsDarkChange?: (isDark: boolean) => void
   rounded?: boolean
+  showToolbar?: boolean
+  showUpload?: boolean
   src?: string
+  toolbarActions?: React.ReactNode
 }) {
   const [effectiveIsDark, setIsDark] = useControllableDarkMode({
     defaultIsDark,
@@ -432,6 +458,9 @@ export function DocxViewerPreview({
       rounded={rounded}
       setNightRenderEnabled={setIsDark}
       shouldRenderNightMode
+      showToolbar={showToolbar}
+      showUpload={showUpload}
+      toolbarActions={toolbarActions}
       url={src}
     />
   )
@@ -445,6 +474,9 @@ function DocxViewerContent({
   rounded,
   setNightRenderEnabled,
   shouldRenderNightMode,
+  showToolbar = true,
+  showUpload,
+  toolbarActions,
   url,
 }: {
   className?: string
@@ -454,6 +486,9 @@ function DocxViewerContent({
   rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
+  showToolbar?: boolean
+  showUpload: boolean
+  toolbarActions?: React.ReactNode
   url?: string
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -551,10 +586,17 @@ function DocxViewerContent({
     }
   }, [status])
 
+  // Imports mutate the shared editor instance; concurrent calls (effect
+  // re-runs, StrictMode double-invoke) race inside the parser and surface as
+  // bogus "Invalid DOCX ZIP" errors, so every import is chained through here.
+  const importQueueRef = React.useRef<Promise<void>>(Promise.resolve())
+
   React.useEffect(() => {
     let isCurrent = true
 
     async function load() {
+      // Superseded while queued — let the newest import run instead.
+      if (!isCurrent) return
       if (!uploadedDocxFile && !url) {
         setIsLoadingDocument(false)
         setLoadError(undefined)
@@ -588,7 +630,7 @@ function DocxViewerContent({
       }
     }
 
-    void load()
+    importQueueRef.current = importQueueRef.current.then(load)
 
     return () => {
       isCurrent = false
@@ -702,18 +744,22 @@ function DocxViewerContent({
         className="hidden"
         onChange={handleUpload}
       />
-      <DocxToolbar
-        activePage={activePage}
-        controlsDisabled={controlsDisabled}
-        isDark={effectiveIsDark}
-        onIsDarkChange={setNightRenderEnabled}
-        onToggleSidebar={() => setSidebarOpen((open) => !open)}
-        onUploadClick={() => fileInputRef.current?.click()}
-        pageCount={pageCount}
-        setZoomScale={setZoomScale}
-        showNightRenderToggle={shouldRenderNightMode}
-        zoomScale={zoomScale}
-      />
+      {showToolbar ? (
+        <DocxToolbar
+          activePage={activePage}
+          controlsDisabled={controlsDisabled}
+          isDark={effectiveIsDark}
+          onIsDarkChange={setNightRenderEnabled}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+          onUploadClick={() => fileInputRef.current?.click()}
+          pageCount={pageCount}
+          setZoomScale={setZoomScale}
+          showNightRenderToggle={shouldRenderNightMode}
+          showUploadButton={showUpload}
+          toolbarActions={toolbarActions}
+          zoomScale={zoomScale}
+        />
+      ) : null}
       <div
         ref={viewerShellRef}
         className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30"

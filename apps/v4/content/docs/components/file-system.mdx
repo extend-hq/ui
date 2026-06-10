@@ -1,0 +1,197 @@
+---
+title: File System (Finder)
+description: A macOS Finder-style file browser for flat object-store manifests with icon, list, column, and gallery views.
+component: true
+---
+
+File System renders a flat manifest of files and folders — the shape you get back from S3, R2, or any key-prefix object store — as a macOS Finder-style browser. It derives the folder hierarchy from object keys, switches between icon, list, column, and gallery views, and treats thumbnails, URLs, and signing as external concerns.
+
+<FileSystemDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @extend/file-system
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>
+  Install the dependencies and the `file-thumbnail` and `tabs` registry items.
+</Step>
+
+```bash
+npm install @pierre/trees @hugeicons/react @hugeicons/core-free-icons
+```
+
+<Step>
+  Copy `components/ui/file-system.tsx` from the registry item into your project.
+</Step>
+
+<FileSystemSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Data Model
+
+The component accepts a normalized flat manifest instead of a nested tree. Files are addressable objects, folders are prefixes, URLs are optional, and signing happens outside the component.
+
+```ts
+const items: FileSystemItem[] = [
+  {
+    kind: "folder",
+    path: "invoices/2026/",
+    hasChildren: true,
+  },
+  {
+    kind: "file",
+    key: "invoices/2026/jan.pdf",
+    path: "invoices/2026/jan.pdf",
+    contentType: "application/pdf",
+    size: 482193,
+    createdAt: "2026-01-04T10:02:00.000Z",
+    updatedAt: "2026-06-09T18:21:00.000Z",
+    etag: '"abc123"',
+    previewImageUrl: "/thumbnails/invoices/2026/jan.png",
+  },
+]
+```
+
+Explicit folder entries are optional — missing prefixes are inferred from file paths. Keeping `kind: "folder"` support matters for paginated or lazy traversal, where S3 `CommonPrefixes` describe folders whose contents have not been listed yet.
+
+### S3 / R2 Mapping
+
+A `ListObjectsV2` response maps directly onto the manifest:
+
+| S3 / R2 field             | Manifest field             |
+| ------------------------- | -------------------------- |
+| `Contents[].Key`          | `file.key` and `file.path` |
+| `Contents[].Size`         | `file.size`                |
+| `Contents[].LastModified` | `file.updatedAt`           |
+| `Contents[].ETag`         | `file.etag`                |
+| `CommonPrefixes[].Prefix` | `folder.path`              |
+
+## Thumbnails
+
+Like [File Thumbnail](/docs/components/file-thumbnail), the component never parses documents and has no renderer dependencies. Generate preview images with whichever stack you already use — `react-pdf`, `@extend-ai/react-docx`, `@extend-ai/react-xlsx`, or a server-side pipeline — then pass the result through `previewImageUrl`. Files without a preview fall back to a generic document tile, or to the node returned by `renderFilePreview`.
+
+One caveat for DOCX: `@extend-ai/react-docx` versions before 0.7.0 rasterize pages in a way that taints the canvas, blocking `toDataURL` export in the browser. On 0.7.0+ the demo generates DOCX thumbnails client-side like the PDFs; on older versions, render DOCX previews live via `renderFilePreview` or generate thumbnail images server-side.
+
+## Lazy Loading
+
+For large buckets, pass `hasChildren: true` on folder entries and provide `loadChildren`. The component fetches a folder's contents the first time it is opened, following `nextCursor` until the listing is exhausted.
+
+```tsx
+<FileSystem
+  items={rootItems}
+  loadChildren={async ({ path, cursor }) =>
+    fetch(`/api/files/list?prefix=${path}&cursor=${cursor ?? ""}`).then((r) =>
+      r.json()
+    )
+  }
+  getFileUrl={async (file) =>
+    `/api/files/sign?key=${encodeURIComponent(file.key ?? file.path)}`
+  }
+/>
+```
+
+## Views
+
+- **Icons** — a thumbnail grid with macOS-style folder glyphs.
+- **List** — a hierarchical tree rendered with [`@pierre/trees`](https://github.com/pierredotco/trees), with modified date and size as a trailing column.
+- **Columns** — Miller columns with a preview-and-metadata pane for the selected file.
+- **Gallery** — a large preview with an information sidebar and a filmstrip of the current folder.
+
+Double-clicking a folder navigates into it. Double-clicking a file (in any view, including the list tree) opens the built-in viewer dialog — PDF, DOCX, and XLSX files open in their respective viewers, and images open in an image dialog; other file types open their resolved URL in a new tab. Pass `onFileOpen` to replace this behavior entirely. The registry item depends on the [PDF Viewer](/docs/components/pdf-viewer), [DOCX Viewer](/docs/components/docx-viewer), and [Excel Viewer](/docs/components/xlsx-viewer), so installing `@extend/file-system` brings the full preview experience.
+
+The list view tree is derived from file paths, so lazy folders (`hasChildren` without loaded entries) appear there after their contents have been fetched — open them from the icon or column views first, or list them eagerly.
+
+### Keyboard Navigation
+
+- **Grid** — arrow keys move the selection in all four directions, following the rendered grid; Enter opens.
+- **List** — full keyboard support from `@pierre/trees` (arrows, type-ahead, expand/collapse).
+- **Columns** — up/down move within a column, left selects the parent folder, right steps into the selected folder; Enter opens.
+- **Gallery** — left/right move through the filmstrip; Enter opens.
+
+Finder-style shortcuts work everywhere in the component: <kbd>⌘↑</kbd> goes to the enclosing folder, <kbd>⌘↓</kbd> opens the selection, and <kbd>⌘[</kbd> / <kbd>⌘]</kbd> navigate back and forward through history (Ctrl works in place of ⌘).
+
+When the component is narrower than 480px, the toolbar swaps the tabs view switcher for a compact select.
+
+The gallery view embeds the full viewers — PDF, DOCX, and XLSX files render in their toolbar-less viewer (the XLSX sheet switcher stays), and images scale to fill the stage.
+
+### Multi-Page Thumbnails
+
+Pass `previewImageUrls` (an array of page thumbnails — page counts come from whichever renderer generates them, e.g. `react-pdf`, `@extend-ai/react-docx`, or `@extend-ai/react-xlsx`). Large thumbnails in the column preview show hover pager buttons to step through pages. `previewAspectRatio` on a file controls its thumbnail shape — e.g. natural ratios for images, landscape for spreadsheets.
+
+For long documents, provide only the first page(s) eagerly plus `previewPageCount`, and implement `loadPreviewImageUrl(file, pageIndex)` — the pager renders the remaining pages on demand (the demo renders PDF pages lazily through a cached `pdfjs` document).
+
+## API Reference
+
+### FileSystem
+
+| Prop                  | Type                                                                       | Default   | Required |
+| --------------------- | -------------------------------------------------------------------------- | --------- | -------- |
+| `items`               | `FileSystemItem[]`                                                         | `-`       | Yes      |
+| `className`           | `string`                                                                   | `-`       | No       |
+| `title`               | `string`                                                                   | `"Files"` | No       |
+| `defaultView`         | `"icons" \| "list" \| "columns" \| "gallery"`                              | `"icons"` | No       |
+| `view`                | `FileSystemView`                                                           | `-`       | No       |
+| `onViewChange`        | `(view: FileSystemView) => void`                                           | `-`       | No       |
+| `defaultPath`         | `string`                                                                   | `""`      | No       |
+| `onSelectionChange`   | `(item: FileSystemItem \| null) => void`                                   | `-`       | No       |
+| `onFileOpen`          | `(file: FileSystemFileItem, url: string \| null) => void`                  | `-`       | No       |
+| `getFileUrl`          | `(file: FileSystemFileItem) => string \| Promise<string>`                  | `-`       | No       |
+| `loadChildren`        | `(args: FileSystemLoadChildrenArgs) => Promise<...>`                       | `-`       | No       |
+| `loadPreviewImageUrl` | `(file: FileSystemFileItem, pageIndex: number) => Promise<string \| null>` | `-`       | No       |
+| `renderFilePreview`   | `(file: FileSystemFileItem) => React.ReactNode`                            | `-`       | No       |
+
+### FileSystemFolderItem
+
+| Prop          | Type       | Default | Required |
+| ------------- | ---------- | ------- | -------- |
+| `kind`        | `"folder"` | `-`     | Yes      |
+| `path`        | `string`   | `-`     | Yes      |
+| `name`        | `string`   | `-`     | No       |
+| `parentPath`  | `string`   | `-`     | No       |
+| `hasChildren` | `boolean`  | `-`     | No       |
+| `createdAt`   | `string`   | `-`     | No       |
+| `updatedAt`   | `string`   | `-`     | No       |
+
+### FileSystemFileItem
+
+| Prop                 | Type                     | Default | Required |
+| -------------------- | ------------------------ | ------- | -------- |
+| `kind`               | `"file"`                 | `-`     | Yes      |
+| `path`               | `string`                 | `-`     | Yes      |
+| `key`                | `string`                 | `path`  | No       |
+| `name`               | `string`                 | `-`     | No       |
+| `parentPath`         | `string`                 | `-`     | No       |
+| `contentType`        | `string`                 | `-`     | No       |
+| `size`               | `number`                 | `-`     | No       |
+| `createdAt`          | `string`                 | `-`     | No       |
+| `updatedAt`          | `string`                 | `-`     | No       |
+| `etag`               | `string`                 | `-`     | No       |
+| `url`                | `string`                 | `-`     | No       |
+| `previewImageUrl`    | `string \| null`         | `-`     | No       |
+| `previewImageUrls`   | `string[] \| null`       | `-`     | No       |
+| `previewPageCount`   | `number`                 | `-`     | No       |
+| `previewAspectRatio` | `number`                 | `-`     | No       |
+| `metadata`           | `Record<string, string>` | `-`     | No       |

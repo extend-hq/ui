@@ -14,6 +14,7 @@ import {
 } from "@/components/document-splitter-docs"
 import { DocxEditorBlock } from "@/components/docx-editor-docs"
 import { ESignatureBlock } from "@/components/e-signature-docs"
+import { FileSystemFinderBlock } from "@/components/file-system-docs"
 import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
 type PdfViewerBlockFullscreenPreviewProps = {
@@ -39,6 +40,7 @@ const blockComponents = {
   "document-splits": DocumentSplitsBlock,
   "excel-document-splits": XlsxDocumentSplitsBlock,
   "docx-editor-block": DocxEditorBlock,
+  "file-system": FileSystemFinderBlock,
 } satisfies Record<
   PdfViewerBlockId,
   React.ComponentType<PdfViewerBlockFullscreenPreviewProps>

@@ -231,6 +231,7 @@ function WorkbookToolbar({
   onUploadClick,
   showNightRenderToggle,
   showUploadButton = true,
+  toolbarActions,
   workbookIdentity,
 }: {
   isDark: boolean
@@ -238,6 +239,7 @@ function WorkbookToolbar({
   onUploadClick: () => void
   showNightRenderToggle: boolean
   showUploadButton?: boolean
+  toolbarActions?: React.ReactNode
   workbookIdentity: string
 }) {
   const { canZoomIn, canZoomOut, setZoomScale, zoomIn, zoomOut, zoomScale } =
@@ -338,6 +340,58 @@ function WorkbookToolbar({
                   <HugeiconsIcon icon={Upload01Icon} className="size-4" />
                 </Button>
               </ToolbarTooltip>
+            </>
+          ) : null}
+          {toolbarActions ? (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-1 h-4 self-center"
+              />
+              {toolbarActions}
+            </>
+          ) : null}
+        </div>
+      </TooltipProvider>
+    </div>
+  )
+}
+
+function WorkbookStandaloneToolbar({
+  onUploadClick,
+  showUploadButton = true,
+  toolbarActions,
+}: {
+  onUploadClick: () => void
+  showUploadButton?: boolean
+  toolbarActions?: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-12 flex-wrap items-center justify-end gap-2 border-b bg-background px-3 py-2">
+      <TooltipProvider>
+        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
+          {showUploadButton ? (
+            <ToolbarTooltip label="Upload XLSX">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Upload XLSX"
+                onClick={onUploadClick}
+              >
+                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              </Button>
+            </ToolbarTooltip>
+          ) : null}
+          {toolbarActions ? (
+            <>
+              {showUploadButton ? (
+                <Separator
+                  orientation="vertical"
+                  className="mx-1 h-4 self-center"
+                />
+              ) : null}
+              {toolbarActions}
             </>
           ) : null}
         </div>
@@ -620,7 +674,9 @@ export function XlsxWorkbookSurface({
   renderTableHeaderMenu,
   rounded,
   showNightRenderToggle,
+  showToolbar = true,
   showUploadButton = true,
+  toolbarActions,
   workbookIdentity,
 }: {
   className?: string
@@ -632,7 +688,9 @@ export function XlsxWorkbookSurface({
   ) => React.ReactNode
   rounded: boolean
   showNightRenderToggle: boolean
+  showToolbar?: boolean
   showUploadButton?: boolean
+  toolbarActions?: React.ReactNode
   workbookIdentity: string
 }) {
   const { error } = useXlsxViewer()
@@ -645,14 +703,17 @@ export function XlsxWorkbookSurface({
         rounded && "rounded-lg"
       )}
     >
-      <WorkbookToolbar
-        isDark={isDark}
-        onIsDarkChange={onIsDarkChange}
-        onUploadClick={onUploadClick}
-        showNightRenderToggle={showNightRenderToggle}
-        showUploadButton={showUploadButton}
-        workbookIdentity={workbookIdentity}
-      />
+      {showToolbar ? (
+        <WorkbookToolbar
+          isDark={isDark}
+          onIsDarkChange={onIsDarkChange}
+          onUploadClick={onUploadClick}
+          showNightRenderToggle={showNightRenderToggle}
+          showUploadButton={showUploadButton}
+          toolbarActions={toolbarActions}
+          workbookIdentity={workbookIdentity}
+        />
+      ) : null}
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 bg-muted/20">
           <XlsxViewer
@@ -699,7 +760,10 @@ export function XlsxViewerPreview({
   isDark: controlledIsDark,
   onIsDarkChange,
   rounded = false,
+  showToolbar = true,
+  showUpload = true,
   src,
+  toolbarActions,
 }: {
   className?: string
   defaultIsDark?: boolean
@@ -707,7 +771,10 @@ export function XlsxViewerPreview({
   isDark?: boolean
   onIsDarkChange?: (isDark: boolean) => void
   rounded?: boolean
+  showToolbar?: boolean
+  showUpload?: boolean
   src?: string
+  toolbarActions?: React.ReactNode
 }) {
   const [effectiveIsDark, setIsDark] = useControllableDarkMode({
     defaultIsDark,
@@ -723,6 +790,9 @@ export function XlsxViewerPreview({
       rounded={rounded}
       setNightRenderEnabled={setIsDark}
       shouldRenderNightMode
+      showToolbar={showToolbar}
+      showUpload={showUpload}
+      toolbarActions={toolbarActions}
       url={src}
     />
   )
@@ -735,6 +805,9 @@ function XlsxViewerContent({
   rounded,
   setNightRenderEnabled,
   shouldRenderNightMode,
+  showToolbar = true,
+  showUpload,
+  toolbarActions,
   url,
 }: {
   className?: string
@@ -743,6 +816,9 @@ function XlsxViewerContent({
   rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
+  showToolbar?: boolean
+  showUpload: boolean
+  toolbarActions?: React.ReactNode
   url?: string
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -845,6 +921,11 @@ function XlsxViewerContent({
           className="hidden"
           onChange={handleUpload}
         />
+        <WorkbookStandaloneToolbar
+          onUploadClick={() => fileInputRef.current?.click()}
+          showUploadButton={showUpload}
+          toolbarActions={toolbarActions}
+        />
         <div className="grid min-h-0 flex-1 place-items-center bg-muted/30 p-4">
           <div className="max-w-md rounded-lg border bg-background p-4 text-center text-sm shadow-xs">
             <p className="font-medium">Upload a workbook to preview</p>
@@ -882,6 +963,11 @@ function XlsxViewerContent({
           className="hidden"
           onChange={handleUpload}
         />
+        <WorkbookStandaloneToolbar
+          onUploadClick={() => fileInputRef.current?.click()}
+          showUploadButton={showUpload}
+          toolbarActions={toolbarActions}
+        />
         <div className="grid min-h-0 flex-1 place-items-center bg-muted/30 p-4">
           <div className="max-w-md rounded-lg border bg-background p-4 text-sm">
             <p className="font-medium">Unable to display workbook</p>
@@ -917,6 +1003,11 @@ function XlsxViewerContent({
           className="hidden"
           onChange={handleUpload}
         />
+        <WorkbookStandaloneToolbar
+          onUploadClick={() => fileInputRef.current?.click()}
+          showUploadButton={showUpload}
+          toolbarActions={toolbarActions}
+        />
         <ViewerLoadingSurface showSpinner={shouldShowLoadingSpinner} />
       </div>
     )
@@ -932,6 +1023,7 @@ function XlsxViewerContent({
         onChange={handleUpload}
       />
       <XlsxWorkbookLoadedViewer
+        className={className}
         fileName={activeFileName}
         isDark={effectiveIsDark}
         onIsDarkChange={setNightRenderEnabled}
@@ -941,6 +1033,9 @@ function XlsxViewerContent({
         )}
         rounded={rounded}
         showNightRenderToggle={shouldRenderNightMode}
+        showToolbar={showToolbar}
+        showUploadButton={showUpload}
+        toolbarActions={toolbarActions}
         workbookBuffer={activeBuffer}
         workbookIdentity={activeIdentity}
       />
@@ -949,6 +1044,7 @@ function XlsxViewerContent({
 }
 
 function XlsxWorkbookLoadedViewer({
+  className,
   fileName,
   isDark,
   onIsDarkChange,
@@ -956,9 +1052,13 @@ function XlsxWorkbookLoadedViewer({
   renderTableHeaderMenu,
   rounded,
   showNightRenderToggle,
+  showToolbar = true,
+  showUploadButton,
+  toolbarActions,
   workbookBuffer,
   workbookIdentity,
 }: {
+  className?: string
   fileName: string
   isDark: boolean
   onIsDarkChange: (checked: boolean) => void
@@ -968,6 +1068,9 @@ function XlsxWorkbookLoadedViewer({
   ) => React.ReactNode
   rounded: boolean
   showNightRenderToggle: boolean
+  showToolbar?: boolean
+  showUploadButton: boolean
+  toolbarActions?: React.ReactNode
   workbookBuffer: ArrayBuffer
   workbookIdentity: string
 }) {
@@ -987,12 +1090,16 @@ function XlsxWorkbookLoadedViewer({
   return (
     <XlsxViewerProvider controller={controller} isDark={isDark}>
       <XlsxWorkbookSurface
+        className={className}
         isDark={isDark}
         onIsDarkChange={onIsDarkChange}
         onUploadClick={onUploadClick}
         renderTableHeaderMenu={renderTableHeaderMenu}
         rounded={rounded}
         showNightRenderToggle={showNightRenderToggle}
+        showToolbar={showToolbar}
+        showUploadButton={showUploadButton}
+        toolbarActions={toolbarActions}
         workbookIdentity={workbookIdentity}
       />
     </XlsxViewerProvider>

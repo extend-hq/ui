@@ -547,6 +547,52 @@
       ]
     },
     {
+      "name": "file-system",
+      "type": "registry:ui",
+      "title": "File System (Finder)",
+      "description": "A macOS Finder-style file browser for flat object-store manifests with icon, list, column, and gallery views.",
+      "dependencies": [
+        "@hugeicons/core-free-icons@^4.2.0",
+        "@hugeicons/react@^1.1.6",
+        "@pierre/trees@1.0.0-beta.4"
+      ],
+      "registryDependencies": [
+        "button",
+        "dialog",
+        "@extend/docx-viewer",
+        "@extend/file-thumbnail",
+        "@extend/pdf-viewer",
+        "scroll-area",
+        "select",
+        "tabs",
+        "utils",
+        "@extend/xlsx-viewer"
+      ],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/ui/file-system.tsx",
+          "type": "registry:ui",
+          "target": "@ui/file-system.tsx"
+        }
+      ]
+    },
+    {
+      "name": "file-system-block",
+      "type": "registry:block",
+      "title": "File System (Finder)",
+      "description": "A Finder-style file browser block that opens PDF, DOCX, XLSX, and image files in large viewer dialogs.",
+      "registryDependencies": ["@extend/file-system"],
+      "categories": ["documents", "blocks"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/blocks/file-system-block.tsx",
+          "type": "registry:component",
+          "target": "@components/blocks/file-system-block.tsx"
+        }
+      ]
+    },
+    {
       "name": "pdf-viewer",
       "type": "registry:ui",
       "title": "PDF Viewer",
@@ -586,7 +632,7 @@
       "title": "DOCX Viewer",
       "description": "A DOCX viewer with upload, zoom, theme controls, and read-only rendering.",
       "dependencies": [
-        "@extend-ai/react-docx@^0.6.6",
+        "@extend-ai/react-docx@^0.7.0-alpha.0",
         "@hugeicons/core-free-icons@^4.2.0",
         "@hugeicons/react@^1.1.6"
       ],
@@ -617,7 +663,7 @@
       "description": "An experimental DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
       "dependencies": [
         "@base-ui/react@^1.4.1",
-        "@extend-ai/react-docx@^0.6.6",
+        "@extend-ai/react-docx@^0.7.0-alpha.0",
         "@hugeicons/core-free-icons@^4.2.0",
         "@hugeicons/react@^1.1.6"
       ],

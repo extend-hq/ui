@@ -22,6 +22,11 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ")
 }
 
+// Preview URLs that have completed a reveal this session. View/tab switches
+// remount thumbnails; URLs in this set render instantly instead of replaying
+// the blur-in, so only an image's first load animates.
+const revealedPreviewImageUrls = new Set<string>()
+
 export function FileThumbnailLoadingOverlay() {
   return (
     <div
@@ -48,7 +53,11 @@ export function FileThumbnail({
   const revealFrameRef = React.useRef<number | null>(null)
   const [loadedPreviewImageUrl, setLoadedPreviewImageUrl] = React.useState<
     string | null
-  >(null)
+  >(() =>
+    previewImageUrl && revealedPreviewImageUrls.has(previewImageUrl)
+      ? previewImageUrl
+      : null
+  )
   const [failedPreviewImageUrl, setFailedPreviewImageUrl] = React.useState<
     string | null
   >(null)
@@ -56,7 +65,10 @@ export function FileThumbnail({
     previewImageUrl && failedPreviewImageUrl === previewImageUrl
   )
   const isImageLoading = Boolean(
-    previewImageUrl && loadedPreviewImageUrl !== previewImageUrl && !imageFailed
+    previewImageUrl &&
+      loadedPreviewImageUrl !== previewImageUrl &&
+      !imageFailed &&
+      !revealedPreviewImageUrls.has(previewImageUrl)
   )
   const showLoading = isLoading || isImageLoading
   const hasPreviewContent = Boolean(previewContent)
@@ -77,6 +89,7 @@ export function FileThumbnail({
 
       setFailedPreviewImageUrl(didLoad ? null : imageUrl)
       if (didLoad) {
+        revealedPreviewImageUrls.add(imageUrl)
         cancelImageReveal()
         revealFrameRef.current = window.requestAnimationFrame(() => {
           revealFrameRef.current = window.requestAnimationFrame(() => {
@@ -145,6 +158,7 @@ export function FileThumbnail({
             }}
             onError={() => {
               if (previewImageUrl) {
+                revealedPreviewImageUrls.delete(previewImageUrl)
                 cancelImageReveal()
                 setFailedPreviewImageUrl(previewImageUrl)
                 setLoadedPreviewImageUrl((currentUrl) =>

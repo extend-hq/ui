@@ -49,3 +49,4 @@ playwright-report/
 test-results/
 shadcn-workspace
 .codex-artifacts
+.claude/

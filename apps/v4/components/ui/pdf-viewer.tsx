@@ -108,6 +108,7 @@ export type PDFViewerProps = {
   ) => PDFViewerRenderRange
   downloadFileName?: string
   showDownload?: boolean
+  showToolbar?: boolean
   showRotateControls?: boolean
   showUpload?: boolean
   toolbarActions?: React.ReactNode
@@ -661,6 +662,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       downloadFileName,
       showDownload = true,
       showRotateControls = true,
+      showToolbar = true,
       showUpload = true,
       toolbarActions,
       pageClassName,
@@ -1583,240 +1585,242 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
           className
         )}
       >
-        <div className="flex min-h-12 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <TooltipProvider>
-              <ToolbarTooltip label="Toggle thumbnails">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Toggle thumbnails"
-                  disabled={controlsDisabled}
-                  onClick={() => setSidebarOpen((open) => !open)}
-                >
-                  <HugeiconsIcon icon={SidebarLeftIcon} className="size-4" />
-                </Button>
-              </ToolbarTooltip>
-            </TooltipProvider>
-            <div className="text-sm whitespace-nowrap text-primary">
-              Page {activePage} of {numPages || "-"}
-            </div>
-          </div>
-          <TooltipProvider>
-            <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
-              {showRotateControls ? (
-                <>
-                  <div className="flex flex-none items-center gap-1">
-                    <ToolbarTooltip label="Rotate page counterclockwise">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="Rotate page counterclockwise"
-                        disabled={controlsDisabled}
-                        onClick={() => rotateActivePage(-90)}
-                      >
-                        <HugeiconsIcon
-                          icon={RotateClockwiseIcon}
-                          className="size-4 -scale-x-100"
-                        />
-                      </Button>
-                    </ToolbarTooltip>
-                    <ToolbarTooltip label="Rotate page clockwise">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="Rotate page clockwise"
-                        disabled={controlsDisabled}
-                        onClick={() => rotateActivePage(90)}
-                      >
-                        <HugeiconsIcon
-                          icon={RotateClockwiseIcon}
-                          className="size-4"
-                        />
-                      </Button>
-                    </ToolbarTooltip>
-                  </div>
-                  <Separator
-                    orientation="vertical"
-                    className="mx-1 h-4 self-center"
-                  />
-                </>
-              ) : null}
-              <div className="flex flex-none items-center gap-1">
-                <ToolbarTooltip label="Zoom out">
+        {showToolbar ? (
+          <div className="flex min-h-12 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <TooltipProvider>
+                <ToolbarTooltip label="Toggle thumbnails">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Zoom out"
-                    disabled={controlsDisabled || zoom <= ZOOM_OPTIONS[0]}
-                    onClick={() => {
-                      const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
-                      setZoom(
-                        ZOOM_OPTIONS[Math.max(0, currentIndex - 1)] ?? zoom
-                      )
-                    }}
+                    aria-label="Toggle thumbnails"
+                    disabled={controlsDisabled}
+                    onClick={() => setSidebarOpen((open) => !open)}
                   >
-                    <HugeiconsIcon
-                      icon={MinusSignCircleIcon}
-                      className="size-4"
-                    />
+                    <HugeiconsIcon icon={SidebarLeftIcon} className="size-4" />
                   </Button>
                 </ToolbarTooltip>
-                <Select
-                  value={String(zoom)}
-                  onValueChange={(value) => setZoom(Number(value))}
-                  disabled={controlsDisabled}
-                  modal={false}
-                >
-                  <SelectTrigger size="sm" className="w-[84px] min-w-[84px]">
-                    <SelectValue placeholder="Zoom">
-                      {Math.round(zoom * 100)}%
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent alignItemWithTrigger={false}>
-                    {ZOOM_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={String(option)}>
-                        {Math.round(option * 100)}%
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <ToolbarTooltip label="Zoom in">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Zoom in"
-                    disabled={
-                      controlsDisabled ||
-                      zoom >= ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]
-                    }
-                    onClick={() => {
-                      const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
-                      setZoom(
-                        ZOOM_OPTIONS[
-                          Math.min(ZOOM_OPTIONS.length - 1, currentIndex + 1)
-                        ] ?? zoom
-                      )
-                    }}
-                  >
-                    <HugeiconsIcon
-                      icon={PlusSignCircleIcon}
-                      className="size-4"
-                    />
-                  </Button>
-                </ToolbarTooltip>
+              </TooltipProvider>
+              <div className="text-sm whitespace-nowrap text-primary">
+                Page {activePage} of {numPages || "-"}
               </div>
-              <Separator
-                orientation="vertical"
-                className="mx-1 h-4 self-center"
-              />
-              {showDownload ? (
-                <>
-                  <ToolbarTooltip label="Download PDF">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Download PDF"
-                      disabled={downloadDisabled}
-                      onClick={handleDownload}
-                    >
-                      {isPreparingDownload ? (
-                        <Spinner className="size-4" />
-                      ) : (
-                        <HugeiconsIcon
-                          icon={Download01Icon}
-                          className="size-4"
-                        />
-                      )}
-                    </Button>
-                  </ToolbarTooltip>
-                  <Separator
-                    orientation="vertical"
-                    className="mx-1 h-4 self-center"
-                  />
-                </>
-              ) : null}
-              <Popover>
-                <ToolbarTooltip label="Search text">
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Search text"
-                      disabled={controlsDisabled}
-                    >
-                      <HugeiconsIcon icon={Search01Icon} className="size-4" />
-                    </Button>
-                  </PopoverTrigger>
-                </ToolbarTooltip>
-                <PopoverContent align="end" className="w-64">
-                  <SearchInput
-                    value={searchDraft}
-                    onValueChange={setSearchDraft}
-                    onApply={() => setSearchQuery(searchDraft)}
-                    onClear={() => {
-                      setSearchDraft("")
-                      setSearchQuery("")
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-              {toolbarActions ? (
-                <>
-                  <Separator
-                    orientation="vertical"
-                    className="mx-1 h-4 self-center"
-                  />
-                  {toolbarActions}
-                </>
-              ) : null}
-              {showUpload ? (
-                <>
-                  <Separator
-                    orientation="vertical"
-                    className="mx-1 h-4 self-center"
-                  />
-                  <ToolbarTooltip label="Upload PDF">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Upload PDF"
-                      render={
-                        <label>
-                          <input
-                            type="file"
-                            accept="application/pdf,.pdf"
-                            className="sr-only"
-                            onChange={(event) => {
-                              const nextFile = event.target.files?.[0]
-
-                              if (nextFile) {
-                                handleUpload(nextFile)
-                                event.currentTarget.value = ""
-                              }
-                            }}
-                          />
+            </div>
+            <TooltipProvider>
+              <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
+                {showRotateControls ? (
+                  <>
+                    <div className="flex flex-none items-center gap-1">
+                      <ToolbarTooltip label="Rotate page counterclockwise">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Rotate page counterclockwise"
+                          disabled={controlsDisabled}
+                          onClick={() => rotateActivePage(-90)}
+                        >
                           <HugeiconsIcon
-                            icon={Upload01Icon}
+                            icon={RotateClockwiseIcon}
+                            className="size-4 -scale-x-100"
+                          />
+                        </Button>
+                      </ToolbarTooltip>
+                      <ToolbarTooltip label="Rotate page clockwise">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Rotate page clockwise"
+                          disabled={controlsDisabled}
+                          onClick={() => rotateActivePage(90)}
+                        >
+                          <HugeiconsIcon
+                            icon={RotateClockwiseIcon}
                             className="size-4"
                           />
-                        </label>
-                      }
+                        </Button>
+                      </ToolbarTooltip>
+                    </div>
+                    <Separator
+                      orientation="vertical"
+                      className="mx-1 h-4 self-center"
                     />
+                  </>
+                ) : null}
+                <div className="flex flex-none items-center gap-1">
+                  <ToolbarTooltip label="Zoom out">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Zoom out"
+                      disabled={controlsDisabled || zoom <= ZOOM_OPTIONS[0]}
+                      onClick={() => {
+                        const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
+                        setZoom(
+                          ZOOM_OPTIONS[Math.max(0, currentIndex - 1)] ?? zoom
+                        )
+                      }}
+                    >
+                      <HugeiconsIcon
+                        icon={MinusSignCircleIcon}
+                        className="size-4"
+                      />
+                    </Button>
                   </ToolbarTooltip>
-                </>
-              ) : null}
-            </div>
-          </TooltipProvider>
-        </div>
+                  <Select
+                    value={String(zoom)}
+                    onValueChange={(value) => setZoom(Number(value))}
+                    disabled={controlsDisabled}
+                    modal={false}
+                  >
+                    <SelectTrigger size="sm" className="w-[84px] min-w-[84px]">
+                      <SelectValue placeholder="Zoom">
+                        {Math.round(zoom * 100)}%
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent alignItemWithTrigger={false}>
+                      {ZOOM_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={String(option)}>
+                          {Math.round(option * 100)}%
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <ToolbarTooltip label="Zoom in">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Zoom in"
+                      disabled={
+                        controlsDisabled ||
+                        zoom >= ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]
+                      }
+                      onClick={() => {
+                        const currentIndex = ZOOM_OPTIONS.indexOf(zoom)
+                        setZoom(
+                          ZOOM_OPTIONS[
+                            Math.min(ZOOM_OPTIONS.length - 1, currentIndex + 1)
+                          ] ?? zoom
+                        )
+                      }}
+                    >
+                      <HugeiconsIcon
+                        icon={PlusSignCircleIcon}
+                        className="size-4"
+                      />
+                    </Button>
+                  </ToolbarTooltip>
+                </div>
+                <Separator
+                  orientation="vertical"
+                  className="mx-1 h-4 self-center"
+                />
+                {showDownload ? (
+                  <>
+                    <ToolbarTooltip label="Download PDF">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Download PDF"
+                        disabled={downloadDisabled}
+                        onClick={handleDownload}
+                      >
+                        {isPreparingDownload ? (
+                          <Spinner className="size-4" />
+                        ) : (
+                          <HugeiconsIcon
+                            icon={Download01Icon}
+                            className="size-4"
+                          />
+                        )}
+                      </Button>
+                    </ToolbarTooltip>
+                    <Separator
+                      orientation="vertical"
+                      className="mx-1 h-4 self-center"
+                    />
+                  </>
+                ) : null}
+                <Popover>
+                  <ToolbarTooltip label="Search text">
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Search text"
+                        disabled={controlsDisabled}
+                      >
+                        <HugeiconsIcon icon={Search01Icon} className="size-4" />
+                      </Button>
+                    </PopoverTrigger>
+                  </ToolbarTooltip>
+                  <PopoverContent align="end" className="w-64">
+                    <SearchInput
+                      value={searchDraft}
+                      onValueChange={setSearchDraft}
+                      onApply={() => setSearchQuery(searchDraft)}
+                      onClear={() => {
+                        setSearchDraft("")
+                        setSearchQuery("")
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {showUpload ? (
+                  <>
+                    <Separator
+                      orientation="vertical"
+                      className="mx-1 h-4 self-center"
+                    />
+                    <ToolbarTooltip label="Upload PDF">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Upload PDF"
+                        render={
+                          <label>
+                            <input
+                              type="file"
+                              accept="application/pdf,.pdf"
+                              className="sr-only"
+                              onChange={(event) => {
+                                const nextFile = event.target.files?.[0]
+
+                                if (nextFile) {
+                                  handleUpload(nextFile)
+                                  event.currentTarget.value = ""
+                                }
+                              }}
+                            />
+                            <HugeiconsIcon
+                              icon={Upload01Icon}
+                              className="size-4"
+                            />
+                          </label>
+                        }
+                      />
+                    </ToolbarTooltip>
+                  </>
+                ) : null}
+                {toolbarActions ? (
+                  <>
+                    <Separator
+                      orientation="vertical"
+                      className="mx-1 h-4 self-center"
+                    />
+                    {toolbarActions}
+                  </>
+                ) : null}
+              </div>
+            </TooltipProvider>
+          </div>
+        ) : null}
         <div
           ref={viewerShellRef}
           className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30"

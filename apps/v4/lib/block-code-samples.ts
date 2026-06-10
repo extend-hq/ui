@@ -31,6 +31,7 @@ export const blockIds = [
   "document-splits",
   "excel-document-splits",
   "docx-editor-block",
+  "file-system",
 ]
 
 const blockCodeDependencies: Record<string, string[]> = {
@@ -57,6 +58,13 @@ const blockCodeDependencies: Record<string, string[]> = {
     "xlsx-viewer",
   ],
   "docx-editor-block": ["docx-editor", "file-thumbnail"],
+  "file-system": [
+    "file-system",
+    "file-thumbnail",
+    "pdf-viewer",
+    "docx-viewer",
+    "xlsx-viewer",
+  ],
 }
 
 const appRoot = process.cwd()
@@ -149,6 +157,7 @@ function collectRegistryFiles(
 const blockCodeRegistryItems: Record<string, string> = {
   "layout-blocks": "layout-blocks-block",
   "bounding-box-citations": "bounding-box-citations-block",
+  "file-system": "file-system-block",
 }
 
 function dedupeFiles(files: RegistryFile[]) {

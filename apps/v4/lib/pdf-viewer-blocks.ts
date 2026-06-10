@@ -82,6 +82,15 @@ export const PDF_VIEWER_BLOCKS = [
     viewHref: "/view/blocks/docx-editor-block",
     previewHeightClassName: "h-[720px]",
   },
+  {
+    id: "file-system",
+    title: "File System (Finder)",
+    description:
+      "A Finder-style file browser that opens PDF, DOCX, XLSX, and image files in viewer dialogs.",
+    command: getRegistryAddCommand("file-system-block"),
+    docsHref: "/docs/components/file-system",
+    viewHref: "/view/blocks/file-system",
+  },
 ] as const satisfies readonly PdfViewerBlockConfig[]
 
 export type PdfViewerBlockId = (typeof PDF_VIEWER_BLOCKS)[number]["id"]

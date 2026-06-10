@@ -43,6 +43,7 @@ import {
 } from "@/components/document-splitter-docs"
 import { DocxEditorBlock } from "@/components/docx-editor-docs"
 import { ESignatureBlock } from "@/components/e-signature-docs"
+import { FileSystemFinderBlock } from "@/components/file-system-docs"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
 import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
@@ -91,6 +92,7 @@ const blockComponents = {
   "document-splits": DocumentSplitsBlock,
   "excel-document-splits": XlsxDocumentSplitsBlock,
   "docx-editor-block": DocxEditorBlock,
+  "file-system": FileSystemFinderBlock,
 } satisfies Record<PdfViewerBlockId, React.ComponentType>
 
 const pdfViewerBlocks: PdfViewerBlock[] = PDF_VIEWER_BLOCKS.map((block) => ({
@@ -386,7 +388,7 @@ function BlockViewToggle({
             className={cn(
               "flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium whitespace-nowrap transition-colors outline-none hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring",
               isActive &&
-                "bg-background text-foreground shadow-sm/5 dark:bg-input"
+                "bg-background text-foreground shadow-sm/5 hover:text-foreground dark:bg-input"
             )}
             onClick={() => onViewChange(item)}
           >
@@ -547,7 +549,12 @@ function PierreBlockFileTree({
     preparedInput,
     unsafeCSS: `
       button[data-type='item'][data-item-selected] {
-        background: color-mix(in oklab, var(--color-code-foreground) 16%, transparent);
+        background: var(--color-primary);
+        color: var(--color-primary-foreground);
+      }
+      button[data-type='item'][data-item-selected] *,
+      button[data-type='item'][data-item-selected] svg {
+        color: var(--color-primary-foreground) !important;
       }
     `,
     onSelectionChange: (selectedPaths) => {
@@ -578,8 +585,7 @@ function PierreBlockFileTree({
           "--trees-border-color-override": "var(--color-border)",
           "--trees-fg-override":
             "color-mix(in oklab, var(--color-code-foreground) 78%, transparent)",
-          "--trees-selected-bg-override":
-            "color-mix(in oklab, var(--color-code-foreground) 16%, transparent)",
+          "--trees-selected-bg-override": "var(--color-primary)",
         } as React.CSSProperties
       }
     />

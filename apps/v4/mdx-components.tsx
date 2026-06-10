@@ -39,6 +39,7 @@ import {
 import { DocxEditorDemo, DocxEditorSource } from "@/components/docx-editor-docs"
 import { DocxViewerDemo, DocxViewerSource } from "@/components/docx-viewer-docs"
 import { ESignatureDemo, ESignatureSource } from "@/components/e-signature-docs"
+import { FileSystemDemo, FileSystemSource } from "@/components/file-system-docs"
 import {
   FileThumbnailDemo,
   FileThumbnailSource,
@@ -385,6 +386,8 @@ export const mdxComponents = {
   DocxViewerSource,
   ESignatureDemo,
   ESignatureSource,
+  FileSystemDemo,
+  FileSystemSource,
   FileThumbnailDemo,
   FileThumbnailSource,
   FileUploadDemo,
