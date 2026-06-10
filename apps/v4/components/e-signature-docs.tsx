@@ -11,14 +11,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import type SignaturePad from "signature_pad"
 
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
-import { PDFViewer } from "@/components/ui/pdf-viewer"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  DocsSourceCodeBlock,
-  DocsViewCodeBlock,
-} from "@/components/docs-code-block"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 import {
   Dialog,
   DialogContent,
@@ -28,6 +22,13 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { PDFViewer } from "@/components/ui/pdf-viewer"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  DocsSourceCodeBlock,
+  DocsViewCodeBlock,
+} from "@/components/docs-code-block"
+import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 
 type BoundingBox = {
   x: number
@@ -44,7 +45,7 @@ type SignatureField = {
   imageDataUrl?: string
 }
 
-const PDF_URL = "/samples/loan-application.pdf"
+const PDF_URL = withUiBasePath("/samples/loan-application.pdf")
 const PAGE_WIDTH = 612
 const PAGE_HEIGHT = 792
 const DEFAULT_ZOOM = 1

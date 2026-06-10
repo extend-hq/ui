@@ -19,6 +19,7 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
 import remarkGfm from "remark-gfm"
 
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
 import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -93,7 +94,7 @@ type HighlightArea = {
   height: number
 }
 
-const PDF_URL = "/samples/attention-rotated.pdf"
+const PDF_URL = withUiBasePath("/samples/attention-rotated.pdf")
 const DEFAULT_ZOOM = 1
 const ROOT_OCR_PREVIEW_PAGE = 1
 const OCR_BLOCK_ROW_MIN_ESTIMATE = 92

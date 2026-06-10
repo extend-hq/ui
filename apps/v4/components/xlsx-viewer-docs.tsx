@@ -3,12 +3,15 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 
+import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import {
   DocsSourceCodeBlock,
   DocsViewCodeBlock,
 } from "@/components/docs-code-block"
+
+const SAMPLE_XLSX_URL = withUiBasePath("/samples/crazy-chart-zoo.xlsx")
 
 function ViewerPreviewLoading() {
   return (
@@ -33,7 +36,7 @@ export function XlsxViewerDemo() {
       data-slot="component-preview"
       className="group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border"
     >
-      <XlsxViewerPreview src="/samples/crazy-chart-zoo.xlsx" />
+      <XlsxViewerPreview src={SAMPLE_XLSX_URL} />
       <DocsViewCodeBlock code={xlsxViewerUsageCode} />
     </div>
   )

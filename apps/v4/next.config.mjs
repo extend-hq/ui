@@ -1,8 +1,13 @@
 import path from "path"
 import { createMDX } from "fumadocs-mdx/next"
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "/ui"
+const assetPrefix = process.env.NEXT_PUBLIC_ASSET_PREFIX ?? "/ui-static"
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath,
+  assetPrefix,
   devIndicators: false,
   typescript: {
     ignoreBuildErrors: true,
@@ -57,6 +62,42 @@ const nextConfig = {
   },
   redirects() {
     return [
+      {
+        source: "/",
+        destination: basePath,
+        permanent: false,
+        basePath: false,
+      },
+      {
+        source: "/docs/:path*",
+        destination: `${basePath}/docs/:path*`,
+        permanent: true,
+        basePath: false,
+      },
+      {
+        source: "/blocks",
+        destination: `${basePath}/blocks`,
+        permanent: true,
+        basePath: false,
+      },
+      {
+        source: "/view/:path*",
+        destination: `${basePath}/view/:path*`,
+        permanent: true,
+        basePath: false,
+      },
+      {
+        source: "/r/:path*",
+        destination: `${basePath}/r/:path*`,
+        permanent: true,
+        basePath: false,
+      },
+      {
+        source: "/components",
+        destination: `${basePath}/docs/components`,
+        permanent: true,
+        basePath: false,
+      },
       {
         source: "/components",
         destination: "/docs/components",
