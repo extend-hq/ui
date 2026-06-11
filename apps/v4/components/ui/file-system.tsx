@@ -63,7 +63,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea, ScrollAreaPrimitive } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
@@ -4088,7 +4088,16 @@ function FileSystemColumnsView(props: FileSystemViewProps) {
       viewportRef={scrollContainerRef}
       viewportClassName="overscroll-x-contain"
     >
-      <div className="flex h-full w-max min-w-full" onKeyDown={handleKeyDown}>
+      {/* The Content part's ResizeObserver tells the scroll area when the
+          trail shrinks (deselect, shallower selection) so the horizontal
+          scrollbar hides; the viewport alone only observes its own box. Its
+          built-in inline min-width (fit-content) would beat a min-w-full
+          class, so the full-width floor is inline too. */}
+      <ScrollAreaPrimitive.Content
+        className="flex h-full w-max"
+        style={{ minWidth: "100%" }}
+        onKeyDown={handleKeyDown}
+      >
         {columnPaths.map((columnPath, columnIndex) => (
           <FileSystemColumn
             key={columnPath || "(root)"}
@@ -4151,7 +4160,7 @@ function FileSystemColumnsView(props: FileSystemViewProps) {
             </div>
           </ScrollArea>
         ) : null}
-      </div>
+      </ScrollAreaPrimitive.Content>
     </ScrollArea>
   )
 }

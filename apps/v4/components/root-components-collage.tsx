@@ -16,9 +16,7 @@ import {
   type DocumentSplit,
 } from "@/components/ui/document-splits"
 import { SchemaBuilderPanel } from "@/components/ui/schema-builder"
-import { Spinner } from "@/components/ui/spinner"
 
-const ROOT_PREVIEW_LAZY_ROOT_MARGIN = "220px 0px"
 const ROOT_ATTENTION_PDF_URL = withUiBasePath("/samples/attention.pdf")
 const ROOT_ATTENTION_THUMBNAIL_URL = withUiBasePath(
   "/samples/attention-page-1.png"
@@ -33,7 +31,6 @@ const PdfViewerPreview = dynamic(
     ),
   {
     ssr: false,
-    loading: () => <ViewerPreviewLoading />,
   }
 )
 
@@ -42,7 +39,6 @@ const DocxViewerPreview = dynamic(
     import("@/components/ui/docx-viewer").then((mod) => mod.DocxViewerPreview),
   {
     ssr: false,
-    loading: () => <ViewerPreviewLoading />,
   }
 )
 
@@ -51,7 +47,6 @@ const XlsxViewerPreview = dynamic(
     import("@/components/ui/xlsx-viewer").then((mod) => mod.XlsxViewerPreview),
   {
     ssr: false,
-    loading: () => <ViewerPreviewLoading />,
   }
 )
 
@@ -62,7 +57,6 @@ const FileSystemBlock = dynamic(
     ),
   {
     ssr: false,
-    loading: () => <ViewerPreviewLoading />,
   }
 )
 
@@ -92,10 +86,6 @@ export function MobileRootPreview() {
   )
 }
 
-// Both responsive grids are always in the React tree; CSS shows exactly one.
-// Every tile body must stay wrapped in RootPreviewLoader: IntersectionObserver
-// never reports intersection inside the display:none copy, so only the visible
-// grid mounts the heavy viewers (and only as they approach the viewport).
 export function RootComponentsCollage() {
   return (
     <>
@@ -137,12 +127,10 @@ function PdfViewerTile() {
       viewHref="/docs/components/pdf-viewer"
       className="h-[560px] bg-background"
     >
-      <RootPreviewLoader idleDelayMs={900}>
-        <PdfViewerPreview
-          file={ROOT_ATTENTION_PDF_URL}
-          showRotateControls={false}
-        />
-      </RootPreviewLoader>
+      <PdfViewerPreview
+        file={ROOT_ATTENTION_PDF_URL}
+        showRotateControls={false}
+      />
     </ComponentCrop>
   )
 }
@@ -154,9 +142,7 @@ function FileSystemTile() {
       viewHref="/docs/components/file-system"
       className="h-[560px] bg-background"
     >
-      <RootPreviewLoader>
-        <FileSystemBlock heightClassName="h-full" />
-      </RootPreviewLoader>
+      <FileSystemBlock heightClassName="h-full" />
     </ComponentCrop>
   )
 }
@@ -168,9 +154,7 @@ function DocxViewerTile() {
       viewHref="/docs/components/docx-viewer"
       className="h-[560px] bg-background"
     >
-      <RootPreviewLoader idleDelayMs={1200}>
-        <DocxViewerPreview className="h-full" src={ROOT_DOCX_URL} />
-      </RootPreviewLoader>
+      <DocxViewerPreview className="h-full" src={ROOT_DOCX_URL} />
     </ComponentCrop>
   )
 }
@@ -182,9 +166,7 @@ function ComponentXlsxViewerTile() {
       viewHref="/docs/components/xlsx-viewer"
       className="h-[540px] bg-background 4xl:h-[500px]"
     >
-      <RootPreviewLoader idleDelayMs={1500}>
-        <XlsxViewerPreview className="h-full" src={ROOT_XLSX_URL} />
-      </RootPreviewLoader>
+      <XlsxViewerPreview className="h-full" src={ROOT_XLSX_URL} />
     </ComponentCrop>
   )
 }
@@ -198,16 +180,14 @@ function DocumentSplitsTile() {
       viewHref="/docs/components/document-splits"
       className="h-[500px] bg-background"
     >
-      <RootPreviewLoader idleDelayMs={300}>
-        <DocumentSplits
-          className="h-full"
-          splits={splits}
-          thumbnailImages={ROOT_DOCUMENT_SPLIT_THUMBNAILS}
-          withFrameDivider={false}
-          onSelectPage={() => {}}
-          onSplitsChange={setSplits}
-        />
-      </RootPreviewLoader>
+      <DocumentSplits
+        className="h-full"
+        splits={splits}
+        thumbnailImages={ROOT_DOCUMENT_SPLIT_THUMBNAILS}
+        withFrameDivider={false}
+        onSelectPage={() => {}}
+        onSplitsChange={setSplits}
+      />
     </ComponentCrop>
   )
 }
@@ -219,9 +199,7 @@ function SchemaBuilderTile() {
       viewHref="/docs/components/schema-builder"
       className="h-[560px] bg-background"
     >
-      <RootPreviewLoader idleDelayMs={500}>
-        <SchemaBuilderPanel className="h-full" />
-      </RootPreviewLoader>
+      <SchemaBuilderPanel className="h-full" />
     </ComponentCrop>
   )
 }
@@ -232,114 +210,6 @@ const ROOT_DOCUMENT_SPLIT_THUMBNAILS = Object.fromEntries(
     ROOT_ATTENTION_THUMBNAIL_URL,
   ])
 ) as Record<DocumentSplit["pages"][number], string>
-
-function useLazyRootPreview() {
-  const [node, setNode] = React.useState<HTMLDivElement | null>(null)
-  const [hasIntersected, setHasIntersected] = React.useState(false)
-  const [shouldMountPreview, setShouldMountPreview] = React.useState(false)
-
-  React.useEffect(() => {
-    if (hasIntersected) return
-    if (!node) return
-
-    if (!("IntersectionObserver" in window)) {
-      setHasIntersected(true)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return
-
-        setHasIntersected(true)
-        observer.disconnect()
-      },
-      { rootMargin: ROOT_PREVIEW_LAZY_ROOT_MARGIN }
-    )
-
-    observer.observe(node)
-
-    return () => observer.disconnect()
-  }, [hasIntersected, node])
-
-  return [
-    setNode,
-    hasIntersected,
-    shouldMountPreview,
-    setShouldMountPreview,
-  ] as const
-}
-
-function useIdleRootPreviewMount({
-  idleDelayMs = 0,
-  isReady,
-  setShouldMountPreview,
-}: {
-  idleDelayMs?: number
-  isReady: boolean
-  setShouldMountPreview: React.Dispatch<React.SetStateAction<boolean>>
-}) {
-  React.useEffect(() => {
-    if (!isReady) return
-
-    let idleCallbackId: number | null = null
-    let timeoutId: number | null = window.setTimeout(() => {
-      timeoutId = null
-
-      const mountPreview = () => {
-        React.startTransition(() => setShouldMountPreview(true))
-      }
-
-      if ("requestIdleCallback" in window) {
-        idleCallbackId = window.requestIdleCallback(mountPreview)
-      } else {
-        mountPreview()
-      }
-    }, idleDelayMs)
-
-    return () => {
-      if (timeoutId !== null) window.clearTimeout(timeoutId)
-      if (idleCallbackId !== null && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleCallbackId)
-      }
-    }
-  }, [idleDelayMs, isReady, setShouldMountPreview])
-}
-
-function RootPreviewLoader({
-  children,
-  idleDelayMs,
-}: {
-  children: React.ReactNode
-  idleDelayMs?: number
-}) {
-  const [
-    previewRef,
-    hasIntersected,
-    shouldMountPreview,
-    setShouldMountPreview,
-  ] = useLazyRootPreview()
-
-  useIdleRootPreviewMount({
-    idleDelayMs,
-    isReady: hasIntersected && !shouldMountPreview,
-    setShouldMountPreview,
-  })
-
-  return (
-    <div ref={previewRef} className="h-full min-h-0">
-      {shouldMountPreview ? children : <ViewerPreviewLoading />}
-    </div>
-  )
-}
-
-function ViewerPreviewLoading() {
-  return (
-    <div className="grid h-full min-h-52 place-items-center bg-background">
-      <Spinner className="size-4" />
-    </div>
-  )
-}
 
 function ComponentCrop({
   className,
@@ -366,14 +236,7 @@ function ComponentCrop({
           <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
         </Button>
       </div>
-      <div
-        className={cn(
-          "overflow-hidden [contain:layout_paint_size] [contain-intrinsic-size:560px] [content-visibility:auto]",
-          className
-        )}
-      >
-        {children}
-      </div>
+      <div className={cn("overflow-hidden", className)}>{children}</div>
     </div>
   )
 }

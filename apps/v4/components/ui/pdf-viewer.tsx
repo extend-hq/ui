@@ -1718,33 +1718,6 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                   orientation="vertical"
                   className="mx-1 h-4 self-center"
                 />
-                {showDownload ? (
-                  <>
-                    <ToolbarTooltip label="Download PDF">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="Download PDF"
-                        disabled={downloadDisabled}
-                        onClick={handleDownload}
-                      >
-                        {isPreparingDownload ? (
-                          <Spinner className="size-4" />
-                        ) : (
-                          <HugeiconsIcon
-                            icon={Download01Icon}
-                            className="size-4"
-                          />
-                        )}
-                      </Button>
-                    </ToolbarTooltip>
-                    <Separator
-                      orientation="vertical"
-                      className="mx-1 h-4 self-center"
-                    />
-                  </>
-                ) : null}
                 <Popover>
                   <ToolbarTooltip label="Search text">
                     <PopoverTrigger asChild>
@@ -1771,6 +1744,33 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
                     />
                   </PopoverContent>
                 </Popover>
+                {showDownload ? (
+                  <>
+                    <Separator
+                      orientation="vertical"
+                      className="mx-1 h-4 self-center"
+                    />
+                    <ToolbarTooltip label="Download PDF">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Download PDF"
+                        disabled={downloadDisabled}
+                        onClick={handleDownload}
+                      >
+                        {isPreparingDownload ? (
+                          <Spinner className="size-4" />
+                        ) : (
+                          <HugeiconsIcon
+                            icon={Download01Icon}
+                            className="size-4"
+                          />
+                        )}
+                      </Button>
+                    </ToolbarTooltip>
+                  </>
+                ) : null}
                 {showUpload ? (
                   <>
                     <Separator

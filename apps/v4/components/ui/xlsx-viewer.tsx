@@ -8,15 +8,21 @@ import {
   useXlsxViewerZoom,
   XlsxViewer,
   XlsxViewerProvider,
+  type XlsxCellAddress,
   type XlsxScrollerRenderProps,
+  type XlsxSheetData,
   type XlsxTableHeaderMenuRenderProps,
+  type XlsxViewerController,
 } from "@extend-ai/react-xlsx"
 import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
   Download01Icon,
   MinusSignCircleIcon,
   Moon02Icon,
   MoreHorizontalIcon,
   PlusSignCircleIcon,
+  Search01Icon,
   Sun03Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
@@ -33,6 +39,12 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
@@ -53,6 +65,9 @@ import {
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
+const XLSX_SEARCH_BATCH_ROW_COUNT = 500
+const XLSX_GRID_HEADER_HEIGHT = 24
+const XLSX_GRID_ROW_HEADER_WIDTH = 40
 const ZOOM_OPTIONS = [10, 25, 50, 75, 100, 125, 150, 175, 200, 400] as const
 
 // Stable reference so the thumbnails memo isn't invalidated on every render
@@ -68,6 +83,26 @@ type UploadedWorkbook = {
   buffer: ArrayBuffer
   fileName: string
   identity: string
+}
+
+type XlsxSearchResult = {
+  cell: XlsxCellAddress
+  displayValue: string
+  formula?: string
+  sheetIndex: number
+  sheetName: string
+  workbookSheetIndex: number
+}
+
+type XlsxBatchCell = {
+  col?: unknown
+  formula?: unknown
+  value?: unknown
+}
+
+type XlsxBatchRow = {
+  cells?: unknown
+  index?: unknown
 }
 
 function formatWorkbookName(fileName: string | undefined, url: string) {
@@ -107,6 +142,274 @@ function downloadWorkbookBuffer(buffer: ArrayBuffer, fileName: string) {
   anchor.click()
   anchor.remove()
   window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+function normalizeSearchText(value: unknown) {
+  return typeof value === "string"
+    ? value
+    : value === null || value === undefined
+      ? ""
+      : String(value)
+}
+
+function cellValueToSearchText(value: unknown) {
+  if (!value || typeof value !== "object") return normalizeSearchText(value)
+
+  const record = value as {
+    asBoolean?: () => boolean | null
+    asError?: () => string | null
+    asNumber?: () => number | null
+    asText?: () => string | null
+    is_boolean?: boolean
+    is_empty?: boolean
+    is_error?: boolean
+    is_number?: boolean
+    is_text?: boolean
+  }
+
+  if (record.is_empty) return ""
+  if (record.is_error) return record.asError?.() ?? ""
+  if (record.is_text) return record.asText?.() ?? ""
+  if (record.is_number) return normalizeSearchText(record.asNumber?.())
+  if (record.is_boolean) return record.asBoolean?.() ? "TRUE" : "FALSE"
+
+  return normalizeSearchText(value)
+}
+
+function getCellSearchText(
+  controller: XlsxViewerController,
+  sheet: XlsxSheetData,
+  row: number,
+  col: number
+) {
+  const worksheet = controller.workbook?.getSheet(sheet.workbookSheetIndex)
+  if (!worksheet) return { displayValue: "", formula: "" }
+
+  const formula = worksheet.getFormulaAt(row, col) ?? ""
+  const cachedFormulaValue = formula
+    ? sheet.cachedFormulaValues[cellAddressToA1({ row, col })]
+    : undefined
+  const formatted = worksheet.getFormattedValueAt(row, col)
+
+  if (
+    formatted &&
+    !(formula && cachedFormulaValue !== undefined && formatted.startsWith("#"))
+  ) {
+    return { displayValue: formatted, formula }
+  }
+
+  const calculated = worksheet.getCalculatedValueAt(row, col)
+  const displayValue =
+    formula && cachedFormulaValue !== undefined && calculated.is_error
+      ? cachedFormulaValue
+      : cellValueToSearchText(calculated)
+
+  return { displayValue, formula }
+}
+
+function getBatchRows(rows: unknown): XlsxBatchRow[] {
+  return Array.isArray(rows) ? (rows as XlsxBatchRow[]) : []
+}
+
+function getBatchCells(row: XlsxBatchRow): XlsxBatchCell[] {
+  return Array.isArray(row.cells) ? (row.cells as XlsxBatchCell[]) : []
+}
+
+function cellMatchesQuery(displayValue: string, formula: string, query: string) {
+  return (
+    displayValue.toLowerCase().includes(query) ||
+    formula.toLowerCase().includes(query)
+  )
+}
+
+function cellAddressToA1({ col, row }: XlsxCellAddress) {
+  let columnNumber = col + 1
+  let columnName = ""
+
+  while (columnNumber > 0) {
+    const remainder = (columnNumber - 1) % 26
+    columnName = String.fromCharCode(65 + remainder) + columnName
+    columnNumber = Math.floor((columnNumber - 1) / 26)
+  }
+
+  return `${columnName}${row + 1}`
+}
+
+async function findXlsxSearchResults(
+  controller: XlsxViewerController,
+  rawQuery: string
+) {
+  const query = rawQuery.trim().toLowerCase()
+  if (!query) return []
+
+  const results: XlsxSearchResult[] = []
+
+  for (const [sheetIndex, sheet] of controller.sheets.entries()) {
+    const startRow = Math.max(0, sheet.minUsedRow)
+    const endRow = Math.max(startRow, sheet.maxUsedRow)
+    const visibleCols = sheet.visibleCols.filter(
+      (col) => col >= sheet.minUsedCol && col <= sheet.maxUsedCol
+    )
+    const visibleRowSet = new Set(sheet.visibleRows)
+    const visibleColSet = new Set(visibleCols)
+
+    if (!visibleCols.length || sheet.maxUsedRow < sheet.minUsedRow) continue
+
+    const worksheet = controller.workbook?.getSheet(sheet.workbookSheetIndex)
+    const worksheetWithBatch = worksheet as
+      | {
+          getRowsBatch?: (
+            startRow: number,
+            rowCount: number,
+            options?: Record<string, unknown>
+          ) => unknown
+        }
+      | undefined
+
+    for (
+      let batchStartRow = startRow;
+      batchStartRow <= endRow;
+      batchStartRow += XLSX_SEARCH_BATCH_ROW_COUNT
+    ) {
+      const rowCount = Math.min(
+        XLSX_SEARCH_BATCH_ROW_COUNT,
+        endRow - batchStartRow + 1
+      )
+      const rows = controller.getRowsBatchAsync
+        ? await controller.getRowsBatchAsync(
+            sheet.workbookSheetIndex,
+            batchStartRow,
+            rowCount
+          )
+        : worksheetWithBatch?.getRowsBatch?.(batchStartRow, rowCount, {
+            includeFormulas: true,
+            useFormattedValues: true,
+          })
+
+      if (rows) {
+        for (const rowEntry of getBatchRows(rows)) {
+          const row = Number(rowEntry.index)
+          if (!Number.isInteger(row) || !visibleRowSet.has(row)) {
+            continue
+          }
+
+          for (const cellEntry of getBatchCells(rowEntry)) {
+            const col = Number(cellEntry.col)
+            if (!Number.isInteger(col) || !visibleColSet.has(col)) continue
+
+            const displayValue = normalizeSearchText(cellEntry.value)
+            const formula = normalizeSearchText(cellEntry.formula)
+
+            if (!cellMatchesQuery(displayValue, formula, query)) continue
+
+            results.push({
+              cell: { row, col },
+              displayValue,
+              formula,
+              sheetIndex,
+              sheetName: sheet.name,
+              workbookSheetIndex: sheet.workbookSheetIndex,
+            })
+          }
+        }
+        continue
+      }
+
+      if (!worksheet) continue
+
+      const batchEndRow = batchStartRow + rowCount - 1
+      for (const row of sheet.visibleRows) {
+        if (row < batchStartRow || row > batchEndRow) continue
+
+        for (const col of visibleCols) {
+          const { displayValue, formula } = getCellSearchText(
+            controller,
+            sheet,
+            row,
+            col
+          )
+
+          if (!cellMatchesQuery(displayValue, formula, query)) continue
+
+          results.push({
+            cell: { row, col },
+            displayValue,
+            formula,
+            sheetIndex,
+            sheetName: sheet.name,
+            workbookSheetIndex: sheet.workbookSheetIndex,
+          })
+        }
+      }
+    }
+  }
+
+  return results
+}
+
+function sumAxisBefore(values: number[], endIndex: number, zoomFactor: number) {
+  let total = 0
+  for (let index = 0; index < endIndex; index += 1) {
+    total += (values[index] ?? 0) * zoomFactor
+  }
+  return total
+}
+
+function scrollXlsxCellIntoView({
+  controller,
+  result,
+  viewport,
+}: {
+  controller: XlsxViewerController
+  result: XlsxSearchResult
+  viewport: HTMLDivElement | null
+}) {
+  if (!viewport) return
+
+  const sheet = controller.sheets[result.sheetIndex]
+  if (!sheet) return
+
+  const rowIndex = sheet.visibleRows.indexOf(result.cell.row)
+  const colIndex = sheet.visibleCols.indexOf(result.cell.col)
+  if (rowIndex < 0 || colIndex < 0) return
+
+  const zoomFactor = Math.max(0.1, controller.zoomScale / 100)
+  const headerHeight = XLSX_GRID_HEADER_HEIGHT * zoomFactor
+  const rowHeaderWidth = XLSX_GRID_ROW_HEADER_WIDTH * zoomFactor
+  const rowStart =
+    headerHeight + sumAxisBefore(sheet.rowHeights, rowIndex, zoomFactor)
+  const colStart =
+    rowHeaderWidth + sumAxisBefore(sheet.colWidths, colIndex, zoomFactor)
+  const rowHeight =
+    (sheet.rowHeights[rowIndex] ?? sheet.defaultRowHeightPx) * zoomFactor
+  const colWidth =
+    (sheet.colWidths[colIndex] ?? sheet.defaultColWidthPx) * zoomFactor
+  const rowEnd = rowStart + rowHeight
+  const colEnd = colStart + colWidth
+  let nextTop = viewport.scrollTop
+  let nextLeft = viewport.scrollLeft
+  const visibleTop = viewport.scrollTop + headerHeight
+  const visibleLeft = viewport.scrollLeft + rowHeaderWidth
+  const visibleBottom = viewport.scrollTop + viewport.clientHeight
+  const visibleRight = viewport.scrollLeft + viewport.clientWidth
+
+  if (rowStart < visibleTop) {
+    nextTop = rowStart - headerHeight
+  } else if (rowEnd > visibleBottom) {
+    nextTop = rowEnd - viewport.clientHeight
+  }
+
+  if (colStart < visibleLeft) {
+    nextLeft = colStart - rowHeaderWidth
+  } else if (colEnd > visibleRight) {
+    nextLeft = colEnd - viewport.clientWidth
+  }
+
+  viewport.scrollTo({
+    left: Math.max(0, nextLeft),
+    top: Math.max(0, nextTop),
+    behavior: "auto",
+  })
 }
 
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
@@ -252,6 +555,226 @@ export function WorkbookTableHeaderMenu({
   )
 }
 
+function WorkbookSearchPopover({
+  viewportRef,
+  workbookIdentity,
+}: {
+  viewportRef: React.RefObject<HTMLDivElement | null>
+  workbookIdentity: string
+}) {
+  const controller = useXlsxViewer()
+  const [searchDraft, setSearchDraft] = React.useState("")
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [searchResults, setSearchResults] = React.useState<XlsxSearchResult[]>(
+    []
+  )
+  const [activeResultIndex, setActiveResultIndex] = React.useState(0)
+  const [isSearching, setIsSearching] = React.useState(false)
+  const searchRequestIdRef = React.useRef(0)
+  const appliedResultKeyRef = React.useRef("")
+  const activeResult = searchResults[activeResultIndex] ?? null
+  const activeResultKey = activeResult
+    ? `${activeResult.workbookSheetIndex}:${activeResult.cell.row}:${activeResult.cell.col}`
+    : ""
+  const controlsDisabled =
+    controller.isLoading || Boolean(controller.error) || !controller.sheets.length
+  const hasSubmittedQuery = Boolean(searchQuery.trim())
+  const resultLabel = isSearching
+    ? "Searching"
+    : !hasSubmittedQuery
+      ? "No search"
+      : searchResults.length
+        ? `${activeResultIndex + 1} / ${searchResults.length}`
+        : "No results"
+
+  const applySearch = React.useCallback(() => {
+    const nextQuery = searchDraft.trim()
+    const requestId = searchRequestIdRef.current + 1
+    searchRequestIdRef.current = requestId
+    appliedResultKeyRef.current = ""
+    setSearchQuery(nextQuery)
+    setActiveResultIndex(0)
+
+    if (!nextQuery) {
+      setSearchResults([])
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    void findXlsxSearchResults(controller, nextQuery)
+      .then((nextResults) => {
+        if (searchRequestIdRef.current !== requestId) return
+        setSearchResults(nextResults)
+      })
+      .catch(() => {
+        if (searchRequestIdRef.current !== requestId) return
+        setSearchResults([])
+      })
+      .finally(() => {
+        if (searchRequestIdRef.current !== requestId) return
+        setIsSearching(false)
+      })
+  }, [controller, searchDraft])
+
+  const clearSearch = React.useCallback(() => {
+    searchRequestIdRef.current += 1
+    setSearchDraft("")
+    setSearchQuery("")
+    setSearchResults([])
+    setActiveResultIndex(0)
+    setIsSearching(false)
+    appliedResultKeyRef.current = ""
+    controller.clearSelection()
+  }, [controller])
+
+  const goToRelativeResult = React.useCallback(
+    (direction: 1 | -1) => {
+      if (!searchResults.length) return
+
+      setActiveResultIndex((currentIndex) => {
+        return (
+          (currentIndex + direction + searchResults.length) %
+          searchResults.length
+        )
+      })
+    },
+    [searchResults.length]
+  )
+
+  React.useEffect(() => {
+    searchRequestIdRef.current += 1
+    setSearchDraft("")
+    setSearchQuery("")
+    setSearchResults([])
+    setActiveResultIndex(0)
+    setIsSearching(false)
+    appliedResultKeyRef.current = ""
+  }, [workbookIdentity])
+
+  React.useEffect(() => {
+    if (!activeResult) return
+
+    if (controller.activeSheetIndex !== activeResult.sheetIndex) {
+      appliedResultKeyRef.current = ""
+      controller.setActiveSheetIndex(activeResult.sheetIndex)
+      return
+    }
+
+    if (appliedResultKeyRef.current === activeResultKey) return
+    appliedResultKeyRef.current = activeResultKey
+    controller.selectCell(activeResult.cell)
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollXlsxCellIntoView({
+        controller,
+        result: activeResult,
+        viewport: viewportRef.current,
+      })
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [activeResult, activeResultKey, controller, controller.activeSheetIndex, viewportRef])
+
+  return (
+    <Popover>
+      <ToolbarTooltip label="Search workbook">
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Search workbook"
+            disabled={controlsDisabled}
+          >
+            <HugeiconsIcon icon={Search01Icon} className="size-4" />
+          </Button>
+        </PopoverTrigger>
+      </ToolbarTooltip>
+      <PopoverContent align="end" className="w-72">
+        <div className="space-y-3">
+          <Input
+            placeholder="Search workbook"
+            value={searchDraft}
+            onChange={(event) => setSearchDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return
+
+              event.preventDefault()
+              if (event.shiftKey && searchResults.length) {
+                goToRelativeResult(-1)
+              } else if (searchResults.length && searchDraft === searchQuery) {
+                goToRelativeResult(1)
+              } else {
+                applySearch()
+              }
+            }}
+          />
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 text-xs text-muted-foreground">
+              <div className="truncate">
+                {searchResults.length ? (
+                  <>
+                    <span className="text-primary">{activeResultIndex + 1}</span>
+                    {` / ${searchResults.length}`}
+                  </>
+                ) : (
+                  resultLabel
+                )}
+              </div>
+              {activeResult ? (
+                <div className="mt-0.5 truncate">
+                  {activeResult.sheetName}!{cellAddressToA1(activeResult.cell)}
+                </div>
+              ) : null}
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="Previous result"
+                disabled={isSearching || searchResults.length === 0}
+                onClick={() => goToRelativeResult(-1)}
+              >
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="Next result"
+                disabled={isSearching || searchResults.length === 0}
+                onClick={() => goToRelativeResult(1)}
+              >
+                <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={clearSearch}
+            >
+              Clear
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSearching}
+              onClick={applySearch}
+            >
+              Search
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 function WorkbookToolbar({
   isDark,
   onDownload,
@@ -261,6 +784,7 @@ function WorkbookToolbar({
   showNightRenderToggle,
   showUploadButton = true,
   toolbarActions,
+  viewportRef,
   workbookIdentity,
 }: {
   isDark: boolean
@@ -271,6 +795,7 @@ function WorkbookToolbar({
   showNightRenderToggle: boolean
   showUploadButton?: boolean
   toolbarActions?: React.ReactNode
+  viewportRef: React.RefObject<HTMLDivElement | null>
   workbookIdentity: string
 }) {
   const { canZoomIn, canZoomOut, setZoomScale, zoomIn, zoomOut, zoomScale } =
@@ -303,7 +828,12 @@ function WorkbookToolbar({
               </Button>
             </ToolbarTooltip>
           ) : null}
-          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
+          {showNightRenderToggle ? (
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
+          ) : null}
           <div className="flex flex-none items-center gap-1">
             <ToolbarTooltip label="Zoom out">
               <Button
@@ -354,6 +884,11 @@ function WorkbookToolbar({
               </Button>
             </ToolbarTooltip>
           </div>
+          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
+          <WorkbookSearchPopover
+            viewportRef={viewportRef}
+            workbookIdentity={workbookIdentity}
+          />
           {showDownloadButton && onDownload ? (
             <>
               <Separator
@@ -748,6 +1283,19 @@ export function XlsxWorkbookSurface({
   workbookIdentity: string
 }) {
   const { error } = useXlsxViewer()
+  const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const renderSearchableScroller = React.useCallback(
+    ({ children, viewportProps }: XlsxScrollerRenderProps) => (
+      <ScrollArea
+        className="h-full min-h-0 w-full min-w-0 flex-1"
+        viewportProps={viewportProps}
+        viewportRef={viewportRef}
+      >
+        {children}
+      </ScrollArea>
+    ),
+    []
+  )
 
   return (
     <div
@@ -767,6 +1315,7 @@ export function XlsxWorkbookSurface({
           showNightRenderToggle={showNightRenderToggle}
           showUploadButton={showUploadButton}
           toolbarActions={toolbarActions}
+          viewportRef={viewportRef}
           workbookIdentity={workbookIdentity}
         />
       ) : null}
@@ -794,7 +1343,7 @@ export function XlsxWorkbookSurface({
               </div>
             }
             loadingState={<ViewerLoadingSurface />}
-            renderScroller={renderXlsxScroller}
+            renderScroller={renderSearchableScroller}
             errorState={
               <div className="grid h-full w-full min-w-full place-items-center p-6 text-sm text-destructive">
                 {error?.message ?? "Unable to display workbook."}
