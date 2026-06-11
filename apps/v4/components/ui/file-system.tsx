@@ -293,6 +293,7 @@ const EXTENSION_MIME_TYPES: Record<string, string> = {
 }
 
 const FALLBACK_MIME_TYPE = "application/octet-stream"
+const IPAD_MIN_WIDTH = 768
 
 const MIME_TYPE_LABELS: Record<string, string> = {
   [FALLBACK_MIME_TYPE]: "Binary",
@@ -1477,14 +1478,14 @@ export function FileSystem({
     []
   )
 
-  // Below 560px the tabs view switcher no longer fits in the toolbar and
-  // collapses into a select while the search input collapses into a popover;
-  // below 360px the select labels and the folder name are dropped too,
-  // leaving icons only.
+  // Below iPad width the view switcher collapses into a select and the sort
+  // select drops its label; below 560px the search input collapses into a
+  // popover, and below 360px the folder name is dropped too.
   const rootRef = React.useRef<HTMLDivElement | null>(null)
   const [headerLayout, setHeaderLayout] = React.useState<
     "full" | "compact" | "minimal"
   >("full")
+  const [isBelowIpadWidth, setIsBelowIpadWidth] = React.useState(false)
 
   React.useEffect(() => {
     const root = rootRef.current
@@ -1497,6 +1498,7 @@ export function FileSystem({
       setHeaderLayout(
         width < 360 ? "minimal" : width < 560 ? "compact" : "full"
       )
+      setIsBelowIpadWidth(width < IPAD_MIN_WIDTH)
     }
     const observer = new ResizeObserver((observerEntries) =>
       applyWidth(observerEntries[0]?.contentRect.width)
@@ -1755,7 +1757,7 @@ export function FileSystem({
             </span>
           ) : null}
         </div>
-        {headerLayout !== "full" ? (
+        {headerLayout !== "full" || isBelowIpadWidth ? (
           <Select
             value={view}
             onValueChange={(value) => setView(value as FileSystemView)}
@@ -1812,6 +1814,7 @@ export function FileSystem({
           <FileSystemSortSelect
             layout={headerLayout}
             onKeyChange={applySortKey}
+            showLabel={!isBelowIpadWidth}
             sort={sort}
           />
           <FileSystemFilterMenu
@@ -2033,7 +2036,7 @@ function FileSystemSearchField({
     <div
       className={cn(
         "relative flex h-7 min-w-0 flex-1 items-center rounded-lg border border-input bg-popover text-sm text-foreground shadow-xs/5 transition-shadow outline-none not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] not-focus-within:before:shadow-[0_1px_--theme(--color-black/4%)] focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1 focus-within:ring-offset-background dark:bg-input/32 dark:not-focus-within:before:shadow-[0_-1px_--theme(--color-white/6%)]",
-        isInline && "max-w-44"
+        isInline && "max-w-56"
       )}
     >
       <HugeiconsIcon
@@ -2081,7 +2084,7 @@ function FileSystemSearchField({
     // A fixed basis (not flex-1) keeps the whole toolbar cluster packed
     // against the header's right edge; the input shrinks first when the
     // header tightens.
-    return <div className="flex w-44 min-w-9 items-center">{input}</div>
+    return <div className="flex w-56 min-w-32 items-center">{input}</div>
   }
 
   return (
@@ -2113,10 +2116,12 @@ function FileSystemSearchField({
 function FileSystemSortSelect({
   layout,
   onKeyChange,
+  showLabel,
   sort,
 }: {
   layout: "full" | "compact" | "minimal"
   onKeyChange: (key: FileSystemSortKey) => void
+  showLabel: boolean
   sort: FileSystemSortState
 }) {
   const activeOption = SORT_OPTIONS.find((option) => option.key === sort.key)
@@ -2135,7 +2140,7 @@ function FileSystemSortSelect({
         <SelectValue>
           <span className="flex items-center gap-1.5">
             <HugeiconsIcon icon={ArrowUpDownIcon} className="size-4" />
-            {layout === "full" ? activeOption?.triggerLabel : null}
+            {layout === "full" && showLabel ? activeOption?.triggerLabel : null}
           </span>
         </SelectValue>
       </SelectTrigger>
