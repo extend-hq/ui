@@ -438,7 +438,7 @@ function PDFViewerPageNumberControl({
           type="button"
           variant="ghost"
           size="xs"
-          className="relative top-px mx-0.5 h-auto min-w-7 rounded-sm px-1.5 py-0 text-sm leading-normal font-normal text-primary sm:text-sm"
+          className="mx-0.5 h-auto min-w-7 rounded-sm px-1.5 py-0 text-sm leading-normal font-normal text-primary sm:text-sm"
           aria-label={`Current page ${activePage}. Edit page number`}
           disabled={controlsDisabled}
           onClick={() => setIsEditing(true)}

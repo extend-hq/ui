@@ -617,15 +617,63 @@ type DemoThumbnails = {
   urls: string[]
 }
 
+// Generated data URLs survive remounts and route changes; without this every
+// FileSystem instance re-runs the full generator pipeline (PDF rasterization,
+// a hidden DOCX import + pagination, XLSX sheet paints).
+const demoThumbnailCache = new Map<string, DemoThumbnails>()
+
+// The hidden DOCX generator imports and paginates the whole 1.3MB demo.docx
+// on the main thread — by far the heaviest job on the page. Its output is
+// only gallery thumbnails, so hold it until the visible viewers have parsed.
+const DOCX_GENERATOR_DELAY_MS = 1200
+
+function useDeferredDocxGeneration() {
+  const [isReady, setIsReady] = React.useState(false)
+
+  React.useEffect(() => {
+    let idleCallbackId: number | null = null
+    let timeoutId: number | null = window.setTimeout(() => {
+      timeoutId = null
+
+      const markReady = () => setIsReady(true)
+
+      if ("requestIdleCallback" in window) {
+        idleCallbackId = window.requestIdleCallback(markReady, {
+          timeout: 4000,
+        })
+      } else {
+        markReady()
+      }
+    }, DOCX_GENERATOR_DELAY_MS)
+
+    return () => {
+      if (timeoutId !== null) window.clearTimeout(timeoutId)
+      if (idleCallbackId !== null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleCallbackId)
+      }
+    }
+  }, [])
+
+  return isReady
+}
+
 export function useFileSystemDemoItems() {
   const [thumbnails, setThumbnails] = React.useState<
     Record<string, DemoThumbnails>
-  >({})
+  >(() => Object.fromEntries(demoThumbnailCache))
+  const canGenerateDocx = useDeferredDocxGeneration()
   const setPathThumbnails = React.useCallback(
     (path: string, urls: string[], pageCount: number) => {
-      setThumbnails((previous) =>
-        previous[path] ? previous : { ...previous, [path]: { pageCount, urls } }
-      )
+      if (!demoThumbnailCache.has(path)) {
+        demoThumbnailCache.set(path, { pageCount, urls })
+      }
+      React.startTransition(() => {
+        setThumbnails((previous) =>
+          previous[path]
+            ? previous
+            : { ...previous, [path]: { pageCount, urls } }
+        )
+      })
     },
     []
   )
@@ -694,7 +742,10 @@ export function useFileSystemDemoItems() {
         />
       ))}
       {DEMO_SOURCES.filter(
-        (source) => source.thumbnail === "docx" && !thumbnails[source.path]
+        (source) =>
+          source.thumbnail === "docx" &&
+          canGenerateDocx &&
+          !thumbnails[source.path]
       ).map((source) => (
         <DocxThumbnailUrlGenerator
           key={source.path}

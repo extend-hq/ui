@@ -331,7 +331,7 @@ function DocxPageNumberControl({
           type="button"
           variant="ghost"
           size="xs"
-          className="relative top-px mx-0.5 h-auto min-w-7 rounded-sm px-1.5 py-0 text-sm leading-normal font-normal text-primary sm:text-sm"
+          className="mx-0.5 h-auto min-w-7 rounded-sm px-1.5 py-0 text-sm leading-normal font-normal text-primary sm:text-sm"
           aria-label={`Current page ${displayPage}. Edit page number`}
           disabled={controlsDisabled || !pageCount}
           onClick={() => setIsEditing(true)}
@@ -704,13 +704,16 @@ function DocxViewerContent({
   )
   const thumbnailOptions = React.useMemo(
     () => ({
+      // Thumbnails paint from mounted page DOM, so they can only render
+      // while the sidebar is showing them; skip the work when it is closed.
+      disabled: !sidebarOpen,
       pixelRatio: 2,
       resolution: {
         maxHeight: DOCX_THUMBNAIL_WIDTH * 1.35,
         maxWidth: DOCX_THUMBNAIL_WIDTH,
       },
     }),
-    []
+    [sidebarOpen]
   )
   const { thumbnails } = useDocxViewerThumbnails(
     thumbnailEditor,
@@ -1064,7 +1067,10 @@ function DocxViewerContent({
                   loadingState={loadingState}
                   pageBackgroundColor={effectiveIsDark ? "#0a0a0a" : undefined}
                   pageGapBackgroundColor={viewerBackgroundColor}
-                  pageVirtualization={{ enabled: false }}
+                  // Sidebar thumbnails can only paint from mounted page DOM,
+                  // so every page must mount while the sidebar is open;
+                  // otherwise let the viewer virtualize off-screen pages.
+                  pageVirtualization={{ enabled: !sidebarOpen }}
                   deferInitialPaginationPaint={false}
                   onPageCountChange={handlePageCountChange}
                 />

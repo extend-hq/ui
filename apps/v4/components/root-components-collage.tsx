@@ -15,13 +15,13 @@ import {
   INITIAL_SPLITS,
   type DocumentSplit,
 } from "@/components/ui/document-splits"
+import { FileUpload } from "@/components/ui/file-upload"
 import { SchemaBuilderPanel } from "@/components/ui/schema-builder"
 
 const ROOT_ATTENTION_PDF_URL = withUiBasePath("/samples/attention.pdf")
 const ROOT_ATTENTION_THUMBNAIL_URL = withUiBasePath(
   "/samples/attention-page-1.png"
 )
-const ROOT_DOCX_URL = withUiBasePath("/samples/demo.docx")
 const ROOT_XLSX_URL = withUiBasePath("/samples/crazy-chart-zoo.xlsx")
 
 const PdfViewerPreview = dynamic(
@@ -29,14 +29,6 @@ const PdfViewerPreview = dynamic(
     import("@/components/pdf-viewer-preview-client").then(
       (mod) => mod.PdfViewerPreviewClient
     ),
-  {
-    ssr: false,
-  }
-)
-
-const DocxViewerPreview = dynamic(
-  () =>
-    import("@/components/ui/docx-viewer").then((mod) => mod.DocxViewerPreview),
   {
     ssr: false,
   }
@@ -86,92 +78,130 @@ export function MobileRootPreview() {
   )
 }
 
+// Both responsive grids stay in the DOM so the tile frames paint with the
+// server HTML, but CSS only ever shows one. Each viewer parses a real
+// document on mount, so the hidden twin grid (and the mobile viewport, which
+// shows a static image instead) must not mount the previews — that doubles
+// every PDF/DOCX/XLSX parse and rasterization pass.
+function useCollageBreakpoint() {
+  const [breakpoint, setBreakpoint] = React.useState<"mobile" | "md" | "lg">()
+
+  React.useEffect(() => {
+    const mdQuery = window.matchMedia("(min-width: 768px)")
+    const lgQuery = window.matchMedia("(min-width: 1024px)")
+    const update = () =>
+      setBreakpoint(lgQuery.matches ? "lg" : mdQuery.matches ? "md" : "mobile")
+
+    update()
+    mdQuery.addEventListener("change", update)
+    lgQuery.addEventListener("change", update)
+    return () => {
+      mdQuery.removeEventListener("change", update)
+      lgQuery.removeEventListener("change", update)
+    }
+  }, [])
+
+  return breakpoint
+}
+
 export function RootComponentsCollage() {
+  const breakpoint = useCollageBreakpoint()
+
   return (
     <>
       <div className="mx-auto hidden items-start gap-4 py-1 md:grid md:grid-cols-2 lg:hidden">
         <div className="flex flex-col gap-4">
-          <PdfViewerTile />
-          <DocumentSplitsTile />
-          <ComponentXlsxViewerTile />
+          <PdfViewerTile mountPreview={breakpoint === "md"} />
+          <DocumentSplitsTile mountPreview={breakpoint === "md"} />
+          <ComponentXlsxViewerTile mountPreview={breakpoint === "md"} />
         </div>
         <div className="flex flex-col gap-4">
-          <FileSystemTile />
-          <DocxViewerTile />
-          <SchemaBuilderTile />
+          <FileSystemTile mountPreview={breakpoint === "md"} />
+          <FileUploadTile mountPreview={breakpoint === "md"} />
+          <SchemaBuilderTile mountPreview={breakpoint === "md"} />
         </div>
       </div>
 
       <div className="mx-auto hidden items-start gap-4 py-1 lg:grid lg:grid-cols-3">
         <div className="flex flex-col gap-4">
-          <PdfViewerTile />
-          <DocumentSplitsTile />
+          <PdfViewerTile mountPreview={breakpoint === "lg"} />
+          <DocumentSplitsTile mountPreview={breakpoint === "lg"} />
         </div>
         <div className="flex flex-col gap-4">
-          <FileSystemTile />
-          <DocxViewerTile />
+          <FileSystemTile mountPreview={breakpoint === "lg"} />
+          <FileUploadTile mountPreview={breakpoint === "lg"} />
         </div>
         <div className="flex flex-col gap-4">
-          <ComponentXlsxViewerTile />
-          <SchemaBuilderTile />
+          <ComponentXlsxViewerTile mountPreview={breakpoint === "lg"} />
+          <SchemaBuilderTile mountPreview={breakpoint === "lg"} />
         </div>
       </div>
     </>
   )
 }
 
-function PdfViewerTile() {
+type TileProps = {
+  mountPreview: boolean
+}
+
+function PdfViewerTile({ mountPreview }: TileProps) {
   return (
     <ComponentCrop
       label="PDF Viewer"
       viewHref="/docs/components/pdf-viewer"
       className="h-[560px] bg-background"
     >
-      <PdfViewerPreview
-        file={ROOT_ATTENTION_PDF_URL}
-        showRotateControls={false}
-      />
+      {mountPreview && (
+        <PdfViewerPreview
+          file={ROOT_ATTENTION_PDF_URL}
+          showRotateControls={false}
+        />
+      )}
     </ComponentCrop>
   )
 }
 
-function FileSystemTile() {
+function FileSystemTile({ mountPreview }: TileProps) {
   return (
     <ComponentCrop
       label="File System"
       viewHref="/docs/components/file-system"
       className="h-[560px] bg-background"
     >
-      <FileSystemBlock defaultView="gallery" heightClassName="h-full" />
+      {mountPreview && (
+        <FileSystemBlock defaultView="gallery" heightClassName="h-full" />
+      )}
     </ComponentCrop>
   )
 }
 
-function DocxViewerTile() {
+function FileUploadTile({ mountPreview }: TileProps) {
   return (
     <ComponentCrop
-      label="DOCX Viewer"
-      viewHref="/docs/components/docx-viewer"
-      className="h-[560px] bg-background"
+      label="File Upload"
+      viewHref="/docs/components/file-upload"
+      className="grid h-[360px] place-items-center bg-background p-4"
     >
-      <DocxViewerPreview className="h-full" src={ROOT_DOCX_URL} />
+      {mountPreview && <FileUpload className="w-full max-w-xl" />}
     </ComponentCrop>
   )
 }
 
-function ComponentXlsxViewerTile() {
+function ComponentXlsxViewerTile({ mountPreview }: TileProps) {
   return (
     <ComponentCrop
       label="XLSX Viewer"
       viewHref="/docs/components/xlsx-viewer"
       className="h-[540px] bg-background 4xl:h-[500px]"
     >
-      <XlsxViewerPreview className="h-full" src={ROOT_XLSX_URL} />
+      {mountPreview && (
+        <XlsxViewerPreview className="h-full" src={ROOT_XLSX_URL} />
+      )}
     </ComponentCrop>
   )
 }
 
-function DocumentSplitsTile() {
+function DocumentSplitsTile({ mountPreview }: TileProps) {
   const [splits, setSplits] = React.useState<DocumentSplit[]>(INITIAL_SPLITS)
 
   return (
@@ -180,26 +210,28 @@ function DocumentSplitsTile() {
       viewHref="/docs/components/document-splits"
       className="h-[500px] bg-background"
     >
-      <DocumentSplits
-        className="h-full"
-        splits={splits}
-        thumbnailImages={ROOT_DOCUMENT_SPLIT_THUMBNAILS}
-        withFrameDivider={false}
-        onSelectPage={() => {}}
-        onSplitsChange={setSplits}
-      />
+      {mountPreview && (
+        <DocumentSplits
+          className="h-full"
+          splits={splits}
+          thumbnailImages={ROOT_DOCUMENT_SPLIT_THUMBNAILS}
+          withFrameDivider={false}
+          onSelectPage={() => {}}
+          onSplitsChange={setSplits}
+        />
+      )}
     </ComponentCrop>
   )
 }
 
-function SchemaBuilderTile() {
+function SchemaBuilderTile({ mountPreview }: TileProps) {
   return (
     <ComponentCrop
       label="Schema Builder"
       viewHref="/docs/components/schema-builder"
       className="h-[560px] bg-background"
     >
-      <SchemaBuilderPanel className="h-full" />
+      {mountPreview && <SchemaBuilderPanel className="h-full" />}
     </ComponentCrop>
   )
 }
