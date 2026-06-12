@@ -75,6 +75,7 @@ npm install @glideapps/glide-data-grid@6.0.4-alpha24 @hugeicons/core-free-icons@
 
 - PapaParse-backed CSV and TSV parsing with empty-row handling.
 - Virtualized rows and columns through Glide Data Grid.
+- Optional toolbar search via the `search` prop. When enabled, results update as you type with debounced matching, result navigation, cell selection, and scroll-into-view.
 - Header controls for upload, row and column counts, and zoom.
 - Grid zoom that scales row height, header height, column width, and cell text.
 
@@ -84,7 +85,8 @@ npm install @glideapps/glide-data-grid@6.0.4-alpha24 @hugeicons/core-free-icons@
 
 The CsvViewer component renders its built-in CSV/TSV upload flow, parser state, zoom controls, and virtualized grid.
 
-| Prop        | Type     | Default | Required |
-| ----------- | -------- | ------- | -------- |
-| `className` | `string` | `-`     | No       |
-| `data`      | `string` | `-`     | No       |
+| Prop        | Type      | Default | Required |
+| ----------- | --------- | ------- | -------- |
+| `className` | `string`  | `-`     | No       |
+| `data`      | `string`  | `-`     | No       |
+| `search`    | `boolean` | `false` | No       |

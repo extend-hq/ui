@@ -759,7 +759,7 @@
       "name": "csv-viewer",
       "type": "registry:ui",
       "title": "CSV Viewer",
-      "description": "A CSV and TSV viewer with parsing, upload, zoom, theme-aware grid rendering, and Glide Data Grid.",
+      "description": "A CSV and TSV viewer with parsing, upload, search, zoom, theme-aware grid rendering, and Glide Data Grid.",
       "dependencies": [
         "@glideapps/glide-data-grid@6.0.4-alpha24",
         "@hugeicons/core-free-icons@^4.2.0",
@@ -769,6 +769,8 @@
       "devDependencies": ["@types/papaparse@^5.5.2"],
       "registryDependencies": [
         "button",
+        "input",
+        "popover",
         "select",
         "separator",
         "spinner",
