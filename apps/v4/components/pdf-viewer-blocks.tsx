@@ -23,6 +23,7 @@ import {
   type PdfViewerBlockMetadata,
 } from "@/lib/pdf-viewer-blocks"
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useMounted } from "@/hooks/use-mounted"
 import { Button } from "@/components/ui/button"
@@ -31,28 +32,21 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
-import { HumanReviewBlock } from "@/components/bounding-box-citations-docs"
 import {
   CodeHeaderCopyButton,
   CopyButtonIcon,
   copyToClipboardWithMeta,
 } from "@/components/copy-button"
-import {
-  DocumentSplitsBlock,
-  XlsxDocumentSplitsBlock,
-} from "@/components/document-splitter-docs"
-import { DocxEditorBlock } from "@/components/docx-editor-docs"
-import { ESignatureBlock } from "@/components/e-signature-docs"
-import { FileSystemFinderBlock } from "@/components/file-system-docs"
 import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
-import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
-type BlockCodeSample = {
+type BlockCodeFile = {
   sourcePath: string
   targetPath: string
   language: string
+}
+
+type LoadedBlockCodeFile = BlockCodeFile & {
   content: string
-  lineCount: number
 }
 
 type PdfViewerBlock = PdfViewerBlockMetadata & {
@@ -76,12 +70,74 @@ const blockViewportSizes: Array<{
 const BLOCK_VIEWPORT_HEIGHT_CLASS = "h-[680px]"
 const BLOCK_PREVIEW_LAZY_ROOT_MARGIN = "900px 0px"
 
-const OcrBlocksBlock = dynamic(
+// Every preview is a dynamic chunk so the page bundle stays free of the
+// heavy viewer engines; chunks load when the lazy preview mounts near the
+// viewport. Previews render with no props here — the explicit prop type
+// only pins next/dynamic's inference so optional-prop components stay
+// assignable to React.ComponentType.
+type BlockPreviewProps = {
+  defaultViewerZoom?: number
+  heightClassName?: string
+}
+
+const HumanReviewBlock = dynamic<
+  BlockPreviewProps & { showExpected?: boolean }
+>(
+  () =>
+    import("@/components/bounding-box-citations-docs").then(
+      (mod) => mod.HumanReviewBlock
+    ),
+  { loading: () => <BlockPreviewPlaceholder /> }
+)
+
+const PdfDropzoneBlock = dynamic<BlockPreviewProps>(
+  () =>
+    import("@/components/pdf-dropzone-block").then(
+      (mod) => mod.PdfDropzoneBlock
+    ),
+  { loading: () => <BlockPreviewPlaceholder /> }
+)
+
+const OcrBlocksBlock = dynamic<BlockPreviewProps>(
   () =>
     import("@/components/layout-blocks-docs").then((mod) => mod.OcrBlocksBlock),
-  {
-    loading: () => <BlockPreviewPlaceholder />,
-  }
+  { loading: () => <BlockPreviewPlaceholder /> }
+)
+
+const ESignatureBlock = dynamic<BlockPreviewProps>(
+  () =>
+    import("@/components/e-signature-docs").then((mod) => mod.ESignatureBlock),
+  { loading: () => <BlockPreviewPlaceholder /> }
+)
+
+const DocumentSplitsBlock = dynamic<BlockPreviewProps>(
+  () =>
+    import("@/components/document-splitter-docs").then(
+      (mod) => mod.DocumentSplitsBlock
+    ),
+  { loading: () => <BlockPreviewPlaceholder /> }
+)
+
+const XlsxDocumentSplitsBlock = dynamic<BlockPreviewProps>(
+  () =>
+    import("@/components/document-splitter-docs").then(
+      (mod) => mod.XlsxDocumentSplitsBlock
+    ),
+  { loading: () => <BlockPreviewPlaceholder /> }
+)
+
+const DocxEditorBlock = dynamic<BlockPreviewProps>(
+  () =>
+    import("@/components/docx-editor-docs").then((mod) => mod.DocxEditorBlock),
+  { loading: () => <BlockPreviewPlaceholder /> }
+)
+
+const FileSystemFinderBlock = dynamic<BlockPreviewProps>(
+  () =>
+    import("@/components/file-system-docs").then(
+      (mod) => mod.FileSystemFinderBlock
+    ),
+  { loading: () => <BlockPreviewPlaceholder /> }
 )
 
 const blockComponents = {
@@ -100,10 +156,68 @@ const pdfViewerBlocks: PdfViewerBlock[] = PDF_VIEWER_BLOCKS.map((block) => ({
   component: blockComponents[block.id],
 }))
 
+type BlockCodeLoadState =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "loaded"; files: LoadedBlockCodeFile[] }
+
+// File contents stay out of the page payload; they are fetched once per
+// block from the static /blocks/[block]/code route when the Code tab opens.
+const blockCodeContentCache = new Map<string, Promise<LoadedBlockCodeFile[]>>()
+
+function fetchBlockCodeFiles(blockId: string) {
+  let promise = blockCodeContentCache.get(blockId)
+
+  if (!promise) {
+    promise = fetch(withUiBasePath(`/blocks/${blockId}/code`)).then(
+      async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load block code (${response.status})`)
+        }
+
+        return (await response.json()) as LoadedBlockCodeFile[]
+      }
+    )
+    promise.catch(() => blockCodeContentCache.delete(blockId))
+    blockCodeContentCache.set(blockId, promise)
+  }
+
+  return promise
+}
+
+function useLoadedBlockCode(
+  blockId: string,
+  enabled: boolean
+): BlockCodeLoadState {
+  const [state, setState] = React.useState<BlockCodeLoadState>({
+    status: "loading",
+  })
+
+  React.useEffect(() => {
+    if (!enabled) return
+
+    let isCurrent = true
+
+    fetchBlockCodeFiles(blockId)
+      .then((files) => {
+        if (isCurrent) setState({ status: "loaded", files })
+      })
+      .catch(() => {
+        if (isCurrent) setState({ status: "error" })
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [blockId, enabled])
+
+  return state
+}
+
 export function PdfViewerBlocks({
   codeSamples,
 }: {
-  codeSamples: Record<string, BlockCodeSample[]>
+  codeSamples: Record<string, BlockCodeFile[]>
 }) {
   return (
     <section className="space-y-12">
@@ -123,7 +237,7 @@ function PdfViewerBlockPreview({
   codeSamples,
 }: {
   block: (typeof pdfViewerBlocks)[number]
-  codeSamples: BlockCodeSample[]
+  codeSamples: BlockCodeFile[]
 }) {
   const [previewKey, setPreviewKey] = React.useState(0)
   const [view, setView] = React.useState<BlockView>("preview")
@@ -136,6 +250,10 @@ function PdfViewerBlockPreview({
     codeSamples[0]?.targetPath ?? null
   )
   const [articleRef, shouldMountPreview] = useLazyBlockPreview()
+  const codeLoadState = useLoadedBlockCode(
+    block.id,
+    hasOpenedCode && codeSamples.length > 0
+  )
   const isMounted = useMounted()
   const previewPanelRef = React.useRef<PanelImperativeHandle>(null)
   const Preview = block.component
@@ -317,6 +435,7 @@ function PdfViewerBlockPreview({
           <div className={view === "code" ? "block" : "hidden"}>
             <BlockCodePanel
               codeSamples={codeSamples}
+              loadState={codeLoadState}
               activeFile={activeFile}
               onActiveFileChange={setActiveFile}
               scrollResetKey={codeScrollResetKey}
@@ -420,11 +539,13 @@ const BlockPreviewSurface = React.memo(function BlockPreviewSurface({
 
 function BlockCodePanel({
   codeSamples,
+  loadState,
   activeFile,
   onActiveFileChange,
   scrollResetKey,
 }: {
-  codeSamples: BlockCodeSample[]
+  codeSamples: BlockCodeFile[]
+  loadState: BlockCodeLoadState
   activeFile: string | null
   onActiveFileChange: (file: string) => void
   scrollResetKey: React.Key
@@ -442,6 +563,13 @@ function BlockCodePanel({
       </div>
     )
   }
+
+  const activeLoadedSample =
+    loadState.status === "loaded"
+      ? loadState.files.find(
+          (file) => file.targetPath === activeCodeSample.targetPath
+        )
+      : undefined
 
   return (
     <div
@@ -461,16 +589,26 @@ function BlockCodePanel({
         <div className="flex h-12 items-center gap-2 border-b px-4 text-sm">
           <HugeiconsIcon icon={CodeIcon} className="size-4 opacity-70" />
           <span className="truncate">{activeCodeSample.targetPath}</span>
-          <CodeHeaderCopyButton
-            value={activeCodeSample.content}
-            className="ml-auto"
-            event="copy_block_code"
-          />
+          {activeLoadedSample ? (
+            <CodeHeaderCopyButton
+              value={activeLoadedSample.content}
+              className="ml-auto"
+              event="copy_block_code"
+            />
+          ) : null}
         </div>
-        <BlockCodeContent
-          code={activeCodeSample}
-          scrollResetKey={scrollResetKey}
-        />
+        {activeLoadedSample ? (
+          <BlockCodeContent
+            code={activeLoadedSample}
+            scrollResetKey={scrollResetKey}
+          />
+        ) : loadState.status === "error" ? (
+          <div className="grid min-h-0 flex-1 place-items-center text-sm text-code-foreground/70">
+            Failed to load source.
+          </div>
+        ) : (
+          <BlockCodeContentSkeleton />
+        )}
       </div>
     </div>
   )
@@ -480,7 +618,7 @@ function BlockCodeContent({
   code,
   scrollResetKey,
 }: {
-  code: BlockCodeSample
+  code: LoadedBlockCodeFile
   scrollResetKey: React.Key
 }) {
   return (
@@ -498,12 +636,29 @@ function BlockCodeContent({
   )
 }
 
+function BlockCodeContentSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="min-h-0 flex-1 animate-pulse space-y-3 overflow-hidden p-4"
+    >
+      {Array.from({ length: 14 }, (_, index) => (
+        <div
+          key={index}
+          className="h-3 rounded bg-code-foreground/10"
+          style={{ width: `${30 + ((index * 37) % 55)}%` }}
+        />
+      ))}
+    </div>
+  )
+}
+
 function BlockFileTree({
   codeSamples,
   activeFile,
   onActiveFileChange,
 }: {
-  codeSamples: BlockCodeSample[]
+  codeSamples: BlockCodeFile[]
   activeFile: string
   onActiveFileChange: (file: string) => void
 }) {

@@ -85,6 +85,34 @@ function getPdfWorkerUrl(pdfjsVersion: string) {
   return `//unpkg.com/pdfjs-dist@${pdfjsVersion}/legacy/build/pdf.worker.min.mjs`
 }
 
+function getPdfAssetBaseUrl(pdfjsVersion: string) {
+  return `//unpkg.com/pdfjs-dist@${pdfjsVersion}`
+}
+
+const defaultPdfDocumentOptionsByVersion = new Map<
+  string,
+  ReactPdf.DocumentProps["options"]
+>()
+
+function getDefaultPdfDocumentOptions(pdfjsVersion: string) {
+  const cachedOptions = defaultPdfDocumentOptionsByVersion.get(pdfjsVersion)
+
+  if (cachedOptions) {
+    return cachedOptions
+  }
+
+  const assetBaseUrl = getPdfAssetBaseUrl(pdfjsVersion)
+  const options = {
+    cMapPacked: true,
+    cMapUrl: `${assetBaseUrl}/cmaps/`,
+    standardFontDataUrl: `${assetBaseUrl}/standard_fonts/`,
+  }
+
+  defaultPdfDocumentOptionsByVersion.set(pdfjsVersion, options)
+
+  return options
+}
+
 async function fetchFile(file: DemoFile) {
   const response = await fetch(file.url)
 
@@ -135,6 +163,12 @@ function PdfThumbnailPreview({
   const [reactPdf, setReactPdf] = React.useState<ReactPdfModule | null>(null)
   const [isReady, setIsReady] = React.useState(false)
   const [hasError, setHasError] = React.useState(false)
+  const pdfjsVersion = reactPdf?.pdfjs.version
+  const documentOptions = React.useMemo(
+    () =>
+      pdfjsVersion ? getDefaultPdfDocumentOptions(pdfjsVersion) : undefined,
+    [pdfjsVersion]
+  )
 
   React.useEffect(() => {
     let isMounted = true
@@ -169,6 +203,7 @@ function PdfThumbnailPreview({
         reactPdf && !hasError ? (
           <reactPdf.Document
             file={file.url}
+            options={documentOptions}
             loading={null}
             error={null}
             onLoadError={() => setHasError(true)}

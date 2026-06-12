@@ -7,27 +7,72 @@ import {
   getPdfViewerBlock,
   type PdfViewerBlockId,
 } from "@/lib/pdf-viewer-blocks"
-import { HumanReviewBlock } from "@/components/bounding-box-citations-docs"
-import {
-  DocumentSplitsBlock,
-  XlsxDocumentSplitsBlock,
-} from "@/components/document-splitter-docs"
-import { DocxEditorBlock } from "@/components/docx-editor-docs"
-import { ESignatureBlock } from "@/components/e-signature-docs"
-import { FileSystemFinderBlock } from "@/components/file-system-docs"
-import { PdfDropzoneBlock } from "@/components/pdf-dropzone-block"
 
 type PdfViewerBlockFullscreenPreviewProps = {
   defaultViewerZoom?: number
   heightClassName?: string
 }
 
+// Every preview is a dynamic chunk so each fullscreen page only loads the
+// block it renders instead of bundling all of them.
+const HumanReviewBlock = dynamic<
+  PdfViewerBlockFullscreenPreviewProps & { showExpected?: boolean }
+>(
+  () =>
+    import("@/components/bounding-box-citations-docs").then(
+      (mod) => mod.HumanReviewBlock
+    ),
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
+const PdfDropzoneBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
+  () =>
+    import("@/components/pdf-dropzone-block").then(
+      (mod) => mod.PdfDropzoneBlock
+    ),
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
 const OcrBlocksBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
   () =>
     import("@/components/layout-blocks-docs").then((mod) => mod.OcrBlocksBlock),
-  {
-    loading: () => <BlockViewPlaceholder />,
-  }
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
+const ESignatureBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
+  () =>
+    import("@/components/e-signature-docs").then((mod) => mod.ESignatureBlock),
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
+const DocumentSplitsBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
+  () =>
+    import("@/components/document-splitter-docs").then(
+      (mod) => mod.DocumentSplitsBlock
+    ),
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
+const XlsxDocumentSplitsBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
+  () =>
+    import("@/components/document-splitter-docs").then(
+      (mod) => mod.XlsxDocumentSplitsBlock
+    ),
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
+const DocxEditorBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
+  () =>
+    import("@/components/docx-editor-docs").then((mod) => mod.DocxEditorBlock),
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
+const FileSystemFinderBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
+  () =>
+    import("@/components/file-system-docs").then(
+      (mod) => mod.FileSystemFinderBlock
+    ),
+  { loading: () => <BlockViewPlaceholder /> }
 )
 
 const blockComponents = {

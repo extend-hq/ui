@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { createPortal } from "react-dom"
 import {
   ArrowDown01Icon,
   ArrowLeft01Icon,
@@ -28,6 +27,7 @@ import {
   type FileTreeSortEntry,
 } from "@pierre/trees"
 import { FileTree as PierreFileTree, useFileTree } from "@pierre/trees/react"
+import { createPortal } from "react-dom"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -227,23 +227,37 @@ function fileExtension(name: string) {
 }
 
 const FILE_KIND_LABELS: Record<string, string> = {
+  css: "CSS Stylesheet",
   csv: "CSV Document",
   doc: "Word Document",
   docx: "Word Document",
   gif: "GIF Image",
+  go: "Go Source",
   jpeg: "JPEG Image",
   jpg: "JPEG Image",
+  js: "JavaScript Source",
+  json: "JSON Document",
+  jsx: "JavaScript Source",
   md: "Markdown Document",
+  mdx: "MDX Document",
   pdf: "PDF Document",
   png: "PNG Image",
   ppt: "PowerPoint Presentation",
   pptx: "PowerPoint Presentation",
+  py: "Python Script",
+  rs: "Rust Source",
+  sh: "Shell Script",
+  sql: "SQL Script",
   svg: "SVG Image",
+  ts: "TypeScript Source",
   tsv: "TSV Document",
+  tsx: "TypeScript Source",
   txt: "Plain Text",
   webp: "WebP Image",
   xls: "Excel Workbook",
   xlsx: "Excel Workbook",
+  yaml: "YAML Document",
+  yml: "YAML Document",
   zip: "ZIP Archive",
 }
 
@@ -254,6 +268,12 @@ function fileKindLabel(file: FileEntry) {
   if (file.contentType?.startsWith("image/")) return "Image"
 
   return file.contentType ?? "Document"
+}
+
+// Folders sort under the "Folder" kind alphabetically among the file kinds,
+// like Finder's Kind sort.
+function entryKindLabel(entry: FileSystemEntry) {
+  return entry.kind === "folder" ? "Folder" : fileKindLabel(entry)
 }
 
 // MIME types inferred from the extension when a file carries no
@@ -434,7 +454,12 @@ function compareEntryNames(left: { name: string }, right: { name: string }) {
   })
 }
 
-export type FileSystemSortKey = "createdAt" | "name" | "size" | "updatedAt"
+export type FileSystemSortKey =
+  | "createdAt"
+  | "kind"
+  | "name"
+  | "size"
+  | "updatedAt"
 
 type FileSystemSortState = {
   direction: "asc" | "desc"
@@ -449,6 +474,7 @@ const SORT_OPTIONS: Array<{
   triggerLabel: string
 }> = [
   { defaultDirection: "asc", key: "name", label: "Name", triggerLabel: "Name" },
+  { defaultDirection: "asc", key: "kind", label: "Kind", triggerLabel: "Kind" },
   {
     defaultDirection: "desc",
     key: "createdAt",
@@ -499,6 +525,14 @@ function compareEntriesBySort(
 
   if (sort.key === "name") {
     result = compareEntryNames(left, right)
+  } else if (sort.key === "kind") {
+    result = entryKindLabel(left).localeCompare(
+      entryKindLabel(right),
+      undefined,
+      {
+        sensitivity: "base",
+      }
+    )
   } else if (sort.key === "size") {
     // Folders have no byte size; group them at the small end.
     const leftSize = left.kind === "file" ? (left.size ?? 0) : -1
@@ -1380,8 +1414,17 @@ export function FileSystem({
       const mime = mimeTypeForFile(file)
 
       if (!byMime.has(mime)) {
+        // The leading-dot check keeps dotfiles (.gitignore) whole.
+        const dotIndex = file.name.lastIndexOf(".")
+        const extension =
+          dotIndex > 0 ? file.name.slice(dotIndex + 1).toLowerCase() : ""
+
         byMime.set(mime, {
-          iconFileName: file.name,
+          // A synthesized generic name, so files with branded icons
+          // (biome.json, next.config.ts, CLAUDE.md, …) don't lend them to
+          // the whole type; extensionless names keep their own icon
+          // (Dockerfile, Makefile).
+          iconFileName: extension ? `file.${extension}` : file.name,
           label: MIME_TYPE_LABELS[mime] ?? mime,
           mime,
         })
@@ -1599,18 +1642,18 @@ export function FileSystem({
 
   // Navigation unmounts the focused row, dropping focus to <body> and killing
   // the ⌘ shortcuts; reclaim focus onto the component root when that happens.
-  const hasNavigatedRef = React.useRef(false)
+  const previousPathRef = React.useRef(currentPath)
 
   React.useEffect(() => {
-    if (!hasNavigatedRef.current) {
-      hasNavigatedRef.current = true
+    if (previousPathRef.current === currentPath) {
       return
     }
 
+    previousPathRef.current = currentPath
     const root = rootRef.current
 
     if (root && document.activeElement === document.body) {
-      root.focus()
+      root.focus({ preventScroll: true })
     }
   }, [currentPath])
 
@@ -4335,9 +4378,14 @@ function FileSystemColumnsView(props: FileSystemViewProps) {
           />
         ))}
         {selectedFile ? (
+          // contain-inline-size zeroes the pane's intrinsic width so its
+          // max-content contribution is exactly the min-w-60 floor — matching
+          // a column's w-60. Otherwise long filenames or wide thumbnails
+          // would nudge the overflowing trail's scroll width as the arrow-key
+          // selection alternates between files and folders.
           <ScrollArea
             orientation="vertical"
-            className="min-w-72 flex-1"
+            className="min-w-60 flex-1 contain-inline-size"
             viewportClassName="flex justify-center p-4"
           >
             <div className="flex w-full max-w-lg flex-col items-stretch gap-3">

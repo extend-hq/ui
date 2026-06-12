@@ -175,16 +175,29 @@ function getPdfAssetBaseUrl(pdfjsVersion: string) {
   return `https://unpkg.com/pdfjs-dist@${pdfjsVersion}`
 }
 
+const defaultPdfDocumentOptionsByVersion = new Map<
+  string,
+  ReactPdf.DocumentProps["options"]
+>()
+
 function getDefaultPdfDocumentOptions(
   pdfjsVersion: string
 ): ReactPdf.DocumentProps["options"] {
+  const cachedOptions = defaultPdfDocumentOptionsByVersion.get(pdfjsVersion)
+
+  if (cachedOptions) return cachedOptions
+
   const assetBaseUrl = getPdfAssetBaseUrl(pdfjsVersion)
 
-  return {
+  const options = {
     cMapPacked: true,
     cMapUrl: `${assetBaseUrl}/cmaps/`,
     standardFontDataUrl: `${assetBaseUrl}/standard_fonts/`,
   }
+
+  defaultPdfDocumentOptionsByVersion.set(pdfjsVersion, options)
+
+  return options
 }
 
 function normalizeRotation(rotation: number) {
@@ -1021,12 +1034,11 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       () => getPdfDownloadFileName(downloadFileName, pdfFile),
       [downloadFileName, pdfFile]
     )
+    const pdfjsVersion = reactPdf?.pdfjs.version
     const defaultDocumentOptions = React.useMemo(
       () =>
-        reactPdf
-          ? getDefaultPdfDocumentOptions(reactPdf.pdfjs.version)
-          : undefined,
-      [reactPdf]
+        pdfjsVersion ? getDefaultPdfDocumentOptions(pdfjsVersion) : undefined,
+      [pdfjsVersion]
     )
     const resolvedDocumentOptions = documentOptions ?? defaultDocumentOptions
     const hasPdfFile = Boolean(pdfFile)

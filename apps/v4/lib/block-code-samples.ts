@@ -87,22 +87,16 @@ export async function getBlockCodeFileManifest(): Promise<
   )
 }
 
-export async function getLoadedBlockCodeFileManifest(): Promise<
-  Record<string, LoadedBlockCodeFile[]>
-> {
+export async function getLoadedBlockCodeFiles(
+  blockId: string
+): Promise<LoadedBlockCodeFile[] | null> {
+  if (!blockIds.includes(blockId)) return null
+
   const itemsByName = await getRegistryItemsByName()
 
-  const entries = await Promise.all(
-    blockIds.map(async (id) => {
-      const files = await Promise.all(
-        collectRegistryFiles(id, itemsByName).map(loadBlockCodeFile)
-      )
-
-      return [id, files] satisfies [string, LoadedBlockCodeFile[]]
-    })
+  return Promise.all(
+    collectRegistryFiles(blockId, itemsByName).map(loadBlockCodeFile)
   )
-
-  return Object.fromEntries(entries)
 }
 
 async function loadBlockCodeFile(
