@@ -746,6 +746,32 @@ function buildFileSystemIndex(items: FileSystemItem[]): FileSystemIndex {
     siblings.sort(compareEntryNames)
   }
 
+  // Folders without an explicit modified date inherit their newest child's —
+  // object stores carry no folder metadata, yet the list view shows the
+  // column and the date sorts compare it. Deepest first (a descendant's path
+  // is always longer than its ancestor's) so dates propagate up the chain.
+  const foldersDeepestFirst = [...folders.values()].sort(
+    (left, right) => right.path.length - left.path.length
+  )
+
+  for (const folder of foldersDeepestFirst) {
+    if (folder.updatedAt) continue
+
+    let newestTime = Number.NEGATIVE_INFINITY
+    let newestValue: string | undefined
+
+    for (const child of children.get(folder.path) ?? []) {
+      const value = child.updatedAt ?? child.createdAt
+      const time = value ? Date.parse(value) : Number.NaN
+
+      if (!Number.isNaN(time) && time > newestTime) {
+        newestTime = time
+        newestValue = value
+      }
+    }
+    if (newestValue) folder.updatedAt = newestValue
+  }
+
   return { children, files, folders }
 }
 
@@ -3630,14 +3656,14 @@ function FileSystemListView({
           sortKey="name"
         />
         <FileSystemListColumnHeader
-          className="w-44 justify-end"
+          className="w-44 justify-start"
           label="Date Modified"
           onClick={onSortColumnClick}
           sort={sort}
           sortKey="updatedAt"
         />
         <FileSystemListColumnHeader
-          className="w-20 justify-end"
+          className="w-20 justify-start"
           label="Size"
           onClick={onSortColumnClick}
           sort={sort}
@@ -3860,11 +3886,15 @@ function FileSystemPierreTree({
       [data-item-section='decoration'] > span {
         display: grid;
         grid-template-columns: 11rem 5rem;
-        justify-items: end;
         white-space: nowrap;
+        /* The size cell is the span's anonymous text item, so alignment
+           rides on text-align: the span's right applies to it while the
+           date cell (::before) overrides back to left. */
+        text-align: right;
       }
       [data-item-section='decoration'] > span::before {
         content: attr(title);
+        text-align: left;
       }
       button[data-type='item'][data-item-type='folder'] [data-item-section='content'] {
         display: flex;
