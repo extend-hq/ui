@@ -689,7 +689,9 @@
         "@hugeicons/react@^1.1.6"
       ],
       "registryDependencies": [
+        "badge",
         "button",
+        "card",
         "@extend/document-viewer-sidebar",
         "dropdown-menu",
         "@extend/file-thumbnail",
