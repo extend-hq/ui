@@ -71,6 +71,7 @@ import {
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -2068,18 +2069,17 @@ function PDFViewerInner({
         }
       }
 
-      pageRotationDeltasRef.current = nextDeltas
-      setPageRotationDeltas(nextDeltas)
-
       const store = registry.getStore()
-
-      store.dispatchToCore(refreshPages(documentId, targetPageIndexes))
       const viewport = viewportElementRef.current
 
+      pageRotationDeltasRef.current = nextDeltas
+      flushSync(() => {
+        setPageRotationDeltas(nextDeltas)
+        store.dispatchToCore(refreshPages(documentId, targetPageIndexes))
+      })
+
       if (viewport && scrollDelta !== 0) {
-        window.requestAnimationFrame(() => {
-          viewport.scrollTop += scrollDelta
-        })
+        viewport.scrollTop += scrollDelta
       }
       ;(
         thumbnailPlugin as {

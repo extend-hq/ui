@@ -701,7 +701,7 @@ export function ESignatureBlock({
       autoSaveId="pdf-block-e-signature"
       left={
         <PDFViewer
-          file={PDF_URL}
+          src={PDF_URL}
           defaultZoom={defaultViewerZoom}
           pageWidth={PAGE_WIDTH}
           pageHeight={PAGE_HEIGHT}

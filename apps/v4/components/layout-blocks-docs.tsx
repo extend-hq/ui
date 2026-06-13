@@ -8486,7 +8486,7 @@ export function OcrBlocksBlock({
       left={
         <PDFViewer
           ref={viewerRef}
-          file={file}
+          src={file}
           defaultZoom={defaultViewerZoom}
           renderPageOverlay={renderPageOverlay}
         />

@@ -103,7 +103,7 @@ export function HumanReviewBlock({
       left={
         <PDFViewer
           ref={viewerRef}
-          file={file}
+          src={file}
           defaultZoom={DEFAULT_ZOOM}
           renderPageOverlay={({ pageNumber }) =>
             activeLocation?.page === pageNumber ? (

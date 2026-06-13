@@ -153,7 +153,7 @@ function PdfViewerTile({ mountPreview }: TileProps) {
     >
       {mountPreview && (
         <PdfViewerPreview
-          file={ROOT_ATTENTION_PDF_URL}
+          src={ROOT_ATTENTION_PDF_URL}
           showRotateControls={false}
         />
       )}

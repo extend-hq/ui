@@ -95,9 +95,9 @@ export function PdfDropzoneBlock({
     <div className="h-full min-h-[680px] bg-background">
       <PDFViewer
         key={pdfFile.url}
-        file={pdfFile.url}
+        src={pdfFile.url}
         defaultZoom={defaultViewerZoom}
-        downloadFileName={pdfFile.name}
+        fileName={pdfFile.name}
         onPdfUpload={(file) => loadPdf([file])}
         toolbarActions={
           <div className="hidden max-w-40 truncate text-xs text-muted-foreground sm:block">

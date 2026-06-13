@@ -174,9 +174,8 @@ import { PDFViewer } from "@/components/ui/pdf-viewer";
 export function PdfViewerExample() {
   return (
     <PDFViewer
-      file="/path/to/document.pdf"
+      src="/path/to/document.pdf"
       className="h-[640px]"
-      defaultThumbnailSidebarOpen={false}
     />
   );
 }`

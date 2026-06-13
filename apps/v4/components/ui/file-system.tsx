@@ -4745,12 +4745,12 @@ function FileSystemGalleryStage({
       <div className={viewerFrameClassName}>
         <React.Suspense fallback={<FileSystemViewerLoading />}>
           <LazyPDFViewer
-            file={url}
+            src={url}
             className={cn(
               "h-full",
               isDialog && "min-h-0 overflow-hidden rounded-2xl"
             )}
-            downloadFileName={file.name}
+            fileName={file.name}
             showToolbar={isDialog}
             showUpload={false}
             toolbarActions={toolbarActions}

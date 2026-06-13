@@ -1345,7 +1345,7 @@ export function DocumentSplitsBlock({
       left={
         <PDFViewer
           ref={viewerRef}
-          file={pdfUrl}
+          src={pdfUrl}
           defaultZoom={defaultViewerZoom}
           onPdfUpload={handlePdfUpload}
           onDocumentLoadSuccess={updatePageCountFromViewer}

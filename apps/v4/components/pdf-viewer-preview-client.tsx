@@ -6,18 +6,17 @@ import { PDFViewer } from "@/components/ui/pdf-viewer"
 const SAMPLE_PDF_URL = withUiBasePath("/samples/attention.pdf")
 
 export function PdfViewerPreviewClient({
-  file = SAMPLE_PDF_URL,
+  src = SAMPLE_PDF_URL,
   showRotateControls = true,
 }: {
-  file?: string
+  src?: string
   showRotateControls?: boolean
 }) {
   return (
     <PDFViewer
-      file={file}
+      src={src}
       className="h-[560px]"
       defaultZoom={0.5}
-      defaultThumbnailSidebarOpen={false}
       showRotateControls={showRotateControls}
     />
   )
