@@ -1161,7 +1161,6 @@ function WorkbookViewerPane({
       onIsDarkChange={setIsDark}
       onUploadClick={() => {}}
       renderTableHeaderMenu={(props) => <WorkbookTableHeaderMenu {...props} />}
-      rounded={false}
       showNightRenderToggle
       showUploadButton={false}
       workbookIdentity={workbookIdentity}

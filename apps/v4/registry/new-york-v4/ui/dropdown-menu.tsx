@@ -148,24 +148,44 @@ function DropdownMenuCheckboxItem({
   className,
   children,
   checked,
+  variant = "default",
   ...props
-}: DropdownMenuPrimitive.CheckboxItem.Props): React.ReactElement {
+}: DropdownMenuPrimitive.CheckboxItem.Props & {
+  variant?: "default" | "switch"
+}): React.ReactElement {
   return (
     <DropdownMenuPrimitive.CheckboxItem
       checked={checked}
       className={cn(
-        "relative flex min-h-8 cursor-default items-center gap-2 rounded-sm py-1 ps-8 pe-2 text-base outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground sm:min-h-7 sm:text-sm data-disabled:pointer-events-none data-disabled:opacity-64 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
+        "relative flex min-h-8 cursor-default items-center gap-2 rounded-sm py-1 pe-2 text-base outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground sm:min-h-7 sm:text-sm data-disabled:pointer-events-none data-disabled:opacity-64 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
+        variant === "default" && "ps-8",
+        variant === "switch" && "justify-between ps-2",
         className
       )}
       data-slot="dropdown-menu-checkbox-item"
+      data-variant={variant}
       {...props}
     >
-      <span className="pointer-events-none absolute start-2 flex size-4 items-center justify-center">
-        <DropdownMenuPrimitive.CheckboxItemIndicator>
-          <HugeiconsIcon icon={Tick02Icon} />
-        </DropdownMenuPrimitive.CheckboxItemIndicator>
-      </span>
+      {variant === "switch" ? null : (
+        <span className="pointer-events-none absolute start-2 flex size-4 items-center justify-center">
+          <DropdownMenuPrimitive.CheckboxItemIndicator>
+            <HugeiconsIcon icon={Tick02Icon} />
+          </DropdownMenuPrimitive.CheckboxItemIndicator>
+        </span>
+      )}
       {children}
+      {variant === "switch" ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none relative ms-4 inline-flex h-4 w-7 shrink-0 items-center rounded-full bg-input transition-colors data-[checked=true]:bg-primary"
+          data-checked={checked ? "true" : "false"}
+        >
+          <span
+            className="size-3 translate-x-0.5 rounded-full bg-background shadow-xs transition-transform data-[checked=true]:translate-x-3.5"
+            data-checked={checked ? "true" : "false"}
+          />
+        </span>
+      ) : null}
     </DropdownMenuPrimitive.CheckboxItem>
   )
 }

@@ -559,8 +559,6 @@ export function ESignatureBlock({ file }: { file?: string }) {
           <PDFViewer
             src={file}
             defaultZoom={DEFAULT_ZOOM}
-            pageWidth={PAGE_WIDTH}
-            pageHeight={PAGE_HEIGHT}
             toolbarActions={
               <Button
                 type="button"

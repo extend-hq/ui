@@ -21,7 +21,9 @@ import "@glideapps/glide-data-grid/dist/index.css"
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  Download01Icon,
   MinusSignCircleIcon,
+  MoreHorizontalIcon,
   PlusSignCircleIcon,
   Search01Icon,
   Upload01Icon,
@@ -31,6 +33,12 @@ import Papa from "papaparse"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -238,6 +246,68 @@ function parseDelimitedText(text: string): {
   }
 }
 
+function ensureCsvExtension(fileName: string) {
+  const lowerFileName = fileName.toLowerCase()
+  return lowerFileName.endsWith(".csv") || lowerFileName.endsWith(".tsv")
+    ? fileName
+    : `${fileName}.csv`
+}
+
+function downloadTextFile(text: string, fileName: string, type: string) {
+  const url = URL.createObjectURL(new Blob([text], { type }))
+  const anchor = document.createElement("a")
+
+  anchor.href = url
+  anchor.download = fileName
+  anchor.rel = "noopener"
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+function CsvFileActionsMenu({
+  downloadDisabled,
+  isPending,
+  onDownload,
+  onUploadClick,
+}: {
+  downloadDisabled: boolean
+  isPending: boolean
+  onDownload: () => void
+  onUploadClick: () => void
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Open CSV actions"
+          disabled={isPending}
+        >
+          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuItem disabled={downloadDisabled} onClick={onDownload}>
+          <HugeiconsIcon icon={Download01Icon} className="size-4" />
+          Download
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={isPending} onClick={onUploadClick}>
+          {isPending ? (
+            <Spinner className="size-4" />
+          ) : (
+            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+          )}
+          Upload
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 function ToolbarTooltip({
   label,
   children,
@@ -442,7 +512,9 @@ function CsvSearchPopover({
               <div className="truncate">
                 {searchResults.length ? (
                   <>
-                    <span className="text-primary">{activeResultIndex + 1}</span>
+                    <span className="text-primary">
+                      {activeResultIndex + 1}
+                    </span>
                     {` / ${searchResults.length}`}
                   </>
                 ) : (
@@ -451,7 +523,8 @@ function CsvSearchPopover({
               </div>
               {activeResult ? (
                 <div className="mt-0.5 truncate">
-                  {activeResult.columnTitle}!{cellAddressToA1(activeResult.col, activeResult.row)}
+                  {activeResult.columnTitle}!
+                  {cellAddressToA1(activeResult.col, activeResult.row)}
                 </div>
               ) : null}
             </div>
@@ -536,6 +609,9 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
   const [parsed, setParsed] = React.useState(() =>
     data ? parseDelimitedText(data) : { headers: [], rows: [], error: null }
   )
+  const [uploadedFileName, setUploadedFileName] = React.useState<string | null>(
+    null
+  )
   const [isPending, setIsPending] = React.useState(false)
   const [dataRevision, setDataRevision] = React.useState(0)
 
@@ -555,6 +631,7 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
   React.useEffect(() => {
     if (data) {
       setParsed(parseDelimitedText(data))
+      setUploadedFileName(null)
       setDataRevision((revision) => revision + 1)
     }
   }, [data])
@@ -651,6 +728,7 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
     try {
       const text = await file.text()
       setParsed(parseDelimitedText(text))
+      setUploadedFileName(file.name)
       setDataRevision((revision) => revision + 1)
     } catch (error) {
       setParsed({
@@ -673,6 +751,19 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
       Math.max(0, index + direction)
     )
     setZoom(ZOOM_OPTIONS[nextIndex])
+  }
+
+  function handleDownload() {
+    const text = Papa.unparse({
+      fields: parsed.headers,
+      data: parsed.rows,
+    })
+
+    downloadTextFile(
+      text,
+      ensureCsvExtension(uploadedFileName ?? "data.csv"),
+      "text/csv;charset=utf-8"
+    )
   }
 
   return (
@@ -761,17 +852,16 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
               className="hidden"
               onChange={handleUpload}
             />
-            <ToolbarTooltip label="Upload CSV">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Upload CSV"
-                loading={isPending}
-                onClick={() => inputRef.current?.click()}
-              >
-                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-              </Button>
-            </ToolbarTooltip>
+            <CsvFileActionsMenu
+              downloadDisabled={
+                Boolean(parsed.error) ||
+                isPending ||
+                (parsed.headers.length === 0 && parsed.rows.length === 0)
+              }
+              isPending={isPending}
+              onDownload={handleDownload}
+              onUploadClick={() => inputRef.current?.click()}
+            />
           </div>
         </TooltipProvider>
       </div>

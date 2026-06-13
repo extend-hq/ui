@@ -73,8 +73,8 @@ importers:
         specifier: ^2.14.4
         version: 2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(@embedpdf/plugin-scroll@2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(@embedpdf/plugin-viewport@2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(@embedpdf/plugin-viewport@2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2))
       '@extend-ai/react-docx':
-        specifier: 0.7.0-alpha.6
-        version: 0.7.0-alpha.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.7.0-alpha.7
+        version: 0.7.0-alpha.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-xlsx':
         specifier: 0.10.2
         version: 0.10.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1055,8 +1055,8 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@extend-ai/react-docx@0.7.0-alpha.6':
-    resolution: {integrity: sha512-CxAd1oFR06U9CrIe2VOYBTKPL+IScmgzrZqpsOQd9xgqGoyekl84xSnGlcPqKs6I9jr51wv7amOs7LiDLFdn0A==}
+  '@extend-ai/react-docx@0.7.0-alpha.7':
+    resolution: {integrity: sha512-9j2BCc+UPThnVIANGYEnkk5+JDdyeni267LqDYzwqNdGx1VjKFlXCG5q54PWUaDHjARJ3Qfyxp6m6WO7xAmxrg==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -6154,7 +6154,7 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@extend-ai/react-docx@0.7.0-alpha.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-docx@0.7.0-alpha.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@chenglou/pretext': 0.0.5
       '@tanstack/react-virtual': 3.13.26(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

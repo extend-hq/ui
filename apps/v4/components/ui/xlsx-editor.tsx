@@ -17,6 +17,7 @@ import {
   Download01Icon,
   MinusSignCircleIcon,
   Moon02Icon,
+  MoreHorizontalIcon,
   PlusSignCircleIcon,
   Redo02Icon,
   Sun03Icon,
@@ -27,6 +28,12 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Group, GroupSeparator, GroupText } from "@/components/ui/group"
 import { Input } from "@/components/ui/input"
 import {
@@ -123,6 +130,44 @@ function EditorLoadingSurface({
     <div className="grid h-full min-h-52 w-full min-w-full place-items-center bg-transparent">
       {showSpinner ? <Spinner className="size-4" /> : null}
     </div>
+  )
+}
+
+function EditorFileActionsMenu({
+  canExport,
+  exportXlsx,
+  onUploadClick,
+}: {
+  canExport: boolean
+  exportXlsx: () => void
+  onUploadClick: () => void
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Open workbook actions"
+        >
+          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className={cn("w-40", XLSX_DROPDOWN_Z_INDEX_CLASS)}
+      >
+        <DropdownMenuItem disabled={!canExport} onClick={exportXlsx}>
+          <HugeiconsIcon icon={Download01Icon} className="size-4" />
+          Download
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onUploadClick}>
+          <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+          Upload
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -223,29 +268,11 @@ function EditorToolbar({
                 />
               </>
             ) : null}
-            <ToolbarTooltip label="Export workbook">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Export workbook"
-                disabled={!canExport}
-                onClick={exportXlsx}
-              >
-                <HugeiconsIcon icon={Download01Icon} className="size-4" />
-              </Button>
-            </ToolbarTooltip>
-            <ToolbarTooltip label="Upload XLSX">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Upload XLSX"
-                onClick={onUploadClick}
-              >
-                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-              </Button>
-            </ToolbarTooltip>
+            <EditorFileActionsMenu
+              canExport={canExport}
+              exportXlsx={exportXlsx}
+              onUploadClick={onUploadClick}
+            />
           </div>
         </TooltipProvider>
       </div>
@@ -461,7 +488,6 @@ export function XlsxEditorSurface({
   onIsDarkChange,
   onUploadClick,
   renderTableHeaderMenu,
-  rounded,
   showNightRenderToggle,
   workbookIdentity,
 }: {
@@ -472,7 +498,6 @@ export function XlsxEditorSurface({
   renderTableHeaderMenu: (
     props: XlsxTableHeaderMenuRenderProps
   ) => React.ReactNode
-  rounded: boolean
   showNightRenderToggle: boolean
   workbookIdentity: string
 }) {
@@ -482,8 +507,7 @@ export function XlsxEditorSurface({
     <div
       className={cn(
         "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
-        className,
-        rounded && "rounded-lg"
+        className
       )}
     >
       <EditorToolbar
@@ -536,14 +560,12 @@ export function XlsxEditorPreview({
   fileName,
   isDark,
   onIsDarkChange,
-  rounded = false,
   src,
 }: {
   className?: string
   fileName?: string
   isDark: boolean
   onIsDarkChange: (isDark: boolean) => void
-  rounded?: boolean
   src?: string
 }) {
   return (
@@ -551,7 +573,6 @@ export function XlsxEditorPreview({
       className={className}
       effectiveIsDark={isDark}
       fileName={fileName}
-      rounded={rounded}
       setNightRenderEnabled={onIsDarkChange}
       shouldRenderNightMode
       url={src}
@@ -563,7 +584,6 @@ function XlsxEditorContent({
   className,
   effectiveIsDark,
   fileName,
-  rounded,
   setNightRenderEnabled,
   shouldRenderNightMode,
   url,
@@ -571,7 +591,6 @@ function XlsxEditorContent({
   className?: string
   effectiveIsDark: boolean
   fileName?: string
-  rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
   url?: string
@@ -766,7 +785,6 @@ function XlsxEditorContent({
         renderTableHeaderMenu={(props) => (
           <WorkbookTableHeaderMenu {...props} />
         )}
-        rounded={rounded}
         showNightRenderToggle={shouldRenderNightMode}
         workbookBuffer={activeBuffer}
         workbookIdentity={workbookIdentity}
@@ -781,7 +799,6 @@ function XlsxWorkbookLoadedEditor({
   onIsDarkChange,
   onUploadClick,
   renderTableHeaderMenu,
-  rounded,
   showNightRenderToggle,
   workbookBuffer,
   workbookIdentity,
@@ -793,7 +810,6 @@ function XlsxWorkbookLoadedEditor({
   renderTableHeaderMenu: (
     props: XlsxTableHeaderMenuRenderProps
   ) => React.ReactNode
-  rounded: boolean
   showNightRenderToggle: boolean
   workbookBuffer: ArrayBuffer
   workbookIdentity: string
@@ -819,7 +835,6 @@ function XlsxWorkbookLoadedEditor({
         onIsDarkChange={onIsDarkChange}
         onUploadClick={onUploadClick}
         renderTableHeaderMenu={renderTableHeaderMenu}
-        rounded={rounded}
         showNightRenderToggle={showNightRenderToggle}
         workbookIdentity={workbookIdentity}
       />

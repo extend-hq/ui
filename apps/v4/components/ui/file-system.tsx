@@ -4767,9 +4767,11 @@ function FileSystemGalleryStage({
             src={url}
             fileName={file.name}
             isDark={isDark}
-            className="h-full min-h-0"
+            className={cn(
+              "h-full min-h-0",
+              isDialog && "overflow-hidden rounded-2xl"
+            )}
             onIsDarkChange={setIsDark}
-            rounded={isDialog}
             showToolbar={isDialog}
             showUpload={false}
             toolbarActions={toolbarActions}
@@ -4786,9 +4788,11 @@ function FileSystemGalleryStage({
             src={url}
             fileName={file.name}
             isDark={isDark}
-            className="h-full min-h-0"
+            className={cn(
+              "h-full min-h-0",
+              isDialog && "overflow-hidden rounded-2xl"
+            )}
             onIsDarkChange={setIsDark}
-            rounded={isDialog}
             showToolbar={isDialog}
             showUpload={false}
             toolbarActions={toolbarActions}

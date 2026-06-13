@@ -64,25 +64,22 @@ npm install @embedpdf/core@^2.14.4 @embedpdf/engines@^2.14.4 @embedpdf/models@^2
 
 The PDFViewer component renders a scrollable PDF surface with toolbar controls, lazy page rendering, uploads, and page-level extension hooks.
 
-| Prop                          | Type                                                                      | Default | Required |
-| ----------------------------- | ------------------------------------------------------------------------- | ------- | -------- |
-| `src`                         | `string`                                                                  | `-`     | No       |
-| `className`                   | `string`                                                                  | `-`     | No       |
-| `defaultThumbnailSidebarOpen` | `boolean`                                                                 | `false` | No       |
-| `defaultZoom`                 | `number`                                                                  | `1`     | No       |
-| `pageWidth`                   | `number`                                                                  | `-`     | No       |
-| `pageHeight`                  | `number`                                                                  | `-`     | No       |
-| `showDownload`                | `boolean`                                                                 | `true`  | No       |
-| `showToolbar`                 | `boolean`                                                                 | `true`  | No       |
-| `showRotateControls`          | `boolean`                                                                 | `true`  | No       |
-| `showUpload`                  | `boolean`                                                                 | `true`  | No       |
-| `toolbarActions`              | `React.ReactNode`                                                         | `-`     | No       |
-| `pageClassName`               | `(pageNumber: number) => string \| undefined`                             | `-`     | No       |
-| `renderPageOverlay`           | `(props: PDFViewerPageOverlayProps) => React.ReactNode`                   | `-`     | No       |
-| `onActivePageChange`          | `(pageNumber: number) => void`                                            | `-`     | No       |
-| `onDocumentLoadSuccess`       | `(numPages: number) => void`                                              | `-`     | No       |
-| `onPdfUpload`                 | `(file: File) => void`                                                    | `-`     | No       |
-| `onPagePointerDown`           | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
-| `onPagePointerMove`           | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
-| `onPagePointerUp`             | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
-| `onPagePointerCancel`         | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+| Prop                    | Type                                                                      | Default | Required |
+| ----------------------- | ------------------------------------------------------------------------- | ------- | -------- |
+| `src`                   | `string`                                                                  | `-`     | No       |
+| `className`             | `string`                                                                  | `-`     | No       |
+| `defaultZoom`           | `number`                                                                  | `1`     | No       |
+| `showDownload`          | `boolean`                                                                 | `true`  | No       |
+| `showToolbar`           | `boolean`                                                                 | `true`  | No       |
+| `showRotateControls`    | `boolean`                                                                 | `true`  | No       |
+| `showUpload`            | `boolean`                                                                 | `true`  | No       |
+| `toolbarActions`        | `React.ReactNode`                                                         | `-`     | No       |
+| `pageClassName`         | `(pageNumber: number) => string \| undefined`                             | `-`     | No       |
+| `renderPageOverlay`     | `(props: PDFViewerPageOverlayProps) => React.ReactNode`                   | `-`     | No       |
+| `onActivePageChange`    | `(pageNumber: number) => void`                                            | `-`     | No       |
+| `onDocumentLoadSuccess` | `(numPages: number) => void`                                              | `-`     | No       |
+| `onPdfUpload`           | `(file: File) => void`                                                    | `-`     | No       |
+| `onPagePointerDown`     | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+| `onPagePointerMove`     | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+| `onPagePointerUp`       | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+| `onPagePointerCancel`   | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |

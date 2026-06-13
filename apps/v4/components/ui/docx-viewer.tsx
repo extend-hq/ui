@@ -3,18 +3,24 @@
 import * as React from "react"
 import {
   DocxEditorViewer,
+  useDocxComments,
   useDocxEditor,
+  useDocxPageLayout,
+  useDocxTrackChanges,
   useDocxViewerThumbnails,
   type DocxDocumentTheme,
   type DocxEditorController,
+  type DocxPageThumbnailItem,
 } from "@extend-ai/react-docx"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import {
+  Comment01Icon,
   Download01Icon,
   MinusSignCircleIcon,
   Moon02Icon,
+  MoreHorizontalIcon,
   PlusSignCircleIcon,
   SidebarLeftIcon,
-  Sun03Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -26,6 +32,14 @@ import {
   useElementWidth,
   useInlineThumbnailSidebar,
 } from "@/components/ui/document-viewer-sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -49,6 +63,9 @@ const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 const DOCX_LOADING_INDICATOR_DELAY_MS = 300
 const DOCX_THUMBNAIL_WIDTH = 92
+const DOCX_THUMBNAIL_LIST_PADDING = 16
+const DOCX_THUMBNAIL_ROW_ESTIMATE = 172
+const DEFAULT_ZOOM = 50
 const ZOOM_OPTIONS = [10, 25, 50, 75, 100, 125, 150, 175, 200, 400] as const
 const DOCX_PADDING_WARNING_TEXT = "a style property during rerender"
 
@@ -156,6 +173,13 @@ function getNextZoomScale(currentZoomScale: number, direction: 1 | -1) {
   return ZOOM_OPTIONS[nextIndex] ?? currentZoomScale
 }
 
+function normalizeDocxZoomScale(value: number | undefined): number {
+  return typeof value === "number" &&
+    ZOOM_OPTIONS.includes(value as (typeof ZOOM_OPTIONS)[number])
+    ? value
+    : DEFAULT_ZOOM
+}
+
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   const [showSpinner, setShowSpinner] = React.useState(false)
 
@@ -226,6 +250,99 @@ function ViewerLoadingSurface({
     <div className="grid h-full min-h-52 place-items-center bg-transparent">
       {showSpinner ? <Spinner className="size-4" /> : null}
     </div>
+  )
+}
+
+function DocxFileActionsMenu({
+  controlsDisabled,
+  downloadDisabled,
+  isPreparingDownload,
+  isDark,
+  onDownload,
+  onIsDarkChange,
+  onShowDocumentMarkupChange,
+  onUploadClick,
+  showDocumentMarkup,
+  showDownloadButton,
+  showNightRenderToggle,
+  showUploadButton,
+}: {
+  controlsDisabled: boolean
+  downloadDisabled: boolean
+  isPreparingDownload: boolean
+  isDark: boolean
+  onDownload: () => void
+  onIsDarkChange: (checked: boolean) => void
+  onShowDocumentMarkupChange: (checked: boolean) => void
+  onUploadClick: () => void
+  showDocumentMarkup: boolean
+  showDownloadButton: boolean
+  showNightRenderToggle: boolean
+  showUploadButton: boolean
+}) {
+  const showFileActions = showDownloadButton || showUploadButton
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Open DOCX actions"
+        >
+          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        {showNightRenderToggle ? (
+          <>
+            <DropdownMenuCheckboxItem
+              checked={isDark}
+              disabled={controlsDisabled}
+              variant="switch"
+              onCheckedChange={(checked) => onIsDarkChange(checked === true)}
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <HugeiconsIcon icon={Moon02Icon} className="size-4" />
+                Dark mode
+              </span>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
+        <DropdownMenuCheckboxItem
+          checked={showDocumentMarkup}
+          disabled={controlsDisabled}
+          variant="switch"
+          onCheckedChange={(checked) =>
+            onShowDocumentMarkupChange(checked === true)
+          }
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <HugeiconsIcon icon={Comment01Icon} className="size-4" />
+            Comments/edits
+          </span>
+        </DropdownMenuCheckboxItem>
+        {showFileActions ? <DropdownMenuSeparator /> : null}
+        {showDownloadButton ? (
+          <DropdownMenuItem disabled={downloadDisabled} onClick={onDownload}>
+            {isPreparingDownload ? (
+              <Spinner className="size-4" />
+            ) : (
+              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+            )}
+            Download
+          </DropdownMenuItem>
+        ) : null}
+        {showUploadButton ? (
+          <DropdownMenuItem onClick={onUploadClick}>
+            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+            Upload
+          </DropdownMenuItem>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -325,10 +442,12 @@ function DocxToolbar({
   onDownload,
   onIsDarkChange,
   onPageChange,
+  onShowDocumentMarkupChange,
   onToggleSidebar,
   onUploadClick,
   pageCount,
   setZoomScale,
+  showDocumentMarkup,
   showDownloadButton = true,
   showNightRenderToggle,
   showUploadButton = true,
@@ -342,10 +461,12 @@ function DocxToolbar({
   onDownload: () => void
   onIsDarkChange: (checked: boolean) => void
   onPageChange: (pageNumber: number) => void
+  onShowDocumentMarkupChange: (checked: boolean) => void
   onToggleSidebar: () => void
   onUploadClick: () => void
   pageCount: number
   setZoomScale: React.Dispatch<React.SetStateAction<number>>
+  showDocumentMarkup: boolean
   showDownloadButton?: boolean
   showNightRenderToggle: boolean
   showUploadButton?: boolean
@@ -379,26 +500,6 @@ function DocxToolbar({
           />
         </div>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
-          {showNightRenderToggle ? (
-            <ToolbarTooltip
-              label={isDark ? "Use light document" : "Use dark document"}
-            >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                disabled={controlsDisabled}
-                aria-label={isDark ? "Use light document" : "Use dark document"}
-                onClick={() => onIsDarkChange(!isDark)}
-              >
-                <HugeiconsIcon
-                  icon={isDark ? Sun03Icon : Moon02Icon}
-                  className="size-4"
-                />
-              </Button>
-            </ToolbarTooltip>
-          ) : null}
-          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
           <div className="flex flex-none items-center gap-1">
             <ToolbarTooltip label="Zoom out">
               <Button
@@ -454,49 +555,6 @@ function DocxToolbar({
               </Button>
             </ToolbarTooltip>
           </div>
-          {showDownloadButton ? (
-            <>
-              <Separator
-                orientation="vertical"
-                className="mx-1 h-4 self-center"
-              />
-              <ToolbarTooltip label="Download DOCX">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Download DOCX"
-                  disabled={controlsDisabled || isPreparingDownload}
-                  onClick={onDownload}
-                >
-                  {isPreparingDownload ? (
-                    <Spinner className="size-4" />
-                  ) : (
-                    <HugeiconsIcon icon={Download01Icon} className="size-4" />
-                  )}
-                </Button>
-              </ToolbarTooltip>
-            </>
-          ) : null}
-          {showUploadButton ? (
-            <>
-              <Separator
-                orientation="vertical"
-                className="mx-1 h-4 self-center"
-              />
-              <ToolbarTooltip label="Upload DOCX">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Upload DOCX"
-                  onClick={onUploadClick}
-                >
-                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-                </Button>
-              </ToolbarTooltip>
-            </>
-          ) : null}
           {toolbarActions ? (
             <>
               <Separator
@@ -506,6 +564,21 @@ function DocxToolbar({
               {toolbarActions}
             </>
           ) : null}
+          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
+          <DocxFileActionsMenu
+            controlsDisabled={controlsDisabled}
+            downloadDisabled={controlsDisabled || isPreparingDownload}
+            isPreparingDownload={isPreparingDownload}
+            isDark={isDark}
+            onDownload={onDownload}
+            onIsDarkChange={onIsDarkChange}
+            onShowDocumentMarkupChange={onShowDocumentMarkupChange}
+            onUploadClick={onUploadClick}
+            showDocumentMarkup={showDocumentMarkup}
+            showDownloadButton={showDownloadButton}
+            showNightRenderToggle={showNightRenderToggle}
+            showUploadButton={showUploadButton}
+          />
         </div>
       </TooltipProvider>
     </div>
@@ -559,8 +632,119 @@ function DocxSidebarThumbnail({
   )
 }
 
+function DocxThumbnailSidebarList({
+  activePage,
+  displayFileName,
+  isLoadingDocument,
+  onSelectPage,
+  pageCount,
+  sidebarOpen,
+  thumbnails,
+}: {
+  activePage: number
+  displayFileName: string
+  isLoadingDocument: boolean
+  onSelectPage: (pageNumber: number) => void
+  pageCount: number
+  sidebarOpen: boolean
+  thumbnails: DocxPageThumbnailItem[]
+}) {
+  const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const visibleThumbnails = React.useMemo(
+    () => thumbnails.slice(0, pageCount || 0),
+    [pageCount, thumbnails]
+  )
+  const virtualizer = useVirtualizer({
+    count: visibleThumbnails.length,
+    estimateSize: () => DOCX_THUMBNAIL_ROW_ESTIMATE,
+    getItemKey: (index) => visibleThumbnails[index]?.pageIndex ?? index,
+    getScrollElement: () => viewportRef.current,
+    overscan: 3,
+  })
+
+  React.useEffect(() => {
+    if (!sidebarOpen || activePage < 1 || !visibleThumbnails.length) return
+
+    virtualizer.scrollToIndex(
+      Math.min(activePage - 1, visibleThumbnails.length - 1),
+      { align: "auto" }
+    )
+  }, [activePage, sidebarOpen, virtualizer, visibleThumbnails.length])
+
+  return (
+    <ScrollArea className="h-full" scrollFade viewportRef={viewportRef}>
+      {isLoadingDocument ? (
+        <div className="p-4">
+          <div className="mx-auto h-28 w-20 overflow-hidden rounded-md bg-background shadow-xs">
+            <div className="h-full animate-pulse bg-muted" />
+          </div>
+          <div className="mx-auto mt-3 h-3 w-10 rounded-full bg-muted" />
+        </div>
+      ) : visibleThumbnails.length ? (
+        <div
+          className="relative"
+          style={{
+            height: virtualizer.getTotalSize() + DOCX_THUMBNAIL_LIST_PADDING * 2,
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const thumbnail = visibleThumbnails[virtualRow.index]
+            if (!thumbnail) return null
+
+            return (
+              <div
+                key={virtualRow.key}
+                ref={virtualizer.measureElement}
+                data-index={virtualRow.index}
+                className="absolute top-0 right-3 left-3 pb-3 [contain:layout_paint]"
+                style={{
+                  transform: `translateY(${
+                    virtualRow.start + DOCX_THUMBNAIL_LIST_PADDING
+                  }px)`,
+                }}
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "!h-auto w-full flex-col items-center gap-2 p-2 text-xs shadow-none transition-none hover:bg-sidebar-accent",
+                    thumbnail.pageNumber === activePage &&
+                      "bg-sidebar-accent text-foreground",
+                    thumbnail.pageNumber !== activePage &&
+                      "text-muted-foreground"
+                  )}
+                  onFocus={(event) => event.currentTarget.blur()}
+                  onClick={() => onSelectPage(thumbnail.pageNumber)}
+                >
+                  <DocxSidebarThumbnail
+                    canvasRef={thumbnail.canvasRef}
+                    displayFileName={displayFileName}
+                    hasError={thumbnail.status === "error"}
+                    isActive={thumbnail.pageNumber === activePage}
+                    isLoading={
+                      thumbnail.status !== "ready" &&
+                      thumbnail.status !== "error"
+                    }
+                    pageNumber={thumbnail.pageNumber}
+                    pixelHeightPx={thumbnail.pixelHeightPx}
+                    pixelWidthPx={thumbnail.pixelWidthPx}
+                    previewAspectRatio={thumbnail.aspectRatio}
+                  />
+                  {thumbnail.pageNumber}
+                </Button>
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
+    </ScrollArea>
+  )
+}
+
 export function DocxViewerPreview({
   className,
+  defaultZoom = DEFAULT_ZOOM,
   fileName,
   isDark,
   onIsDarkChange,
@@ -571,6 +755,7 @@ export function DocxViewerPreview({
   toolbarActions,
 }: {
   className?: string
+  defaultZoom?: number
   fileName?: string
   isDark: boolean
   onIsDarkChange: (isDark: boolean) => void
@@ -583,6 +768,7 @@ export function DocxViewerPreview({
   return (
     <DocxViewerContent
       className={className}
+      defaultZoom={defaultZoom}
       effectiveIsDark={isDark}
       fileName={fileName}
       setNightRenderEnabled={onIsDarkChange}
@@ -598,6 +784,7 @@ export function DocxViewerPreview({
 
 function DocxViewerContent({
   className,
+  defaultZoom,
   effectiveIsDark,
   fileName,
   setNightRenderEnabled,
@@ -609,6 +796,7 @@ function DocxViewerContent({
   url,
 }: {
   className?: string
+  defaultZoom?: number
   effectiveIsDark: boolean
   fileName?: string
   setNightRenderEnabled: (checked: boolean) => void
@@ -628,6 +816,7 @@ function DocxViewerContent({
     React.useState<UploadedDocxFile | null>(null)
   const [activePage, setActivePage] = React.useState(1)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
+  const resolvedDefaultZoomScale = normalizeDocxZoomScale(defaultZoom)
   const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
   const viewerBackgroundColor =
     "color-mix(in oklab, var(--muted) 40%, transparent)"
@@ -648,7 +837,11 @@ function DocxViewerContent({
     [displayFileName, initialDocumentTheme]
   )
   const editor = useDocxEditor(editorOptions)
+  const { layout: pageLayout } = useDocxPageLayout(editor)
   const { importDocxFile, setDocumentTheme, status } = editor
+  const { showComments, setShowComments } = useDocxComments(editor)
+  const { showTrackedChanges, setShowTrackedChanges } =
+    useDocxTrackChanges(editor)
   const [reportedPageCount, setReportedPageCount] = React.useState(0)
   const thumbnailEditor = React.useMemo<DocxEditorController>(
     () => ({
@@ -659,10 +852,10 @@ function DocxViewerContent({
   )
   const thumbnailOptions = React.useMemo(
     () => ({
-      // Thumbnails paint from mounted page DOM, so they can only render
-      // while the sidebar is showing them; skip the work when it is closed.
+      // Detached thumbnail rendering handles offscreen pages; keep the raster
+      // queue dormant while the sidebar is closed.
       disabled: !sidebarOpen,
-      pixelRatio: 2,
+      pixelRatio: 1,
       resolution: {
         maxHeight: DOCX_THUMBNAIL_WIDTH * 1.35,
         maxWidth: DOCX_THUMBNAIL_WIDTH,
@@ -674,7 +867,9 @@ function DocxViewerContent({
     thumbnailEditor,
     thumbnailOptions
   )
-  const [zoomScale, setZoomScale] = React.useState(100)
+  const [zoomScale, setZoomScale] = React.useState<number>(
+    resolvedDefaultZoomScale
+  )
   const [loadError, setLoadError] = React.useState<string>()
   const [isLoadingDocument, setIsLoadingDocument] = React.useState(true)
   const [isPreparingDownload, setIsPreparingDownload] = React.useState(false)
@@ -692,6 +887,7 @@ function DocxViewerContent({
       : 0
   const controlsDisabled =
     !hasDocument || isLoadingDocument || Boolean(loadError)
+  const showDocumentMarkup = showComments || showTrackedChanges
   const handlePageCountChange = React.useCallback((nextPageCount: number) => {
     setReportedPageCount(Math.max(1, Math.round(nextPageCount || 1)))
   }, [])
@@ -701,14 +897,12 @@ function DocxViewerContent({
   }, [])
   const pageVirtualization = React.useMemo(
     () => ({
-      // Sidebar thumbnails can only paint from mounted page DOM,
-      // so every page must mount while the sidebar is open;
-      // otherwise let the viewer virtualize off-screen pages.
-      enabled: !sidebarOpen,
+      enabled: true,
+      overscan: 1,
       scrollElement: viewportElement,
       zoomScale: zoomScale / 100,
     }),
-    [sidebarOpen, viewportElement, zoomScale]
+    [viewportElement, zoomScale]
   )
   const handleDownload = React.useCallback(async () => {
     if (isPreparingDownload) return
@@ -728,14 +922,21 @@ function DocxViewerContent({
       setIsPreparingDownload(false)
     }
   }, [displayFileName, isPreparingDownload, uploadedDocxFile, url])
+  const handleShowDocumentMarkupChange = React.useCallback(
+    (checked: boolean) => {
+      setShowComments(checked)
+      setShowTrackedChanges(checked)
+    },
+    [setShowComments, setShowTrackedChanges]
+  )
 
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
   React.useEffect(() => {
-    setZoomScale(100)
+    setZoomScale(resolvedDefaultZoomScale)
     setActivePage(1)
     viewportRef.current?.scrollTo({ top: 0, left: 0 })
-  }, [url])
+  }, [resolvedDefaultZoomScale, url])
 
   React.useEffect(() => {
     setDocumentTheme(effectiveIsDark ? "dark" : "light")
@@ -859,26 +1060,41 @@ function DocxViewerContent({
     }
   }, [pageCount, updateActivePageFromViewport])
 
-  const scrollToPage = React.useCallback((pageNumber: number) => {
-    const viewport = viewportRef.current
-    const targetPageIndex = pageNumber - 1
-    const page = viewport?.querySelector<HTMLElement>(
-      `[data-docx-page-wrapper="true"][data-index="${targetPageIndex}"]`
-    )
+  const scrollToPage = React.useCallback(
+    (pageNumber: number) => {
+      const viewport = viewportRef.current
+      const targetPageIndex = pageNumber - 1
+      const page = viewport?.querySelector<HTMLElement>(
+        `[data-docx-page-wrapper="true"][data-index="${targetPageIndex}"]`
+      )
 
-    setActivePage(pageNumber)
+      setActivePage(pageNumber)
 
-    if (!viewport || !page) return
+      if (!viewport) return
 
-    viewport.scrollTo({
-      top:
-        page.getBoundingClientRect().top -
-        viewport.getBoundingClientRect().top +
-        viewport.scrollTop -
-        24,
-      behavior: "auto",
-    })
-  }, [])
+      if (!page) {
+        const pageStridePx =
+          (pageLayout.pageHeightPx + pageLayout.viewportDefaults.pageGapPx) *
+          (zoomScale / 100)
+
+        viewport.scrollTo({
+          top: Math.max(0, targetPageIndex * pageStridePx - 24),
+          behavior: "auto",
+        })
+        return
+      }
+
+      viewport.scrollTo({
+        top:
+          page.getBoundingClientRect().top -
+          viewport.getBoundingClientRect().top +
+          viewport.scrollTop -
+          24,
+        behavior: "auto",
+      })
+    },
+    [pageLayout.pageHeightPx, pageLayout.viewportDefaults.pageGapPx, zoomScale]
+  )
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -886,7 +1102,7 @@ function DocxViewerContent({
 
     if (!file) return
 
-    setZoomScale(100)
+    setZoomScale(resolvedDefaultZoomScale)
     setActivePage(1)
     setReportedPageCount(0)
     setUploadedDocxFile({
@@ -918,10 +1134,12 @@ function DocxViewerContent({
           onDownload={handleDownload}
           onIsDarkChange={setNightRenderEnabled}
           onPageChange={scrollToPage}
+          onShowDocumentMarkupChange={handleShowDocumentMarkupChange}
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
           onUploadClick={() => fileInputRef.current?.click()}
           pageCount={pageCount}
           setZoomScale={setZoomScale}
+          showDocumentMarkup={showDocumentMarkup}
           showDownloadButton={showDownload}
           showNightRenderToggle={shouldRenderNightMode}
           showUploadButton={showUpload}
@@ -937,60 +1155,20 @@ function DocxViewerContent({
           inline={sidebarInline}
           open={Boolean(sidebarOpen && (pageCount || isLoadingDocument))}
         >
-          <ScrollArea className="h-full" scrollFade>
-            <div className="p-4">
-              {isLoadingDocument ? (
-                <>
-                  <div className="mx-auto h-28 w-20 overflow-hidden rounded-md bg-background shadow-xs">
-                    <div className="h-full animate-pulse bg-muted" />
-                  </div>
-                  <div className="mx-auto mt-3 h-3 w-10 rounded-full bg-muted" />
-                </>
-              ) : (
-                <div className="flex flex-col items-center gap-3">
-                  {thumbnails.slice(0, pageCount || 0).map((thumbnail) => (
-                    <Button
-                      key={thumbnail.pageIndex}
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "!h-auto w-full flex-col items-center gap-2 p-2 text-xs shadow-none transition-none hover:bg-sidebar-accent",
-                        thumbnail.pageNumber === activePage &&
-                          "bg-sidebar-accent text-foreground",
-                        thumbnail.pageNumber !== activePage &&
-                          "text-muted-foreground"
-                      )}
-                      onFocus={(event) => event.currentTarget.blur()}
-                      onClick={() => scrollToPage(thumbnail.pageNumber)}
-                    >
-                      <DocxSidebarThumbnail
-                        canvasRef={thumbnail.canvasRef}
-                        displayFileName={displayFileName}
-                        hasError={thumbnail.status === "error"}
-                        isActive={thumbnail.pageNumber === activePage}
-                        isLoading={
-                          !thumbnail.isMounted &&
-                          thumbnail.status !== "ready" &&
-                          thumbnail.status !== "error"
-                        }
-                        pageNumber={thumbnail.pageNumber}
-                        pixelHeightPx={thumbnail.pixelHeightPx}
-                        pixelWidthPx={thumbnail.pixelWidthPx}
-                        previewAspectRatio={thumbnail.aspectRatio}
-                      />
-                      {thumbnail.pageNumber}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+          <DocxThumbnailSidebarList
+            activePage={activePage}
+            displayFileName={displayFileName}
+            isLoadingDocument={isLoadingDocument}
+            onSelectPage={scrollToPage}
+            pageCount={pageCount}
+            sidebarOpen={sidebarOpen}
+            thumbnails={thumbnails}
+          />
         </DocumentViewerThumbnailSidebar>
         <ScrollArea
           className="min-h-0 flex-1"
           style={{ backgroundColor: viewerBackgroundColor }}
-          viewportClassName="p-4"
+          viewportClassName="px-4 py-6"
           viewportRef={setViewportRef}
         >
           {!url && !uploadedDocxFile ? (
@@ -1034,6 +1212,8 @@ function DocxViewerContent({
                 <DocxEditorViewer
                   editor={editor}
                   mode="read-only"
+                  showTrackedChanges={showTrackedChanges}
+                  showComments={showComments}
                   loadingState={loadingState}
                   pageBackgroundColor={effectiveIsDark ? "#0a0a0a" : undefined}
                   pageGapBackgroundColor={viewerBackgroundColor}

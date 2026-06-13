@@ -23,7 +23,6 @@ import {
   MoreHorizontalIcon,
   PlusSignCircleIcon,
   Search01Icon,
-  Sun03Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -33,10 +32,12 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -466,6 +467,75 @@ function ViewerLoadingSurface({
   )
 }
 
+function WorkbookFileActionsMenu({
+  isDark,
+  onDownload,
+  onIsDarkChange,
+  onUploadClick,
+  showDownloadButton,
+  showNightRenderToggle = false,
+  showUploadButton,
+}: {
+  isDark?: boolean
+  onDownload?: () => void
+  onIsDarkChange?: (checked: boolean) => void
+  onUploadClick: () => void
+  showDownloadButton: boolean
+  showNightRenderToggle?: boolean
+  showUploadButton: boolean
+}) {
+  const showThemeControl = showNightRenderToggle && Boolean(onIsDarkChange)
+  const showFileActions = (showDownloadButton && onDownload) || showUploadButton
+  if (!showThemeControl && !showFileActions) return null
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Open workbook actions"
+        >
+          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className={cn("w-52", XLSX_DROPDOWN_Z_INDEX_CLASS)}
+      >
+        {showThemeControl ? (
+          <>
+            <DropdownMenuCheckboxItem
+              checked={Boolean(isDark)}
+              variant="switch"
+              onCheckedChange={(checked) => onIsDarkChange?.(checked === true)}
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <HugeiconsIcon icon={Moon02Icon} className="size-4" />
+                Dark mode
+              </span>
+            </DropdownMenuCheckboxItem>
+            {showFileActions ? <DropdownMenuSeparator /> : null}
+          </>
+        ) : null}
+        {showDownloadButton && onDownload ? (
+          <DropdownMenuItem onClick={onDownload}>
+            <HugeiconsIcon icon={Download01Icon} className="size-4" />
+            Download
+          </DropdownMenuItem>
+        ) : null}
+        {showUploadButton ? (
+          <DropdownMenuItem onClick={onUploadClick}>
+            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+            Upload
+          </DropdownMenuItem>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export function renderXlsxScroller({
   children,
   viewportProps,
@@ -812,30 +882,6 @@ function WorkbookToolbar({
     <div className="flex min-h-12 flex-wrap items-center justify-end gap-2 border-b bg-background px-3 py-2">
       <TooltipProvider>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
-          {showNightRenderToggle ? (
-            <ToolbarTooltip
-              label={isDark ? "Use light workbook" : "Use dark workbook"}
-            >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={isDark ? "Use light workbook" : "Use dark workbook"}
-                onClick={() => onIsDarkChange(!isDark)}
-              >
-                <HugeiconsIcon
-                  icon={isDark ? Sun03Icon : Moon02Icon}
-                  className="size-4"
-                />
-              </Button>
-            </ToolbarTooltip>
-          ) : null}
-          {showNightRenderToggle ? (
-            <Separator
-              orientation="vertical"
-              className="mx-1 h-4 self-center"
-            />
-          ) : null}
           <div className="flex flex-none items-center gap-1">
             <ToolbarTooltip label="Zoom out">
               <Button
@@ -891,44 +937,6 @@ function WorkbookToolbar({
             viewportRef={viewportRef}
             workbookIdentity={workbookIdentity}
           />
-          {showDownloadButton && onDownload ? (
-            <>
-              <Separator
-                orientation="vertical"
-                className="mx-1 h-4 self-center"
-              />
-              <ToolbarTooltip label="Download XLSX">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Download XLSX"
-                  onClick={onDownload}
-                >
-                  <HugeiconsIcon icon={Download01Icon} className="size-4" />
-                </Button>
-              </ToolbarTooltip>
-            </>
-          ) : null}
-          {showUploadButton ? (
-            <>
-              <Separator
-                orientation="vertical"
-                className="mx-1 h-4 self-center"
-              />
-              <ToolbarTooltip label="Upload XLSX">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Upload XLSX"
-                  onClick={onUploadClick}
-                >
-                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-                </Button>
-              </ToolbarTooltip>
-            </>
-          ) : null}
           {toolbarActions ? (
             <>
               <Separator
@@ -936,6 +944,25 @@ function WorkbookToolbar({
                 className="mx-1 h-4 self-center"
               />
               {toolbarActions}
+            </>
+          ) : null}
+          {(showDownloadButton && onDownload) ||
+          showUploadButton ||
+          showNightRenderToggle ? (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-1 h-4 self-center"
+              />
+              <WorkbookFileActionsMenu
+                isDark={isDark}
+                onDownload={onDownload}
+                onIsDarkChange={onIsDarkChange}
+                onUploadClick={onUploadClick}
+                showDownloadButton={showDownloadButton}
+                showNightRenderToggle={showNightRenderToggle}
+                showUploadButton={showUploadButton}
+              />
             </>
           ) : null}
         </div>
@@ -957,28 +984,20 @@ function WorkbookStandaloneToolbar({
     <div className="flex min-h-12 flex-wrap items-center justify-end gap-2 border-b bg-background px-3 py-2">
       <TooltipProvider>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
+          {toolbarActions ? <>{toolbarActions}</> : null}
           {showUploadButton ? (
-            <ToolbarTooltip label="Upload XLSX">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Upload XLSX"
-                onClick={onUploadClick}
-              >
-                <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-              </Button>
-            </ToolbarTooltip>
-          ) : null}
-          {toolbarActions ? (
             <>
-              {showUploadButton ? (
+              {toolbarActions ? (
                 <Separator
                   orientation="vertical"
                   className="mx-1 h-4 self-center"
                 />
               ) : null}
-              {toolbarActions}
+              <WorkbookFileActionsMenu
+                onUploadClick={onUploadClick}
+                showDownloadButton={false}
+                showUploadButton={showUploadButton}
+              />
             </>
           ) : null}
         </div>

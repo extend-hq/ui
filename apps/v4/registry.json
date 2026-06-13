@@ -653,7 +653,7 @@
       "title": "DOCX Viewer",
       "description": "A DOCX viewer with upload, zoom, theme controls, and read-only rendering.",
       "dependencies": [
-        "@extend-ai/react-docx@^0.7.0-alpha.6",
+        "@extend-ai/react-docx@^0.7.0-alpha.7",
         "@hugeicons/core-free-icons@^4.2.0",
         "@hugeicons/react@^1.1.6"
       ],
@@ -684,7 +684,7 @@
       "description": "An experimental DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
       "dependencies": [
         "@base-ui/react@^1.4.1",
-        "@extend-ai/react-docx@^0.7.0-alpha.6",
+        "@extend-ai/react-docx@^0.7.0-alpha.7",
         "@hugeicons/core-free-icons@^4.2.0",
         "@hugeicons/react@^1.1.6"
       ],

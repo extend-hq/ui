@@ -1625,6 +1625,8 @@ function DocxEditorContent({
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const imageInputRef = React.useRef<HTMLInputElement>(null)
   const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const [viewportElement, setViewportElement] =
+    React.useState<HTMLDivElement | null>(null)
   const [viewerShellRef, viewerShellWidth] = useElementWidth<HTMLDivElement>()
   const [uploadedDocxFile, setUploadedDocxFile] =
     React.useState<UploadedDocxFile | null>(null)
@@ -1658,6 +1660,7 @@ function DocxEditorContent({
     [displayFileName, initialDocumentTheme]
   )
   const editor = useDocxEditor(editorOptions)
+  const { layout: pageLayout } = useDocxPageLayout(editor)
   const { importDocxFile, setDocumentTheme, status } = editor
   const [reportedPageCount, setReportedPageCount] = React.useState(0)
   const thumbnailEditor = React.useMemo<DocxEditorController>(
@@ -1702,6 +1705,19 @@ function DocxEditorContent({
   const handlePageCountChange = React.useCallback((nextPageCount: number) => {
     setReportedPageCount(Math.max(1, Math.round(nextPageCount || 1)))
   }, [])
+  const setViewportRef = React.useCallback((element: HTMLDivElement | null) => {
+    viewportRef.current = element
+    setViewportElement(element)
+  }, [])
+  const pageVirtualization = React.useMemo(
+    () => ({
+      enabled: true,
+      overscan: 1,
+      scrollElement: viewportElement,
+      zoomScale: zoomScale / 100,
+    }),
+    [viewportElement, zoomScale]
+  )
 
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
@@ -1826,26 +1842,41 @@ function DocxEditorContent({
     }
   }, [pageCount, updateActivePageFromViewport])
 
-  const scrollToPage = React.useCallback((pageNumber: number) => {
-    const viewport = viewportRef.current
-    const targetPageIndex = pageNumber - 1
-    const page = viewport?.querySelector<HTMLElement>(
-      `[data-docx-page-wrapper="true"][data-index="${targetPageIndex}"]`
-    )
+  const scrollToPage = React.useCallback(
+    (pageNumber: number) => {
+      const viewport = viewportRef.current
+      const targetPageIndex = pageNumber - 1
+      const page = viewport?.querySelector<HTMLElement>(
+        `[data-docx-page-wrapper="true"][data-index="${targetPageIndex}"]`
+      )
 
-    setActivePage(pageNumber)
+      setActivePage(pageNumber)
 
-    if (!viewport || !page) return
+      if (!viewport) return
 
-    viewport.scrollTo({
-      top:
-        page.getBoundingClientRect().top -
-        viewport.getBoundingClientRect().top +
-        viewport.scrollTop -
-        24,
-      behavior: "auto",
-    })
-  }, [])
+      if (!page) {
+        const pageStridePx =
+          (pageLayout.pageHeightPx + pageLayout.viewportDefaults.pageGapPx) *
+          (zoomScale / 100)
+
+        viewport.scrollTo({
+          top: Math.max(0, targetPageIndex * pageStridePx - 24),
+          behavior: "auto",
+        })
+        return
+      }
+
+      viewport.scrollTo({
+        top:
+          page.getBoundingClientRect().top -
+          viewport.getBoundingClientRect().top +
+          viewport.scrollTop -
+          24,
+        behavior: "auto",
+      })
+    },
+    [pageLayout.pageHeightPx, pageLayout.viewportDefaults.pageGapPx, zoomScale]
+  )
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -2017,7 +2048,7 @@ function DocxEditorContent({
           className="min-h-0 flex-1"
           style={{ backgroundColor: viewerBackgroundColor }}
           viewportClassName="overscroll-contain p-4"
-          viewportRef={viewportRef}
+          viewportRef={setViewportRef}
         >
           {!url && !uploadedDocxFile ? (
             <div className="grid h-full min-h-96 place-items-center p-6 text-center">
@@ -2069,7 +2100,7 @@ function DocxEditorContent({
                     editor.documentTheme === "dark" ? "#0a0a0a" : undefined
                   }
                   pageGapBackgroundColor={viewerBackgroundColor}
-                  pageVirtualization={{ enabled: false }}
+                  pageVirtualization={pageVirtualization}
                   deferInitialPaginationPaint={false}
                   onPageCountChange={handlePageCountChange}
                 />

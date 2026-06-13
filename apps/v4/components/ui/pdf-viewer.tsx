@@ -64,6 +64,7 @@ import {
   ArrowRight01Icon,
   Download01Icon,
   MinusSignCircleIcon,
+  MoreHorizontalIcon,
   PlusSignCircleIcon,
   RotateClockwiseIcon,
   Search01Icon,
@@ -81,6 +82,12 @@ import {
   useElementWidth,
   useInlineThumbnailSidebar,
 } from "@/components/ui/document-viewer-sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -127,10 +134,6 @@ export type PDFViewerProps = {
   className?: string
   defaultZoom?: number
   fileName?: string
-  /** Retained for API compatibility; page sizes come from the document. */
-  pageWidth?: number
-  /** Retained for API compatibility; page sizes come from the document. */
-  pageHeight?: number
   showDownload?: boolean
   showToolbar?: boolean
   showRotateControls?: boolean
@@ -486,7 +489,7 @@ function PDFViewerFallbackShell({
       {showToolbar ? (
         <div className="flex min-h-12 flex-wrap items-center justify-end gap-2 border-b bg-background px-3 py-2">
           {showUpload && onUploadFile ? (
-            <PDFViewerUploadControl onUploadFile={onUploadFile} />
+            <PDFViewerFileActionsMenu onUploadFile={onUploadFile} showUpload />
           ) : null}
         </div>
       ) : null}
@@ -534,39 +537,74 @@ function ToolbarTooltip({
   )
 }
 
-function PDFViewerUploadControl({
+function PDFViewerFileActionsMenu({
+  downloadDisabled,
+  isPreparingDownload = false,
+  onDownload,
   onUploadFile,
+  showDownload = false,
+  showUpload = false,
 }: {
-  onUploadFile: (file: File) => void
+  downloadDisabled?: boolean
+  isPreparingDownload?: boolean
+  onDownload?: () => void
+  onUploadFile?: (file: File) => void
+  showDownload?: boolean
+  showUpload?: boolean
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
 
+  if (!showDownload && !showUpload) return null
+
   return (
     <>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf,.pdf"
-        className="sr-only"
-        tabIndex={-1}
-        onChange={(event) => {
-          const nextFile = event.target.files?.[0]
+      {showUpload && onUploadFile ? (
+        <input
+          ref={inputRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="sr-only"
+          tabIndex={-1}
+          onChange={(event) => {
+            const nextFile = event.target.files?.[0]
 
-          if (nextFile) {
-            onUploadFile(nextFile)
-            event.currentTarget.value = ""
-          }
-        }}
-      />
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        aria-label="Upload PDF"
-        onClick={() => inputRef.current?.click()}
-      >
-        <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-      </Button>
+            if (nextFile) {
+              onUploadFile(nextFile)
+              event.currentTarget.value = ""
+            }
+          }}
+        />
+      ) : null}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Open PDF actions"
+          >
+            <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-40">
+          {showDownload && onDownload ? (
+            <DropdownMenuItem disabled={downloadDisabled} onClick={onDownload}>
+              {isPreparingDownload ? (
+                <Spinner className="size-4" />
+              ) : (
+                <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              )}
+              Download
+            </DropdownMenuItem>
+          ) : null}
+          {showUpload && onUploadFile ? (
+            <DropdownMenuItem onClick={() => inputRef.current?.click()}>
+              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              Upload
+            </DropdownMenuItem>
+          ) : null}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </>
   )
 }
@@ -2354,44 +2392,6 @@ function PDFViewerInner({
                 documentId={documentId}
                 controlsDisabled={controlsDisabled}
               />
-              {showDownload ? (
-                <>
-                  <Separator
-                    orientation="vertical"
-                    className="mx-1 h-4 self-center"
-                  />
-                  <ToolbarTooltip label="Download PDF">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Download PDF"
-                      disabled={downloadDisabled}
-                      onClick={handleDownload}
-                    >
-                      {isPreparingDownload ? (
-                        <Spinner className="size-4" />
-                      ) : (
-                        <HugeiconsIcon
-                          icon={Download01Icon}
-                          className="size-4"
-                        />
-                      )}
-                    </Button>
-                  </ToolbarTooltip>
-                </>
-              ) : null}
-              {showUpload ? (
-                <>
-                  <Separator
-                    orientation="vertical"
-                    className="mx-1 h-4 self-center"
-                  />
-                  <ToolbarTooltip label="Upload PDF">
-                    <PDFViewerUploadControl onUploadFile={handleUpload} />
-                  </ToolbarTooltip>
-                </>
-              ) : null}
               {toolbarActions ? (
                 <>
                   <Separator
@@ -2399,6 +2399,22 @@ function PDFViewerInner({
                     className="mx-1 h-4 self-center"
                   />
                   {toolbarActions}
+                </>
+              ) : null}
+              {showDownload || showUpload ? (
+                <>
+                  <Separator
+                    orientation="vertical"
+                    className="mx-1 h-4 self-center"
+                  />
+                  <PDFViewerFileActionsMenu
+                    downloadDisabled={downloadDisabled}
+                    isPreparingDownload={isPreparingDownload}
+                    onDownload={handleDownload}
+                    onUploadFile={handleUpload}
+                    showDownload={showDownload}
+                    showUpload={showUpload}
+                  />
                 </>
               ) : null}
             </div>
@@ -2544,8 +2560,6 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       className,
       defaultZoom = DEFAULT_ZOOM,
       fileName,
-      pageWidth: _pageWidth,
-      pageHeight: _pageHeight,
       showDownload = true,
       showRotateControls = true,
       showToolbar = true,
@@ -2659,10 +2673,7 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
             <div className="min-h-12 border-b bg-background" />
           ) : null}
           <div className="relative min-h-0 flex-1">
-            <PDFViewerLoadingSkeleton
-              sidebarInline
-              sidebarOpen={false}
-            />
+            <PDFViewerLoadingSkeleton sidebarInline sidebarOpen={false} />
           </div>
         </div>
       )
