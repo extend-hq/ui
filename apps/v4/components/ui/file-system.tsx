@@ -4722,6 +4722,7 @@ function FileSystemGalleryStage({
     urlCache
   )
   const isDialog = variant === "dialog"
+  const [isDark, setIsDark] = React.useState(false)
   const viewerFrameClassName = cn(
     "size-full",
     !isDialog && "overflow-hidden rounded-lg border"
@@ -4765,7 +4766,9 @@ function FileSystemGalleryStage({
           <LazyDocxViewerPreview
             src={url}
             fileName={file.name}
+            isDark={isDark}
             className="h-full min-h-0"
+            onIsDarkChange={setIsDark}
             rounded={isDialog}
             showToolbar={isDialog}
             showUpload={false}
@@ -4782,7 +4785,9 @@ function FileSystemGalleryStage({
           <LazyXlsxViewerPreview
             src={url}
             fileName={file.name}
+            isDark={isDark}
             className="h-full min-h-0"
+            onIsDarkChange={setIsDark}
             rounded={isDialog}
             showToolbar={isDialog}
             showUpload={false}

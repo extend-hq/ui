@@ -47,7 +47,6 @@ import {
 import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
-  useControllableDarkMode,
   WorkbookSheetTabs,
   WorkbookTableHeaderMenu,
   XlsxWorkbookSurface,
@@ -1153,12 +1152,12 @@ function WorkbookViewerPane({
 }: {
   workbookIdentity: string
 }) {
-  const [effectiveIsDark, setIsDark] = useControllableDarkMode({})
+  const [isDark, setIsDark] = React.useState(false)
 
   return (
     <XlsxWorkbookSurface
       className="h-full"
-      isDark={effectiveIsDark}
+      isDark={isDark}
       onIsDarkChange={setIsDark}
       onUploadClick={() => {}}
       renderTableHeaderMenu={(props) => <WorkbookTableHeaderMenu {...props} />}

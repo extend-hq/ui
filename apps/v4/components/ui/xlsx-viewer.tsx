@@ -66,6 +66,7 @@ import {
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
 const XLSX_SEARCH_BATCH_ROW_COUNT = 500
+const XLSX_SEARCH_DEBOUNCE_MS = 300
 const XLSX_GRID_HEADER_HEIGHT = 24
 const XLSX_GRID_ROW_HEADER_WIDTH = 40
 const XLSX_MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024
@@ -216,7 +217,11 @@ function getBatchCells(row: XlsxBatchRow): XlsxBatchCell[] {
   return Array.isArray(row.cells) ? (row.cells as XlsxBatchCell[]) : []
 }
 
-function cellMatchesQuery(displayValue: string, formula: string, query: string) {
+function cellMatchesQuery(
+  displayValue: string,
+  formula: string,
+  query: string
+) {
   return (
     displayValue.toLowerCase().includes(query) ||
     formula.toLowerCase().includes(query)
@@ -432,33 +437,6 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   return showSpinner
 }
 
-export function useControllableDarkMode({
-  defaultIsDark = false,
-  isDark,
-  onIsDarkChange,
-}: {
-  defaultIsDark?: boolean
-  isDark?: boolean
-  onIsDarkChange?: (isDark: boolean) => void
-}) {
-  const [uncontrolledIsDark, setUncontrolledIsDark] =
-    React.useState(defaultIsDark)
-  const resolvedIsDark = isDark ?? uncontrolledIsDark
-
-  const setIsDark = React.useCallback(
-    (nextIsDark: boolean) => {
-      if (isDark === undefined) {
-        setUncontrolledIsDark(nextIsDark)
-      }
-
-      onIsDarkChange?.(nextIsDark)
-    },
-    [isDark, onIsDarkChange]
-  )
-
-  return [resolvedIsDark, setIsDark] as const
-}
-
 function ToolbarTooltip({
   label,
   children,
@@ -571,6 +549,7 @@ function WorkbookSearchPopover({
   )
   const [activeResultIndex, setActiveResultIndex] = React.useState(0)
   const [isSearching, setIsSearching] = React.useState(false)
+  const controllerRef = React.useRef(controller)
   const searchRequestIdRef = React.useRef(0)
   const appliedResultKeyRef = React.useRef("")
   const activeResult = searchResults[activeResultIndex] ?? null
@@ -578,18 +557,24 @@ function WorkbookSearchPopover({
     ? `${activeResult.workbookSheetIndex}:${activeResult.cell.row}:${activeResult.cell.col}`
     : ""
   const controlsDisabled =
-    controller.isLoading || Boolean(controller.error) || !controller.sheets.length
-  const hasSubmittedQuery = Boolean(searchQuery.trim())
+    controller.isLoading ||
+    Boolean(controller.error) ||
+    !controller.sheets.length
+  const hasActiveQuery = Boolean(searchQuery.trim())
   const resultLabel = isSearching
     ? "Searching"
-    : !hasSubmittedQuery
+    : !hasActiveQuery
       ? "No search"
       : searchResults.length
         ? `${activeResultIndex + 1} / ${searchResults.length}`
         : "No results"
 
-  const applySearch = React.useCallback(() => {
-    const nextQuery = searchDraft.trim()
+  React.useEffect(() => {
+    controllerRef.current = controller
+  }, [controller])
+
+  const runSearch = React.useCallback((rawQuery: string) => {
+    const nextQuery = rawQuery.trim()
     const requestId = searchRequestIdRef.current + 1
     searchRequestIdRef.current = requestId
     appliedResultKeyRef.current = ""
@@ -603,7 +588,7 @@ function WorkbookSearchPopover({
     }
 
     setIsSearching(true)
-    void findXlsxSearchResults(controller, nextQuery)
+    void findXlsxSearchResults(controllerRef.current, nextQuery)
       .then((nextResults) => {
         if (searchRequestIdRef.current !== requestId) return
         setSearchResults(nextResults)
@@ -616,7 +601,23 @@ function WorkbookSearchPopover({
         if (searchRequestIdRef.current !== requestId) return
         setIsSearching(false)
       })
-  }, [controller, searchDraft])
+  }, [])
+
+  React.useEffect(() => {
+    const trimmedDraft = searchDraft.trim()
+
+    if (!trimmedDraft) {
+      runSearch("")
+      return
+    }
+
+    setIsSearching(true)
+    const timeoutId = window.setTimeout(() => {
+      runSearch(searchDraft)
+    }, XLSX_SEARCH_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [runSearch, searchDraft])
 
   const clearSearch = React.useCallback(() => {
     searchRequestIdRef.current += 1
@@ -675,7 +676,13 @@ function WorkbookSearchPopover({
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [activeResult, activeResultKey, controller, controller.activeSheetIndex, viewportRef])
+  }, [
+    activeResult,
+    activeResultKey,
+    controller,
+    controller.activeSheetIndex,
+    viewportRef,
+  ])
 
   return (
     <Popover>
@@ -704,10 +711,10 @@ function WorkbookSearchPopover({
               event.preventDefault()
               if (event.shiftKey && searchResults.length) {
                 goToRelativeResult(-1)
-              } else if (searchResults.length && searchDraft === searchQuery) {
+              } else if (searchResults.length) {
                 goToRelativeResult(1)
-              } else {
-                applySearch()
+              } else if (searchDraft.trim()) {
+                runSearch(searchDraft)
               }
             }}
           />
@@ -716,7 +723,9 @@ function WorkbookSearchPopover({
               <div className="truncate">
                 {searchResults.length ? (
                   <>
-                    <span className="text-primary">{activeResultIndex + 1}</span>
+                    <span className="text-primary">
+                      {activeResultIndex + 1}
+                    </span>
                     {` / ${searchResults.length}`}
                   </>
                 ) : (
@@ -752,7 +761,7 @@ function WorkbookSearchPopover({
               </Button>
             </div>
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end">
             <Button
               type="button"
               variant="outline"
@@ -760,14 +769,6 @@ function WorkbookSearchPopover({
               onClick={clearSearch}
             >
               Clear
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              disabled={isSearching}
-              onClick={applySearch}
-            >
-              Search
             </Button>
           </div>
         </div>
@@ -1285,7 +1286,6 @@ export function XlsxWorkbookSurface({
   onIsDarkChange,
   onUploadClick,
   renderTableHeaderMenu,
-  rounded,
   showDownloadButton = true,
   showNightRenderToggle,
   showToolbar = true,
@@ -1301,7 +1301,6 @@ export function XlsxWorkbookSurface({
   renderTableHeaderMenu: (
     props: XlsxTableHeaderMenuRenderProps
   ) => React.ReactNode
-  rounded: boolean
   showDownloadButton?: boolean
   showNightRenderToggle: boolean
   showToolbar?: boolean
@@ -1328,8 +1327,7 @@ export function XlsxWorkbookSurface({
     <div
       className={cn(
         "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
-        className,
-        rounded && "rounded-lg"
+        className
       )}
     >
       {showToolbar ? (
@@ -1387,11 +1385,9 @@ export function XlsxWorkbookSurface({
 
 export function XlsxViewerPreview({
   className,
-  defaultIsDark = false,
   fileName,
-  isDark: controlledIsDark,
+  isDark,
   onIsDarkChange,
-  rounded = false,
   showDownload = true,
   showToolbar = true,
   showUpload = true,
@@ -1399,30 +1395,21 @@ export function XlsxViewerPreview({
   toolbarActions,
 }: {
   className?: string
-  defaultIsDark?: boolean
   fileName?: string
-  isDark?: boolean
-  onIsDarkChange?: (isDark: boolean) => void
-  rounded?: boolean
+  isDark: boolean
+  onIsDarkChange: (isDark: boolean) => void
   showDownload?: boolean
   showToolbar?: boolean
   showUpload?: boolean
   src?: string
   toolbarActions?: React.ReactNode
 }) {
-  const [effectiveIsDark, setIsDark] = useControllableDarkMode({
-    defaultIsDark,
-    isDark: controlledIsDark,
-    onIsDarkChange,
-  })
-
   return (
     <XlsxViewerContent
       className={className}
-      effectiveIsDark={effectiveIsDark}
+      effectiveIsDark={isDark}
       fileName={fileName}
-      rounded={rounded}
-      setNightRenderEnabled={setIsDark}
+      setNightRenderEnabled={onIsDarkChange}
       shouldRenderNightMode
       showDownload={showDownload}
       showToolbar={showToolbar}
@@ -1437,7 +1424,6 @@ function XlsxViewerContent({
   className,
   effectiveIsDark,
   fileName,
-  rounded,
   setNightRenderEnabled,
   shouldRenderNightMode,
   showDownload,
@@ -1449,7 +1435,6 @@ function XlsxViewerContent({
   className?: string
   effectiveIsDark: boolean
   fileName?: string
-  rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
   showDownload: boolean
@@ -1669,7 +1654,6 @@ function XlsxViewerContent({
         renderTableHeaderMenu={(props) => (
           <WorkbookTableHeaderMenu {...props} />
         )}
-        rounded={rounded}
         showDownloadButton={showDownload}
         showNightRenderToggle={shouldRenderNightMode}
         showToolbar={showToolbar}
@@ -1690,7 +1674,6 @@ function XlsxWorkbookLoadedViewer({
   onIsDarkChange,
   onUploadClick,
   renderTableHeaderMenu,
-  rounded,
   showDownloadButton,
   showNightRenderToggle,
   showToolbar = true,
@@ -1708,7 +1691,6 @@ function XlsxWorkbookLoadedViewer({
   renderTableHeaderMenu: (
     props: XlsxTableHeaderMenuRenderProps
   ) => React.ReactNode
-  rounded: boolean
   showDownloadButton: boolean
   showNightRenderToggle: boolean
   showToolbar?: boolean
@@ -1740,7 +1722,6 @@ function XlsxWorkbookLoadedViewer({
         onIsDarkChange={onIsDarkChange}
         onUploadClick={onUploadClick}
         renderTableHeaderMenu={renderTableHeaderMenu}
-        rounded={rounded}
         showDownloadButton={showDownloadButton}
         showNightRenderToggle={showNightRenderToggle}
         showToolbar={showToolbar}

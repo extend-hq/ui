@@ -188,6 +188,8 @@ function FileUploadTile({ mountPreview }: TileProps) {
 }
 
 function ComponentXlsxViewerTile({ mountPreview }: TileProps) {
+  const [isDark, setIsDark] = React.useState(false)
+
   return (
     <ComponentCrop
       label="XLSX Viewer"
@@ -195,7 +197,12 @@ function ComponentXlsxViewerTile({ mountPreview }: TileProps) {
       className="h-[540px] bg-background 4xl:h-[500px]"
     >
       {mountPreview && (
-        <XlsxViewerPreview className="h-full" src={ROOT_XLSX_URL} />
+        <XlsxViewerPreview
+          className="h-full"
+          src={ROOT_XLSX_URL}
+          isDark={isDark}
+          onIsDarkChange={setIsDark}
+        />
       )}
     </ComponentCrop>
   )

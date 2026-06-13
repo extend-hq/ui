@@ -331,33 +331,6 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   return showSpinner
 }
 
-function useControllableDarkMode({
-  defaultIsDark = false,
-  isDark,
-  onIsDarkChange,
-}: {
-  defaultIsDark?: boolean
-  isDark?: boolean
-  onIsDarkChange?: (isDark: boolean) => void
-}) {
-  const [uncontrolledIsDark, setUncontrolledIsDark] =
-    React.useState(defaultIsDark)
-  const resolvedIsDark = isDark ?? uncontrolledIsDark
-
-  const setIsDark = React.useCallback(
-    (nextIsDark: boolean) => {
-      if (isDark === undefined) {
-        setUncontrolledIsDark(nextIsDark)
-      }
-
-      onIsDarkChange?.(nextIsDark)
-    },
-    [isDark, onIsDarkChange]
-  )
-
-  return [resolvedIsDark, setIsDark] as const
-}
-
 function isDocxPaddingWarning(args: unknown[]) {
   return (
     typeof args[0] === "string" &&
@@ -1469,37 +1442,26 @@ function DocxEditorToolbar({
 
 export function DocxEditorPreview({
   className,
-  defaultIsDark = false,
   defaultZoomScale = DOCX_EDITOR_DEFAULT_ZOOM_SCALE,
   fileName,
-  isDark: controlledIsDark,
+  isDark,
   onIsDarkChange,
-  rounded = false,
   src,
 }: {
   className?: string
-  defaultIsDark?: boolean
   defaultZoomScale?: number
   fileName?: string
-  isDark?: boolean
-  onIsDarkChange?: (isDark: boolean) => void
-  rounded?: boolean
+  isDark: boolean
+  onIsDarkChange: (isDark: boolean) => void
   src?: string
 }) {
-  const [effectiveIsDark, setIsDark] = useControllableDarkMode({
-    defaultIsDark,
-    isDark: controlledIsDark,
-    onIsDarkChange,
-  })
-
   return (
     <DocxEditorContent
       className={className}
       defaultZoomScale={defaultZoomScale}
-      effectiveIsDark={effectiveIsDark}
+      effectiveIsDark={isDark}
       fileName={fileName}
-      rounded={rounded}
-      setIsDark={setIsDark}
+      setIsDark={onIsDarkChange}
       shouldRenderNightMode
       url={src}
     />
@@ -1511,7 +1473,6 @@ function DocxEditorContent({
   defaultZoomScale,
   effectiveIsDark,
   fileName,
-  rounded,
   setIsDark,
   shouldRenderNightMode,
   url,
@@ -1520,7 +1481,6 @@ function DocxEditorContent({
   defaultZoomScale?: number
   effectiveIsDark: boolean
   fileName?: string
-  rounded: boolean
   setIsDark: (checked: boolean) => void
   shouldRenderNightMode: boolean
   url?: string
@@ -1917,7 +1877,7 @@ function DocxEditorContent({
           </ScrollArea>
         </DocumentViewerThumbnailSidebar>
         <ScrollArea
-          className={cn("min-h-0 flex-1", rounded && "rounded-b-lg")}
+          className="min-h-0 flex-1"
           style={{ backgroundColor: viewerBackgroundColor }}
           viewportClassName="overscroll-contain p-4"
           viewportRef={viewportRef}

@@ -3,9 +3,9 @@
 import * as React from "react"
 
 import { FileThumbnail } from "@/components/ui/file-thumbnail"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { XlsxViewerPreview } from "@/components/ui/xlsx-viewer"
 import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 const SHEETS = ["Overview", "Chart review", "Format checks", "Exceptions"]
 
@@ -16,6 +16,8 @@ export function ExcelDocumentSplitsBlock({
   file?: string
   heightClassName?: string
 }) {
+  const [isDark, setIsDark] = React.useState(false)
+
   return (
     <PdfBlockResizableShell
       autoSaveId="xlsx-block-document-splits"
@@ -23,7 +25,13 @@ export function ExcelDocumentSplitsBlock({
       rightDefaultSize={48}
       rightMaxSize={64}
       rightMinSize={30}
-      left={<XlsxViewerPreview src={file} />}
+      left={
+        <XlsxViewerPreview
+          src={file}
+          isDark={isDark}
+          onIsDarkChange={setIsDark}
+        />
+      }
       right={
         <aside className="min-h-0 bg-background">
           <ScrollArea className="h-full" scrollFade>

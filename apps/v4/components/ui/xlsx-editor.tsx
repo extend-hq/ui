@@ -36,20 +36,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
-import {
-  renderXlsxScroller,
-  useControllableDarkMode,
-  WorkbookSheetTabs,
-  WorkbookTableHeaderMenu,
-} from "@/components/ui/xlsx-viewer"
 import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  renderXlsxScroller,
+  WorkbookSheetTabs,
+  WorkbookTableHeaderMenu,
+} from "@/components/ui/xlsx-viewer"
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_EDITOR_READ_ONLY_THRESHOLD_BYTES = 5 * 1024 * 1024
@@ -534,34 +533,26 @@ export function XlsxEditorSurface({
 
 export function XlsxEditorPreview({
   className,
-  defaultIsDark = false,
   fileName,
-  isDark: controlledIsDark,
+  isDark,
   onIsDarkChange,
   rounded = false,
   src,
 }: {
   className?: string
-  defaultIsDark?: boolean
   fileName?: string
-  isDark?: boolean
-  onIsDarkChange?: (isDark: boolean) => void
+  isDark: boolean
+  onIsDarkChange: (isDark: boolean) => void
   rounded?: boolean
   src?: string
 }) {
-  const [effectiveIsDark, setIsDark] = useControllableDarkMode({
-    defaultIsDark,
-    isDark: controlledIsDark,
-    onIsDarkChange,
-  })
-
   return (
     <XlsxEditorContent
       className={className}
-      effectiveIsDark={effectiveIsDark}
+      effectiveIsDark={isDark}
       fileName={fileName}
       rounded={rounded}
-      setNightRenderEnabled={setIsDark}
+      setNightRenderEnabled={onIsDarkChange}
       shouldRenderNightMode
       url={src}
     />

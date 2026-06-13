@@ -175,33 +175,6 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   return showSpinner
 }
 
-function useControllableDarkMode({
-  defaultIsDark = false,
-  isDark,
-  onIsDarkChange,
-}: {
-  defaultIsDark?: boolean
-  isDark?: boolean
-  onIsDarkChange?: (isDark: boolean) => void
-}) {
-  const [uncontrolledIsDark, setUncontrolledIsDark] =
-    React.useState(defaultIsDark)
-  const resolvedIsDark = isDark ?? uncontrolledIsDark
-
-  const setIsDark = React.useCallback(
-    (nextIsDark: boolean) => {
-      if (isDark === undefined) {
-        setUncontrolledIsDark(nextIsDark)
-      }
-
-      onIsDarkChange?.(nextIsDark)
-    },
-    [isDark, onIsDarkChange]
-  )
-
-  return [resolvedIsDark, setIsDark] as const
-}
-
 function isDocxPaddingWarning(args: unknown[]) {
   return (
     typeof args[0] === "string" &&
@@ -588,12 +561,9 @@ function DocxSidebarThumbnail({
 
 export function DocxViewerPreview({
   className,
-  defaultThumbnailSidebarOpen = false,
-  defaultIsDark = false,
   fileName,
-  isDark: controlledIsDark,
+  isDark,
   onIsDarkChange,
-  rounded = false,
   showDownload = true,
   showToolbar = true,
   showUpload = true,
@@ -601,32 +571,21 @@ export function DocxViewerPreview({
   toolbarActions,
 }: {
   className?: string
-  defaultThumbnailSidebarOpen?: boolean
-  defaultIsDark?: boolean
   fileName?: string
-  isDark?: boolean
-  onIsDarkChange?: (isDark: boolean) => void
-  rounded?: boolean
+  isDark: boolean
+  onIsDarkChange: (isDark: boolean) => void
   showDownload?: boolean
   showToolbar?: boolean
   showUpload?: boolean
   src?: string
   toolbarActions?: React.ReactNode
 }) {
-  const [effectiveIsDark, setIsDark] = useControllableDarkMode({
-    defaultIsDark,
-    isDark: controlledIsDark,
-    onIsDarkChange,
-  })
-
   return (
     <DocxViewerContent
       className={className}
-      defaultThumbnailSidebarOpen={defaultThumbnailSidebarOpen}
-      effectiveIsDark={effectiveIsDark}
+      effectiveIsDark={isDark}
       fileName={fileName}
-      rounded={rounded}
-      setNightRenderEnabled={setIsDark}
+      setNightRenderEnabled={onIsDarkChange}
       shouldRenderNightMode
       showDownload={showDownload}
       showToolbar={showToolbar}
@@ -639,10 +598,8 @@ export function DocxViewerPreview({
 
 function DocxViewerContent({
   className,
-  defaultThumbnailSidebarOpen,
   effectiveIsDark,
   fileName,
-  rounded,
   setNightRenderEnabled,
   shouldRenderNightMode,
   showDownload,
@@ -652,10 +609,8 @@ function DocxViewerContent({
   url,
 }: {
   className?: string
-  defaultThumbnailSidebarOpen: boolean
   effectiveIsDark: boolean
   fileName?: string
-  rounded: boolean
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
   showDownload: boolean
@@ -672,9 +627,7 @@ function DocxViewerContent({
   const [uploadedDocxFile, setUploadedDocxFile] =
     React.useState<UploadedDocxFile | null>(null)
   const [activePage, setActivePage] = React.useState(1)
-  const [sidebarOpen, setSidebarOpen] = React.useState(
-    defaultThumbnailSidebarOpen
-  )
+  const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
   const viewerBackgroundColor =
     "color-mix(in oklab, var(--muted) 40%, transparent)"
@@ -742,13 +695,10 @@ function DocxViewerContent({
   const handlePageCountChange = React.useCallback((nextPageCount: number) => {
     setReportedPageCount(Math.max(1, Math.round(nextPageCount || 1)))
   }, [])
-  const setViewportRef = React.useCallback(
-    (element: HTMLDivElement | null) => {
-      viewportRef.current = element
-      setViewportElement(element)
-    },
-    []
-  )
+  const setViewportRef = React.useCallback((element: HTMLDivElement | null) => {
+    viewportRef.current = element
+    setViewportElement(element)
+  }, [])
   const pageVirtualization = React.useMemo(
     () => ({
       // Sidebar thumbnails can only paint from mounted page DOM,
@@ -1038,7 +988,7 @@ function DocxViewerContent({
           </ScrollArea>
         </DocumentViewerThumbnailSidebar>
         <ScrollArea
-          className={cn("min-h-0 flex-1", rounded && "rounded-b-lg")}
+          className="min-h-0 flex-1"
           style={{ backgroundColor: viewerBackgroundColor }}
           viewportClassName="p-4"
           viewportRef={setViewportRef}
