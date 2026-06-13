@@ -78,6 +78,7 @@ const DOCX_THUMBNAIL_FOCUS_RING_CLASS =
 type UploadedDocxFile = {
   file: File
   identity: string
+  sourceUrl: string | undefined
 }
 
 async function loadDocxFile(
@@ -190,19 +191,19 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   const [showSpinner, setShowSpinner] = React.useState(false)
 
   React.useEffect(() => {
-    if (!isLoading) {
-      setShowSpinner(false)
-      return
-    }
+    if (!isLoading) return
 
     const timeoutId = window.setTimeout(() => {
       setShowSpinner(true)
     }, delayMs)
 
-    return () => window.clearTimeout(timeoutId)
+    return () => {
+      window.clearTimeout(timeoutId)
+      setShowSpinner(false)
+    }
   }, [delayMs, isLoading])
 
-  return showSpinner
+  return isLoading && showSpinner
 }
 
 function isDocxPaddingWarning(args: unknown[]) {
@@ -378,12 +379,6 @@ function DocxPageNumberControl({
   const displayPage = pageCount ? activePage : 1
   const [isEditing, setIsEditing] = React.useState(false)
   const [draftPage, setDraftPage] = React.useState(() => String(displayPage))
-
-  React.useEffect(() => {
-    if (!isEditing) {
-      setDraftPage(String(displayPage))
-    }
-  }, [displayPage, isEditing])
 
   React.useEffect(() => {
     if (!isEditing) return
@@ -676,6 +671,7 @@ function DocxThumbnailSidebarList({
     activePage > 0 && visibleThumbnails.length
       ? `${thumbnailListboxId}-page-${activePage}`
       : undefined
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns imperative helpers used by the thumbnail rail.
   const virtualizer = useVirtualizer({
     count: visibleThumbnails.length,
     estimateSize: () => DOCX_THUMBNAIL_ROW_ESTIMATE,
@@ -889,17 +885,40 @@ function DocxViewerContent({
   const [viewerShellRef, viewerShellWidth] = useElementWidth<HTMLDivElement>()
   const [uploadedDocxFile, setUploadedDocxFile] =
     React.useState<UploadedDocxFile | null>(null)
-  const [activePage, setActivePage] = React.useState(1)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const resolvedDefaultZoomScale = normalizeDocxZoomScale(defaultZoom)
+  const activeUploadedDocxFile =
+    uploadedDocxFile?.sourceUrl === url ? uploadedDocxFile : null
+  const documentKey = activeUploadedDocxFile?.identity ?? url ?? ""
+  const [activePageState, setActivePageState] = React.useState({
+    documentKey: "",
+    value: 1,
+  })
+  const activePage =
+    activePageState.documentKey === documentKey ? activePageState.value : 1
+  const setActivePage = React.useCallback<
+    React.Dispatch<React.SetStateAction<number>>
+  >(
+    (nextPage) => {
+      setActivePageState((currentState) => {
+        const currentPage =
+          currentState.documentKey === documentKey ? currentState.value : 1
+        const value =
+          typeof nextPage === "function" ? nextPage(currentPage) : nextPage
+
+        return { documentKey, value }
+      })
+    },
+    [documentKey]
+  )
   const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
   const viewerBackgroundColor =
     "color-mix(in oklab, var(--muted) 40%, transparent)"
   const displayFileName = React.useMemo(
     () =>
-      uploadedDocxFile?.file.name ??
+      activeUploadedDocxFile?.file.name ??
       (url ? formatDocumentName(fileName, url) : (fileName ?? "document.docx")),
-    [fileName, uploadedDocxFile?.file.name, url]
+    [activeUploadedDocxFile?.file.name, fileName, url]
   )
   const [initialDocumentTheme] = React.useState<DocxDocumentTheme>(() =>
     effectiveIsDark ? "dark" : "light"
@@ -942,8 +961,32 @@ function DocxViewerContent({
     thumbnailEditor,
     thumbnailOptions
   )
-  const [zoomScale, setZoomScale] = React.useState<number>(
-    resolvedDefaultZoomScale
+  const [zoomScaleState, setZoomScaleState] = React.useState({
+    documentKey: "",
+    value: resolvedDefaultZoomScale,
+  })
+  const zoomScale =
+    zoomScaleState.documentKey === documentKey
+      ? zoomScaleState.value
+      : resolvedDefaultZoomScale
+  const setZoomScale = React.useCallback<
+    React.Dispatch<React.SetStateAction<number>>
+  >(
+    (nextZoomScale) => {
+      setZoomScaleState((currentState) => {
+        const currentZoomScale =
+          currentState.documentKey === documentKey
+            ? currentState.value
+            : resolvedDefaultZoomScale
+        const value =
+          typeof nextZoomScale === "function"
+            ? nextZoomScale(currentZoomScale)
+            : nextZoomScale
+
+        return { documentKey, value }
+      })
+    },
+    [documentKey, resolvedDefaultZoomScale]
   )
   const [loadError, setLoadError] = React.useState<string>()
   const [isLoadingDocument, setIsLoadingDocument] = React.useState(true)
@@ -955,7 +998,7 @@ function DocxViewerContent({
   const loadingState = (
     <ViewerLoadingSurface showSpinner={shouldShowDocumentSpinner} />
   )
-  const hasDocument = Boolean(url || uploadedDocxFile)
+  const hasDocument = Boolean(url || activeUploadedDocxFile)
   const pageCount =
     hasDocument && !isLoadingDocument && !loadError
       ? Math.max(1, reportedPageCount || editor.totalPages)
@@ -984,13 +1027,13 @@ function DocxViewerContent({
   )
   const handleDownload = React.useCallback(async () => {
     if (isPreparingDownload) return
-    if (!uploadedDocxFile && !url) return
+    if (!activeUploadedDocxFile && !url) return
 
     setIsPreparingDownload(true)
 
     try {
       await downloadDocxFile({
-        file: uploadedDocxFile?.file,
+        file: activeUploadedDocxFile?.file,
         fileName: displayFileName,
         url,
       })
@@ -999,7 +1042,7 @@ function DocxViewerContent({
     } finally {
       setIsPreparingDownload(false)
     }
-  }, [displayFileName, isPreparingDownload, uploadedDocxFile, url])
+  }, [activeUploadedDocxFile, displayFileName, isPreparingDownload, url])
   const handleShowDocumentMarkupChange = React.useCallback(
     (checked: boolean) => {
       setShowComments(checked)
@@ -1011,10 +1054,8 @@ function DocxViewerContent({
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
   React.useEffect(() => {
-    setZoomScale(resolvedDefaultZoomScale)
-    setActivePage(1)
     viewportRef.current?.scrollTo({ top: 0, left: 0 })
-  }, [resolvedDefaultZoomScale, url])
+  }, [documentKey])
 
   React.useEffect(() => {
     setDocumentTheme(effectiveIsDark ? "dark" : "light")
@@ -1025,8 +1066,12 @@ function DocxViewerContent({
       status.startsWith("Failed to load file") ||
       status === "Only .docx files are supported"
     ) {
-      setLoadError(status)
-      setIsLoadingDocument(false)
+      const frame = window.requestAnimationFrame(() => {
+        setLoadError(status)
+        setIsLoadingDocument(false)
+      })
+
+      return () => window.cancelAnimationFrame(frame)
     }
   }, [status])
 
@@ -1041,7 +1086,7 @@ function DocxViewerContent({
     async function load() {
       // Superseded while queued — let the newest import run instead.
       if (!isCurrent) return
-      if (!uploadedDocxFile && !url) {
+      if (!activeUploadedDocxFile && !url) {
         setIsLoadingDocument(false)
         setLoadError(undefined)
         setReportedPageCount(0)
@@ -1054,7 +1099,7 @@ function DocxViewerContent({
 
       try {
         const docxFile =
-          uploadedDocxFile?.file ??
+          activeUploadedDocxFile?.file ??
           (url ? await loadDocxFile(url, displayFileName) : null)
         if (!docxFile) return
         await importDocxFile(docxFile)
@@ -1079,13 +1124,13 @@ function DocxViewerContent({
     return () => {
       isCurrent = false
     }
-  }, [displayFileName, importDocxFile, uploadedDocxFile, url])
-
-  React.useEffect(() => {
-    if (url) {
-      setUploadedDocxFile(null)
-    }
-  }, [url])
+  }, [
+    activeUploadedDocxFile,
+    displayFileName,
+    importDocxFile,
+    setActivePage,
+    url,
+  ])
 
   const updateActivePageFromViewport = React.useCallback(() => {
     const viewport = viewportRef.current
@@ -1117,7 +1162,7 @@ function DocxViewerContent({
     setActivePage((currentPage) =>
       currentPage === closestPage ? currentPage : closestPage
     )
-  }, [pageCount])
+  }, [pageCount, setActivePage])
 
   React.useEffect(() => {
     const viewport = viewportRef.current
@@ -1171,7 +1216,12 @@ function DocxViewerContent({
         behavior: "auto",
       })
     },
-    [pageLayout.pageHeightPx, pageLayout.viewportDefaults.pageGapPx, zoomScale]
+    [
+      pageLayout.pageHeightPx,
+      pageLayout.viewportDefaults.pageGapPx,
+      setActivePage,
+      zoomScale,
+    ]
   )
 
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -1186,6 +1236,7 @@ function DocxViewerContent({
     setUploadedDocxFile({
       file,
       identity: `${file.name}-${file.size}-${file.lastModified}`,
+      sourceUrl: url,
     })
   }
 
@@ -1259,7 +1310,7 @@ function DocxViewerContent({
           }}
           viewportRef={setViewportRef}
         >
-          {!url && !uploadedDocxFile ? (
+          {!url && !activeUploadedDocxFile ? (
             <div className="grid h-full min-h-96 place-items-center p-6 text-center">
               <div className="max-w-md rounded-lg border bg-background p-4 text-sm shadow-xs">
                 <div className="font-medium">Upload a DOCX to preview</div>

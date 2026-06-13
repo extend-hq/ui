@@ -1283,6 +1283,7 @@ const WorkbookSheetTabsInner = React.memo(function WorkbookSheetTabsInner({
               }}
             >
               <div className="relative aspect-[11/7] w-full overflow-hidden bg-muted/60">
+                {/* eslint-disable-next-line @next/next/no-img-element -- Workbook sheet previews are generated runtime image URLs. */}
                 <img
                   key={`${workbookIdentity}-${visiblePreviewIndex}-${previewUrl}`}
                   src={previewUrl}

@@ -8294,6 +8294,7 @@ function OcrBlocksPanel({
     },
     [blocks]
   )
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns imperative helpers used by the OCR block list.
   const virtualizer = useVirtualizer({
     count: blocks.length,
     estimateSize: estimateBlockSize,

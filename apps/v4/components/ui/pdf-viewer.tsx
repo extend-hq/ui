@@ -47,7 +47,6 @@ import {
   useThumbnailCapability,
   useThumbnailPlugin,
   type ThumbMeta,
-  type WindowState,
 } from "@embedpdf/plugin-thumbnail/react"
 import { TilingLayer, TilingPluginPackage } from "@embedpdf/plugin-tiling/react"
 import {
@@ -628,16 +627,10 @@ function PDFViewerPageNumberControl({
   const [draftPage, setDraftPage] = React.useState(() => String(displayPage))
 
   React.useEffect(() => {
-    if (!isEditing) {
-      setDraftPage(String(displayPage))
-    }
-  }, [displayPage, isEditing])
-
-  React.useEffect(() => {
     if (!isEditing) return
 
     inputRef.current?.focus()
-    inputRef.current?.setSelectionRange(draftPage.length, draftPage.length)
+    inputRef.current?.select()
   }, [isEditing])
 
   const applyPageDraft = React.useCallback(
@@ -811,20 +804,33 @@ function PDFViewerSearchControl({
   }, [])
 
   React.useEffect(() => {
-    const trimmedDraft = searchDraft.trim()
+    if (!searchDraft.trim()) return
 
-    if (!trimmedDraft) {
-      runSearch("")
-      return
-    }
-
-    setIsSearching(true)
     const timeoutId = window.setTimeout(() => {
       runSearch(searchDraft)
     }, PDF_SEARCH_DEBOUNCE_MS)
 
     return () => window.clearTimeout(timeoutId)
   }, [runSearch, searchDraft])
+
+  const handleSearchDraftChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const nextDraft = event.target.value
+
+      setSearchDraft(nextDraft)
+
+      if (nextDraft.trim()) {
+        setIsSearching(true)
+        return
+      }
+
+      searchRequestIdRef.current += 1
+      setSearchQuery("")
+      setIsSearching(false)
+      provides?.stopSearch()
+    },
+    [provides]
+  )
 
   const clearSearch = React.useCallback(() => {
     searchRequestIdRef.current += 1
@@ -866,7 +872,7 @@ function PDFViewerSearchControl({
           <Input
             placeholder="Search text"
             value={searchDraft}
-            onChange={(event) => setSearchDraft(event.target.value)}
+            onChange={handleSearchDraftChange}
             onKeyDown={(event) => {
               if (event.key !== "Enter") return
 
@@ -1104,16 +1110,31 @@ function PDFViewerThumbnailScrollArea({
 }) {
   const { plugin: thumbnailPlugin } = useThumbnailPlugin()
   const viewportRef = React.useRef<HTMLDivElement | null>(null)
-  const [windowData, setWindowData] = React.useState<{
-    docId: string | null
-    window: WindowState | null
-  }>({ docId: null, window: null })
   const [viewportMetrics, setViewportMetrics] = React.useState({
     clientHeight: 0,
     scrollTop: 0,
   })
+  const thumbnailScope = React.useMemo(
+    () => thumbnailPlugin?.provides().forDocument(documentId) ?? null,
+    [documentId, thumbnailPlugin]
+  )
 
-  const windowState = windowData.docId === documentId ? windowData.window : null
+  const windowState = React.useSyncExternalStore(
+    React.useCallback(
+      (onStoreChange) => {
+        if (!thumbnailScope) return () => undefined
+
+        return thumbnailScope.onWindow(() => onStoreChange())
+      },
+      [thumbnailScope]
+    ),
+    React.useCallback(
+      () => thumbnailScope?.getWindow() ?? null,
+      [thumbnailScope]
+    ),
+    () => null
+  )
+  const hasWindowState = Boolean(windowState)
   const paddingY = thumbnailPlugin?.cfg.paddingY ?? 0
   const thumbnailLayout = React.useMemo(
     () =>
@@ -1154,84 +1175,58 @@ function PDFViewerThumbnailScrollArea({
   }, [thumbnailLayout, thumbnailPlugin, viewportMetrics, windowState])
 
   React.useEffect(() => {
-    if (!thumbnailPlugin) return
-
-    const scope = thumbnailPlugin.provides().forDocument(documentId)
-    const initialWindow = scope.getWindow()
-
-    if (initialWindow) {
-      setWindowData({ docId: documentId, window: initialWindow })
-    }
-
-    const unsubscribe = scope.onWindow((nextWindow) => {
-      setWindowData({ docId: documentId, window: nextWindow })
-    })
-
-    return () => {
-      unsubscribe()
-      setWindowData({ docId: null, window: null })
-    }
-  }, [documentId, thumbnailPlugin])
-
-  React.useEffect(() => {
     const viewport = viewportRef.current
-    if (!viewport || !thumbnailPlugin) return
+    if (!viewport || !thumbnailScope) return
 
-    const scope = thumbnailPlugin.provides().forDocument(documentId)
     const updateWindow = () => {
       setViewportMetrics({
         clientHeight: viewport.clientHeight,
         scrollTop: viewport.scrollTop,
       })
-      scope.updateWindow(viewport.scrollTop, viewport.clientHeight)
+      thumbnailScope.updateWindow(viewport.scrollTop, viewport.clientHeight)
     }
 
     viewport.addEventListener("scroll", updateWindow)
-    updateWindow()
+    const frame = window.requestAnimationFrame(updateWindow)
 
-    return () => viewport.removeEventListener("scroll", updateWindow)
-  }, [documentId, thumbnailPlugin])
+    return () => {
+      window.cancelAnimationFrame(frame)
+      viewport.removeEventListener("scroll", updateWindow)
+    }
+  }, [thumbnailScope])
 
   React.useEffect(() => {
     const viewport = viewportRef.current
-    if (!viewport || !thumbnailPlugin) return
+    if (!viewport || !thumbnailScope) return
 
-    const scope = thumbnailPlugin.provides().forDocument(documentId)
     const resizeObserver = new ResizeObserver(() => {
       setViewportMetrics({
         clientHeight: viewport.clientHeight,
         scrollTop: viewport.scrollTop,
       })
-      scope.updateWindow(viewport.scrollTop, viewport.clientHeight)
+      thumbnailScope.updateWindow(viewport.scrollTop, viewport.clientHeight)
     })
 
     resizeObserver.observe(viewport)
 
     return () => resizeObserver.disconnect()
-  }, [documentId, thumbnailPlugin])
+  }, [thumbnailScope])
 
   React.useEffect(() => {
     const viewport = viewportRef.current
-    if (!viewport || !thumbnailPlugin) return
+    if (!viewport || !thumbnailScope) return
 
-    const scope = thumbnailPlugin.provides().forDocument(documentId)
-    setViewportMetrics({
-      clientHeight: viewport.clientHeight,
-      scrollTop: viewport.scrollTop,
-    })
-    scope.updateWindow(viewport.scrollTop, viewport.clientHeight)
-  }, [documentId, thumbnailPlugin, windowState, thumbnailLayout])
+    thumbnailScope.updateWindow(viewport.scrollTop, viewport.clientHeight)
+  }, [thumbnailLayout, thumbnailScope, windowState])
 
   React.useEffect(() => {
     const viewport = viewportRef.current
-    if (!viewport || !thumbnailPlugin || !windowState) return
+    if (!viewport || !thumbnailScope || !hasWindowState) return
 
-    const scope = thumbnailPlugin.provides().forDocument(documentId)
-
-    return scope.onScrollTo(({ top, behavior }) => {
+    return thumbnailScope.onScrollTo(({ top, behavior }) => {
       viewport.scrollTo({ top, behavior })
     })
-  }, [documentId, thumbnailPlugin, Boolean(windowState)])
+  }, [hasWindowState, thumbnailScope])
 
   return (
     <ScrollArea
@@ -1278,13 +1273,7 @@ function PDFViewerScrollAreaViewport({
   const viewportRef = useViewportRef(documentId)
   const { provides: viewport } = useViewportCapability()
   const isGated = useIsViewportGated(documentId)
-  const [viewportGap, setViewportGap] = React.useState(0)
-
-  React.useEffect(() => {
-    if (!viewport) return
-
-    setViewportGap(viewport.getViewportGap())
-  }, [viewport])
+  const viewportGap = viewport?.getViewportGap() ?? 0
 
   return (
     <ViewportElementContext.Provider value={viewportRef}>
@@ -1644,12 +1633,27 @@ function PDFViewerScroller({
 
   React.useEffect(() => {
     if (!scrollPlugin || !documentId) return
+    let frame = 0
+
+    const setCurrentLayout = () => {
+      try {
+        setLayoutData({
+          docId: documentId,
+          layout: scrollPlugin.getScrollerLayout(documentId),
+        })
+      } catch {
+        setLayoutData({ docId: documentId, layout: null })
+      }
+    }
 
     const unsubscribe = scrollPlugin.onScrollerData(documentId, (layout) => {
       setLayoutData({ docId: documentId, layout })
     })
 
+    frame = window.requestAnimationFrame(setCurrentLayout)
+
     return () => {
+      window.cancelAnimationFrame(frame)
       unsubscribe()
       setLayoutData({ docId: null, layout: null })
       scrollPlugin.clearLayoutReady(documentId)
@@ -1821,6 +1825,11 @@ function PDFViewerInner({
   const [selectedPageIndexes, setSelectedPageIndexes] = React.useState<
     Set<number>
   >(() => new Set())
+  const basePageRotations = React.useMemo(
+    () =>
+      pdfDocument?.pages.map((page) => normalizeRotation(page.rotation)) ?? [],
+    [pdfDocument]
+  )
   const [viewerShellRef, viewerShellWidth] = useElementWidth<HTMLDivElement>()
   const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
   const viewportElementRef = React.useRef<HTMLDivElement | null>(null)
@@ -1829,8 +1838,6 @@ function PDFViewerInner({
   const selectionAnchorPageIndexRef = React.useRef<number | null>(null)
   const suppressActivePageSelectionSyncRef = React.useRef<number | null>(null)
   const initializedSelectionDocumentRef = React.useRef<string | null>(null)
-  const basePageRotationsRef = React.useRef<Rotation[]>([])
-  const basePageRotationsDocumentRef = React.useRef<string | null>(null)
 
   const activePage = scrollState.currentPage
   const numPages = pdfDocument?.pageCount ?? 0
@@ -1848,31 +1855,6 @@ function PDFViewerInner({
   React.useEffect(() => {
     selectedPageIndexesRef.current = selectedPageIndexes
   }, [selectedPageIndexes])
-
-  React.useEffect(() => {
-    const emptyDeltas = new Map<number, Rotation>()
-    pageRotationDeltasRef.current = emptyDeltas
-    setPageRotationDeltas(emptyDeltas)
-    const emptySelection = new Set<number>()
-    selectedPageIndexesRef.current = emptySelection
-    setSelectedPageIndexes(emptySelection)
-    selectionAnchorPageIndexRef.current = null
-    suppressActivePageSelectionSyncRef.current = null
-    initializedSelectionDocumentRef.current = null
-    basePageRotationsRef.current = []
-    basePageRotationsDocumentRef.current = null
-  }, [documentId])
-
-  React.useEffect(() => {
-    if (!pdfDocument || basePageRotationsDocumentRef.current === documentId) {
-      return
-    }
-
-    basePageRotationsRef.current = pdfDocument.pages.map((page) =>
-      normalizeRotation(page.rotation)
-    )
-    basePageRotationsDocumentRef.current = documentId
-  }, [documentId, pdfDocument])
 
   React.useEffect(() => {
     if (activePage > 0) onActivePageChange?.(activePage)
@@ -2082,7 +2064,7 @@ function PDFViewerInner({
         const previousDelta = previousDeltas.get(pageIndex) ?? 0
         const nextDelta = normalizeRotation(previousDelta + direction)
         const basePageRotation =
-          basePageRotationsRef.current[pageIndex] ??
+          basePageRotations[pageIndex] ??
           normalizeRotation(currentPage.rotation)
         const previousPageRotation = normalizeRotation(
           basePageRotation + previousDelta
@@ -2133,6 +2115,7 @@ function PDFViewerInner({
     },
     [
       activePage,
+      basePageRotations,
       currentZoomLevel,
       documentId,
       pdfDocument,
@@ -2153,7 +2136,7 @@ function PDFViewerInner({
     (page: PageLayout) => {
       const pageNumber = page.pageNumber
       const basePageRotation =
-        basePageRotationsRef.current[page.pageIndex] ??
+        basePageRotations[page.pageIndex] ??
         pdfDocument?.pages[page.pageIndex]?.rotation ??
         normalizeRotation(0)
       const pageRotation = normalizeRotation(
@@ -2231,6 +2214,7 @@ function PDFViewerInner({
       )
     },
     [
+      basePageRotations,
       currentZoomLevel,
       onPagePointerCancel,
       onPagePointerDown,
@@ -2249,7 +2233,6 @@ function PDFViewerInner({
       data-slot="pdf-viewer"
       className={cn(
         "flex h-full max-h-full min-h-0 w-full flex-col overflow-hidden bg-background",
-        "select-none selection:bg-transparent selection:text-inherit",
         className
       )}
     >
@@ -2446,7 +2429,7 @@ function PDFViewerInner({
           >
             {thumbnailSidebarVisible ? (
               <PDFViewerThumbnails
-                basePageRotations={basePageRotationsRef.current}
+                basePageRotations={basePageRotations}
                 documentId={documentId}
                 activePage={activePage}
                 pageCount={numPages}
@@ -2466,7 +2449,7 @@ function PDFViewerInner({
             <PDFViewerSelectionReleaseGuard documentId={documentId} />
             <GlobalPointerProvider documentId={documentId}>
               <PDFViewerScroller
-                basePageRotations={basePageRotationsRef.current}
+                basePageRotations={basePageRotations}
                 documentId={documentId}
                 pageRotationDeltas={pageRotationDeltas}
                 renderPage={renderPage}
@@ -2552,6 +2535,7 @@ function PDFViewerDocumentLoader({
 
   return (
     <PDFViewerInner
+      key={activeDocumentId}
       {...innerProps}
       pdfFile={pdfFile}
       documentId={activeDocumentId}
@@ -2585,14 +2569,13 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     ref
   ) {
     const { engine, error: engineError } = useSharedPdfEngine()
-    const [pdfFile, setPdfFile] = React.useState(src ?? "")
-    const [uploadedPdfUrl, setUploadedPdfUrl] = React.useState<string | null>(
-      null
-    )
-
-    React.useEffect(() => {
-      setPdfFile(src ?? "")
-    }, [src])
+    const [uploadedPdfFile, setUploadedPdfFile] = React.useState<{
+      src: string | undefined
+      url: string | null
+    }>(() => ({ src, url: null }))
+    const uploadedPdfUrl =
+      uploadedPdfFile.src === src ? uploadedPdfFile.url : null
+    const pdfFile = uploadedPdfUrl ?? src ?? ""
 
     React.useEffect(
       () => () => {
@@ -2601,15 +2584,14 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
       [uploadedPdfUrl]
     )
 
-    const handleUploadFile = React.useCallback((nextFile: File) => {
-      const nextUrl = URL.createObjectURL(nextFile)
+    const handleUploadFile = React.useCallback(
+      (nextFile: File) => {
+        const nextUrl = URL.createObjectURL(nextFile)
 
-      setUploadedPdfUrl((previousUrl) => {
-        if (previousUrl) URL.revokeObjectURL(previousUrl)
-        return nextUrl
-      })
-      setPdfFile(nextUrl)
-    }, [])
+        setUploadedPdfFile({ src, url: nextUrl })
+      },
+      [src]
+    )
 
     // Plugin registrations are created once per viewer instance.
     const [plugins] = React.useState(() => [

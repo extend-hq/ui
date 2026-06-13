@@ -452,6 +452,7 @@ function SignatureFieldOverlay({
       onPointerDown={onDragStart}
     >
       {field.imageDataUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- Signature fields render user-drawn data URLs.
         <img
           src={field.imageDataUrl}
           alt=""

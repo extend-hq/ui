@@ -790,6 +790,7 @@ const FOLDER_GLYPH_DATA_URL = `data:image/svg+xml,${encodeURIComponent(FOLDER_GL
 
 function FileSystemFolderGlyph({ className }: { className?: string }) {
   return (
+    // eslint-disable-next-line @next/next/no-img-element -- The folder glyph is an inline SVG data URL shared with the tree sprite.
     <img
       src={FOLDER_GLYPH_DATA_URL}
       alt=""
@@ -2201,6 +2202,7 @@ export function FileSystem({
           >
             <DialogTitle className="sr-only">{openedFileName}</DialogTitle>
             {openedFile.kind === "image" ? (
+              // eslint-disable-next-line @next/next/no-img-element -- File previews render caller-provided URLs that may be object or presigned URLs.
               <img
                 src={openedFile.url}
                 alt={openedFileName}
@@ -4584,6 +4586,7 @@ const FileSystemColumn = React.memo(function FileSystemColumn({
                   {entry.kind === "folder" ? (
                     <FileSystemFolderGlyph className="h-3.5 w-auto shrink-0" />
                   ) : coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- Cover thumbnails come from caller-provided file preview URLs.
                     <img
                       src={coverUrl}
                       alt=""
@@ -4733,6 +4736,7 @@ function FileSystemGalleryStage({
   }
   if (viewerKind === "image" && url) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element -- Image file previews render caller-provided URLs that may be object or presigned URLs.
       <img
         src={url}
         alt={file.name}

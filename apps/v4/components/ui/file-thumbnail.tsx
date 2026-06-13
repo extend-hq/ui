@@ -40,7 +40,6 @@ export function FileThumbnailLoadingOverlay() {
 }
 
 export function FileThumbnail({
-  file: _file,
   className,
   previewAspectRatio,
   previewClassName,
@@ -104,11 +103,6 @@ export function FileThumbnail({
 
   React.useEffect(() => {
     cancelImageReveal()
-
-    if (previewImageUrl) return
-
-    setLoadedPreviewImageUrl(null)
-    setFailedPreviewImageUrl(null)
   }, [cancelImageReveal, previewImageUrl])
 
   React.useEffect(() => cancelImageReveal, [cancelImageReveal])
@@ -142,6 +136,7 @@ export function FileThumbnail({
         }
       >
         {previewImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- Preview URLs can be transient object or presigned URLs outside Next image optimization.
           <img
             ref={imageRef}
             src={previewImageUrl}
