@@ -74,6 +74,7 @@ const ZOOM_OPTIONS = [10, 25, 50, 75, 100, 125, 150, 175, 200, 400] as const
 const DOCX_PADDING_WARNING_TEXT = "a style property during rerender"
 const DOCX_THUMBNAIL_FOCUS_RING_CLASS =
   "group-focus-visible/docx-thumbnail-sidebar:ring-2 group-focus-visible/docx-thumbnail-sidebar:ring-ring group-focus-visible/docx-thumbnail-sidebar:ring-offset-1 group-focus-visible/docx-thumbnail-sidebar:ring-offset-background"
+const DOCX_NOOP_THUMBNAIL_CANVAS_REF = () => {}
 
 type UploadedDocxFile = {
   file: File
@@ -795,6 +796,8 @@ function DocxThumbnailSidebarList({
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const thumbnail = visibleThumbnails[virtualRow.index]
             if (!thumbnail) return null
+            const canRenderThumbnailCanvas =
+              thumbnail.isMounted || thumbnail.status === "ready"
 
             return (
               <div
@@ -834,13 +837,18 @@ function DocxThumbnailSidebarList({
                   onClick={() => onSelectPage(thumbnail.pageNumber)}
                 >
                   <DocxSidebarThumbnail
-                    canvasRef={thumbnail.canvasRef}
+                    canvasRef={
+                      canRenderThumbnailCanvas
+                        ? thumbnail.canvasRef
+                        : DOCX_NOOP_THUMBNAIL_CANVAS_REF
+                    }
                     displayFileName={displayFileName}
                     hasError={thumbnail.status === "error"}
                     isActive={thumbnail.pageNumber === activePage}
                     isLoading={
-                      thumbnail.status !== "ready" &&
-                      thumbnail.status !== "error"
+                      !canRenderThumbnailCanvas ||
+                      (thumbnail.status !== "ready" &&
+                        thumbnail.status !== "error")
                     }
                     pageNumber={thumbnail.pageNumber}
                     pixelHeightPx={thumbnail.pixelHeightPx}
