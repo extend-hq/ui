@@ -70,18 +70,18 @@ npx shadcn@latest add @extend/file-thumbnail
 
 The FileUpload component renders a drag-and-drop file picker, validates accepted files, and keeps an internal upload queue unless you mirror it through callbacks.
 
-| Prop                | Type                                               | Default                               | Required |
-| ------------------- | -------------------------------------------------- | ------------------------------------- | -------- |
-| `accept`            | `string`                                           | `-`                                   | No       |
-| `acceptedFileTypes` | `AcceptedFileType[]`                               | Image, PDF, and Sheet icons           | No       |
-| `borderBeamTheme`   | `React.ComponentProps<typeof BorderBeam>["theme"]` | `"light"`                             | No       |
-| `browseLabel`       | `string`                                           | `"Browse files"`                      | No       |
-| `className`         | `string`                                           | `-`                                   | No       |
-| `description`       | `string`                                           | `"PDF, DOCX, XLSX, CSV, PNG, or JPG"` | No       |
-| `draggingLabel`     | `string`                                           | `"Drop to add"`                       | No       |
-| `multiple`          | `boolean`                                          | `true`                                | No       |
-| `showBorderBeam`    | `boolean`                                          | `true`                                | No       |
-| `showFileList`      | `boolean`                                          | `true`                                | No       |
-| `title`             | `string`                                           | `"Click to upload or drop files"`     | No       |
-| `onFilesAccepted`   | `(files: File[]) => void`                          | `-`                                   | No       |
-| `onFilesChange`     | `(files: FileUploadItem[]) => void`                | `-`                                   | No       |
+| Prop                | Type                                               | Default                                   | Required |
+| ------------------- | -------------------------------------------------- | ----------------------------------------- | -------- |
+| `accept`            | `string`                                           | PDF, DOC/DOCX, XLSX, CSV, PNG, or JPG     | No       |
+| `acceptedFileTypes` | `AcceptedFileType[]`                               | Image, PDF, and Sheet icons               | No       |
+| `borderBeamTheme`   | `React.ComponentProps<typeof BorderBeam>["theme"]` | `"light"`                                 | No       |
+| `browseLabel`       | `string`                                           | `"Browse files"`                          | No       |
+| `className`         | `string`                                           | `-`                                       | No       |
+| `description`       | `string`                                           | `"PDF, DOC/DOCX, XLSX, CSV, PNG, or JPG"` | No       |
+| `draggingLabel`     | `string`                                           | `"Drop to add"`                           | No       |
+| `multiple`          | `boolean`                                          | `true`                                    | No       |
+| `showBorderBeam`    | `boolean`                                          | `true`                                    | No       |
+| `showFileList`      | `boolean`                                          | `true`                                    | No       |
+| `title`             | `string`                                           | `"Click to upload or drop files"`         | No       |
+| `onFilesAccepted`   | `(files: File[]) => void`                          | `-`                                       | No       |
+| `onFilesChange`     | `(files: FileUploadItem[]) => void`                | `-`                                       | No       |

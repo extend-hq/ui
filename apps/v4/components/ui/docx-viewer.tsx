@@ -1258,7 +1258,7 @@ function DocxViewerContent({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         className="hidden"
         onChange={handleUpload}
       />
@@ -1321,10 +1321,16 @@ function DocxViewerContent({
           {!url && !activeUploadedDocxFile ? (
             <div className="grid h-full min-h-96 place-items-center p-6 text-center">
               <div className="max-w-md rounded-lg border bg-background p-4 text-sm shadow-xs">
-                <div className="font-medium">Upload a DOCX to preview</div>
+                <div className="font-medium">
+                  Upload a Word document to preview
+                </div>
                 <div className="mt-1 text-muted-foreground">
                   Pass a DOCX URL with the <code>src</code> prop or upload a
                   file.
+                </div>
+                <div className="mt-1 text-muted-foreground">
+                  Legacy <code>.doc</code> support is limited and experimental;
+                  convert to DOCX for best fidelity.
                 </div>
                 <Button
                   type="button"
@@ -1334,7 +1340,7 @@ function DocxViewerContent({
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <HugeiconsIcon icon={Upload01Icon} className="size-4" />
-                  Upload DOCX
+                  Upload Word document
                 </Button>
               </div>
             </div>
@@ -1348,7 +1354,7 @@ function DocxViewerContent({
           ) : isLoadingDocument ? (
             loadingState
           ) : (
-            <div className="mx-auto flex min-h-full justify-center">
+            <div className="flex min-h-full w-max min-w-full justify-center">
               <div
                 className={cn(
                   "origin-top",

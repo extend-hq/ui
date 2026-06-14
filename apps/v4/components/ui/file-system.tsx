@@ -360,6 +360,58 @@ function mimeTypeForFile(file: FileEntry) {
   )
 }
 
+function fileTypeFilterGroup(mime: string): FileTypeFilterGroup {
+  if (
+    mime === "application/pdf" ||
+    mime === "application/msword" ||
+    mime === "application/vnd.ms-powerpoint" ||
+    mime ===
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+    mime ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    return "Documents"
+  }
+
+  if (
+    mime === "application/vnd.ms-excel" ||
+    mime ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    mime === "text/csv" ||
+    mime === "text/tab-separated-values"
+  ) {
+    return "Spreadsheets"
+  }
+
+  if (mime.startsWith("image/")) return "Images"
+
+  if (
+    mime === "application/json" ||
+    mime === "application/sql" ||
+    mime === "application/x-sh" ||
+    mime === "text/css" ||
+    mime === "text/javascript" ||
+    mime === "text/jsx" ||
+    mime === "text/x-go" ||
+    mime === "text/x-python" ||
+    mime === "text/x-rust" ||
+    mime === "text/x-typescript" ||
+    mime === "text/yaml"
+  ) {
+    return "Code"
+  }
+
+  if (
+    mime === "text/markdown" ||
+    mime === "text/mdx" ||
+    mime === "text/plain"
+  ) {
+    return "Text"
+  }
+
+  return "Archives & binary"
+}
+
 export type FileSystemViewerKind = "docx" | "image" | "pdf" | "xlsx"
 
 function viewerKindForFile(
@@ -568,12 +620,30 @@ type FileSystemFilter = {
   value: string[]
 }
 
+type FileTypeFilterGroup =
+  | "Documents"
+  | "Spreadsheets"
+  | "Images"
+  | "Code"
+  | "Text"
+  | "Archives & binary"
+
 type FileTypeFilterOption = {
+  group: FileTypeFilterGroup
   /** Sample file name so the option icon reuses the file-type sprite. */
   iconFileName: string
   label: string
   mime: string
 }
+
+const FILE_TYPE_FILTER_GROUPS: FileTypeFilterGroup[] = [
+  "Documents",
+  "Spreadsheets",
+  "Images",
+  "Code",
+  "Text",
+  "Archives & binary",
+]
 
 const FILTER_TYPE_LABELS: Record<FileSystemFilterType, string> = {
   dateCreated: "Date created",
@@ -1447,6 +1517,7 @@ export function FileSystem({
           dotIndex > 0 ? file.name.slice(dotIndex + 1).toLowerCase() : ""
 
         byMime.set(mime, {
+          group: fileTypeFilterGroup(mime),
           // A synthesized generic name, so files with branded icons
           // (biome.json, next.config.ts, CLAUDE.md, …) don't lend them to
           // the whole type; extensionless names keep their own icon
@@ -2461,33 +2532,43 @@ function FileSystemFileTypeCommand({
       <CommandList className="max-h-none">
         <CommandEmpty>No file types found.</CommandEmpty>
         <ScrollArea orientation="vertical" className="h-auto max-h-64">
-          <CommandGroup>
-            {options.map((option) => {
-              const isChecked = checkedMimes.includes(option.mime)
+          {FILE_TYPE_FILTER_GROUPS.map((group) => {
+            const groupOptions = options.filter(
+              (option) => option.group === group
+            )
 
-              return (
-                <CommandItem
-                  key={option.mime}
-                  value={option.label}
-                  keywords={[option.mime]}
-                  onSelect={() => onToggle(option.mime, !isChecked)}
-                >
-                  <HugeiconsIcon
-                    icon={Tick02Icon}
-                    className={cn(
-                      "size-4 text-foreground",
-                      !isChecked && "opacity-0"
-                    )}
-                  />
-                  <FileTypeIcon
-                    fileName={option.iconFileName}
-                    className="size-4"
-                  />
-                  {option.label}
-                </CommandItem>
-              )
-            })}
-          </CommandGroup>
+            if (groupOptions.length === 0) return null
+
+            return (
+              <CommandGroup key={group} heading={group}>
+                {groupOptions.map((option) => {
+                  const isChecked = checkedMimes.includes(option.mime)
+
+                  return (
+                    <CommandItem
+                      key={option.mime}
+                      value={option.label}
+                      keywords={[option.mime]}
+                      onSelect={() => onToggle(option.mime, !isChecked)}
+                    >
+                      <HugeiconsIcon
+                        icon={Tick02Icon}
+                        className={cn(
+                          "size-4 text-foreground",
+                          !isChecked && "opacity-0"
+                        )}
+                      />
+                      <FileTypeIcon
+                        fileName={option.iconFileName}
+                        className="size-4"
+                      />
+                      {option.label}
+                    </CommandItem>
+                  )
+                })}
+              </CommandGroup>
+            )
+          })}
         </ScrollArea>
       </CommandList>
     </Command>

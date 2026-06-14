@@ -11,8 +11,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { BorderBeam } from "border-beam"
 
 import { cn } from "@/lib/utils"
-import { FileThumbnail } from "@/components/ui/file-thumbnail"
 import { Card } from "@/components/ui/card"
+import { FileThumbnail } from "@/components/ui/file-thumbnail"
 
 type FileUploadItem = {
   id: string
@@ -48,6 +48,23 @@ const ACCEPTED_FILE_TYPES: AcceptedFileType[] = [
   { label: "PDF", icon: FileUploadIcon },
   { label: "Sheet", icon: FileSpreadsheetIcon },
 ]
+const DEFAULT_ACCEPT = [
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xlsx",
+  ".csv",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+  "image/png",
+  "image/jpeg",
+].join(",")
 const ICON_TRANSFORMS = [
   {
     idle: "translate(-78%, -50%) rotate(-8deg)",
@@ -140,12 +157,12 @@ function UploadIconCluster({
 }
 
 export function FileUpload({
-  accept,
+  accept = DEFAULT_ACCEPT,
   acceptedFileTypes = ACCEPTED_FILE_TYPES,
   borderBeamTheme = "light",
   browseLabel = "Browse files",
   className,
-  description = "PDF, DOCX, XLSX, CSV, PNG, or JPG",
+  description = "PDF, DOC/DOCX, XLSX, CSV, PNG, or JPG",
   draggingLabel = "Drop to add",
   multiple = true,
   showBorderBeam = true,

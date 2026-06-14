@@ -1,11 +1,11 @@
 ---
 title: React DOCX Viewer
-description: A React DOCX viewer component for rendering Word documents with page thumbnails, zoom, themes, comments, sections, and review-friendly layout.
+description: A React DOCX viewer component for rendering Word documents with page thumbnails, zoom, themes, comments, sections, and review-friendly layout. Legacy .doc support is limited and experimental.
 component: true
 featured: true
 ---
 
-The React DOCX Viewer is for contracts, proposals, reports, and internal docs where Word document structure matters more than plain text extraction.
+The React DOCX Viewer is for contracts, proposals, reports, and internal docs where Word document structure matters more than plain text extraction. DOCX is the primary supported format; legacy .doc support is limited and experimental, and conversion to DOCX is recommended for best fidelity.
 
 <DocxViewerDemo />
 
@@ -32,7 +32,7 @@ npx shadcn@latest add @extend/docx-viewer
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @extend-ai/react-docx@^0.7.0 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6
+npm install @extend-ai/react-docx@^0.7.1 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -52,13 +52,14 @@ npm install @extend-ai/react-docx@^0.7.0 @hugeicons/core-free-icons@^4.2.0 @huge
 - Preserve headings, lists, tables, images, headers, footers, and page breaks.
 - Expose document outline and section anchors.
 - Support comments, tracked-change surfaces, and copyable text.
+- Treat legacy .doc files as limited/experimental; convert them to DOCX when fidelity matters.
 - Provide a predictable fallback state for unsupported Word features.
 
 ## API Reference
 
 ### DocxViewerPreview
 
-The DocxViewerPreview component renders a DOCX file with upload, theme, and zoom controls around the `@extend-ai/react-docx` viewer.
+The DocxViewerPreview component renders a DOCX file with upload, theme, and zoom controls around the `@extend-ai/react-docx` viewer. Legacy .doc support is limited and experimental.
 
 | Prop                          | Type                        | Default | Required |
 | ----------------------------- | --------------------------- | ------- | -------- |
