@@ -26,7 +26,8 @@ import { CodeCollapsibleWrapper } from "@/components/code-collapsible-wrapper"
 import { CodeTabs } from "@/components/code-tabs"
 import { ComponentsList } from "@/components/components-list"
 import { CopyButton } from "@/components/copy-button"
-import { CsvViewerDemo, CsvViewerSource } from "@/components/csv-viewer-docs"
+import { CsvViewerDemo } from "@/components/csv-viewer-docs"
+import { CsvViewerSource } from "@/components/csv-viewer-source"
 import { DocsMdxCodeBlock } from "@/components/docs-code-block"
 import {
   DocumentSplitsDemo,
