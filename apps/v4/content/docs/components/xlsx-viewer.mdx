@@ -32,7 +32,7 @@ npx shadcn@latest add @extend/xlsx-viewer
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @extend-ai/react-xlsx@^0.10.0 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6
+npm install @extend-ai/react-xlsx@^0.11.0 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -60,10 +60,13 @@ npm install @extend-ai/react-xlsx@^0.10.0 @hugeicons/core-free-icons@^4.2.0 @hug
 
 The XlsxViewerPreview component renders an Excel workbook with upload, theme, zoom, sheet navigation, and grid controls around the `@extend-ai/react-xlsx` viewer.
 
-| Prop             | Type                        | Default | Required |
-| ---------------- | --------------------------- | ------- | -------- |
-| `className`      | `string`                    | `-`     | No       |
-| `fileName`       | `string`                    | `-`     | No       |
-| `isDark`         | `boolean`                   | `-`     | Yes      |
-| `onIsDarkChange` | `(isDark: boolean) => void` | `-`     | Yes      |
-| `src`            | `string`                    | `-`     | No       |
+| Prop             | Type                                                                          | Default | Required |
+| ---------------- | ----------------------------------------------------------------------------- | ------- | -------- |
+| `className`      | `string`                                                                      | `-`     | No       |
+| `fileName`       | `string`                                                                      | `-`     | No       |
+| `getCellStyle`   | `(context: XlsxCellStyleContext) => React.CSSProperties \| null \| undefined` | `-`     | No       |
+| `isDark`         | `boolean`                                                                     | `-`     | Yes      |
+| `onIsDarkChange` | `(isDark: boolean) => void`                                                   | `-`     | Yes      |
+| `src`            | `string`                                                                      | `-`     | No       |
+
+Use `getCellStyle` to apply custom per-cell styling (highlights, outlines, status tints) on top of the workbook's own formatting. It is forwarded to the underlying `@extend-ai/react-xlsx` viewer; see its documentation for the `XlsxCellStyleContext` fields and renderer notes.
