@@ -13,6 +13,7 @@ import {
   type XlsxSheetData,
   type XlsxTableHeaderMenuRenderProps,
   type XlsxViewerController,
+  type XlsxViewerProps,
 } from "@extend-ai/react-xlsx"
 import {
   ArrowLeft01Icon,
@@ -1301,6 +1302,7 @@ const WorkbookSheetTabsInner = React.memo(function WorkbookSheetTabsInner({
 
 export function XlsxWorkbookSurface({
   className,
+  getCellStyle,
   isDark,
   onDownload,
   onIsDarkChange,
@@ -1314,6 +1316,7 @@ export function XlsxWorkbookSurface({
   workbookIdentity,
 }: {
   className?: string
+  getCellStyle?: XlsxViewerProps["getCellStyle"]
   isDark: boolean
   onDownload?: () => void
   onIsDarkChange: (checked: boolean) => void
@@ -1370,6 +1373,7 @@ export function XlsxWorkbookSurface({
             experimentalCanvas
             allowResizeInReadOnly
             className="h-full min-h-0 min-w-0"
+            getCellStyle={getCellStyle}
             height="100%"
             isDark={isDark}
             readOnly
@@ -1406,6 +1410,7 @@ export function XlsxWorkbookSurface({
 export function XlsxViewerPreview({
   className,
   fileName,
+  getCellStyle,
   isDark,
   onIsDarkChange,
   showDownload = true,
@@ -1416,6 +1421,7 @@ export function XlsxViewerPreview({
 }: {
   className?: string
   fileName?: string
+  getCellStyle?: XlsxViewerProps["getCellStyle"]
   isDark: boolean
   onIsDarkChange: (isDark: boolean) => void
   showDownload?: boolean
@@ -1429,6 +1435,7 @@ export function XlsxViewerPreview({
       className={className}
       effectiveIsDark={isDark}
       fileName={fileName}
+      getCellStyle={getCellStyle}
       setNightRenderEnabled={onIsDarkChange}
       shouldRenderNightMode
       showDownload={showDownload}
@@ -1444,6 +1451,7 @@ function XlsxViewerContent({
   className,
   effectiveIsDark,
   fileName,
+  getCellStyle,
   setNightRenderEnabled,
   shouldRenderNightMode,
   showDownload,
@@ -1455,6 +1463,7 @@ function XlsxViewerContent({
   className?: string
   effectiveIsDark: boolean
   fileName?: string
+  getCellStyle?: XlsxViewerProps["getCellStyle"]
   setNightRenderEnabled: (checked: boolean) => void
   shouldRenderNightMode: boolean
   showDownload: boolean
@@ -1667,6 +1676,7 @@ function XlsxViewerContent({
       <XlsxWorkbookLoadedViewer
         className={className}
         fileName={activeFileName}
+        getCellStyle={getCellStyle}
         isDark={effectiveIsDark}
         onDownload={() => downloadWorkbookBuffer(activeBuffer, activeFileName)}
         onIsDarkChange={setNightRenderEnabled}
@@ -1689,6 +1699,7 @@ function XlsxViewerContent({
 function XlsxWorkbookLoadedViewer({
   className,
   fileName,
+  getCellStyle,
   isDark,
   onDownload,
   onIsDarkChange,
@@ -1704,6 +1715,7 @@ function XlsxWorkbookLoadedViewer({
 }: {
   className?: string
   fileName: string
+  getCellStyle?: XlsxViewerProps["getCellStyle"]
   isDark: boolean
   onDownload: () => void
   onIsDarkChange: (checked: boolean) => void
@@ -1737,6 +1749,7 @@ function XlsxWorkbookLoadedViewer({
     <XlsxViewerProvider controller={controller} isDark={isDark}>
       <XlsxWorkbookSurface
         className={className}
+        getCellStyle={getCellStyle}
         isDark={isDark}
         onDownload={onDownload}
         onIsDarkChange={onIsDarkChange}
