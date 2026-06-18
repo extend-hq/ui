@@ -733,7 +733,7 @@
       "title": "Excel Viewer",
       "description": "An XLSX viewer with workbook loading, thumbnails, sheet tabs, upload, zoom, and theme controls.",
       "dependencies": [
-        "@extend-ai/react-xlsx@^0.10.0",
+        "@extend-ai/react-xlsx@0.10.4",
         "@hugeicons/core-free-icons@^4.2.0",
         "@hugeicons/react@^1.1.6"
       ],
@@ -763,7 +763,7 @@
       "title": "Excel Editor",
       "description": "An experimental XLSX editor with formula input, undo and redo, sheet controls, export, and live workbook mutation.",
       "dependencies": [
-        "@extend-ai/react-xlsx@^0.10.0",
+        "@extend-ai/react-xlsx@0.10.4",
         "@hugeicons/core-free-icons@^4.2.0",
         "@hugeicons/react@^1.1.6"
       ],
