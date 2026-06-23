@@ -102,9 +102,8 @@ const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_EDITOR_READ_ONLY_THRESHOLD_BYTES = 5 * 1024 * 1024
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
 const ZOOM_OPTIONS = [50, 75, 100, 125, 150, 200, 400] as const
+const DEFAULT_FONT_FAMILY = "Arial"
 const FONT_FAMILIES = [
-  "Aptos",
-  "Calibri",
   "Arial",
   "Times New Roman",
   "Georgia",
@@ -322,6 +321,15 @@ function getFontToggleValuesFromStyle(
   if (font?.strikethrough === true) values.push("strikethrough")
 
   return values
+}
+
+function getFontFamilyValue(style: XlsxResolvedCellStyle | null) {
+  const font = asResolvedStyleGroup(style?.font)
+  const fontName = font?.name
+
+  return typeof fontName === "string" && fontName.trim()
+    ? fontName.trim()
+    : undefined
 }
 
 function getHorizontalAlignmentValue(
@@ -1104,8 +1112,7 @@ function EditorToolbar({
     useXlsxViewerZoom()
   const [formulaDraft, setFormulaDraft] = React.useState("")
   const [formulaFocused, setFormulaFocused] = React.useState(false)
-  const [fontFamily, setFontFamily] =
-    React.useState<(typeof FONT_FAMILIES)[number]>("Aptos")
+  const [fontFamily, setFontFamily] = React.useState(DEFAULT_FONT_FAMILY)
   const [fontSize, setFontSize] = React.useState(11)
   const [textColor, setTextColor] = React.useState(DEFAULT_TEXT_COLOR)
   const [fillColor, setFillColor] = React.useState(DEFAULT_FILL_COLOR)
@@ -1219,6 +1226,7 @@ function EditorToolbar({
     () => getFontToggleValuesFromStyle(activeCellStyle),
     [activeCellStyle]
   )
+  const fontFamilyValue = getFontFamilyValue(activeCellStyle) ?? fontFamily
   const horizontalAlignmentValue = React.useMemo(
     () => getHorizontalAlignmentValue(activeCellStyle),
     [activeCellStyle]
@@ -1554,11 +1562,10 @@ function EditorToolbar({
           <ToolbarSeparator />
           <div className="flex shrink-0 items-center gap-1">
             <Select
-              value={fontFamily}
+              value={fontFamilyValue}
               onValueChange={(value) => {
-                const nextFontFamily = value as (typeof FONT_FAMILIES)[number]
-                setFontFamily(nextFontFamily)
-                applyStyle({ font: { name: nextFontFamily } })
+                setFontFamily(value)
+                applyStyle({ font: { name: value } })
               }}
               disabled={!canStyleSelection}
               modal={false}
@@ -1571,7 +1578,7 @@ function EditorToolbar({
                 )}
                 aria-label="Font family"
               >
-                <SelectValue placeholder="Font" />
+                <SelectValue placeholder="Font">{fontFamilyValue}</SelectValue>
               </SelectTrigger>
               <SelectContent
                 align="start"
