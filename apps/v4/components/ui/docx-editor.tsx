@@ -75,8 +75,8 @@ import {
   useInlineThumbnailSidebar,
 } from "@/components/ui/document-viewer-sidebar"
 import {
-  renderDocxCommentCard,
-  renderDocxTrackedChangeCard,
+  createDocxCommentCardRenderer,
+  createDocxTrackedChangeCardRenderer,
 } from "@/components/ui/docx-annotation-card"
 import {
   DropdownMenu,
@@ -1599,6 +1599,14 @@ function DocxEditorContent({
   const loadingState = (
     <EditorLoadingSurface showSpinner={shouldShowDocumentSpinner} />
   )
+  const renderTrackedChangeCard = React.useMemo(
+    () => createDocxTrackedChangeCardRenderer(editor.documentTheme),
+    [editor.documentTheme]
+  )
+  const renderCommentCard = React.useMemo(
+    () => createDocxCommentCardRenderer(editor.documentTheme),
+    [editor.documentTheme]
+  )
   const hasDocument = Boolean(url || uploadedDocxFile)
   const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
   const pageCount =
@@ -2000,9 +2008,9 @@ function DocxEditorContent({
                   editor={editor}
                   mode={isReadOnly ? "read-only" : "edit"}
                   showTrackedChanges={editor.showTrackedChanges}
-                  renderTrackedChangeCard={renderDocxTrackedChangeCard}
+                  renderTrackedChangeCard={renderTrackedChangeCard}
                   showComments={editor.showComments}
-                  renderCommentCard={renderDocxCommentCard}
+                  renderCommentCard={renderCommentCard}
                   loadingState={loadingState}
                   pageBackgroundColor={
                     editor.documentTheme === "dark" ? "#0a0a0a" : undefined

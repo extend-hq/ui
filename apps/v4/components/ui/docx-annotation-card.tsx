@@ -3,6 +3,7 @@
 import * as React from "react"
 import type {
   DocxCommentCardRenderProps,
+  DocxDocumentTheme,
   DocxTrackedChangeCardRenderProps,
 } from "@extend-ai/react-docx"
 
@@ -48,6 +49,7 @@ function DocxAnnotationCard({
   badgeVariant = "outline",
   date,
   meta,
+  documentTheme,
   snippet,
   style,
 }: {
@@ -55,17 +57,37 @@ function DocxAnnotationCard({
   badge: string
   badgeVariant?: React.ComponentProps<typeof Badge>["variant"]
   date?: string
+  documentTheme: DocxDocumentTheme
   meta: string
   snippet: string
   style: React.CSSProperties
 }) {
+  const isDarkDocument = documentTheme === "dark"
+  const cardStyle: React.CSSProperties = {
+    ...style,
+    backgroundColor: isDarkDocument
+      ? "rgb(24 24 27 / 0.95)"
+      : "rgb(255 255 255 / 0.95)",
+    color: isDarkDocument ? "#f4f4f5" : "#18181b",
+  }
+  const mutedTextColor = isDarkDocument ? "#a1a1aa" : "#71717a"
+  const anchorStyle: React.CSSProperties = {
+    backgroundColor: isDarkDocument
+      ? "rgb(63 63 70 / 0.55)"
+      : "rgb(244 244 245 / 0.75)",
+    color: mutedTextColor,
+  }
+
   return (
     <Card
-      style={style}
-      className="pointer-events-auto box-border gap-2 rounded-lg bg-card/95 p-2 text-card-foreground shadow-sm before:rounded-[7px]"
+      style={cardStyle}
+      className="pointer-events-auto box-border gap-2 rounded-lg p-2 shadow-sm before:rounded-[7px]"
     >
       <div className="flex min-w-0 items-start justify-between gap-2">
-        <div className="min-w-0 text-[11px] leading-tight font-medium text-muted-foreground">
+        <div
+          className="min-w-0 text-[11px] leading-tight font-medium"
+          style={{ color: mutedTextColor }}
+        >
           <div className="truncate">{meta}</div>
           {date ? <div className="mt-0.5 truncate">{date}</div> : null}
         </div>
@@ -78,7 +100,10 @@ function DocxAnnotationCard({
         </Badge>
       </div>
       {anchorText ? (
-        <div className="rounded-md bg-muted/60 px-2 py-1 text-[11px] leading-snug text-muted-foreground italic">
+        <div
+          className="rounded-md px-2 py-1 text-[11px] leading-snug italic"
+          style={anchorStyle}
+        >
           {anchorText}
         </div>
       ) : null}
@@ -87,46 +112,56 @@ function DocxAnnotationCard({
   )
 }
 
-export function renderDocxTrackedChangeCard({
-  change,
-  formattedDate,
-  kindLabel,
-  snippet,
-  style,
-}: DocxTrackedChangeCardRenderProps) {
-  return (
-    <DocxAnnotationCard
-      badge={trackedChangeBadgeLabel({ change, kindLabel })}
-      badgeVariant={trackedChangeBadgeVariant(change.kind)}
-      date={formattedDate}
-      meta={change.author?.trim() || "Unknown author"}
-      snippet={snippet}
-      style={style}
-    />
-  )
+export function createDocxTrackedChangeCardRenderer(
+  documentTheme: DocxDocumentTheme
+) {
+  return function renderDocxTrackedChangeCard({
+    change,
+    formattedDate,
+    kindLabel,
+    snippet,
+    style,
+  }: DocxTrackedChangeCardRenderProps) {
+    return (
+      <DocxAnnotationCard
+        badge={trackedChangeBadgeLabel({ change, kindLabel })}
+        badgeVariant={trackedChangeBadgeVariant(change.kind)}
+        date={formattedDate}
+        documentTheme={documentTheme}
+        meta={change.author?.trim() || "Unknown author"}
+        snippet={snippet}
+        style={style}
+      />
+    )
+  }
 }
 
-export function renderDocxCommentCard({
-  comment,
-  formattedDate,
-  snippet,
-  style,
-}: DocxCommentCardRenderProps) {
-  const badge = comment.resolved
-    ? "Resolved"
-    : comment.parentId !== undefined
-      ? "Reply"
-      : "Comment"
+export function createDocxCommentCardRenderer(
+  documentTheme: DocxDocumentTheme
+) {
+  return function renderDocxCommentCard({
+    comment,
+    formattedDate,
+    snippet,
+    style,
+  }: DocxCommentCardRenderProps) {
+    const badge = comment.resolved
+      ? "Resolved"
+      : comment.parentId !== undefined
+        ? "Reply"
+        : "Comment"
 
-  return (
-    <DocxAnnotationCard
-      anchorText={comment.anchorText}
-      badge={badge}
-      badgeVariant={comment.resolved ? "secondary" : "info"}
-      date={formattedDate}
-      meta={comment.author?.trim() || "Unknown author"}
-      snippet={snippet}
-      style={style}
-    />
-  )
+    return (
+      <DocxAnnotationCard
+        anchorText={comment.anchorText}
+        badge={badge}
+        badgeVariant={comment.resolved ? "secondary" : "info"}
+        date={formattedDate}
+        documentTheme={documentTheme}
+        meta={comment.author?.trim() || "Unknown author"}
+        snippet={snippet}
+        style={style}
+      />
+    )
+  }
 }

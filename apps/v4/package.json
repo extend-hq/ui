@@ -36,7 +36,7 @@
     "@embedpdf/plugin-tiling": "^2.14.4",
     "@embedpdf/plugin-viewport": "^2.14.4",
     "@embedpdf/plugin-zoom": "^2.14.4",
-    "@extend-ai/react-docx": "0.7.1",
+    "@extend-ai/react-docx": "0.7.5",
     "@extend-ai/react-xlsx": "0.13.0",
     "@glideapps/glide-data-grid": "6.0.4-alpha24",
     "@hugeicons/core-free-icons": "^4.2.0",

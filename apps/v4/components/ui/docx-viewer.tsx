@@ -15,6 +15,7 @@ import {
 import {
   Comment01Icon,
   Download01Icon,
+  FileDiffIcon,
   MinusSignCircleIcon,
   Moon02Icon,
   MoreHorizontalIcon,
@@ -33,8 +34,8 @@ import {
   useInlineThumbnailSidebar,
 } from "@/components/ui/document-viewer-sidebar"
 import {
-  renderDocxCommentCard,
-  renderDocxTrackedChangeCard,
+  createDocxCommentCardRenderer,
+  createDocxTrackedChangeCardRenderer,
 } from "@/components/ui/docx-annotation-card"
 import {
   DropdownMenu,
@@ -327,12 +328,14 @@ function DocxFileActionsMenu({
   isPreparingDownload,
   isDark,
   onDownload,
+  onShowCommentsChange,
+  onShowTrackedChangesChange,
   onIsDarkChange,
-  onShowDocumentMarkupChange,
   onUploadClick,
-  showDocumentMarkup,
+  showComments,
   showDownloadButton,
   showNightRenderToggle,
+  showTrackedChanges,
   showUploadButton,
 }: {
   controlsDisabled: boolean
@@ -340,12 +343,14 @@ function DocxFileActionsMenu({
   isPreparingDownload: boolean
   isDark: boolean
   onDownload: () => void
+  onShowCommentsChange: (checked: boolean) => void
+  onShowTrackedChangesChange: (checked: boolean) => void
   onIsDarkChange: (checked: boolean) => void
-  onShowDocumentMarkupChange: (checked: boolean) => void
   onUploadClick: () => void
-  showDocumentMarkup: boolean
+  showComments: boolean
   showDownloadButton: boolean
   showNightRenderToggle: boolean
+  showTrackedChanges: boolean
   showUploadButton: boolean
 }) {
   const showFileActions = showDownloadButton || showUploadButton
@@ -380,16 +385,27 @@ function DocxFileActionsMenu({
           </>
         ) : null}
         <DropdownMenuCheckboxItem
-          checked={showDocumentMarkup}
+          checked={showComments}
           disabled={controlsDisabled}
           variant="switch"
-          onCheckedChange={(checked) =>
-            onShowDocumentMarkupChange(checked === true)
-          }
+          onCheckedChange={(checked) => onShowCommentsChange(checked === true)}
         >
           <span className="flex min-w-0 items-center gap-2">
             <HugeiconsIcon icon={Comment01Icon} className="size-4" />
-            Comments/edits
+            Comments
+          </span>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={showTrackedChanges}
+          disabled={controlsDisabled}
+          variant="switch"
+          onCheckedChange={(checked) =>
+            onShowTrackedChangesChange(checked === true)
+          }
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <HugeiconsIcon icon={FileDiffIcon} className="size-4" />
+            Edits
           </span>
         </DropdownMenuCheckboxItem>
         {showFileActions ? <DropdownMenuSeparator /> : null}
@@ -513,14 +529,16 @@ function DocxToolbar({
   onDownload,
   onIsDarkChange,
   onPageChange,
-  onShowDocumentMarkupChange,
+  onShowCommentsChange,
+  onShowTrackedChangesChange,
   onToggleSidebar,
   onUploadClick,
   pageCount,
   setZoomScale,
-  showDocumentMarkup,
+  showComments,
   showDownloadButton = true,
   showNightRenderToggle,
+  showTrackedChanges,
   showUploadButton = true,
   toolbarActions,
   zoomScale,
@@ -532,14 +550,16 @@ function DocxToolbar({
   onDownload: () => void
   onIsDarkChange: (checked: boolean) => void
   onPageChange: (pageNumber: number) => void
-  onShowDocumentMarkupChange: (checked: boolean) => void
+  onShowCommentsChange: (checked: boolean) => void
+  onShowTrackedChangesChange: (checked: boolean) => void
   onToggleSidebar: () => void
   onUploadClick: () => void
   pageCount: number
   setZoomScale: React.Dispatch<React.SetStateAction<number>>
-  showDocumentMarkup: boolean
+  showComments: boolean
   showDownloadButton?: boolean
   showNightRenderToggle: boolean
+  showTrackedChanges: boolean
   showUploadButton?: boolean
   toolbarActions?: React.ReactNode
   zoomScale: number
@@ -643,11 +663,13 @@ function DocxToolbar({
             isDark={isDark}
             onDownload={onDownload}
             onIsDarkChange={onIsDarkChange}
-            onShowDocumentMarkupChange={onShowDocumentMarkupChange}
+            onShowCommentsChange={onShowCommentsChange}
+            onShowTrackedChangesChange={onShowTrackedChangesChange}
             onUploadClick={onUploadClick}
-            showDocumentMarkup={showDocumentMarkup}
+            showComments={showComments}
             showDownloadButton={showDownloadButton}
             showNightRenderToggle={showNightRenderToggle}
+            showTrackedChanges={showTrackedChanges}
             showUploadButton={showUploadButton}
           />
         </div>
@@ -1161,6 +1183,15 @@ function DocxViewerContent({
   const loadingState = (
     <ViewerLoadingSurface showSpinner={shouldShowDocumentSpinner} />
   )
+  const documentTheme = effectiveIsDark ? "dark" : "light"
+  const renderTrackedChangeCard = React.useMemo(
+    () => createDocxTrackedChangeCardRenderer(documentTheme),
+    [documentTheme]
+  )
+  const renderCommentCard = React.useMemo(
+    () => createDocxCommentCardRenderer(documentTheme),
+    [documentTheme]
+  )
   const hasDocument = Boolean(url || activeUploadedDocxFile)
   const pageCount =
     hasDocument && !isLoadingDocument && !loadError
@@ -1171,7 +1202,6 @@ function DocxViewerContent({
   )
   const controlsDisabled =
     !hasDocument || isLoadingDocument || Boolean(loadError)
-  const showDocumentMarkup = showComments || showTrackedChanges
   const handlePageCountChange = React.useCallback((nextPageCount: number) => {
     setReportedPageCount(Math.max(1, Math.round(nextPageCount || 1)))
   }, [])
@@ -1206,14 +1236,6 @@ function DocxViewerContent({
       setIsPreparingDownload(false)
     }
   }, [activeUploadedDocxFile, displayFileName, isPreparingDownload, url])
-  const handleShowDocumentMarkupChange = React.useCallback(
-    (checked: boolean) => {
-      setShowComments(checked)
-      setShowTrackedChanges(checked)
-    },
-    [setShowComments, setShowTrackedChanges]
-  )
-
   useSuppressDocxPaddingWarning(!isLoadingDocument && !loadError)
 
   React.useEffect(() => {
@@ -1427,14 +1449,16 @@ function DocxViewerContent({
           onDownload={handleDownload}
           onIsDarkChange={setNightRenderEnabled}
           onPageChange={scrollToPage}
-          onShowDocumentMarkupChange={handleShowDocumentMarkupChange}
+          onShowCommentsChange={setShowComments}
+          onShowTrackedChangesChange={setShowTrackedChanges}
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
           onUploadClick={() => fileInputRef.current?.click()}
           pageCount={pageCount}
           setZoomScale={setZoomScale}
-          showDocumentMarkup={showDocumentMarkup}
+          showComments={showComments}
           showDownloadButton={showDownload}
           showNightRenderToggle={shouldRenderNightMode}
+          showTrackedChanges={showTrackedChanges}
           showUploadButton={showUpload}
           toolbarActions={toolbarActions}
           zoomScale={zoomScale}
@@ -1521,9 +1545,9 @@ function DocxViewerContent({
                   editor={editor}
                   mode="read-only"
                   showTrackedChanges={showTrackedChanges}
-                  renderTrackedChangeCard={renderDocxTrackedChangeCard}
+                  renderTrackedChangeCard={renderTrackedChangeCard}
                   showComments={showComments}
-                  renderCommentCard={renderDocxCommentCard}
+                  renderCommentCard={renderCommentCard}
                   loadingState={loadingState}
                   pageBackgroundColor={effectiveIsDark ? "#0a0a0a" : undefined}
                   pageGapBackgroundColor={viewerBackgroundColor}
