@@ -78,6 +78,9 @@ npm install @glideapps/glide-data-grid@6.0.4-alpha24 @hugeicons/core-free-icons@
 - Optional toolbar search via the `search` prop. When enabled, results update as you type with debounced matching, result navigation, cell selection, and scroll-into-view.
 - Header controls for upload, row and column counts, and zoom.
 - Grid zoom that scales row height, header height, column width, and cell text.
+- Column resize by dragging header dividers. Double-click a divider to auto-fit that column.
+- Toolbar layout controls: row size (`Compact`, `Default`, `Relaxed`, `Wide`), fit columns, and reset columns.
+- Optional controlled `columnWidths`, `rowHeight`, and matching change callbacks for parent-managed layouts.
 
 ## API Reference
 
@@ -85,8 +88,14 @@ npm install @glideapps/glide-data-grid@6.0.4-alpha24 @hugeicons/core-free-icons@
 
 The CsvViewer component renders its built-in CSV/TSV upload flow, parser state, zoom controls, and virtualized grid.
 
-| Prop        | Type      | Default | Required |
-| ----------- | --------- | ------- | -------- |
-| `className` | `string`  | `-`     | No       |
-| `data`      | `string`  | `-`     | No       |
-| `search`    | `boolean` | `false` | No       |
+| Prop                   | Type                         | Default | Required |
+| ---------------------- | ---------------------------- | ------- | -------- |
+| `className`            | `string`                     | `-`     | No       |
+| `data`                 | `string`                     | `-`     | No       |
+| `search`               | `boolean`                    | `false` | No       |
+| `columnWidths`         | `Record<number, number>`     | `-`     | No       |
+| `defaultColumnWidths`  | `Record<number, number>`     | `-`     | No       |
+| `onColumnWidthsChange` | `(widths) => void`           | `-`     | No       |
+| `rowHeight`            | `28 \| 34 \| 42 \| 52`       | `-`     | No       |
+| `defaultRowHeight`     | `28 \| 34 \| 42 \| 52`       | `34`    | No       |
+| `onRowHeightChange`    | `(height) => void`           | `-`     | No       |

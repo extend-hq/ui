@@ -19,6 +19,7 @@ import {
 import "@glideapps/glide-data-grid/dist/index.css"
 
 import {
+  ArrowExpandDiagonal02Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
   Download01Icon,
@@ -26,6 +27,7 @@ import {
   MoreHorizontalIcon,
   PlusSignCircleIcon,
   Search01Icon,
+  Undo02Icon,
   Upload01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -62,14 +64,36 @@ import {
 } from "@/components/ui/tooltip"
 
 const ZOOM_OPTIONS = [0.75, 1, 1.25, 1.5, 2] as const
-const CSV_SEARCH_BATCH_ROW_COUNT = 500
+const ROW_HEIGHT_PRESETS = [
+  { value: 28, label: "Compact" },
+  { value: 34, label: "Default" },
+  { value: 42, label: "Relaxed" },
+  { value: 52, label: "Wide" },
+] as const
+type RowHeight = (typeof ROW_HEIGHT_PRESETS)[number]["value"]
+const CSV_ROW_BATCH_SIZE = 500
 const CSV_SEARCH_DEBOUNCE_MS = 300
+const CSV_DEFAULT_ROW_HEIGHT: RowHeight = ROW_HEIGHT_PRESETS[1].value
+const CSV_DEFAULT_FIRST_COL_WIDTH = 180
+const CSV_DEFAULT_COL_WIDTH = 160
+const CSV_MIN_COL_WIDTH = 60
+const CSV_MAX_COL_WIDTH = 1200
+const CSV_MAX_COL_AUTO_WIDTH = 640
+const CSV_GRID_FONT_FAMILY =
+  '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
 
 type GlideDataGridModule = typeof GlideDataGrid
+type ColumnWidthMap = Record<number, number>
 type CsvViewerProps = {
   className?: string
   data?: string
   search?: boolean
+  columnWidths?: ColumnWidthMap
+  defaultColumnWidths?: ColumnWidthMap
+  onColumnWidthsChange?: (columnWidths: ColumnWidthMap) => void
+  rowHeight?: RowHeight
+  defaultRowHeight?: RowHeight
+  onRowHeightChange?: (rowHeight: RowHeight) => void
 }
 
 type CsvSearchResult = {
@@ -109,6 +133,70 @@ function cellMatchesQuery(displayValue: string, query: string) {
   return displayValue.toLowerCase().includes(query)
 }
 
+function getDefaultColumnWidth(index: number) {
+  return index === 0 ? CSV_DEFAULT_FIRST_COL_WIDTH : CSV_DEFAULT_COL_WIDTH
+}
+
+function getRowHeightLabel(height: number) {
+  return (
+    ROW_HEIGHT_PRESETS.find((preset) => preset.value === height)?.label ??
+    `${height}px`
+  )
+}
+
+function hasCustomColumnWidths(columnWidths: ColumnWidthMap) {
+  return Object.keys(columnWidths).length > 0
+}
+
+let measureCanvasContext: CanvasRenderingContext2D | null = null
+
+function measureTextWidth(text: string, font: string) {
+  if (typeof document === "undefined") return text.length * 8
+
+  measureCanvasContext ??= document.createElement("canvas").getContext("2d")
+  if (!measureCanvasContext) return text.length * 8
+
+  measureCanvasContext.font = font
+  return measureCanvasContext.measureText(text).width
+}
+
+function computeFitColumnWidths(
+  headers: string[],
+  rows: string[][],
+  options: {
+    cellFont: string
+    headerFont: string
+    horizontalPadding: number
+    maxWidth: number
+    minWidth: number
+  }
+) {
+  const widths: ColumnWidthMap = {}
+  const sampleRows =
+    rows.length <= CSV_ROW_BATCH_SIZE ? rows : rows.slice(0, CSV_ROW_BATCH_SIZE)
+
+  for (let col = 0; col < headers.length; col += 1) {
+    let contentWidth = measureTextWidth(headers[col] ?? "", options.headerFont)
+
+    for (const row of sampleRows) {
+      contentWidth = Math.max(
+        contentWidth,
+        measureTextWidth(row[col] ?? "", options.cellFont)
+      )
+    }
+
+    widths[col] = Math.min(
+      options.maxWidth,
+      Math.max(
+        options.minWidth,
+        Math.ceil(contentWidth + options.horizontalPadding)
+      )
+    )
+  }
+
+  return widths
+}
+
 function createSingleCellSelection(cell: Item): GridSelection {
   const [col, row] = cell
 
@@ -140,10 +228,10 @@ async function findCsvSearchResults(
   for (
     let batchStartRow = 0;
     batchStartRow < rows.length;
-    batchStartRow += CSV_SEARCH_BATCH_ROW_COUNT
+    batchStartRow += CSV_ROW_BATCH_SIZE
   ) {
     const batchEndRow = Math.min(
-      batchStartRow + CSV_SEARCH_BATCH_ROW_COUNT,
+      batchStartRow + CSV_ROW_BATCH_SIZE,
       rows.length
     )
 
@@ -598,7 +686,17 @@ function useIsDarkTheme() {
   return isDark
 }
 
-export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
+export function CsvViewer({
+  className,
+  data,
+  search = false,
+  columnWidths: columnWidthsProp,
+  defaultColumnWidths,
+  onColumnWidthsChange,
+  rowHeight: rowHeightProp,
+  defaultRowHeight = CSV_DEFAULT_ROW_HEIGHT,
+  onRowHeightChange,
+}: CsvViewerProps) {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const gridRef = React.useRef<DataEditorRef | null>(null)
   const isDark = useIsDarkTheme()
@@ -606,6 +704,24 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
   const [zoom, setZoom] = React.useState<(typeof ZOOM_OPTIONS)[number]>(1)
   const [gridSelection, setGridSelection] =
     React.useState<GridSelection>(emptyGridSelection)
+  const [internalColumnWidths, setInternalColumnWidths] =
+    React.useState<ColumnWidthMap>(defaultColumnWidths ?? {})
+  const [internalRowHeight, setInternalRowHeight] =
+    React.useState<RowHeight>(defaultRowHeight)
+  const isColumnWidthsControlled = columnWidthsProp !== undefined
+  const isRowHeightControlled = rowHeightProp !== undefined
+  const columnWidths = isColumnWidthsControlled
+    ? columnWidthsProp
+    : internalColumnWidths
+  const baseRowHeight = isRowHeightControlled
+    ? rowHeightProp
+    : internalRowHeight
+  const columnWidthsRef = React.useRef(columnWidths)
+
+  React.useEffect(() => {
+    columnWidthsRef.current = columnWidths
+  }, [columnWidths])
+
   const [parsed, setParsed] = React.useState(() =>
     data ? parseDelimitedText(data) : { headers: [], rows: [], error: null }
   )
@@ -643,6 +759,50 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
   }, [search])
 
   React.useEffect(() => {
+    if (!isColumnWidthsControlled) {
+      setInternalColumnWidths(defaultColumnWidths ?? {})
+    }
+    if (!isRowHeightControlled) {
+      setInternalRowHeight(defaultRowHeight)
+    }
+  }, [
+    dataIdentity,
+    defaultColumnWidths,
+    defaultRowHeight,
+    isColumnWidthsControlled,
+    isRowHeightControlled,
+  ])
+
+  const updateColumnWidths = React.useCallback(
+    (
+      updater: ColumnWidthMap | ((current: ColumnWidthMap) => ColumnWidthMap)
+    ) => {
+      const next =
+        typeof updater === "function"
+          ? updater(columnWidthsRef.current)
+          : updater
+
+      columnWidthsRef.current = next
+      onColumnWidthsChange?.(next)
+
+      if (!isColumnWidthsControlled) {
+        setInternalColumnWidths(next)
+      }
+    },
+    [isColumnWidthsControlled, onColumnWidthsChange]
+  )
+
+  const updateRowHeight = React.useCallback(
+    (nextRowHeight: RowHeight) => {
+      onRowHeightChange?.(nextRowHeight)
+      if (!isRowHeightControlled) {
+        setInternalRowHeight(nextRowHeight)
+      }
+    },
+    [isRowHeightControlled, onRowHeightChange]
+  )
+
+  React.useEffect(() => {
     let mounted = true
 
     void import("@glideapps/glide-data-grid").then((module) => {
@@ -656,13 +816,64 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
     }
   }, [])
 
-  const columnCount = Math.max(1, parsed.headers.length)
+  const columnCount = parsed.headers.length
+
   const scale = React.useCallback(
     (value: number) => Math.round(value * zoom),
     [zoom]
   )
-  const searchDisabled =
+
+  const gridToolbarDisabled =
     Boolean(parsed.error) || parsed.rows.length === 0 || isPending
+
+  const getBaseColumnWidth = React.useCallback(
+    (index: number) => columnWidths[index] ?? getDefaultColumnWidth(index),
+    [columnWidths]
+  )
+
+  const handleColumnResize = React.useCallback(
+    (_column: GridColumn, newSize: number, columnIndex: number) => {
+      updateColumnWidths((current) => ({
+        ...current,
+        [columnIndex]: Math.round(newSize / zoom),
+      }))
+    },
+    [updateColumnWidths, zoom]
+  )
+
+  const handleFitColumns = React.useCallback(() => {
+    if (columnCount === 0) return
+
+    const fitted = computeFitColumnWidths(parsed.headers, parsed.rows, {
+      cellFont: `${scale(13)}px ${CSV_GRID_FONT_FAMILY}`,
+      headerFont: `600 ${scale(13)}px ${CSV_GRID_FONT_FAMILY}`,
+      horizontalPadding: scale(16),
+      minWidth: scale(CSV_MIN_COL_WIDTH),
+      maxWidth: scale(CSV_MAX_COL_AUTO_WIDTH),
+    })
+
+    updateColumnWidths(
+      Object.fromEntries(
+        Object.entries(fitted).map(([col, width]) => [
+          Number(col),
+          Math.round(Number(width) / zoom),
+        ])
+      )
+    )
+  }, [
+    columnCount,
+    parsed.headers,
+    parsed.rows,
+    scale,
+    updateColumnWidths,
+    zoom,
+  ])
+
+  const handleResetColumns = React.useCallback(() => {
+    updateColumnWidths({})
+  }, [updateColumnWidths])
+
+  const hasCustomWidths = hasCustomColumnWidths(columnWidths)
 
   const theme = React.useMemo<Partial<Theme>>(
     () => ({
@@ -688,7 +899,7 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
       baseFontStyle: `${scale(13)}px`,
       headerFontStyle: `600 ${scale(13)}px`,
       markerFontStyle: `${scale(11)}px`,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontFamily: CSV_GRID_FONT_FAMILY,
       editorFontSize: `${scale(13)}px`,
     }),
     [isDark, scale]
@@ -696,12 +907,12 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
 
   const columns = React.useMemo<GridColumn[]>(
     () =>
-      Array.from({ length: columnCount }, (_, index) => ({
+      Array.from({ length: Math.max(1, columnCount) }, (_, index) => ({
         id: `column-${index}`,
         title: parsed.headers[index] ?? `Column ${index + 1}`,
-        width: scale(index === 0 ? 180 : 160),
+        width: scale(getBaseColumnWidth(index)),
       })),
-    [columnCount, parsed.headers, scale]
+    [columnCount, getBaseColumnWidth, parsed.headers, scale]
   )
 
   const getCellContent = React.useCallback(
@@ -825,6 +1036,65 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
                 </Button>
               </ToolbarTooltip>
             </div>
+            <Separator
+              orientation="vertical"
+              className="mx-1 h-4 self-center"
+            />
+            <div className="flex flex-none items-center gap-1">
+              <Select
+                value={baseRowHeight.toString()}
+                onValueChange={(value) =>
+                  updateRowHeight(Number(value) as RowHeight)
+                }
+                disabled={gridToolbarDisabled}
+                modal={false}
+              >
+                <SelectTrigger
+                  size="sm"
+                  className="w-[88px] min-w-[88px]"
+                  aria-label="Row size"
+                >
+                  <SelectValue>{getRowHeightLabel(baseRowHeight)}</SelectValue>
+                </SelectTrigger>
+                <SelectContent align="end" alignItemWithTrigger={false}>
+                  {ROW_HEIGHT_PRESETS.map((preset) => (
+                    <SelectItem
+                      key={preset.value}
+                      value={preset.value.toString()}
+                    >
+                      {preset.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <ToolbarTooltip label="Fit columns">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Fit columns"
+                  disabled={gridToolbarDisabled}
+                  onClick={handleFitColumns}
+                >
+                  <HugeiconsIcon
+                    icon={ArrowExpandDiagonal02Icon}
+                    className="size-4"
+                  />
+                </Button>
+              </ToolbarTooltip>
+              <ToolbarTooltip label="Reset columns">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Reset columns"
+                  disabled={gridToolbarDisabled || !hasCustomWidths}
+                  onClick={handleResetColumns}
+                >
+                  <HugeiconsIcon icon={Undo02Icon} className="size-4" />
+                </Button>
+              </ToolbarTooltip>
+            </div>
             {search ? (
               <>
                 <Separator
@@ -836,7 +1106,7 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
                   rows={parsed.rows}
                   gridRef={gridRef}
                   dataIdentity={dataIdentity}
-                  controlsDisabled={searchDisabled}
+                  controlsDisabled={gridToolbarDisabled}
                   onGridSelectionChange={handleGridSelectionChange}
                 />
               </>
@@ -898,7 +1168,6 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
         ) : (
           <glide.DataEditor
             ref={search ? gridRef : undefined}
-            key={zoom}
             columns={columns}
             rows={parsed.rows.length}
             getCellContent={getCellContent}
@@ -913,10 +1182,14 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
             smoothScrollX
             smoothScrollY
             getCellsForSelection
+            onColumnResize={handleColumnResize}
+            minColumnWidth={scale(CSV_MIN_COL_WIDTH)}
+            maxColumnWidth={scale(CSV_MAX_COL_WIDTH)}
+            maxColumnAutoWidth={scale(CSV_MAX_COL_AUTO_WIDTH)}
             width="100%"
             height="100%"
             theme={theme}
-            rowHeight={scale(34)}
+            rowHeight={scale(baseRowHeight)}
             headerHeight={scale(36)}
           />
         )}
