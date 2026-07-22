@@ -665,6 +665,7 @@
       "registryDependencies": [
         "button",
         "@extend/document-viewer-sidebar",
+        "dropdown-menu",
         "input",
         "popover",
         "scroll-area",
