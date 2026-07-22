@@ -18,7 +18,9 @@ function ViewerPreviewLoading() {
 
 const PptxViewerPreview = dynamic(
   () =>
-    import("@/components/ui/pptx-viewer").then((mod) => mod.PptxViewerPreview),
+    import("@/components/extend/pptx-viewer").then(
+      (mod) => mod.PptxViewerPreview
+    ),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,
@@ -39,7 +41,7 @@ export function PptxViewerDemo() {
 
 const pptxViewerUsageCode = `"use client";
 
-import { PptxViewerPreview } from "@/components/ui/pptx-viewer";
+import { PptxViewerPreview } from "@/components/extend/pptx-viewer";
 
 export function PptxViewerExample() {
   return <PptxViewerPreview src="/path/to/presentation.pptx" />;

@@ -1691,9 +1691,7 @@ function SchemaBuilderTable({
   const sortableItems = useStableIds(properties.map((property) => property.id))
   const updateProperty = useStableCallback(
     (id: string, nextProperty: SchemaBuilderProperty) => {
-      onPropertiesChange(
-        updatePropertyById(properties, id, () => nextProperty)
-      )
+      onPropertiesChange(updatePropertyById(properties, id, () => nextProperty))
     }
   )
 
@@ -1853,10 +1851,7 @@ const SortablePropertyRows = React.memo(function SortablePropertyRows({
           </div>
         </td>
         <td className="border-l p-1 align-top">
-          <SchemaTypeMenu
-            property={property}
-            onChange={handlePropertyChange}
-          />
+          <SchemaTypeMenu property={property} onChange={handlePropertyChange} />
         </td>
         <td className="border-l p-0 align-top">
           <InlineTextInput

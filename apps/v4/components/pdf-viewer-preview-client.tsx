@@ -1,7 +1,7 @@
 "use client"
 
 import { withUiBasePath } from "@/lib/zone-path"
-import { PDFViewer } from "@/components/ui/pdf-viewer"
+import { PDFViewer } from "@/components/extend/pdf-viewer"
 
 const SAMPLE_PDF_URL = withUiBasePath("/samples/attention.pdf")
 

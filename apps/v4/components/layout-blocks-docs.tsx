@@ -21,13 +21,13 @@ import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
 import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   DocsSourceCodeBlock,
   DocsViewCodeBlock,
 } from "@/components/docs-code-block"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer, type PDFViewerHandle } from "@/components/extend/pdf-viewer"
 
 type Point = {
   x: number

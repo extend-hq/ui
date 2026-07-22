@@ -57,7 +57,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { FileThumbnail } from "@/components/ui/file-thumbnail"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -74,24 +73,25 @@ import {
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { FileThumbnail } from "@/components/extend/file-thumbnail"
 
 const LazyPDFViewer = React.lazy(() =>
-  import("@/components/ui/pdf-viewer").then((mod) => ({
+  import("@/components/extend/pdf-viewer").then((mod) => ({
     default: mod.PDFViewer,
   }))
 )
 const LazyDocxViewerPreview = React.lazy(() =>
-  import("@/components/ui/docx-viewer").then((mod) => ({
+  import("@/components/extend/docx-viewer").then((mod) => ({
     default: mod.DocxViewerPreview,
   }))
 )
 const LazyPptxViewerPreview = React.lazy(() =>
-  import("@/components/ui/pptx-viewer").then((mod) => ({
+  import("@/components/extend/pptx-viewer").then((mod) => ({
     default: mod.PptxViewerPreview,
   }))
 )
 const LazyXlsxViewerPreview = React.lazy(() =>
-  import("@/components/ui/xlsx-viewer").then((mod) => ({
+  import("@/components/extend/xlsx-viewer").then((mod) => ({
     default: mod.XlsxViewerPreview,
   }))
 )

@@ -10,8 +10,6 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import type SignaturePad from "signature_pad"
 
 import { cn } from "@/lib/utils"
-import { PDFViewer } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,6 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer } from "@/components/extend/pdf-viewer"
 
 type BoundingBox = {
   x: number

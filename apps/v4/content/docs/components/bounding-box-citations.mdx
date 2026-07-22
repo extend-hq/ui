@@ -31,7 +31,7 @@ import dynamic from "next/dynamic"
 
 const HumanReviewPanel = dynamic(
 () =>
-import("@/components/ui/bounding-box-citations").then((mod) => mod.HumanReviewPanel),
+import("@/components/extend/bounding-box-citations").then((mod) => mod.HumanReviewPanel),
 { ssr: false }
 )`}
 />

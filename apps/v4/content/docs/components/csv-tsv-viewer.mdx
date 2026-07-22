@@ -28,7 +28,7 @@ Viewer through `next/dynamic` with `ssr: false`.
 import dynamic from "next/dynamic"
 
 const CsvViewer = dynamic(
-() => import("@/components/ui/csv-viewer").then((mod) => mod.CsvViewer),
+() => import("@/components/extend/csv-viewer").then((mod) => mod.CsvViewer),
 { ssr: false }
 )`}
 />

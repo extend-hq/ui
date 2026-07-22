@@ -3,18 +3,18 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 
+import {
+  getPdfPageCount,
+  renderPdfThumbnailUrl,
+} from "@/lib/pdf-thumbnail-utils"
 import { cn } from "@/lib/utils"
 import { withUiBasePath } from "@/lib/zone-path"
+import { DocsViewCodeBlock } from "@/components/docs-code-block"
 import {
   FileSystem,
   type FileSystemItem,
   type FileSystemProps,
-} from "@/components/ui/file-system"
-import { DocsViewCodeBlock } from "@/components/docs-code-block"
-import {
-  getPdfPageCount,
-  renderPdfThumbnailUrl,
-} from "@/components/pdf-thumbnail-utils"
+} from "@/components/extend/file-system"
 import { FileSystemBlock } from "@/registry/new-york-v4/blocks/file-system-block"
 
 const DOCX_MIME_TYPE =

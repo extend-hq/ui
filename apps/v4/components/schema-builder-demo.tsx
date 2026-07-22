@@ -1,7 +1,7 @@
 "use client"
 
-import { SchemaBuilderPanel } from "@/components/ui/schema-builder"
 import { DocsViewCodeBlock } from "@/components/docs-code-block"
+import { SchemaBuilderPanel } from "@/components/extend/schema-builder"
 
 export function SchemaBuilderDemo() {
   return (
@@ -15,7 +15,7 @@ export function SchemaBuilderDemo() {
   )
 }
 
-const schemaBuilderDemoCode = `import { SchemaBuilderPanel } from "@/components/ui/schema-builder";
+const schemaBuilderDemoCode = `import { SchemaBuilderPanel } from "@/components/extend/schema-builder";
 
 export function SchemaBuilderExample() {
   return <SchemaBuilderPanel className="h-[620px]" />;

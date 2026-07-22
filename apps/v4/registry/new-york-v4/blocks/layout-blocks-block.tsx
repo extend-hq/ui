@@ -11,9 +11,9 @@ import {
   PDF_URL,
   type OcrBlock,
   type ParsedOcrOutput,
-} from "@/components/ui/layout-blocks"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
+} from "@/components/extend/layout-blocks"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer, type PDFViewerHandle } from "@/components/extend/pdf-viewer"
 
 export function OcrBlocksBlock({
   file = PDF_URL,

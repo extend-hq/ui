@@ -23,7 +23,9 @@ function ViewerPreviewLoading() {
 
 const XlsxViewerPreview = dynamic(
   () =>
-    import("@/components/ui/xlsx-viewer").then((mod) => mod.XlsxViewerPreview),
+    import("@/components/extend/xlsx-viewer").then(
+      (mod) => mod.XlsxViewerPreview
+    ),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,

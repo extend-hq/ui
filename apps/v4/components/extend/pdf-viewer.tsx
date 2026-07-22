@@ -73,14 +73,9 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { flushSync } from "react-dom"
 
+import { loadSharedPdfEngine } from "@/lib/pdf-thumbnail-utils"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  DocumentViewerSidebarSkeleton,
-  DocumentViewerThumbnailSidebar,
-  useElementWidth,
-  useInlineThumbnailSidebar,
-} from "@/components/ui/document-viewer-sidebar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -109,7 +104,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { loadSharedPdfEngine } from "@/components/pdf-thumbnail-utils"
+import {
+  DocumentViewerSidebarSkeleton,
+  DocumentViewerThumbnailSidebar,
+  useElementWidth,
+  useInlineThumbnailSidebar,
+} from "@/components/extend/document-viewer-sidebar"
 
 export type PDFViewerPageOverlayProps = {
   pageNumber: number

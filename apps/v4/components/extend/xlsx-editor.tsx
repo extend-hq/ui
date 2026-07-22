@@ -96,7 +96,7 @@ import {
   renderXlsxScroller,
   WorkbookSheetTabs,
   WorkbookTableHeaderMenu,
-} from "@/components/ui/xlsx-viewer"
+} from "@/components/extend/xlsx-viewer"
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_EDITOR_READ_ONLY_THRESHOLD_BYTES = 5 * 1024 * 1024

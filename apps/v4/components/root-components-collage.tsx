@@ -14,9 +14,9 @@ import {
   DocumentSplits,
   INITIAL_SPLITS,
   type DocumentSplit,
-} from "@/components/ui/document-splits"
-import { FileUpload } from "@/components/ui/file-upload"
-import { SchemaBuilderPanel } from "@/components/ui/schema-builder"
+} from "@/components/extend/document-splits"
+import { FileUpload } from "@/components/extend/file-upload"
+import { SchemaBuilderPanel } from "@/components/extend/schema-builder"
 
 const ROOT_ATTENTION_PDF_URL = withUiBasePath("/samples/attention.pdf")
 const ROOT_ATTENTION_THUMBNAIL_URL = withUiBasePath(
@@ -36,7 +36,9 @@ const PdfViewerPreview = dynamic(
 
 const XlsxViewerPreview = dynamic(
   () =>
-    import("@/components/ui/xlsx-viewer").then((mod) => mod.XlsxViewerPreview),
+    import("@/components/extend/xlsx-viewer").then(
+      (mod) => mod.XlsxViewerPreview
+    ),
   {
     ssr: false,
   }

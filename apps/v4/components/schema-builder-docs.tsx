@@ -7,7 +7,7 @@ export { SchemaBuilderDemo } from "@/components/schema-builder-demo"
 
 export function SchemaBuilderSource() {
   const code = readFileSync(
-    join(process.cwd(), "registry/new-york-v4/ui/schema-builder.tsx"),
+    join(process.cwd(), "components/extend/schema-builder.tsx"),
     "utf8"
   )
 

@@ -7,15 +7,15 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
+  DocsSourceCodeBlock,
+  DocsViewCodeBlock,
+} from "@/components/docs-code-block"
+import {
   DocumentViewerSidebarSkeleton,
   DocumentViewerThumbnailSidebar,
   useElementWidth,
   useInlineThumbnailSidebar,
-} from "@/components/ui/document-viewer-sidebar"
-import {
-  DocsSourceCodeBlock,
-  DocsViewCodeBlock,
-} from "@/components/docs-code-block"
+} from "@/components/extend/document-viewer-sidebar"
 
 const demoPages = [
   { id: 1, label: "Invoice summary" },

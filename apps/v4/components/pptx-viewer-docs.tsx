@@ -7,7 +7,7 @@ export { PptxViewerDemo } from "@/components/pptx-viewer-demo"
 
 export function PptxViewerSource() {
   const code = readFileSync(
-    join(process.cwd(), "components/ui/pptx-viewer.tsx"),
+    join(process.cwd(), "components/extend/pptx-viewer.tsx"),
     "utf8"
   )
 

@@ -41,9 +41,7 @@ function getLayoutSize(
 ) {
   const size = layout?.[panelId]
 
-  return typeof size === "number" && Number.isFinite(size)
-    ? size
-    : fallbackSize
+  return typeof size === "number" && Number.isFinite(size) ? size : fallbackSize
 }
 
 const HORIZONTAL_LAYOUT_MIN_WIDTH = 900

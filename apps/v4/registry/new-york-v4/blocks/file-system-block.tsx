@@ -1,6 +1,9 @@
 "use client"
 
-import { FileSystem, type FileSystemProps } from "@/components/ui/file-system"
+import {
+  FileSystem,
+  type FileSystemProps,
+} from "@/components/extend/file-system"
 
 export type FileSystemBlockProps = FileSystemProps
 

@@ -30,7 +30,7 @@ function ViewerPreviewLoading() {
 }
 
 const CsvViewer = dynamic(
-  () => import("@/components/ui/csv-viewer").then((mod) => mod.CsvViewer),
+  () => import("@/components/extend/csv-viewer").then((mod) => mod.CsvViewer),
   {
     ssr: false,
     loading: () => <ViewerPreviewLoading />,

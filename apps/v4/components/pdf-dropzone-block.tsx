@@ -3,7 +3,7 @@
 import * as React from "react"
 import { FileUploadIcon } from "@hugeicons/core-free-icons"
 
-import { PDFViewer } from "@/components/ui/pdf-viewer"
+import { PDFViewer } from "@/components/extend/pdf-viewer"
 import { FileUpload } from "@/components/file-upload-docs"
 
 const PDF_ACCEPT = "application/pdf,.pdf"

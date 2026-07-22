@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { XlsxEditorPreview } from "@/components/ui/xlsx-editor"
+import { XlsxEditorPreview } from "@/components/extend/xlsx-editor"
 
 export function ExcelEditorBlock({
   file,

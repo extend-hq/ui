@@ -13,17 +13,17 @@ import {
   XlsxViewerProvider,
 } from "@extend-ai/react-xlsx"
 
+import { renderPdfThumbnailUrl } from "@/lib/pdf-thumbnail-utils"
 import { withUiBasePath } from "@/lib/zone-path"
 import { Button } from "@/components/ui/button"
-import {
-  FileThumbnail,
-  type ThumbnailFile,
-} from "@/components/ui/file-thumbnail"
 import {
   DocsSourceCodeBlock,
   DocsViewCodeBlock,
 } from "@/components/docs-code-block"
-import { renderPdfThumbnailUrl } from "@/components/pdf-thumbnail-utils"
+import {
+  FileThumbnail,
+  type ThumbnailFile,
+} from "@/components/extend/file-thumbnail"
 
 const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -536,7 +536,7 @@ import {
 } from "@extend-ai/react-xlsx"
 
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
-import { renderPdfThumbnailUrl } from "@/components/extend/pdf-thumbnail-utils"
+import { renderPdfThumbnailUrl } from "@/lib/pdf-thumbnail-utils"
 
 export function PdfAttachmentThumbnail({ fileUrl }) {
   const [imageUrl, setImageUrl] = React.useState(null)

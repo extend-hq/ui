@@ -47,7 +47,6 @@ import { withUiBasePath } from "@/lib/zone-path"
 import { useMounted } from "@/hooks/use-mounted"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -60,7 +59,8 @@ import {
   DocsSourceCodeBlock,
   DocsViewCodeBlock,
 } from "@/components/docs-code-block"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer, type PDFViewerHandle } from "@/components/extend/pdf-viewer"
 
 import blockReviewOutput from "./bounding-box-citations-block-output.json"
 
