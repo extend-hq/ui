@@ -69,7 +69,7 @@ export function DocxEditorBlock({
 
 const docxEditorUsageCode = `"use client";
 
-import { DocxEditorPreview } from "@/components/ui/docx-editor";
+import { DocxEditorPreview } from "@/components/extend/docx-editor";
 
 export function DocxEditorExample() {
   const [isDark, setIsDark] = React.useState(false);
@@ -90,7 +90,7 @@ export function DocxEditorSource() {
   return (
     <DocsSourceCodeBlock
       code={docxEditorSourceCode}
-      fileName="components/ui/docx-editor.tsx"
+      fileName="components/extend/docx-editor.tsx"
     />
   )
 }

@@ -50,7 +50,7 @@ export function XlsxEditorDemo() {
 
 const xlsxEditorUsageCode = `"use client";
 
-import { XlsxEditorPreview } from "@/components/ui/xlsx-editor";
+import { XlsxEditorPreview } from "@/components/extend/xlsx-editor";
 
 export function XlsxEditorExample() {
   const [isDark, setIsDark] = React.useState(false);
@@ -71,7 +71,7 @@ export function XlsxEditorSource() {
   return (
     <DocsSourceCodeBlock
       code={xlsxEditorSourceCode}
-      fileName="components/ui/xlsx-editor.tsx"
+      fileName="components/extend/xlsx-editor.tsx"
     />
   )
 }

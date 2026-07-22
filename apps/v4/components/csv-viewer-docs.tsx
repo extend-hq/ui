@@ -55,7 +55,7 @@ export function CsvViewerDemo() {
 
 const csvViewerUsageCode = `"use client";
 
-import { CsvViewer } from "@/components/ui/csv-viewer";
+import { CsvViewer } from "@/components/extend/csv-viewer";
 
 const data = \`Invoice,Customer,Status,Amount
 INV-1001,Northstar Supply,Approved,4280.50
@@ -72,7 +72,7 @@ export function CsvViewerSource() {
   return (
     <DocsSourceCodeBlock
       code={csvViewerSourceCode}
-      fileName="components/ui/csv-viewer.tsx"
+      fileName="components/extend/csv-viewer.tsx"
     />
   )
 }

@@ -11,7 +11,7 @@ export function PdfViewerSourceCode() {
   return (
     <DocsSourceCodeBlock
       code={pdfViewerSourceCode}
-      fileName="components/ui/pdf-viewer.tsx"
+      fileName="components/extend/pdf-viewer.tsx"
     />
   )
 }

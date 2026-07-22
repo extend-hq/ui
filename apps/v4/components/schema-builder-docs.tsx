@@ -14,7 +14,7 @@ export function SchemaBuilderSource() {
   return (
     <DocsSourceCodeBlock
       code={code}
-      fileName="components/ui/schema-builder.tsx"
+      fileName="components/extend/schema-builder.tsx"
     />
   )
 }

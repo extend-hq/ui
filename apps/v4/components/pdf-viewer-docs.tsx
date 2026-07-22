@@ -169,7 +169,7 @@ const PdfViewerPreview = dynamic(
 
 const pdfViewerUsageCode = `"use client";
 
-import { PDFViewer } from "@/components/ui/pdf-viewer";
+import { PDFViewer } from "@/components/extend/pdf-viewer";
 
 export function PdfViewerExample() {
   return (

@@ -10,6 +10,9 @@ export function FileSystemSource() {
   )
 
   return (
-    <DocsSourceCodeBlock code={code} fileName="components/ui/file-system.tsx" />
+    <DocsSourceCodeBlock
+      code={code}
+      fileName="components/extend/file-system.tsx"
+    />
   )
 }

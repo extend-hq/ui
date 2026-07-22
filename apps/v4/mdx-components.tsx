@@ -77,6 +77,15 @@ function ComponentsListWrapper() {
   )
 }
 
+function ExtendInstallPathNote() {
+  return (
+    <Callout variant="info" title="Default install location" className="mt-4">
+      The CLI installs Extend components in <code>components/extend</code> by
+      default, beneath the components alias in <code>components.json</code>.
+    </Callout>
+  )
+}
+
 function withMdxHrefBasePath(href: string | undefined) {
   return href ? withUiBasePath(href) : href
 }
@@ -382,6 +391,7 @@ export const mdxComponents = {
   CodeCollapsibleWrapper,
   DocsMdxCodeBlock,
   ComponentsList: ComponentsListWrapper,
+  ExtendInstallPathNote,
   CsvViewerDemo,
   CsvViewerSource,
   DocumentViewerSidebarDemo,

@@ -50,7 +50,7 @@ export function XlsxViewerDemo() {
 
 const xlsxViewerUsageCode = `"use client";
 
-import { XlsxViewerPreview } from "@/components/ui/xlsx-viewer";
+import { XlsxViewerPreview } from "@/components/extend/xlsx-viewer";
 
 export function XlsxViewerExample() {
   const [isDark, setIsDark] = React.useState(false);
@@ -71,7 +71,7 @@ export function XlsxViewerSource() {
   return (
     <DocsSourceCodeBlock
       code={xlsxViewerSourceCode}
-      fileName="components/ui/xlsx-viewer.tsx"
+      fileName="components/extend/xlsx-viewer.tsx"
     />
   )
 }

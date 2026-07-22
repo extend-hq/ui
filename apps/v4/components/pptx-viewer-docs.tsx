@@ -12,6 +12,9 @@ export function PptxViewerSource() {
   )
 
   return (
-    <DocsSourceCodeBlock code={code} fileName="components/ui/pptx-viewer.tsx" />
+    <DocsSourceCodeBlock
+      code={code}
+      fileName="components/extend/pptx-viewer.tsx"
+    />
   )
 }

@@ -548,7 +548,7 @@
         {
           "path": "components/pdf-block-resizable-shell.tsx",
           "type": "registry:component",
-          "target": "@components/pdf-block-resizable-shell.tsx"
+          "target": "@components/extend/pdf-block-resizable-shell.tsx"
         }
       ]
     },
@@ -568,7 +568,7 @@
         {
           "path": "registry/new-york-v4/ui/file-upload.tsx",
           "type": "registry:ui",
-          "target": "@ui/file-upload.tsx"
+          "target": "@components/extend/file-upload.tsx"
         }
       ]
     },
@@ -582,7 +582,7 @@
         {
           "path": "components/ui/file-thumbnail.tsx",
           "type": "registry:ui",
-          "target": "@ui/file-thumbnail.tsx"
+          "target": "@components/extend/file-thumbnail.tsx"
         }
       ]
     },
@@ -619,7 +619,7 @@
         {
           "path": "components/ui/file-system.tsx",
           "type": "registry:ui",
-          "target": "@ui/file-system.tsx"
+          "target": "@components/extend/file-system.tsx"
         }
       ]
     },
@@ -681,12 +681,12 @@
         {
           "path": "components/ui/pdf-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/pdf-viewer.tsx"
+          "target": "@components/extend/pdf-viewer.tsx"
         },
         {
           "path": "components/pdf-thumbnail-utils.ts",
           "type": "registry:component",
-          "target": "@components/pdf-thumbnail-utils.ts"
+          "target": "@components/extend/pdf-thumbnail-utils.ts"
         }
       ]
     },
@@ -721,12 +721,12 @@
         {
           "path": "components/ui/docx-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/docx-viewer.tsx"
+          "target": "@components/extend/docx-viewer.tsx"
         },
         {
           "path": "components/ui/docx-annotation-card.tsx",
           "type": "registry:ui",
-          "target": "@ui/docx-annotation-card.tsx"
+          "target": "@components/extend/docx-annotation-card.tsx"
         }
       ]
     },
@@ -762,12 +762,12 @@
         {
           "path": "components/ui/docx-editor.tsx",
           "type": "registry:ui",
-          "target": "@ui/docx-editor.tsx"
+          "target": "@components/extend/docx-editor.tsx"
         },
         {
           "path": "components/ui/docx-annotation-card.tsx",
           "type": "registry:ui",
-          "target": "@ui/docx-annotation-card.tsx"
+          "target": "@components/extend/docx-annotation-card.tsx"
         }
       ]
     },
@@ -797,7 +797,7 @@
         {
           "path": "components/ui/xlsx-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/xlsx-viewer.tsx"
+          "target": "@components/extend/xlsx-viewer.tsx"
         }
       ]
     },
@@ -830,7 +830,7 @@
         {
           "path": "components/ui/pptx-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/pptx-viewer.tsx"
+          "target": "@components/extend/pptx-viewer.tsx"
         }
       ]
     },
@@ -863,7 +863,7 @@
         {
           "path": "components/ui/xlsx-editor.tsx",
           "type": "registry:ui",
-          "target": "@ui/xlsx-editor.tsx"
+          "target": "@components/extend/xlsx-editor.tsx"
         }
       ]
     },
@@ -893,7 +893,7 @@
         {
           "path": "components/ui/csv-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/csv-viewer.tsx"
+          "target": "@components/extend/csv-viewer.tsx"
         }
       ]
     },
@@ -933,7 +933,7 @@
         {
           "path": "registry/new-york-v4/ui/layout-blocks.tsx",
           "type": "registry:ui",
-          "target": "@ui/layout-blocks.tsx"
+          "target": "@components/extend/layout-blocks.tsx"
         }
       ]
     },
@@ -1008,7 +1008,7 @@
         {
           "path": "registry/new-york-v4/ui/bounding-box-citations.tsx",
           "type": "registry:ui",
-          "target": "@ui/bounding-box-citations.tsx"
+          "target": "@components/extend/bounding-box-citations.tsx"
         }
       ]
     },
@@ -1039,7 +1039,7 @@
         {
           "path": "registry/new-york-v4/ui/schema-builder.tsx",
           "type": "registry:ui",
-          "target": "@ui/schema-builder.tsx"
+          "target": "@components/extend/schema-builder.tsx"
         }
       ]
     },
@@ -1085,7 +1085,7 @@
         {
           "path": "registry/new-york-v4/ui/document-splits.tsx",
           "type": "registry:ui",
-          "target": "@ui/document-splits.tsx"
+          "target": "@components/extend/document-splits.tsx"
         }
       ]
     },
@@ -1149,7 +1149,7 @@
         {
           "path": "components/ui/document-viewer-sidebar.tsx",
           "type": "registry:ui",
-          "target": "@ui/document-viewer-sidebar.tsx"
+          "target": "@components/extend/document-viewer-sidebar.tsx"
         }
       ]
     }

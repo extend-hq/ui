@@ -180,7 +180,7 @@ import {
   DocumentViewerThumbnailSidebar,
   useElementWidth,
   useInlineThumbnailSidebar,
-} from "@/components/ui/document-viewer-sidebar"
+} from "@/components/extend/document-viewer-sidebar"
 
 const pages = [1, 2, 3, 4]
 
@@ -230,7 +230,7 @@ export function DocumentViewerSidebarSource() {
   return (
     <DocsSourceCodeBlock
       code={documentViewerSidebarSourceCode}
-      fileName="components/ui/document-viewer-sidebar.tsx"
+      fileName="components/extend/document-viewer-sidebar.tsx"
     />
   )
 }

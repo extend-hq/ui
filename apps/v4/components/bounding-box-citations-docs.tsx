@@ -2837,7 +2837,7 @@ const humanReviewUsageCode = `"use client";
 
 import * as React from "react";
 
-import { HumanReviewPanel, type ReviewField } from "@/components/ui/bounding-box-citations";
+import { HumanReviewPanel, type ReviewField } from "@/components/extend/bounding-box-citations";
 
 const fields: ReviewField[] = [
   {
@@ -3030,7 +3030,7 @@ export function HumanReviewSource() {
   return (
     <DocsSourceCodeBlock
       code={humanReviewSourceCode}
-      fileName="components/ui/bounding-box-citations.tsx"
+      fileName="components/extend/bounding-box-citations.tsx"
     />
   )
 }

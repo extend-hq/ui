@@ -1477,7 +1477,7 @@ import {
   DocumentSplits,
   type DocumentSplit,
   type DocumentSplitPageId,
-} from "@/components/ui/document-splits";
+} from "@/components/extend/document-splits";
 import {
   getPdfPageCount,
   renderPdfThumbnailUrl,
@@ -1586,7 +1586,7 @@ export function DocumentSplitsSource() {
   return (
     <DocsSourceCodeBlock
       code={documentSplitterSourceCode}
-      fileName="components/ui/document-splits.tsx"
+      fileName="components/extend/document-splits.tsx"
     />
   )
 }

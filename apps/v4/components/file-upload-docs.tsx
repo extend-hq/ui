@@ -361,7 +361,7 @@ export function FileUploadDemo() {
   )
 }
 
-const fileUploadDemoCode = `import { FileUpload } from "@/components/ui/file-upload";
+const fileUploadDemoCode = `import { FileUpload } from "@/components/extend/file-upload";
 
 export function FileUploadExample() {
   return (
@@ -378,7 +378,7 @@ export function FileUploadSource() {
   return (
     <DocsSourceCodeBlock
       code={fileUploadUsageCode}
-      fileName="components/ui/file-upload.tsx"
+      fileName="components/extend/file-upload.tsx"
     />
   )
 }

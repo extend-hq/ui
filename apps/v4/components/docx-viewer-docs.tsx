@@ -50,7 +50,7 @@ export function DocxViewerDemo() {
 
 const docxViewerUsageCode = `"use client";
 
-import { DocxViewerPreview } from "@/components/ui/docx-viewer";
+import { DocxViewerPreview } from "@/components/extend/docx-viewer";
 
 export function DocxViewerExample() {
   const [isDark, setIsDark] = React.useState(false);
@@ -71,7 +71,7 @@ export function DocxViewerSource() {
   return (
     <DocsSourceCodeBlock
       code={docxViewerSourceCode}
-      fileName="components/ui/docx-viewer.tsx"
+      fileName="components/extend/docx-viewer.tsx"
     />
   )
 }

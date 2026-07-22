@@ -498,7 +498,7 @@ export function FileSystemFinderBlock({
 
 const fileSystemDemoCode = `"use client"
 
-import { FileSystem, type FileSystemItem } from "@/components/ui/file-system"
+import { FileSystem, type FileSystemItem } from "@/components/extend/file-system"
 
 // Flat manifest — maps 1:1 from S3/R2 ListObjectsV2:
 //   Contents[].Key          -> file.key / file.path

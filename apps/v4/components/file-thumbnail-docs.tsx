@@ -535,8 +535,8 @@ import {
   XlsxViewerProvider,
 } from "@extend-ai/react-xlsx"
 
-import { FileThumbnail } from "@/components/ui/file-thumbnail"
-import { renderPdfThumbnailUrl } from "@/components/pdf-thumbnail-utils"
+import { FileThumbnail } from "@/components/extend/file-thumbnail"
+import { renderPdfThumbnailUrl } from "@/components/extend/pdf-thumbnail-utils"
 
 export function PdfAttachmentThumbnail({ fileUrl }) {
   const [imageUrl, setImageUrl] = React.useState(null)
@@ -656,7 +656,7 @@ export function FileThumbnailSource() {
   return (
     <DocsSourceCodeBlock
       code={fileThumbnailSourceCode}
-      fileName="components/ui/file-thumbnail.tsx"
+      fileName="components/extend/file-thumbnail.tsx"
     />
   )
 }

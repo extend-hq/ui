@@ -8674,7 +8674,7 @@ export function OcrBlocksDemo() {
 
 const ocrBlocksUsageCode = `"use client";
 
-import { OcrBlocks } from "@/components/ui/layout-blocks";
+import { OcrBlocks } from "@/components/extend/layout-blocks";
 
 export function OcrBlocksExample() {
   return <OcrBlocks />;
@@ -8687,7 +8687,7 @@ export function OcrBlocksSource() {
   return (
     <DocsSourceCodeBlock
       code={ocrBlocksSourceCode}
-      fileName="components/ui/layout-blocks.tsx"
+      fileName="components/extend/layout-blocks.tsx"
     />
   )
 }
