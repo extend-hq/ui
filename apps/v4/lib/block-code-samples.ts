@@ -197,6 +197,10 @@ function resolveSourceFilePath(filePath: string) {
     return path.join(appRoot, "hooks", filePath.slice("hooks/".length))
   }
 
+  if (filePath.startsWith("lib/")) {
+    return path.join(appRoot, "lib", filePath.slice("lib/".length))
+  }
+
   if (filePath.startsWith("registry/")) {
     return path.join(appRoot, "registry", filePath.slice("registry/".length))
   }
