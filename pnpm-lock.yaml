@@ -9,9 +9,9 @@ overrides:
   '@types/react-dom': 19.2.2
 
 patchedDependencies:
-  '@extend-ai/react-docx@0.8.1':
-    hash: iusbjzarjcxgvliwtsx7lahjxu
-    path: patches/@extend-ai__react-docx@0.8.1.patch
+  '@extend-ai/react-docx@0.8.2':
+    hash: sghmwtgnacz3j5bssq3ih4jxj4
+    path: patches/@extend-ai__react-docx@0.8.2.patch
 
 importers:
 
@@ -78,8 +78,8 @@ importers:
         specifier: ^2.14.4
         version: 2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(@embedpdf/plugin-scroll@2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(@embedpdf/plugin-viewport@2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(@embedpdf/plugin-viewport@2.14.4(@embedpdf/core@2.14.4(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2)))(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2))
       '@extend-ai/react-docx':
-        specifier: 0.8.1
-        version: 0.8.1(patch_hash=iusbjzarjcxgvliwtsx7lahjxu)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.8.2
+        version: 0.8.2(patch_hash=sghmwtgnacz3j5bssq3ih4jxj4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-pptx':
         specifier: 0.1.2
         version: 0.1.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1219,8 +1219,8 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@extend-ai/react-docx@0.8.1':
-    resolution: {integrity: sha512-pvFsbb7vkCeBMEd8D1oKDEv8G9DUoe9hkCHOQu3OkGw1idx1mMqF0PDyA8rOmc0E0RrYT7FfF7iRbOe3djSjDw==}
+  '@extend-ai/react-docx@0.8.2':
+    resolution: {integrity: sha512-GXMlcl+niySj2cK7ZQNLFVHKpimXaIXN1W8jCP/1dcyVk6q7DMagHntM66aLOM2q/KtxuBj0W4EUuoIwGNn/qg==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -6431,7 +6431,7 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@extend-ai/react-docx@0.8.1(patch_hash=iusbjzarjcxgvliwtsx7lahjxu)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-docx@0.8.2(patch_hash=sghmwtgnacz3j5bssq3ih4jxj4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@chenglou/pretext': 0.0.8
       '@tanstack/react-virtual': 3.13.26(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

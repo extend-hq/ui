@@ -2,7 +2,7 @@ diff --git a/dist/index.cjs b/dist/index.cjs
 index d178ce37fcb41aec8ca517569f69414d3f6ecc5b..59125b216fd290c25022cc2f26624e3c9c7dcb9b 100644
 --- a/dist/index.cjs
 +++ b/dist/index.cjs
-@@ -28275,16 +28275,23 @@ var DocxDetachedThumbnailSurfaceRenderer = class {
+@@ -28277,16 +28277,23 @@ var DocxDetachedThumbnailSurfaceRenderer = class {
      return this.waitForPageSurface(registry, pageIndex);
    }
    clear() {
@@ -37,7 +37,7 @@ diff --git a/dist/index.js b/dist/index.js
 index 1e1315f7154e71ca09fba959a0de6022f760a9b4..7019f2e10c92a188d162953561e94521101d2ac6 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -26838,16 +26838,23 @@ var DocxDetachedThumbnailSurfaceRenderer = class {
+@@ -26840,16 +26840,23 @@ var DocxDetachedThumbnailSurfaceRenderer = class {
      return this.waitForPageSurface(registry, pageIndex);
    }
    clear() {
