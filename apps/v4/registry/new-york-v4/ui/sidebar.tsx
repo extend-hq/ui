@@ -3,8 +3,6 @@
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
-import { SidebarLeftIcon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -21,11 +19,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 const SIDEBAR_COOKIE_NAME: string = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE: number = 60 * 60 * 24 * 7
@@ -301,7 +296,13 @@ export function SidebarTrigger({
       variant="ghost"
       {...props}
     >
-      <HugeiconsIcon icon={SidebarLeftIcon} />
+      <IconPlaceholder
+        lucide="PanelLeft"
+        tabler="IconLayoutSidebar"
+        hugeicons="SidebarLeftIcon"
+        phosphor="SidebarIcon"
+        remixicon="RiLayoutLeftLine"
+      />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

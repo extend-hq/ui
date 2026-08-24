@@ -20,51 +20,6 @@ import {
   type DocxEditorController,
   type ParagraphStyleDefinition,
 } from "@extend-ai/react-docx"
-import {
-  ArrowExpandDiagonal01Icon,
-  ArrowExpandDiagonal02Icon,
-  BorderAll01Icon,
-  BorderBottom01Icon,
-  BorderHorizontalIcon,
-  BorderInnerIcon,
-  BorderLeft01Icon,
-  BorderNone01Icon,
-  BorderRight01Icon,
-  BorderTop01Icon,
-  BorderVerticalIcon,
-  ColumnsThreeCogIcon,
-  Comment01Icon,
-  Download01Icon,
-  EditOffIcon,
-  FileDiffIcon,
-  HighlighterIcon,
-  ImageAdd01Icon,
-  LeftToRightListBulletIcon,
-  LeftToRightListNumberIcon,
-  LineIcon,
-  Link02Icon,
-  MinusSignCircleIcon,
-  Moon02Icon,
-  PlusSignCircleIcon,
-  Redo02Icon,
-  SidebarLeftIcon,
-  Sun03Icon,
-  TableIcon,
-  TextAlignCenterIcon,
-  TextAlignJustifyLeftIcon,
-  TextAlignLeft01Icon,
-  TextAlignRight01Icon,
-  TextBoldIcon,
-  TextColorIcon,
-  TextItalicIcon,
-  TextStrikethroughIcon,
-  TextSubscriptIcon,
-  TextSuperscriptIcon,
-  TextUnderlineIcon,
-  Undo02Icon,
-  Upload01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -104,6 +59,202 @@ import {
   createDocxTrackedChangeCardRenderer,
 } from "@/components/extend/docx-annotation-card"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function ArrowExpandDiagonal01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="ArrowDownRight"
+      tabler="IconArrowDownRight"
+      hugeicons="ArrowExpandDiagonal01Icon"
+      phosphor="ArrowDownRightIcon"
+      remixicon="RiArrowRightDownLine"
+      {...props}
+    />
+  )
+}
+
+function ArrowExpandDiagonal02Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="ArrowUpRight"
+      tabler="IconArrowUpRight"
+      hugeicons="ArrowExpandDiagonal02Icon"
+      phosphor="ArrowUpRightIcon"
+      remixicon="RiArrowRightUpLine"
+      {...props}
+    />
+  )
+}
+
+function BorderAll01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Grid2x2"
+      tabler="IconBorderAll"
+      hugeicons="BorderAll01Icon"
+      phosphor="GridFourIcon"
+      remixicon="RiGridLine"
+      {...props}
+    />
+  )
+}
+
+function BorderBottom01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelBottom"
+      tabler="IconBorderBottom"
+      hugeicons="BorderBottom01Icon"
+      phosphor="SquareHalfBottomIcon"
+      remixicon="RiLayoutBottomLine"
+      {...props}
+    />
+  )
+}
+
+function BorderHorizontalGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="SeparatorHorizontal"
+      tabler="IconBorderHorizontal"
+      hugeicons="BorderHorizontalIcon"
+      phosphor="MinusIcon"
+      remixicon="RiSeparator"
+      {...props}
+    />
+  )
+}
+
+function BorderInnerGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="SquarePlus"
+      tabler="IconBorderInner"
+      hugeicons="BorderInnerIcon"
+      phosphor="PlusSquareIcon"
+      remixicon="RiAddBoxLine"
+      {...props}
+    />
+  )
+}
+
+function BorderLeft01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelLeft"
+      tabler="IconBorderLeft"
+      hugeicons="BorderLeft01Icon"
+      phosphor="SquareHalfIcon"
+      remixicon="RiLayoutLeftLine"
+      {...props}
+    />
+  )
+}
+
+function BorderNone01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="SquareDashed"
+      tabler="IconBorderNone"
+      hugeicons="BorderNone01Icon"
+      phosphor="SelectionIcon"
+      remixicon="RiCheckboxBlankLine"
+      {...props}
+    />
+  )
+}
+
+function BorderRight01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelRight"
+      tabler="IconBorderRight"
+      hugeicons="BorderRight01Icon"
+      phosphor="SquareHalfIcon"
+      remixicon="RiLayoutRightLine"
+      {...props}
+    />
+  )
+}
+
+function BorderTop01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelTop"
+      tabler="IconBorderTop"
+      hugeicons="BorderTop01Icon"
+      phosphor="AlignTopSimpleIcon"
+      remixicon="RiLayoutTopLine"
+      {...props}
+    />
+  )
+}
+
+function BorderVerticalGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="SeparatorVertical"
+      tabler="IconBorderVertical"
+      hugeicons="BorderVerticalIcon"
+      phosphor="LineVerticalIcon"
+      remixicon="RiLayoutColumnLine"
+      {...props}
+    />
+  )
+}
+
+function LineGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Minus"
+      tabler="IconMinus"
+      hugeicons="LineIcon"
+      phosphor="MinusIcon"
+      remixicon="RiSubtractLine"
+      {...props}
+    />
+  )
+}
+
+function Moon02Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Moon"
+      tabler="IconMoon"
+      hugeicons="Moon02Icon"
+      phosphor="MoonIcon"
+      remixicon="RiMoonLine"
+      {...props}
+    />
+  )
+}
+
+function Sun03Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Sun"
+      tabler="IconSun"
+      hugeicons="Sun03Icon"
+      phosphor="SunIcon"
+      remixicon="RiSunLine"
+      {...props}
+    />
+  )
+}
+
+function TextColorGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Baseline"
+      tabler="IconTextColor"
+      hugeicons="TextColorIcon"
+      phosphor="TextAaIcon"
+      remixicon="RiFontColor"
+      {...props}
+    />
+  )
+}
 
 const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -239,29 +390,29 @@ const BORDER_CONTROL_OPTIONS: BorderControlOption[] = [
 function borderControlOptionIcon(optionId: DocxBorderPreset) {
   switch (optionId) {
     case "bottom":
-      return BorderBottom01Icon
+      return BorderBottom01Glyph
     case "top":
-      return BorderTop01Icon
+      return BorderTop01Glyph
     case "left":
-      return BorderLeft01Icon
+      return BorderLeft01Glyph
     case "right":
-      return BorderRight01Icon
+      return BorderRight01Glyph
     case "none":
-      return BorderNone01Icon
+      return BorderNone01Glyph
     case "inside":
-      return BorderInnerIcon
+      return BorderInnerGlyph
     case "inside-horizontal":
-      return BorderHorizontalIcon
+      return BorderHorizontalGlyph
     case "inside-vertical":
-      return BorderVerticalIcon
+      return BorderVerticalGlyph
     case "diagonal-down":
-      return ArrowExpandDiagonal01Icon
+      return ArrowExpandDiagonal01Glyph
     case "diagonal-up":
-      return ArrowExpandDiagonal02Icon
+      return ArrowExpandDiagonal02Glyph
     case "horizontal-line":
-      return LineIcon
+      return LineGlyph
     default:
-      return BorderAll01Icon
+      return BorderAll01Glyph
   }
 }
 
@@ -791,10 +942,13 @@ function DocxEditorToolbar({
     activeBorderControlOptions.length === 1
       ? activeBorderControlOptions[0].label
       : "Borders"
-  const borderTriggerIcon = borderControlOptionIcon(
-    activeBorderControlOptions.length === 1
-      ? activeBorderControlOptions[0].id
-      : "all"
+  const borderTriggerIcon = React.createElement(
+    borderControlOptionIcon(
+      activeBorderControlOptions.length === 1
+        ? activeBorderControlOptions[0].id
+        : "all"
+    ),
+    { className: "size-4" }
   )
   const canEdit = !controlsDisabled && !isReadOnly
   const canZoomIn = zoomScale < ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]
@@ -853,7 +1007,14 @@ function DocxEditorToolbar({
             disabled={controlsDisabled}
             onClick={onToggleSidebar}
           >
-            <HugeiconsIcon icon={SidebarLeftIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="PanelLeft"
+              tabler="IconLayoutSidebar"
+              hugeicons="SidebarLeftIcon"
+              phosphor="SidebarIcon"
+              remixicon="RiLayoutLeftLine"
+              className="size-4"
+            />
           </ToolbarIconButton>
           <div className="min-w-28 text-sm whitespace-nowrap text-primary">
             Page {pageCount ? activePage : 1} of {pageCount || "-"}
@@ -874,10 +1035,11 @@ function DocxEditorToolbar({
                   onIsDarkChange(nextIsDark)
                 }}
               >
-                <HugeiconsIcon
-                  icon={documentTheme === "dark" ? Sun03Icon : Moon02Icon}
-                  className="size-4"
-                />
+                {documentTheme === "dark" ? (
+                  <Sun03Glyph className="size-4" />
+                ) : (
+                  <Moon02Glyph className="size-4" />
+                )}
               </ToolbarIconButton>
               <Separator
                 orientation="vertical"
@@ -891,7 +1053,14 @@ function DocxEditorToolbar({
             disabled={controlsDisabled}
             onClick={() => setShowTrackedChanges(!showTrackedChanges)}
           >
-            <HugeiconsIcon icon={FileDiffIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="FileDiff"
+              tabler="IconFileDiff"
+              hugeicons="FileDiffIcon"
+              phosphor="GitDiffIcon"
+              remixicon="RiFileHistoryLine"
+              className="size-4"
+            />
           </ToolbarIconButton>
           <ToolbarIconButton
             label="Show comments"
@@ -899,7 +1068,14 @@ function DocxEditorToolbar({
             disabled={controlsDisabled}
             onClick={() => setShowComments(!showComments)}
           >
-            <HugeiconsIcon icon={Comment01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="MessageSquare"
+              tabler="IconMessage"
+              hugeicons="Comment01Icon"
+              phosphor="ChatIcon"
+              remixicon="RiChat1Line"
+              className="size-4"
+            />
           </ToolbarIconButton>
           <ToolbarIconButton
             label={isReadOnly ? "Switch to edit mode" : "Switch to read-only"}
@@ -907,7 +1083,14 @@ function DocxEditorToolbar({
             disabled={controlsDisabled}
             onClick={() => onIsReadOnlyChange(!isReadOnly)}
           >
-            <HugeiconsIcon icon={EditOffIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="PencilOff"
+              tabler="IconPencilOff"
+              hugeicons="EditOffIcon"
+              phosphor="PencilSlashIcon"
+              remixicon="RiLockLine"
+              className="size-4"
+            />
           </ToolbarIconButton>
           <Separator orientation="vertical" className="mx-1 h-4 self-center" />
           <ToolbarIconButton
@@ -918,7 +1101,14 @@ function DocxEditorToolbar({
             {editor.isImporting ? (
               <Spinner className="size-4" />
             ) : (
-              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Upload"
+                tabler="IconUpload"
+                hugeicons="Upload01Icon"
+                phosphor="UploadSimpleIcon"
+                remixicon="RiUpload2Line"
+                className="size-4"
+              />
             )}
           </ToolbarIconButton>
           <ToolbarIconButton
@@ -926,7 +1116,14 @@ function DocxEditorToolbar({
             disabled={controlsDisabled || editor.isImporting}
             onClick={editor.exportDocx}
           >
-            <HugeiconsIcon icon={Download01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Download"
+              tabler="IconDownload"
+              hugeicons="Download01Icon"
+              phosphor="DownloadSimpleIcon"
+              remixicon="RiDownload2Line"
+              className="size-4"
+            />
           </ToolbarIconButton>
         </div>
 
@@ -937,14 +1134,28 @@ function DocxEditorToolbar({
               disabled={!editor.canUndo || isReadOnly}
               onClick={editor.undo}
             >
-              <HugeiconsIcon icon={Undo02Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Undo2"
+                tabler="IconArrowBackUp"
+                hugeicons="Undo02Icon"
+                phosphor="ArrowUUpLeftIcon"
+                remixicon="RiArrowGoBackLine"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <ToolbarIconButton
               label="Redo"
               disabled={!editor.canRedo || isReadOnly}
               onClick={editor.redo}
             >
-              <HugeiconsIcon icon={Redo02Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Redo2"
+                tabler="IconArrowForwardUp"
+                hugeicons="Redo02Icon"
+                phosphor="ArrowUUpRightIcon"
+                remixicon="RiArrowGoForwardLine"
+                className="size-4"
+              />
             </ToolbarIconButton>
           </div>
 
@@ -1162,12 +1373,26 @@ function DocxEditorToolbar({
           >
             <ToolbarTooltip label="Bold">
               <ToggleGroupItem aria-label="Bold" size="sm" value="bold">
-                <HugeiconsIcon icon={TextBoldIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Bold"
+                  tabler="IconBold"
+                  hugeicons="TextBoldIcon"
+                  phosphor="TextBIcon"
+                  remixicon="RiBold"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
             <ToolbarTooltip label="Italic">
               <ToggleGroupItem aria-label="Italic" size="sm" value="italic">
-                <HugeiconsIcon icon={TextItalicIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Italic"
+                  tabler="IconItalic"
+                  hugeicons="TextItalicIcon"
+                  phosphor="TextItalicIcon"
+                  remixicon="RiItalic"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
             <ToolbarTooltip label="Underline">
@@ -1176,7 +1401,14 @@ function DocxEditorToolbar({
                 size="sm"
                 value="underline"
               >
-                <HugeiconsIcon icon={TextUnderlineIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Underline"
+                  tabler="IconUnderline"
+                  hugeicons="TextUnderlineIcon"
+                  phosphor="TextUnderlineIcon"
+                  remixicon="RiUnderline"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
             <ToolbarTooltip label="Strikethrough">
@@ -1185,8 +1417,12 @@ function DocxEditorToolbar({
                 size="sm"
                 value="strike"
               >
-                <HugeiconsIcon
-                  icon={TextStrikethroughIcon}
+                <IconPlaceholder
+                  lucide="Strikethrough"
+                  tabler="IconStrikethrough"
+                  hugeicons="TextStrikethroughIcon"
+                  phosphor="TextStrikethroughIcon"
+                  remixicon="RiStrikethrough"
                   className="size-4"
                 />
               </ToggleGroupItem>
@@ -1197,7 +1433,14 @@ function DocxEditorToolbar({
                 size="sm"
                 value="superscript"
               >
-                <HugeiconsIcon icon={TextSuperscriptIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Superscript"
+                  tabler="IconSuperscript"
+                  hugeicons="TextSuperscriptIcon"
+                  phosphor="TextSuperscriptIcon"
+                  remixicon="RiSuperscript"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
             <ToolbarTooltip label="Subscript">
@@ -1206,7 +1449,14 @@ function DocxEditorToolbar({
                 size="sm"
                 value="subscript"
               >
-                <HugeiconsIcon icon={TextSubscriptIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Subscript"
+                  tabler="IconSubscript"
+                  hugeicons="TextSubscriptIcon"
+                  phosphor="TextSubscriptIcon"
+                  remixicon="RiSubscript"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
           </ToggleGroup>
@@ -1216,7 +1466,7 @@ function DocxEditorToolbar({
           <div className="flex shrink-0 items-center gap-1">
             <ColorPicker
               label="Text color"
-              icon={TextColorIcon}
+              icon={TextColorGlyph}
               color={textColorValue}
               disabled={!canEdit}
               onTriggerMouseDown={preserveTextSelection}
@@ -1235,7 +1485,14 @@ function DocxEditorToolbar({
                   aria-label="Highlight color"
                   className="relative"
                 >
-                  <HugeiconsIcon icon={HighlighterIcon} className="size-4" />
+                  <IconPlaceholder
+                    lucide="Highlighter"
+                    tabler="IconHighlight"
+                    hugeicons="HighlighterIcon"
+                    phosphor="HighlighterIcon"
+                    remixicon="RiMarkPenLine"
+                    className="size-4"
+                  />
                   <span
                     className="absolute right-1 bottom-1 h-1 w-4 rounded-full border border-background"
                     style={{ backgroundColor: highlightColor }}
@@ -1272,7 +1529,14 @@ function DocxEditorToolbar({
               onPointerDown={preserveTextSelection}
               onClick={onOpenLinkEditor}
             >
-              <HugeiconsIcon icon={Link02Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Link"
+                tabler="IconLink"
+                hugeicons="Link02Icon"
+                phosphor="LinkIcon"
+                remixicon="RiLink"
+                className="size-4"
+              />
             </ToolbarIconButton>
           </div>
 
@@ -1290,7 +1554,14 @@ function DocxEditorToolbar({
               onPointerDown={preserveTextSelection}
               onClick={() => editor.setAlignment("left")}
             >
-              <HugeiconsIcon icon={TextAlignLeft01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="AlignLeft"
+                tabler="IconAlignLeft"
+                hugeicons="TextAlignLeft01Icon"
+                phosphor="TextAlignLeftIcon"
+                remixicon="RiAlignLeft"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <ToolbarIconButton
               label="Align center"
@@ -1300,7 +1571,14 @@ function DocxEditorToolbar({
               onPointerDown={preserveTextSelection}
               onClick={() => editor.setAlignment("center")}
             >
-              <HugeiconsIcon icon={TextAlignCenterIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="AlignCenter"
+                tabler="IconAlignCenter"
+                hugeicons="TextAlignCenterIcon"
+                phosphor="TextAlignCenterIcon"
+                remixicon="RiAlignCenter"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <ToolbarIconButton
               label="Align right"
@@ -1310,7 +1588,14 @@ function DocxEditorToolbar({
               onPointerDown={preserveTextSelection}
               onClick={() => editor.setAlignment("right")}
             >
-              <HugeiconsIcon icon={TextAlignRight01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="AlignRight"
+                tabler="IconAlignRight"
+                hugeicons="TextAlignRight01Icon"
+                phosphor="TextAlignRightIcon"
+                remixicon="RiAlignRight"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <ToolbarIconButton
               label="Justify"
@@ -1320,8 +1605,12 @@ function DocxEditorToolbar({
               onPointerDown={preserveTextSelection}
               onClick={() => editor.setAlignment("justify")}
             >
-              <HugeiconsIcon
-                icon={TextAlignJustifyLeftIcon}
+              <IconPlaceholder
+                lucide="AlignJustify"
+                tabler="IconAlignJustified"
+                hugeicons="TextAlignJustifyLeftIcon"
+                phosphor="TextAlignJustifyIcon"
+                remixicon="RiAlignJustify"
                 className="size-4"
               />
             </ToolbarIconButton>
@@ -1338,8 +1627,12 @@ function DocxEditorToolbar({
               onPointerDown={preserveTextSelection}
               onClick={() => editor.toggleList("unordered")}
             >
-              <HugeiconsIcon
-                icon={LeftToRightListBulletIcon}
+              <IconPlaceholder
+                lucide="Columns3Icon"
+                tabler="IconLayoutColumns"
+                hugeicons="LeftToRightListBulletIcon"
+                phosphor="ColumnsIcon"
+                remixicon="RiLayoutColumnLine"
                 className="size-4"
               />
             </ToolbarIconButton>
@@ -1351,8 +1644,12 @@ function DocxEditorToolbar({
               onPointerDown={preserveTextSelection}
               onClick={() => editor.toggleList("ordered")}
             >
-              <HugeiconsIcon
-                icon={LeftToRightListNumberIcon}
+              <IconPlaceholder
+                lucide="ListOrdered"
+                tabler="IconListNumbers"
+                hugeicons="LeftToRightListNumberIcon"
+                phosphor="ListNumbersIcon"
+                remixicon="RiListOrdered"
                 className="size-4"
               />
             </ToolbarIconButton>
@@ -1369,7 +1666,7 @@ function DocxEditorToolbar({
                 disabled={!canEdit}
                 className="h-7 gap-1 px-2 shadow-none"
               >
-                <HugeiconsIcon icon={borderTriggerIcon} className="size-4" />
+                {borderTriggerIcon}
                 {borderTriggerLabel}
               </Button>
             </DropdownMenuTrigger>
@@ -1391,10 +1688,7 @@ function DocxEditorToolbar({
                         }
                       }}
                     >
-                      <HugeiconsIcon
-                        icon={BorderOptionIcon}
-                        className="size-4 text-muted-foreground"
-                      />
+                      <BorderOptionIcon className="size-4 text-muted-foreground" />
                       {option.label}
                     </DropdownMenuCheckboxItem>
                   </React.Fragment>
@@ -1411,18 +1705,39 @@ function DocxEditorToolbar({
               disabled={!canEdit}
               onClick={onImageUploadClick}
             >
-              <HugeiconsIcon icon={ImageAdd01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="ImagePlus"
+                tabler="IconPhotoPlus"
+                hugeicons="ImageAdd01Icon"
+                phosphor="ImageIcon"
+                remixicon="RiImageAddLine"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <ToolbarIconButton
               label="Insert table"
               disabled={!canEdit}
               onClick={editor.insertTable}
             >
-              <HugeiconsIcon icon={TableIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="TableIcon"
+                tabler="IconTable"
+                hugeicons="TableIcon"
+                phosphor="TableIcon"
+                remixicon="RiTableLine"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <ToolbarTooltip label="Section columns">
               <div className="flex h-7 shrink-0 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground">
-                <HugeiconsIcon icon={ColumnsThreeCogIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Columns3Cog"
+                  tabler="IconColumns3"
+                  hugeicons="ColumnsThreeCogIcon"
+                  phosphor="ColumnsIcon"
+                  remixicon="RiLayoutColumnLine"
+                  className="size-4"
+                />
                 {activeColumns ? `${activeColumns.count} cols` : "1 col"}
               </div>
             </ToolbarTooltip>
@@ -1440,7 +1755,14 @@ function DocxEditorToolbar({
                 )
               }
             >
-              <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="CircleMinus"
+                tabler="IconCircleMinus"
+                hugeicons="MinusSignCircleIcon"
+                phosphor="MinusCircleIcon"
+                remixicon="RiIndeterminateCircleLine"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <Select
               value={zoomScale.toString()}
@@ -1476,7 +1798,14 @@ function DocxEditorToolbar({
                 )
               }
             >
-              <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="CirclePlusIcon"
+                tabler="IconCirclePlusFilled"
+                hugeicons="PlusSignCircleIcon"
+                phosphor="PlusCircleIcon"
+                remixicon="RiAddCircleFill"
+                className="size-4"
+              />
             </ToolbarIconButton>
           </div>
         </div>
@@ -1981,7 +2310,14 @@ function DocxEditorContent({
                   className="mt-4"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                  <IconPlaceholder
+                    lucide="Upload"
+                    tabler="IconUpload"
+                    hugeicons="Upload01Icon"
+                    phosphor="UploadSimpleIcon"
+                    remixicon="RiUpload2Line"
+                    className="size-4"
+                  />
                   Upload DOCX
                 </Button>
               </div>

@@ -18,17 +18,6 @@ import {
   type TextCell,
   type Theme,
 } from "@glideapps/glide-data-grid"
-import {
-  ArrowLeft01Icon,
-  CancelCircleIcon,
-  InputNumericIcon,
-  InputTextIcon,
-  SecondBracketIcon,
-  SourceCodeSquareIcon,
-  TextCheckIcon,
-  Undo02Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { Virtualizer as DiffsVirtualizer } from "@pierre/diffs"
 import {
   File,
@@ -52,8 +41,74 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 import "@glideapps/glide-data-grid/dist/index.css"
+
+function InputNumericGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Hash"
+      tabler="IconNumber123"
+      hugeicons="InputNumericIcon"
+      phosphor="NumpadIcon"
+      remixicon="RiHashtag"
+      {...props}
+    />
+  )
+}
+
+function InputTextGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="TextCursorInput"
+      tabler="IconForms"
+      hugeicons="InputTextIcon"
+      phosphor="TextboxIcon"
+      remixicon="RiInputField"
+      {...props}
+    />
+  )
+}
+
+function SecondBracketGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Brackets"
+      tabler="IconBrackets"
+      hugeicons="SecondBracketIcon"
+      phosphor="BracketsSquareIcon"
+      remixicon="RiBracketsLine"
+      {...props}
+    />
+  )
+}
+
+function SourceCodeSquareGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="SquareCode"
+      tabler="IconSourceCode"
+      hugeicons="SourceCodeSquareIcon"
+      phosphor="CodeIcon"
+      remixicon="RiCodeBlock"
+      {...props}
+    />
+  )
+}
+
+function TextCheckGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="CaptionsIcon"
+      tabler="IconTextCaption"
+      hugeicons="TextCheckIcon"
+      phosphor="TextTIcon"
+      remixicon="RiTextWrap"
+      {...props}
+    />
+  )
+}
 
 export type JsonPrimitive = string | number | boolean | null
 export type JsonValue = JsonPrimitive | JsonObject | JsonArray
@@ -924,11 +979,11 @@ function HumanReviewTextOverlayEditor({
 }
 
 function getFieldIcon(type: SchemaPropertyType) {
-  if (type === "number" || type === "integer") return InputNumericIcon
-  if (type === "boolean") return TextCheckIcon
-  if (type === "array") return SecondBracketIcon
-  if (type === "object") return SourceCodeSquareIcon
-  return InputTextIcon
+  if (type === "number" || type === "integer") return InputNumericGlyph
+  if (type === "boolean") return TextCheckGlyph
+  if (type === "array") return SecondBracketGlyph
+  if (type === "object") return SourceCodeSquareGlyph
+  return InputTextGlyph
 }
 
 function HumanReviewValueInput({
@@ -1682,7 +1737,14 @@ function HumanReviewArrayValueGrid({
               }
               aria-label="Back to parent array"
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
+              <IconPlaceholder
+                lucide="ChevronLeft"
+                tabler="IconChevronLeft"
+                hugeicons="ArrowLeft01Icon"
+                phosphor="CaretLeftIcon"
+                remixicon="RiArrowLeftSLine"
+                className="size-3.5"
+              />
             </Button>
             <div className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
               {activeNestedView.title}
@@ -1850,7 +1912,9 @@ function HumanReviewFieldCardBase({
 }: HumanReviewFieldCardProps) {
   const isExpectedEditable = showExpected && !readOnly
   const modified = showExpected && !jsonValuesEqual(value, originalValue)
-  const Icon = getFieldIcon(field.schema.type)
+  const fieldTypeIcon = React.createElement(getFieldIcon(field.schema.type), {
+    className: "size-3.5",
+  })
   const propertyEntries = Object.entries(field.schema.properties ?? {})
   const [syncedArrayNestedView, setSyncedArrayNestedView] =
     React.useState<SyncedArrayNestedView>(EMPTY_SYNCED_ARRAY_NESTED_VIEW)
@@ -1938,7 +2002,14 @@ function HumanReviewFieldCardBase({
                   onClick={onUndo}
                   aria-label={`Undo ${field.key}`}
                 >
-                  <HugeiconsIcon icon={Undo02Icon} className="size-4" />
+                  <IconPlaceholder
+                    lucide="Undo2"
+                    tabler="IconArrowBackUp"
+                    hugeicons="Undo02Icon"
+                    phosphor="ArrowUUpLeftIcon"
+                    remixicon="RiArrowGoBackLine"
+                    className="size-4"
+                  />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Revert changes</TooltipContent>
@@ -1955,14 +2026,21 @@ function HumanReviewFieldCardBase({
                   onClick={onSetNull}
                   aria-label={`Set ${field.key} to null`}
                 >
-                  <HugeiconsIcon icon={CancelCircleIcon} className="size-4" />
+                  <IconPlaceholder
+                    lucide="CircleX"
+                    tabler="IconCircleX"
+                    hugeicons="CancelCircleIcon"
+                    phosphor="XCircleIcon"
+                    remixicon="RiCloseCircleLine"
+                    className="size-4"
+                  />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Set to NULL</TooltipContent>
             </Tooltip>
           ) : null}
           <div className="flex h-6 items-center gap-1 rounded-md border bg-muted/50 px-1.5 text-xs text-muted-foreground">
-            <HugeiconsIcon icon={Icon} className="size-3.5" />
+            {fieldTypeIcon}
             {field.schema.type}
           </div>
         </div>
@@ -2286,11 +2364,25 @@ export function HumanReviewPanel({
         <div className="flex min-h-12 items-center justify-between gap-3 border-b px-3">
           <TabsList className="h-8 sm:h-7">
             <TabsTrigger value="form" className="h-7 sm:h-6">
-              <HugeiconsIcon icon={TextCheckIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="CaptionsIcon"
+                tabler="IconTextCaption"
+                hugeicons="TextCheckIcon"
+                phosphor="TextTIcon"
+                remixicon="RiTextWrap"
+                className="size-4"
+              />
               Form
             </TabsTrigger>
             <TabsTrigger value="json" className="h-7 sm:h-6">
-              <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="SquareCode"
+                tabler="IconSourceCode"
+                hugeicons="SourceCodeSquareIcon"
+                phosphor="CodeIcon"
+                remixicon="RiCodeBlock"
+                className="size-4"
+              />
               JSON
             </TabsTrigger>
           </TabsList>

@@ -1,10 +1,23 @@
 "use client"
 
 import * as React from "react"
-import { FileUploadIcon } from "@hugeicons/core-free-icons"
 
 import { FileUpload } from "@/components/extend/file-upload"
 import { PDFViewer } from "@/components/extend/pdf-viewer"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function FileUploadGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="FileUp"
+      tabler="IconFileUpload"
+      hugeicons="FileUploadIcon"
+      phosphor="FileArrowUpIcon"
+      remixicon="RiFileUploadLine"
+      {...props}
+    />
+  )
+}
 
 const PDF_ACCEPT = "application/pdf,.pdf"
 const PDF_UPLOAD_DROPZONE_SELECTOR = "[data-pdf-upload-dropzone]"
@@ -64,7 +77,7 @@ export function PdfDropzoneBlock() {
         <div data-pdf-upload-dropzone className="w-full max-w-xl">
           <FileUpload
             accept={PDF_ACCEPT}
-            acceptedFileTypes={[{ label: "PDF", icon: FileUploadIcon }]}
+            acceptedFileTypes={[{ label: "PDF", icon: FileUploadGlyph }]}
             browseLabel="Browse PDF"
             className="w-full"
             description="PDF files only"

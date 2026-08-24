@@ -22,17 +22,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import {
-  Add01Icon,
-  Delete02Icon,
-  DragDropVerticalIcon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 export type DocumentSplitPageId = `page-${number}`
 export type DocumentSplit = {
@@ -332,7 +327,14 @@ function SplitGroupCard({
             className="inline-flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-muted active:cursor-grabbing"
             {...dragHandleProps}
           >
-            <HugeiconsIcon icon={DragDropVerticalIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="GripVertical"
+              tabler="IconGripVertical"
+              hugeicons="DragDropVerticalIcon"
+              phosphor="DotsSixVerticalIcon"
+              remixicon="RiDraggable"
+              className="size-4"
+            />
           </button>
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{group.title}</div>
@@ -353,7 +355,14 @@ function SplitGroupCard({
             disabled={!canRemove}
             onClick={onRemove}
           >
-            <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Trash2Icon"
+              tabler="IconTrash"
+              hugeicons="Delete02Icon"
+              phosphor="TrashIcon"
+              remixicon="RiDeleteBinLine"
+              className="size-4"
+            />
           </Button>
         </div>
       </div>
@@ -657,7 +666,14 @@ export function DocumentSplits({
             ])
           }
         >
-          <HugeiconsIcon icon={Add01Icon} className="size-4" />
+          <IconPlaceholder
+            lucide="Plus"
+            tabler="IconPlus"
+            hugeicons="Add01Icon"
+            phosphor="PlusIcon"
+            remixicon="RiAddLine"
+            className="size-4"
+          />
           Add split
         </Button>
       </div>

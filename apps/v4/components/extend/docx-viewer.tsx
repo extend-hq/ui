@@ -12,18 +12,6 @@ import {
   type DocxEditorController,
   type DocxPageThumbnailItem,
 } from "@extend-ai/react-docx"
-import {
-  Comment01Icon,
-  Download01Icon,
-  FileDiffIcon,
-  MinusSignCircleIcon,
-  Moon02Icon,
-  MoreHorizontalIcon,
-  PlusSignCircleIcon,
-  SidebarLeftIcon,
-  Upload01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 
 import { cn } from "@/lib/utils"
@@ -63,6 +51,7 @@ import {
   createDocxTrackedChangeCardRenderer,
 } from "@/components/extend/docx-annotation-card"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -364,7 +353,14 @@ function DocxFileActionsMenu({
           size="icon-sm"
           aria-label="Open DOCX actions"
         >
-          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="Ellipsis"
+            tabler="IconDots"
+            hugeicons="MoreHorizontalIcon"
+            phosphor="DotsThreeIcon"
+            remixicon="RiMoreLine"
+            className="size-4"
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
@@ -377,7 +373,14 @@ function DocxFileActionsMenu({
               onCheckedChange={(checked) => onIsDarkChange(checked === true)}
             >
               <span className="flex min-w-0 items-center gap-2">
-                <HugeiconsIcon icon={Moon02Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Moon"
+                  tabler="IconMoon"
+                  hugeicons="Moon02Icon"
+                  phosphor="MoonIcon"
+                  remixicon="RiMoonLine"
+                  className="size-4"
+                />
                 Dark mode
               </span>
             </DropdownMenuCheckboxItem>
@@ -391,7 +394,14 @@ function DocxFileActionsMenu({
           onCheckedChange={(checked) => onShowCommentsChange(checked === true)}
         >
           <span className="flex min-w-0 items-center gap-2">
-            <HugeiconsIcon icon={Comment01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="MessageSquare"
+              tabler="IconMessage"
+              hugeicons="Comment01Icon"
+              phosphor="ChatIcon"
+              remixicon="RiChat1Line"
+              className="size-4"
+            />
             Comments
           </span>
         </DropdownMenuCheckboxItem>
@@ -404,7 +414,14 @@ function DocxFileActionsMenu({
           }
         >
           <span className="flex min-w-0 items-center gap-2">
-            <HugeiconsIcon icon={FileDiffIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="FileDiff"
+              tabler="IconFileDiff"
+              hugeicons="FileDiffIcon"
+              phosphor="GitDiffIcon"
+              remixicon="RiFileHistoryLine"
+              className="size-4"
+            />
             Edits
           </span>
         </DropdownMenuCheckboxItem>
@@ -414,14 +431,28 @@ function DocxFileActionsMenu({
             {isPreparingDownload ? (
               <Spinner className="size-4" />
             ) : (
-              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Download"
+                tabler="IconDownload"
+                hugeicons="Download01Icon"
+                phosphor="DownloadSimpleIcon"
+                remixicon="RiDownload2Line"
+                className="size-4"
+              />
             )}
             Download
           </DropdownMenuItem>
         ) : null}
         {showUploadButton ? (
           <DropdownMenuItem onClick={onUploadClick}>
-            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Upload"
+              tabler="IconUpload"
+              hugeicons="Upload01Icon"
+              phosphor="UploadSimpleIcon"
+              remixicon="RiUpload2Line"
+              className="size-4"
+            />
             Upload
           </DropdownMenuItem>
         ) : null}
@@ -580,7 +611,14 @@ function DocxToolbar({
               disabled={controlsDisabled}
               onClick={onToggleSidebar}
             >
-              <HugeiconsIcon icon={SidebarLeftIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="PanelLeft"
+                tabler="IconLayoutSidebar"
+                hugeicons="SidebarLeftIcon"
+                phosphor="SidebarIcon"
+                remixicon="RiLayoutLeftLine"
+                className="size-4"
+              />
             </Button>
           </ToolbarTooltip>
           <DocxPageNumberControl
@@ -605,7 +643,14 @@ function DocxToolbar({
                   )
                 }
               >
-                <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CircleMinus"
+                  tabler="IconCircleMinus"
+                  hugeicons="MinusSignCircleIcon"
+                  phosphor="MinusCircleIcon"
+                  remixicon="RiIndeterminateCircleLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
             <Select
@@ -642,7 +687,14 @@ function DocxToolbar({
                   )
                 }
               >
-                <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CirclePlusIcon"
+                  tabler="IconCirclePlusFilled"
+                  hugeicons="PlusSignCircleIcon"
+                  phosphor="PlusCircleIcon"
+                  remixicon="RiAddCircleFill"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
           </div>
@@ -1518,7 +1570,14 @@ function DocxViewerContent({
                   className="mt-4"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                  <IconPlaceholder
+                    lucide="Upload"
+                    tabler="IconUpload"
+                    hugeicons="Upload01Icon"
+                    phosphor="UploadSimpleIcon"
+                    remixicon="RiUpload2Line"
+                    className="size-4"
+                  />
                   Upload Word document
                 </Button>
               </div>

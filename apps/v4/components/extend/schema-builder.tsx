@@ -28,20 +28,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import {
-  Add01Icon,
-  CancelCircleIcon,
-  ChevronDown,
-  DragDropVerticalIcon,
-  InputNumericIcon,
-  InputTextIcon,
-  LeftToRightListBulletIcon,
-  SecondBracketIcon,
-  SourceCodeSquareIcon,
-  TableIcon,
-  TextCheckIcon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { Virtualizer as DiffsVirtualizer } from "@pierre/diffs"
 import {
   File,
@@ -74,6 +60,98 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function CancelCircleGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="CircleX"
+      tabler="IconCircleX"
+      hugeicons="CancelCircleIcon"
+      phosphor="XCircleIcon"
+      remixicon="RiCloseCircleLine"
+      {...props}
+    />
+  )
+}
+
+function InputNumericGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Hash"
+      tabler="IconNumber123"
+      hugeicons="InputNumericIcon"
+      phosphor="NumpadIcon"
+      remixicon="RiHashtag"
+      {...props}
+    />
+  )
+}
+
+function InputTextGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="TextCursorInput"
+      tabler="IconForms"
+      hugeicons="InputTextIcon"
+      phosphor="TextboxIcon"
+      remixicon="RiInputField"
+      {...props}
+    />
+  )
+}
+
+function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Columns3Icon"
+      tabler="IconLayoutColumns"
+      hugeicons="LeftToRightListBulletIcon"
+      phosphor="ColumnsIcon"
+      remixicon="RiLayoutColumnLine"
+      {...props}
+    />
+  )
+}
+
+function SecondBracketGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Brackets"
+      tabler="IconBrackets"
+      hugeicons="SecondBracketIcon"
+      phosphor="BracketsSquareIcon"
+      remixicon="RiBracketsLine"
+      {...props}
+    />
+  )
+}
+
+function SourceCodeSquareGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="SquareCode"
+      tabler="IconSourceCode"
+      hugeicons="SourceCodeSquareIcon"
+      phosphor="CodeIcon"
+      remixicon="RiCodeBlock"
+      {...props}
+    />
+  )
+}
+
+function TextCheckGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="CaptionsIcon"
+      tabler="IconTextCaption"
+      hugeicons="TextCheckIcon"
+      phosphor="TextTIcon"
+      remixicon="RiTextWrap"
+      {...props}
+    />
+  )
+}
 
 export type SchemaBuilderScalarType =
   | "string"
@@ -245,69 +323,69 @@ type SchemaBuilderTypeStyleKey =
 const TYPE_STYLES: Record<
   SchemaBuilderTypeStyleKey,
   {
-    icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+    icon: React.ComponentType<React.ComponentProps<"svg">>
     badge: string
   }
 > = {
   string: {
-    icon: InputTextIcon,
+    icon: InputTextGlyph,
     badge: "bg-blue-50 text-blue-600 dark:bg-blue-300/10 dark:text-blue-300",
   },
   number: {
-    icon: InputNumericIcon,
+    icon: InputNumericGlyph,
     badge:
       "bg-emerald-50 text-emerald-600 dark:bg-emerald-300/10 dark:text-emerald-300",
   },
   integer: {
-    icon: InputNumericIcon,
+    icon: InputNumericGlyph,
     badge: "bg-teal-50 text-teal-600 dark:bg-teal-300/10 dark:text-teal-300",
   },
   boolean: {
-    icon: TextCheckIcon,
+    icon: TextCheckGlyph,
     badge:
       "bg-amber-50 text-amber-600 dark:bg-amber-300/10 dark:text-amber-300",
   },
   null: {
-    icon: CancelCircleIcon,
+    icon: CancelCircleGlyph,
     badge: "bg-zinc-50 text-zinc-600 dark:bg-zinc-300/10 dark:text-zinc-300",
   },
   object: {
-    icon: SourceCodeSquareIcon,
+    icon: SourceCodeSquareGlyph,
     badge:
       "bg-violet-50 text-violet-600 dark:bg-violet-300/10 dark:text-violet-300",
   },
   array: {
-    icon: SecondBracketIcon,
+    icon: SecondBracketGlyph,
     badge: "bg-cyan-50 text-cyan-600 dark:bg-cyan-300/10 dark:text-cyan-300",
   },
   enum: {
-    icon: LeftToRightListBulletIcon,
+    icon: LeftToRightListBulletGlyph,
     badge: "bg-rose-50 text-rose-600 dark:bg-rose-300/10 dark:text-rose-300",
   },
   "array-string": {
-    icon: SecondBracketIcon,
+    icon: SecondBracketGlyph,
     badge: "bg-blue-50 text-blue-600 dark:bg-blue-300/10 dark:text-blue-300",
   },
   "array-number": {
-    icon: SecondBracketIcon,
+    icon: SecondBracketGlyph,
     badge:
       "bg-emerald-50 text-emerald-600 dark:bg-emerald-300/10 dark:text-emerald-300",
   },
   "array-integer": {
-    icon: SecondBracketIcon,
+    icon: SecondBracketGlyph,
     badge: "bg-teal-50 text-teal-600 dark:bg-teal-300/10 dark:text-teal-300",
   },
   "array-boolean": {
-    icon: SecondBracketIcon,
+    icon: SecondBracketGlyph,
     badge:
       "bg-amber-50 text-amber-600 dark:bg-amber-300/10 dark:text-amber-300",
   },
   "array-enum": {
-    icon: LeftToRightListBulletIcon,
+    icon: LeftToRightListBulletGlyph,
     badge: "bg-rose-50 text-rose-600 dark:bg-rose-300/10 dark:text-rose-300",
   },
   "array-object": {
-    icon: SecondBracketIcon,
+    icon: SecondBracketGlyph,
     badge:
       "bg-violet-50 text-violet-600 dark:bg-violet-300/10 dark:text-violet-300",
   },
@@ -1166,7 +1244,7 @@ function SchemaTypeBadge({
         className
       )}
     >
-      <HugeiconsIcon icon={style.icon} className="size-3.5" />
+      <style.icon className="size-3.5" />
       <span className="truncate">{TYPE_LABELS[type]}</span>
     </span>
   )
@@ -1462,7 +1540,14 @@ function EnumEditor({
                     className="flex h-9 w-full items-center justify-center gap-2 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted/55 hover:text-foreground focus-visible:bg-muted/55 focus-visible:text-foreground"
                     onClick={() => onChange([...values, createEnumValue()])}
                   >
-                    <HugeiconsIcon icon={Add01Icon} className="size-4" />
+                    <IconPlaceholder
+                      lucide="Plus"
+                      tabler="IconPlus"
+                      hugeicons="Add01Icon"
+                      phosphor="PlusIcon"
+                      remixicon="RiAddLine"
+                      className="size-4"
+                    />
                     Add enum value
                   </button>
                 </td>
@@ -1522,7 +1607,14 @@ const SortableEnumRow = React.memo(function SortableEnumRow({
           {...attributes}
           {...listeners}
         >
-          <HugeiconsIcon icon={DragDropVerticalIcon} className="size-3.5" />
+          <IconPlaceholder
+            lucide="GripVertical"
+            tabler="IconGripVertical"
+            hugeicons="DragDropVerticalIcon"
+            phosphor="DotsSixVerticalIcon"
+            remixicon="RiDraggable"
+            className="size-3.5"
+          />
         </button>
         <div className="min-w-0">
           <InlineTextInput
@@ -1756,7 +1848,14 @@ function SchemaBuilderTable({
                 className="flex h-9 w-full items-center justify-center gap-2 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted/55 hover:text-foreground focus-visible:bg-muted/55 focus-visible:text-foreground"
                 onClick={addProperty}
               >
-                <HugeiconsIcon icon={Add01Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Plus"
+                  tabler="IconPlus"
+                  hugeicons="Add01Icon"
+                  phosphor="PlusIcon"
+                  remixicon="RiAddLine"
+                  className="size-4"
+                />
                 Add property
               </button>
             </td>
@@ -1833,7 +1932,14 @@ const SortablePropertyRows = React.memo(function SortablePropertyRows({
             {...attributes}
             {...listeners}
           >
-            <HugeiconsIcon icon={DragDropVerticalIcon} className="size-3.5" />
+            <IconPlaceholder
+              lucide="GripVertical"
+              tabler="IconGripVertical"
+              hugeicons="DragDropVerticalIcon"
+              phosphor="DotsSixVerticalIcon"
+              remixicon="RiDraggable"
+              className="size-3.5"
+            />
           </button>
           <div className="min-w-0">
             <InlineTextInput
@@ -1880,8 +1986,12 @@ const SortablePropertyRows = React.memo(function SortablePropertyRows({
                   className="flex h-full min-w-0 flex-1 items-center gap-2 px-3 text-left text-xs font-medium text-muted-foreground transition-colors outline-none group-hover/collapsible-trigger-row:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                   type="button"
                 >
-                  <HugeiconsIcon
-                    icon={ChevronDown}
+                  <IconPlaceholder
+                    lucide="ChevronDown"
+                    tabler="IconChevronDown"
+                    hugeicons="ChevronDown"
+                    phosphor="CaretDownIcon"
+                    remixicon="RiArrowDownSLine"
                     className={cn(
                       "size-3.5 shrink-0 transition-transform duration-200",
                       !isNestedEditorOpen && "-rotate-90"
@@ -1985,8 +2095,12 @@ function SchemaPropertyDragOverlay({
       {hasNestedEditor ? (
         <div className="border-t bg-muted/20">
           <div className="flex h-8 items-center gap-2 px-3 text-xs font-medium text-muted-foreground">
-            <HugeiconsIcon
-              icon={ChevronDown}
+            <IconPlaceholder
+              lucide="ChevronDown"
+              tabler="IconChevronDown"
+              hugeicons="ChevronDown"
+              phosphor="CaretDownIcon"
+              remixicon="RiArrowDownSLine"
               className={cn(
                 "size-3.5 shrink-0",
                 !isNestedEditorOpen && "-rotate-90"
@@ -2127,8 +2241,12 @@ function SchemaPropertiesPreview({
             {hasNestedEditor ? (
               <div className="border-t bg-muted/20">
                 <div className="flex h-7 items-center gap-2 px-3 text-xs font-medium text-muted-foreground">
-                  <HugeiconsIcon
-                    icon={ChevronDown}
+                  <IconPlaceholder
+                    lucide="ChevronDown"
+                    tabler="IconChevronDown"
+                    hugeicons="ChevronDown"
+                    phosphor="CaretDownIcon"
+                    remixicon="RiArrowDownSLine"
                     className={cn(
                       "size-3.5 shrink-0",
                       !isNestedEditorOpen && "-rotate-90"
@@ -2506,11 +2624,25 @@ export function SchemaBuilderPanel({
       <div className="flex min-h-12 items-center justify-between gap-3 border-b px-3">
         <TabsList className="h-8 sm:h-7">
           <TabsTrigger value="form" className="h-7 sm:h-6">
-            <HugeiconsIcon icon={TableIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="TableIcon"
+              tabler="IconTable"
+              hugeicons="TableIcon"
+              phosphor="TableIcon"
+              remixicon="RiTableLine"
+              className="size-4"
+            />
             Form
           </TabsTrigger>
           <TabsTrigger value="json" className="h-7 sm:h-6">
-            <HugeiconsIcon icon={SourceCodeSquareIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="SquareCode"
+              tabler="IconSourceCode"
+              hugeicons="SourceCodeSquareIcon"
+              phosphor="CodeIcon"
+              remixicon="RiCodeBlock"
+              className="size-4"
+            />
             JSON
           </TabsTrigger>
         </TabsList>

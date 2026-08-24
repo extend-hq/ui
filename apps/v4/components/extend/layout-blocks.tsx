@@ -1,17 +1,6 @@
 "use client"
 
 import * as React from "react"
-import {
-  AlignBoxBottomCenterIcon,
-  Heading01Icon,
-  ImageCompositionIcon,
-  LeftToRightListBulletIcon,
-  ParagraphIcon,
-  Table01Icon,
-  TextCenterlineCenterTopIcon,
-  TextNumberSignIcon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import ReactMarkdown from "react-markdown"
 import rehypeRaw from "rehype-raw"
@@ -20,6 +9,111 @@ import remarkGfm from "remark-gfm"
 
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function AlignBoxBottomCenterGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="AlignVerticalJustifyEnd"
+      tabler="IconAlignBoxBottomCenter"
+      hugeicons="AlignBoxBottomCenterIcon"
+      phosphor="AlignBottomIcon"
+      remixicon="RiAlignBottom"
+      {...props}
+    />
+  )
+}
+
+function Heading01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Heading1"
+      tabler="IconH1"
+      hugeicons="Heading01Icon"
+      phosphor="TextHOneIcon"
+      remixicon="RiH1"
+      {...props}
+    />
+  )
+}
+
+function ImageCompositionGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Image"
+      tabler="IconPhoto"
+      hugeicons="ImageCompositionIcon"
+      phosphor="ImageSquareIcon"
+      remixicon="RiImageLine"
+      {...props}
+    />
+  )
+}
+
+function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Columns3Icon"
+      tabler="IconLayoutColumns"
+      hugeicons="LeftToRightListBulletIcon"
+      phosphor="ColumnsIcon"
+      remixicon="RiLayoutColumnLine"
+      {...props}
+    />
+  )
+}
+
+function ParagraphGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Pilcrow"
+      tabler="IconPilcrow"
+      hugeicons="ParagraphIcon"
+      phosphor="ParagraphIcon"
+      remixicon="RiParagraph"
+      {...props}
+    />
+  )
+}
+
+function Table01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Table"
+      tabler="IconTable"
+      hugeicons="Table01Icon"
+      phosphor="TableIcon"
+      remixicon="RiTableLine"
+      {...props}
+    />
+  )
+}
+
+function TextCenterlineCenterTopGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelTop"
+      tabler="IconLayoutNavbar"
+      hugeicons="TextCenterlineCenterTopIcon"
+      phosphor="AlignTopSimpleIcon"
+      remixicon="RiLayoutTopLine"
+      {...props}
+    />
+  )
+}
+
+function TextNumberSignGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Hash"
+      tabler="IconHash"
+      hugeicons="TextNumberSignIcon"
+      phosphor="HashIcon"
+      remixicon="RiHashtag"
+      {...props}
+    />
+  )
+}
 
 export type Point = {
   x: number
@@ -7947,7 +8041,7 @@ const BLOCK_STYLES: Record<
   OcrBlockType,
   {
     label: string
-    icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+    icon: React.ComponentType<React.ComponentProps<"svg">>
     overlay: string
     mutedOverlay: string
     ring: string
@@ -7956,7 +8050,7 @@ const BLOCK_STYLES: Record<
 > = {
   heading: {
     label: "Heading",
-    icon: Heading01Icon,
+    icon: Heading01Glyph,
     overlay: "border-violet-500/70 bg-violet-500/10",
     mutedOverlay: "border-violet-500/35 bg-violet-500/5",
     ring: "border-violet-500/60 bg-violet-500/5 text-violet-600",
@@ -7965,7 +8059,7 @@ const BLOCK_STYLES: Record<
   },
   paragraph: {
     label: "Paragraph",
-    icon: ParagraphIcon,
+    icon: ParagraphGlyph,
     overlay: "border-blue-500/70 bg-blue-500/10",
     mutedOverlay: "border-blue-500/35 bg-blue-500/5",
     ring: "border-blue-500/60 bg-blue-500/5 text-blue-600",
@@ -7973,7 +8067,7 @@ const BLOCK_STYLES: Record<
   },
   list: {
     label: "List",
-    icon: LeftToRightListBulletIcon,
+    icon: LeftToRightListBulletGlyph,
     overlay: "border-emerald-500/70 bg-emerald-500/10",
     mutedOverlay: "border-emerald-500/35 bg-emerald-500/5",
     ring: "border-emerald-500/60 bg-emerald-500/5 text-emerald-600",
@@ -7982,7 +8076,7 @@ const BLOCK_STYLES: Record<
   },
   table: {
     label: "Table",
-    icon: Table01Icon,
+    icon: Table01Glyph,
     overlay: "border-amber-500/70 bg-amber-500/10",
     mutedOverlay: "border-amber-500/35 bg-amber-500/5",
     ring: "border-amber-500/60 bg-amber-500/5 text-amber-700",
@@ -7991,7 +8085,7 @@ const BLOCK_STYLES: Record<
   },
   figure: {
     label: "Figure",
-    icon: ImageCompositionIcon,
+    icon: ImageCompositionGlyph,
     overlay: "border-rose-500/70 bg-rose-500/10",
     mutedOverlay: "border-rose-500/35 bg-rose-500/5",
     ring: "border-rose-500/60 bg-rose-500/5 text-rose-600",
@@ -7999,7 +8093,7 @@ const BLOCK_STYLES: Record<
   },
   header: {
     label: "Header",
-    icon: TextCenterlineCenterTopIcon,
+    icon: TextCenterlineCenterTopGlyph,
     overlay: "border-cyan-500/70 bg-cyan-500/10",
     mutedOverlay: "border-cyan-500/35 bg-cyan-500/5",
     ring: "border-cyan-500/60 bg-cyan-500/5 text-cyan-700",
@@ -8007,7 +8101,7 @@ const BLOCK_STYLES: Record<
   },
   footer: {
     label: "Footer",
-    icon: AlignBoxBottomCenterIcon,
+    icon: AlignBoxBottomCenterGlyph,
     overlay: "border-slate-500/70 bg-slate-500/10",
     mutedOverlay: "border-slate-500/35 bg-slate-500/5",
     ring: "border-slate-500/60 bg-slate-500/5 text-slate-700",
@@ -8016,7 +8110,7 @@ const BLOCK_STYLES: Record<
   },
   page_number: {
     label: "Page number",
-    icon: TextNumberSignIcon,
+    icon: TextNumberSignGlyph,
     overlay: "border-zinc-500/70 bg-zinc-500/10",
     mutedOverlay: "border-zinc-500/35 bg-zinc-500/5",
     ring: "border-zinc-500/60 bg-zinc-500/5 text-zinc-700",
@@ -8270,7 +8364,7 @@ const OcrBlockButton = React.memo(function OcrBlockButton({
                 style.badge
               )}
             >
-              <HugeiconsIcon icon={style.icon} className="size-3.5" />
+              <style.icon className="size-3.5" />
               {style.label}
             </div>
             <div className="truncate text-xs text-muted-foreground">

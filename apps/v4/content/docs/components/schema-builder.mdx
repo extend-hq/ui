@@ -23,8 +23,6 @@ types, descriptions, enums, nested objects, and arrays.
 npx shadcn@latest add @extend/schema-builder
 ```
 
-<ExtendInstallPathNote />
-
 </TabsContent>
 
 <TabsContent value="manual">
@@ -34,8 +32,18 @@ npx shadcn@latest add @extend/schema-builder
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @dnd-kit/core@^6.3.1 @dnd-kit/sortable@^10.0.0 @dnd-kit/utilities@^3.2.2 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 @pierre/diffs@^1.2.7 next-themes@0.4.6
+npm install @dnd-kit/core@^6.3.1 @dnd-kit/sortable@^10.0.0 @dnd-kit/utilities@^3.2.2 @pierre/diffs@^1.2.7 next-themes@0.4.6
 ```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
 
 <Step>Copy and paste the following code into your project.</Step>
 

@@ -14,18 +14,6 @@ import {
   type XlsxTableHeaderMenuRenderProps,
   type XlsxViewerController,
 } from "@extend-ai/react-xlsx"
-import {
-  ArrowLeft01Icon,
-  ArrowRight01Icon,
-  Download01Icon,
-  MinusSignCircleIcon,
-  Moon02Icon,
-  MoreHorizontalIcon,
-  PlusSignCircleIcon,
-  Search01Icon,
-  Upload01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { createPortal } from "react-dom"
 
 import { cn } from "@/lib/utils"
@@ -63,6 +51,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
@@ -497,7 +486,14 @@ function WorkbookFileActionsMenu({
           size="icon-sm"
           aria-label="Open workbook actions"
         >
-          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="Ellipsis"
+            tabler="IconDots"
+            hugeicons="MoreHorizontalIcon"
+            phosphor="DotsThreeIcon"
+            remixicon="RiMoreLine"
+            className="size-4"
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -512,7 +508,14 @@ function WorkbookFileActionsMenu({
               onCheckedChange={(checked) => onIsDarkChange?.(checked === true)}
             >
               <span className="flex min-w-0 items-center gap-2">
-                <HugeiconsIcon icon={Moon02Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Moon"
+                  tabler="IconMoon"
+                  hugeicons="Moon02Icon"
+                  phosphor="MoonIcon"
+                  remixicon="RiMoonLine"
+                  className="size-4"
+                />
                 Dark mode
               </span>
             </DropdownMenuCheckboxItem>
@@ -521,13 +524,27 @@ function WorkbookFileActionsMenu({
         ) : null}
         {showDownloadButton && onDownload ? (
           <DropdownMenuItem onClick={onDownload}>
-            <HugeiconsIcon icon={Download01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Download"
+              tabler="IconDownload"
+              hugeicons="Download01Icon"
+              phosphor="DownloadSimpleIcon"
+              remixicon="RiDownload2Line"
+              className="size-4"
+            />
             Download
           </DropdownMenuItem>
         ) : null}
         {showUploadButton ? (
           <DropdownMenuItem onClick={onUploadClick}>
-            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Upload"
+              tabler="IconUpload"
+              hugeicons="Upload01Icon"
+              phosphor="UploadSimpleIcon"
+              remixicon="RiUpload2Line"
+              className="size-4"
+            />
             Upload
           </DropdownMenuItem>
         ) : null}
@@ -573,7 +590,14 @@ export function WorkbookTableHeaderMenu({
           {triggerIcon ? (
             triggerIcon
           ) : (
-            <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5" />
+            <IconPlaceholder
+              lucide="Ellipsis"
+              tabler="IconDots"
+              hugeicons="MoreHorizontalIcon"
+              phosphor="DotsThreeIcon"
+              remixicon="RiMoreLine"
+              className="size-3.5"
+            />
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -765,7 +789,14 @@ function WorkbookSearchPopover({
             aria-label="Search workbook"
             disabled={controlsDisabled}
           >
-            <HugeiconsIcon icon={Search01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Search"
+              tabler="IconSearch"
+              hugeicons="Search01Icon"
+              phosphor="MagnifyingGlassIcon"
+              remixicon="RiSearchLine"
+              className="size-4"
+            />
           </Button>
         </PopoverTrigger>
       </ToolbarTooltip>
@@ -817,7 +848,14 @@ function WorkbookSearchPopover({
                 disabled={isSearching || searchResults.length === 0}
                 onClick={() => goToRelativeResult(-1)}
               >
-                <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="ChevronLeft"
+                  tabler="IconChevronLeft"
+                  hugeicons="ArrowLeft01Icon"
+                  phosphor="CaretLeftIcon"
+                  remixicon="RiArrowLeftSLine"
+                  className="size-4"
+                />
               </Button>
               <Button
                 type="button"
@@ -827,7 +865,14 @@ function WorkbookSearchPopover({
                 disabled={isSearching || searchResults.length === 0}
                 onClick={() => goToRelativeResult(1)}
               >
-                <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="ArrowRight"
+                  tabler="IconArrowRight"
+                  hugeicons="ArrowRight01Icon"
+                  phosphor="ArrowRightIcon"
+                  remixicon="RiArrowRightLine"
+                  className="size-4"
+                />
               </Button>
             </div>
           </div>
@@ -892,7 +937,14 @@ function WorkbookToolbar({
                 aria-label="Zoom out"
                 onClick={zoomOut}
               >
-                <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CircleMinus"
+                  tabler="IconCircleMinus"
+                  hugeicons="MinusSignCircleIcon"
+                  phosphor="MinusCircleIcon"
+                  remixicon="RiIndeterminateCircleLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
             <Select
@@ -928,7 +980,14 @@ function WorkbookToolbar({
                 aria-label="Zoom in"
                 onClick={zoomIn}
               >
-                <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CirclePlusIcon"
+                  tabler="IconCirclePlusFilled"
+                  hugeicons="PlusSignCircleIcon"
+                  phosphor="PlusCircleIcon"
+                  remixicon="RiAddCircleFill"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
           </div>
@@ -1581,7 +1640,14 @@ function XlsxViewerContent({
               className="mt-4"
               onClick={() => fileInputRef.current?.click()}
             >
-              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Upload"
+                tabler="IconUpload"
+                hugeicons="Upload01Icon"
+                phosphor="UploadSimpleIcon"
+                remixicon="RiUpload2Line"
+                className="size-4"
+              />
               Upload XLSX
             </Button>
           </div>
@@ -1621,7 +1687,14 @@ function XlsxViewerContent({
               className="mt-4"
               onClick={() => fileInputRef.current?.click()}
             >
-              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Upload"
+                tabler="IconUpload"
+                hugeicons="Upload01Icon"
+                phosphor="UploadSimpleIcon"
+                remixicon="RiUpload2Line"
+                className="size-4"
+              />
               Upload XLSX
             </Button>
           </div>

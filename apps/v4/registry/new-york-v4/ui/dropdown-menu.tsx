@@ -2,10 +2,9 @@
 
 import * as React from "react"
 import { Menu as DropdownMenuPrimitive } from "@base-ui/react/menu"
-import { ArrowRight01Icon, Tick02Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 function childContent(
   asChild: boolean | undefined,
@@ -169,7 +168,13 @@ function DropdownMenuCheckboxItem({
       {variant === "switch" ? null : (
         <span className="pointer-events-none absolute start-2 flex size-4 items-center justify-center">
           <DropdownMenuPrimitive.CheckboxItemIndicator>
-            <HugeiconsIcon icon={Tick02Icon} />
+            <IconPlaceholder
+              lucide="Check"
+              tabler="IconCheck"
+              hugeicons="Tick02Icon"
+              phosphor="CheckIcon"
+              remixicon="RiCheckLine"
+            />
           </DropdownMenuPrimitive.CheckboxItemIndicator>
         </span>
       )}
@@ -304,7 +309,14 @@ function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <HugeiconsIcon icon={ArrowRight01Icon} className="ms-auto size-4" />
+      <IconPlaceholder
+        lucide="ArrowRight"
+        tabler="IconArrowRight"
+        hugeicons="ArrowRight01Icon"
+        phosphor="ArrowRightIcon"
+        remixicon="RiArrowRightLine"
+        className="ms-auto size-4"
+      />
     </DropdownMenuPrimitive.SubmenuTrigger>
   )
 }

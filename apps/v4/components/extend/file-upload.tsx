@@ -1,18 +1,51 @@
 "use client"
 
 import * as React from "react"
-import {
-  FileImageIcon,
-  FileSpreadsheetIcon,
-  FileUploadIcon,
-  Upload01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { BorderBeam } from "border-beam"
 
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function FileImageGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="FileImage"
+      tabler="IconPhoto"
+      hugeicons="FileImageIcon"
+      phosphor="FileImageIcon"
+      remixicon="RiFileImageLine"
+      {...props}
+    />
+  )
+}
+
+function FileSpreadsheetGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="FileSpreadsheet"
+      tabler="IconFileSpreadsheet"
+      hugeicons="FileSpreadsheetIcon"
+      phosphor="FileXlsIcon"
+      remixicon="RiFileExcel2Line"
+      {...props}
+    />
+  )
+}
+
+function FileUploadGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="FileUp"
+      tabler="IconFileUpload"
+      hugeicons="FileUploadIcon"
+      phosphor="FileArrowUpIcon"
+      remixicon="RiFileUploadLine"
+      {...props}
+    />
+  )
+}
 
 type FileUploadItem = {
   id: string
@@ -24,7 +57,7 @@ type FileUploadItem = {
 
 type AcceptedFileType = {
   label: string
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  icon: React.ComponentType<React.ComponentProps<"svg">>
 }
 
 type FileUploadProps = {
@@ -44,9 +77,9 @@ type FileUploadProps = {
 }
 
 const ACCEPTED_FILE_TYPES: AcceptedFileType[] = [
-  { label: "Image", icon: FileImageIcon },
-  { label: "PDF", icon: FileUploadIcon },
-  { label: "Sheet", icon: FileSpreadsheetIcon },
+  { label: "Image", icon: FileImageGlyph },
+  { label: "PDF", icon: FileUploadGlyph },
+  { label: "Sheet", icon: FileSpreadsheetGlyph },
 ]
 const DEFAULT_ACCEPT = [
   ".pdf",
@@ -149,7 +182,7 @@ function UploadIconCluster({
                 : ICON_TRANSFORMS[index]?.idle,
           }}
         >
-          <HugeiconsIcon icon={item.icon} className="size-5" />
+          <item.icon className="size-5" />
         </Card>
       ))}
     </div>
@@ -263,7 +296,14 @@ export function FileUpload({
         ) : null}
       </div>
       <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
-        <HugeiconsIcon icon={Upload01Icon} className="size-3.5" />
+        <IconPlaceholder
+          lucide="Upload"
+          tabler="IconUpload"
+          hugeicons="Upload01Icon"
+          phosphor="UploadSimpleIcon"
+          remixicon="RiUpload2Line"
+          className="size-3.5"
+        />
         <span>{isDragging ? draggingLabel : browseLabel}</span>
       </div>
       <input

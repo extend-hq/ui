@@ -1,15 +1,9 @@
 "use client"
 
-import {
-  Alert01Icon,
-  CancelCircleIcon,
-  CheckmarkCircle01Icon,
-  InformationCircleIcon,
-  Loading03Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -20,13 +14,54 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       icons={{
         success: (
-          <HugeiconsIcon icon={CheckmarkCircle01Icon} className="size-4" />
+          <IconPlaceholder
+            lucide="CircleCheckIcon"
+            tabler="IconCircleCheckFilled"
+            hugeicons="CheckmarkCircle01Icon"
+            phosphor="CheckCircleIcon"
+            remixicon="RiCheckboxCircleFill"
+            className="size-4"
+          />
         ),
-        info: <HugeiconsIcon icon={InformationCircleIcon} className="size-4" />,
-        warning: <HugeiconsIcon icon={Alert01Icon} className="size-4" />,
-        error: <HugeiconsIcon icon={CancelCircleIcon} className="size-4" />,
+        info: (
+          <IconPlaceholder
+            lucide="Info"
+            tabler="IconInfoCircle"
+            hugeicons="InformationCircleIcon"
+            phosphor="InfoIcon"
+            remixicon="RiInformationLine"
+            className="size-4"
+          />
+        ),
+        warning: (
+          <IconPlaceholder
+            lucide="TriangleAlert"
+            tabler="IconAlertTriangle"
+            hugeicons="Alert01Icon"
+            phosphor="WarningIcon"
+            remixicon="RiAlertLine"
+            className="size-4"
+          />
+        ),
+        error: (
+          <IconPlaceholder
+            lucide="CircleX"
+            tabler="IconCircleX"
+            hugeicons="CancelCircleIcon"
+            phosphor="XCircleIcon"
+            remixicon="RiCloseCircleLine"
+            className="size-4"
+          />
+        ),
         loading: (
-          <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
+          <IconPlaceholder
+            lucide="Loader2"
+            tabler="IconLoader"
+            hugeicons="Loading03Icon"
+            phosphor="SpinnerIcon"
+            remixicon="RiLoaderLine"
+            className="size-4 animate-spin"
+          />
         ),
       }}
       style={

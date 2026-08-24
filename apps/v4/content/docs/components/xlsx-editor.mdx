@@ -23,8 +23,6 @@ The React Excel Editor is an experimental spreadsheet editing surface built on t
 npx shadcn@latest add @extend/xlsx-editor
 ```
 
-<ExtendInstallPathNote />
-
 </TabsContent>
 
 <TabsContent value="manual">
@@ -34,8 +32,18 @@ npx shadcn@latest add @extend/xlsx-editor
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @base-ui/react@^1.4.1 @extend-ai/react-xlsx@0.16.1 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 class-variance-authority@^0.7.1
+npm install @base-ui/react@^1.4.1 @extend-ai/react-xlsx@0.16.1 class-variance-authority@^0.7.1
 ```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
 
 <Step>
   Install the Excel Viewer component because the editor reuses its sheet tabs

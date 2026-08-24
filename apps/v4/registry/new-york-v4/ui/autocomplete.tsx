@@ -2,12 +2,11 @@
 
 import type React from "react"
 import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete"
-import { ArrowUpDownIcon, Cancel01Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 export const Autocomplete: typeof AutocompletePrimitive.Root =
   AutocompletePrimitive.Root
@@ -68,7 +67,13 @@ export function AutocompleteInput({
           {...triggerProps}
         >
           <AutocompletePrimitive.Icon data-slot="autocomplete-icon">
-            <HugeiconsIcon icon={ArrowUpDownIcon} />
+            <IconPlaceholder
+              lucide="ArrowUpDown"
+              tabler="IconArrowsUpDown"
+              hugeicons="ArrowUpDownIcon"
+              phosphor="ArrowsDownUpIcon"
+              remixicon="RiArrowUpDownLine"
+            />
           </AutocompletePrimitive.Icon>
         </AutocompleteTrigger>
       )}
@@ -80,7 +85,13 @@ export function AutocompleteInput({
           )}
           {...clearProps}
         >
-          <HugeiconsIcon icon={Cancel01Icon} />
+          <IconPlaceholder
+            lucide="X"
+            tabler="IconX"
+            hugeicons="Cancel01Icon"
+            phosphor="XIcon"
+            remixicon="RiCloseLine"
+          />
         </AutocompleteClear>
       )}
     </AutocompletePrimitive.InputGroup>
@@ -264,7 +275,13 @@ export function AutocompleteClear({
       data-slot="autocomplete-clear"
       {...props}
     >
-      <HugeiconsIcon icon={Cancel01Icon} />
+      <IconPlaceholder
+        lucide="X"
+        tabler="IconX"
+        hugeicons="Cancel01Icon"
+        phosphor="XIcon"
+        remixicon="RiCloseLine"
+      />
     </AutocompletePrimitive.Clear>
   )
 }

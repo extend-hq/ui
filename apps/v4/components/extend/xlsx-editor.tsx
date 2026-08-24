@@ -16,49 +16,6 @@ import {
   type XlsxSheetData,
   type XlsxTableHeaderMenuRenderProps,
 } from "@extend-ai/react-xlsx"
-import {
-  Add01Icon,
-  AlignBoxBottomCenterIcon,
-  AlignBoxMiddleCenterIcon,
-  AlignBoxTopCenterIcon,
-  BorderAll01Icon,
-  BorderBottom01Icon,
-  BorderLeft01Icon,
-  BorderNone01Icon,
-  BorderRight01Icon,
-  BorderTop01Icon,
-  Calendar03Icon,
-  CellsIcon,
-  ChevronDownIcon,
-  Delete02Icon,
-  DollarCircleIcon,
-  Download01Icon,
-  DropletOffIcon,
-  Grid2X2XIcon,
-  MinusSignCircleIcon,
-  Moon02Icon,
-  MoreHorizontalIcon,
-  PaintBucketIcon,
-  PathfinderMergeIcon,
-  PercentIcon,
-  PlusSignCircleIcon,
-  Redo02Icon,
-  Sun03Icon,
-  TableRowsSplitIcon,
-  TextAlignCenterIcon,
-  TextAlignLeft01Icon,
-  TextAlignRight01Icon,
-  TextBoldIcon,
-  TextColorIcon,
-  TextItalicIcon,
-  TextNumberSignIcon,
-  TextStrikethroughIcon,
-  TextUnderlineIcon,
-  TextWrapIcon,
-  Undo02Icon,
-  Upload01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -97,6 +54,202 @@ import {
   WorkbookSheetTabs,
   WorkbookTableHeaderMenu,
 } from "@/components/extend/xlsx-viewer"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function BorderAll01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Grid2x2"
+      tabler="IconBorderAll"
+      hugeicons="BorderAll01Icon"
+      phosphor="GridFourIcon"
+      remixicon="RiGridLine"
+      {...props}
+    />
+  )
+}
+
+function BorderBottom01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelBottom"
+      tabler="IconBorderBottom"
+      hugeicons="BorderBottom01Icon"
+      phosphor="SquareHalfBottomIcon"
+      remixicon="RiLayoutBottomLine"
+      {...props}
+    />
+  )
+}
+
+function BorderLeft01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelLeft"
+      tabler="IconBorderLeft"
+      hugeicons="BorderLeft01Icon"
+      phosphor="SquareHalfIcon"
+      remixicon="RiLayoutLeftLine"
+      {...props}
+    />
+  )
+}
+
+function BorderNone01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="SquareDashed"
+      tabler="IconBorderNone"
+      hugeicons="BorderNone01Icon"
+      phosphor="SelectionIcon"
+      remixicon="RiCheckboxBlankLine"
+      {...props}
+    />
+  )
+}
+
+function BorderRight01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelRight"
+      tabler="IconBorderRight"
+      hugeicons="BorderRight01Icon"
+      phosphor="SquareHalfIcon"
+      remixicon="RiLayoutRightLine"
+      {...props}
+    />
+  )
+}
+
+function BorderTop01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PanelTop"
+      tabler="IconBorderTop"
+      hugeicons="BorderTop01Icon"
+      phosphor="AlignTopSimpleIcon"
+      remixicon="RiLayoutTopLine"
+      {...props}
+    />
+  )
+}
+
+function Calendar03Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Calendar"
+      tabler="IconCalendar"
+      hugeicons="Calendar03Icon"
+      phosphor="CalendarIcon"
+      remixicon="RiCalendarLine"
+      {...props}
+    />
+  )
+}
+
+function DollarCircleGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="CircleDollarSign"
+      tabler="IconCurrencyDollar"
+      hugeicons="DollarCircleIcon"
+      phosphor="CurrencyCircleDollarIcon"
+      remixicon="RiMoneyDollarCircleLine"
+      {...props}
+    />
+  )
+}
+
+function Moon02Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Moon"
+      tabler="IconMoon"
+      hugeicons="Moon02Icon"
+      phosphor="MoonIcon"
+      remixicon="RiMoonLine"
+      {...props}
+    />
+  )
+}
+
+function PaintBucketGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="PaintBucket"
+      tabler="IconPaint"
+      hugeicons="PaintBucketIcon"
+      phosphor="PaintBucketIcon"
+      remixicon="RiPaintFill"
+      {...props}
+    />
+  )
+}
+
+function PercentGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Percent"
+      tabler="IconPercentage"
+      hugeicons="PercentIcon"
+      phosphor="PercentIcon"
+      remixicon="RiPercentLine"
+      {...props}
+    />
+  )
+}
+
+function Sun03Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Sun"
+      tabler="IconSun"
+      hugeicons="Sun03Icon"
+      phosphor="SunIcon"
+      remixicon="RiSunLine"
+      {...props}
+    />
+  )
+}
+
+function TextColorGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Baseline"
+      tabler="IconTextColor"
+      hugeicons="TextColorIcon"
+      phosphor="TextAaIcon"
+      remixicon="RiFontColor"
+      {...props}
+    />
+  )
+}
+
+function TextNumberSignGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Hash"
+      tabler="IconHash"
+      hugeicons="TextNumberSignIcon"
+      phosphor="HashIcon"
+      remixicon="RiHashtag"
+      {...props}
+    />
+  )
+}
+
+function TextWrapGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="WrapText"
+      tabler="IconTextWrap"
+      hugeicons="TextWrapIcon"
+      phosphor="ArrowElbowDownLeftIcon"
+      remixicon="RiTextWrap"
+      {...props}
+    />
+  )
+}
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_EDITOR_READ_ONLY_THRESHOLD_BYTES = 5 * 1024 * 1024
@@ -130,7 +283,7 @@ type UploadedWorkbook = {
 type NumberFormatOption = {
   formatString?: string
   formatType: NonNullable<XlsxCellStyleInput["numberFormat"]>["formatType"]
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  icon: React.ComponentType<React.ComponentProps<"svg">>
   id?: number
   label: string
   value: string
@@ -138,7 +291,7 @@ type NumberFormatOption = {
 
 type BorderOption = {
   action: XlsxBorderAction
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  icon: React.ComponentType<React.ComponentProps<"svg">>
   label: string
 }
 
@@ -175,35 +328,35 @@ type XlsxWorksheetWithMergeRegions = {
 const NUMBER_FORMAT_OPTIONS: NumberFormatOption[] = [
   {
     formatType: "general",
-    icon: TextNumberSignIcon,
+    icon: TextNumberSignGlyph,
     label: "General",
     value: "General",
   },
   {
     formatString: "0.00",
     formatType: "custom",
-    icon: TextNumberSignIcon,
+    icon: TextNumberSignGlyph,
     label: "Number",
     value: "Number",
   },
   {
     formatString: "$#,##0.00",
     formatType: "custom",
-    icon: DollarCircleIcon,
+    icon: DollarCircleGlyph,
     label: "Currency",
     value: "Currency",
   },
   {
     formatString: "0.00%",
     formatType: "custom",
-    icon: PercentIcon,
+    icon: PercentGlyph,
     label: "Percent",
     value: "Percent",
   },
   {
     formatString: "m/d/yyyy",
     formatType: "custom",
-    icon: Calendar03Icon,
+    icon: Calendar03Glyph,
     label: "Date",
     value: "Date",
   },
@@ -409,7 +562,7 @@ function getNumberFormatLabel(value: string) {
 function getNumberFormatIcon(value: string) {
   return (
     NUMBER_FORMAT_OPTIONS.find((option) => option.value === value)?.icon ??
-    TextNumberSignIcon
+    TextNumberSignGlyph
   )
 }
 
@@ -588,37 +741,37 @@ function createBorderOptions(): BorderOption[] {
   return [
     {
       action: "bottom",
-      icon: BorderBottom01Icon,
+      icon: BorderBottom01Glyph,
       label: "Bottom border",
     },
     {
       action: "left",
-      icon: BorderLeft01Icon,
+      icon: BorderLeft01Glyph,
       label: "Left border",
     },
     {
       action: "top",
-      icon: BorderTop01Icon,
+      icon: BorderTop01Glyph,
       label: "Top border",
     },
     {
       action: "right",
-      icon: BorderRight01Icon,
+      icon: BorderRight01Glyph,
       label: "Right border",
     },
     {
       action: "all",
-      icon: BorderAll01Icon,
+      icon: BorderAll01Glyph,
       label: "All borders",
     },
     {
       action: "outside",
-      icon: BorderAll01Icon,
+      icon: BorderAll01Glyph,
       label: "Outside border",
     },
     {
       action: "none",
-      icon: BorderNone01Icon,
+      icon: BorderNone01Glyph,
       label: "No border",
     },
   ]
@@ -721,12 +874,13 @@ function StyleDropdownItem({
   onClick,
 }: {
   children: React.ReactNode
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  icon: React.ComponentType<React.ComponentProps<"svg">>
   onClick: () => void
 }) {
+  const IconComponent = icon
   return (
     <DropdownMenuItem onClick={onClick}>
-      <HugeiconsIcon icon={icon} className="size-4" />
+      <IconComponent className="size-4" />
       {children}
     </DropdownMenuItem>
   )
@@ -773,7 +927,14 @@ function MergeCellsMenu({
             disabled={disabled || !canMerge}
             onClick={onMergeAndCenter}
           >
-            <HugeiconsIcon icon={PathfinderMergeIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="TableCellsMerge"
+              tabler="IconArrowMerge"
+              hugeicons="PathfinderMergeIcon"
+              phosphor="ArrowsMergeIcon"
+              remixicon="RiMergeCellsVertical"
+              className="size-4"
+            />
             <span className="hidden text-xs font-medium lg:inline">
               Merge & Center
             </span>
@@ -789,8 +950,12 @@ function MergeCellsMenu({
             data-pressed={isMerged ? "" : undefined}
             disabled={disabled}
           >
-            <HugeiconsIcon
-              icon={ChevronDownIcon}
+            <IconPlaceholder
+              lucide="ChevronDown"
+              tabler="IconChevronDown"
+              hugeicons="ChevronDownIcon"
+              phosphor="CaretDownIcon"
+              remixicon="RiArrowDownSLine"
               className="size-3.5 opacity-100"
             />
           </Button>
@@ -801,20 +966,48 @@ function MergeCellsMenu({
         className={cn("w-56", XLSX_DROPDOWN_Z_INDEX_CLASS)}
       >
         <DropdownMenuItem disabled={!canMerge} onClick={onMergeAndCenter}>
-          <HugeiconsIcon icon={PathfinderMergeIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="TableCellsMerge"
+            tabler="IconArrowMerge"
+            hugeicons="PathfinderMergeIcon"
+            phosphor="ArrowsMergeIcon"
+            remixicon="RiMergeCellsVertical"
+            className="size-4"
+          />
           Merge & Center
         </DropdownMenuItem>
         <DropdownMenuItem disabled={!canMergeAcross} onClick={onMergeAcross}>
-          <HugeiconsIcon icon={TableRowsSplitIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="TableRowsSplit"
+            tabler="IconArrowsSplit"
+            hugeicons="TableRowsSplitIcon"
+            phosphor="ArrowsSplitIcon"
+            remixicon="RiSplitCellsVertical"
+            className="size-4"
+          />
           Merge Across
         </DropdownMenuItem>
         <DropdownMenuItem disabled={!canMerge} onClick={onMergeCells}>
-          <HugeiconsIcon icon={CellsIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="Grid3x3"
+            tabler="IconGrid4x4"
+            hugeicons="CellsIcon"
+            phosphor="GridNineIcon"
+            remixicon="RiMergeCellsHorizontal"
+            className="size-4"
+          />
           Merge Cells
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={!canUnmerge} onClick={onUnmergeCells}>
-          <HugeiconsIcon icon={Grid2X2XIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="Grid2x2X"
+            tabler="IconTableMinus"
+            hugeicons="Grid2X2XIcon"
+            phosphor="SelectionSlashIcon"
+            remixicon="RiSplitCellsHorizontal"
+            className="size-4"
+          />
           Unmerge Cells
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -835,7 +1028,9 @@ function NumberFormatSelect({
     (option) => option.value === value
   )
   const currentLabel = getNumberFormatLabel(value)
-  const CurrentIcon = getNumberFormatIcon(value)
+  const currentIcon = React.createElement(getNumberFormatIcon(value), {
+    className: "size-4",
+  })
 
   return (
     <Select
@@ -854,7 +1049,7 @@ function NumberFormatSelect({
         )}
         aria-label="Number format"
       >
-        <HugeiconsIcon icon={CurrentIcon} className="size-4" />
+        {currentIcon}
         <SelectValue placeholder="General" />
       </SelectTrigger>
       <SelectContent
@@ -865,7 +1060,7 @@ function NumberFormatSelect({
         {NUMBER_FORMAT_OPTIONS.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             <span className="flex min-w-0 items-center gap-2">
-              <HugeiconsIcon icon={option.icon} className="size-4" />
+              <option.icon className="size-4" />
               <span className="truncate">{option.label}</span>
             </span>
           </SelectItem>
@@ -873,7 +1068,7 @@ function NumberFormatSelect({
         {!hasMatchingOption && value !== GENERAL_NUMBER_FORMAT_VALUE ? (
           <SelectItem value={value}>
             <span className="flex min-w-0 items-center gap-2">
-              <HugeiconsIcon icon={CurrentIcon} className="size-4" />
+              {currentIcon}
               <span className="truncate">{currentLabel}</span>
             </span>
           </SelectItem>
@@ -920,7 +1115,14 @@ function BorderMenu({
           aria-label="Cell borders"
           className="relative"
         >
-          <HugeiconsIcon icon={BorderAll01Icon} className="size-4" />
+          <IconPlaceholder
+            lucide="Grid2x2"
+            tabler="IconBorderAll"
+            hugeicons="BorderAll01Icon"
+            phosphor="GridFourIcon"
+            remixicon="RiGridLine"
+            className="size-4"
+          />
           <span
             className="absolute right-1 bottom-1 h-1 w-4 rounded-full border border-background"
             style={{ backgroundColor: borderColor }}
@@ -955,8 +1157,12 @@ function BorderMenu({
         <DropdownMenuSeparator />
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <HugeiconsIcon
-              icon={TextColorIcon}
+            <IconPlaceholder
+              lucide="Baseline"
+              tabler="IconTextColor"
+              hugeicons="TextColorIcon"
+              phosphor="TextAaIcon"
+              remixicon="RiFontColor"
               className="size-4 text-muted-foreground"
             />
             Border color
@@ -999,7 +1205,14 @@ function AlignmentMoreMenu({
           disabled={disabled}
           aria-label="More alignment"
         >
-          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="Ellipsis"
+            tabler="IconDots"
+            hugeicons="MoreHorizontalIcon"
+            phosphor="DotsThreeIcon"
+            remixicon="RiMoreLine"
+            className="size-4"
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -1007,19 +1220,19 @@ function AlignmentMoreMenu({
         className={cn("w-48", XLSX_DROPDOWN_Z_INDEX_CLASS)}
       >
         <StyleDropdownItem
-          icon={TextWrapIcon}
+          icon={TextWrapGlyph}
           onClick={() => onApplyStyle({ alignment: { wrapText: false } })}
         >
           Do not wrap
         </StyleDropdownItem>
         <StyleDropdownItem
-          icon={TextWrapIcon}
+          icon={TextWrapGlyph}
           onClick={() => onApplyStyle({ alignment: { shrinkToFit: true } })}
         >
           Shrink to fit
         </StyleDropdownItem>
         <StyleDropdownItem
-          icon={TextWrapIcon}
+          icon={TextWrapGlyph}
           onClick={() => onApplyStyle({ alignment: { shrinkToFit: false } })}
         >
           Do not shrink
@@ -1047,7 +1260,14 @@ function EditorFileActionsMenu({
           size="icon-sm"
           aria-label="Open workbook actions"
         >
-          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="Ellipsis"
+            tabler="IconDots"
+            hugeicons="MoreHorizontalIcon"
+            phosphor="DotsThreeIcon"
+            remixicon="RiMoreLine"
+            className="size-4"
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -1055,11 +1275,25 @@ function EditorFileActionsMenu({
         className={cn("w-40", XLSX_DROPDOWN_Z_INDEX_CLASS)}
       >
         <DropdownMenuItem disabled={!canExport} onClick={exportXlsx}>
-          <HugeiconsIcon icon={Download01Icon} className="size-4" />
+          <IconPlaceholder
+            lucide="Download"
+            tabler="IconDownload"
+            hugeicons="Download01Icon"
+            phosphor="DownloadSimpleIcon"
+            remixicon="RiDownload2Line"
+            className="size-4"
+          />
           Download
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onUploadClick}>
-          <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+          <IconPlaceholder
+            lucide="Upload"
+            tabler="IconUpload"
+            hugeicons="Upload01Icon"
+            phosphor="UploadSimpleIcon"
+            remixicon="RiUpload2Line"
+            className="size-4"
+          />
           Upload
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -1577,10 +1811,11 @@ function EditorToolbar({
                     }
                     onClick={() => onIsDarkChange(!isDark)}
                   >
-                    <HugeiconsIcon
-                      icon={isDark ? Sun03Icon : Moon02Icon}
-                      className="size-4"
-                    />
+                    {isDark ? (
+                      <Sun03Glyph className="size-4" />
+                    ) : (
+                      <Moon02Glyph className="size-4" />
+                    )}
                   </Button>
                 </ToolbarTooltip>
                 <Separator
@@ -1609,7 +1844,14 @@ function EditorToolbar({
                 disabled={!canUndo || readOnly}
                 onClick={undo}
               >
-                <HugeiconsIcon icon={Undo02Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Undo2"
+                  tabler="IconArrowBackUp"
+                  hugeicons="Undo02Icon"
+                  phosphor="ArrowUUpLeftIcon"
+                  remixicon="RiArrowGoBackLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
             <ToolbarTooltip label="Redo">
@@ -1621,7 +1863,14 @@ function EditorToolbar({
                 disabled={!canRedo || readOnly}
                 onClick={redo}
               >
-                <HugeiconsIcon icon={Redo02Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Redo2"
+                  tabler="IconArrowForwardUp"
+                  hugeicons="Redo02Icon"
+                  phosphor="ArrowUUpRightIcon"
+                  remixicon="RiArrowGoForwardLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
           </div>
@@ -1709,12 +1958,26 @@ function EditorToolbar({
           >
             <ToolbarTooltip label="Bold">
               <ToggleGroupItem aria-label="Bold" size="sm" value="bold">
-                <HugeiconsIcon icon={TextBoldIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Bold"
+                  tabler="IconBold"
+                  hugeicons="TextBoldIcon"
+                  phosphor="TextBIcon"
+                  remixicon="RiBold"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
             <ToolbarTooltip label="Italic">
               <ToggleGroupItem aria-label="Italic" size="sm" value="italic">
-                <HugeiconsIcon icon={TextItalicIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Italic"
+                  tabler="IconItalic"
+                  hugeicons="TextItalicIcon"
+                  phosphor="TextItalicIcon"
+                  remixicon="RiItalic"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
             <ToolbarTooltip label="Underline">
@@ -1723,7 +1986,14 @@ function EditorToolbar({
                 size="sm"
                 value="underline"
               >
-                <HugeiconsIcon icon={TextUnderlineIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Underline"
+                  tabler="IconUnderline"
+                  hugeicons="TextUnderlineIcon"
+                  phosphor="TextUnderlineIcon"
+                  remixicon="RiUnderline"
+                  className="size-4"
+                />
               </ToggleGroupItem>
             </ToolbarTooltip>
             <ToolbarTooltip label="Strikethrough">
@@ -1732,8 +2002,12 @@ function EditorToolbar({
                 size="sm"
                 value="strikethrough"
               >
-                <HugeiconsIcon
-                  icon={TextStrikethroughIcon}
+                <IconPlaceholder
+                  lucide="Strikethrough"
+                  tabler="IconStrikethrough"
+                  hugeicons="TextStrikethroughIcon"
+                  phosphor="TextStrikethroughIcon"
+                  remixicon="RiStrikethrough"
                   className="size-4"
                 />
               </ToggleGroupItem>
@@ -1743,7 +2017,7 @@ function EditorToolbar({
           <div className="flex shrink-0 items-center gap-1">
             <ColorPicker
               label="Text color"
-              icon={TextColorIcon}
+              icon={TextColorGlyph}
               color={textColor}
               disabled={!canStyleSelection}
               onChange={(color) => {
@@ -1754,7 +2028,7 @@ function EditorToolbar({
             />
             <ColorPicker
               label="Fill color"
-              icon={PaintBucketIcon}
+              icon={PaintBucketGlyph}
               color={fillColor}
               disabled={!canStyleSelection}
               onChange={(color) => {
@@ -1773,7 +2047,14 @@ function EditorToolbar({
               disabled={!canStyleSelection}
               onClick={() => applyStyle({ fill: { fillType: "none" } })}
             >
-              <HugeiconsIcon icon={DropletOffIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="DropletOff"
+                tabler="IconDropletOff"
+                hugeicons="DropletOffIcon"
+                phosphor="DropSlashIcon"
+                remixicon="RiDropLine"
+                className="size-4"
+              />
             </ToolbarIconButton>
           </div>
           <ToolbarSeparator />
@@ -1791,8 +2072,12 @@ function EditorToolbar({
                   value="left"
                   onClick={() => applyHorizontalAlignment("left")}
                 >
-                  <HugeiconsIcon
-                    icon={TextAlignLeft01Icon}
+                  <IconPlaceholder
+                    lucide="AlignLeft"
+                    tabler="IconAlignLeft"
+                    hugeicons="TextAlignLeft01Icon"
+                    phosphor="TextAlignLeftIcon"
+                    remixicon="RiAlignLeft"
                     className="size-4"
                   />
                 </ToggleGroupItem>
@@ -1804,8 +2089,12 @@ function EditorToolbar({
                   value="center"
                   onClick={() => applyHorizontalAlignment("center")}
                 >
-                  <HugeiconsIcon
-                    icon={TextAlignCenterIcon}
+                  <IconPlaceholder
+                    lucide="AlignCenter"
+                    tabler="IconAlignCenter"
+                    hugeicons="TextAlignCenterIcon"
+                    phosphor="TextAlignCenterIcon"
+                    remixicon="RiAlignCenter"
                     className="size-4"
                   />
                 </ToggleGroupItem>
@@ -1817,8 +2106,12 @@ function EditorToolbar({
                   value="right"
                   onClick={() => applyHorizontalAlignment("right")}
                 >
-                  <HugeiconsIcon
-                    icon={TextAlignRight01Icon}
+                  <IconPlaceholder
+                    lucide="AlignRight"
+                    tabler="IconAlignRight"
+                    hugeicons="TextAlignRight01Icon"
+                    phosphor="TextAlignRightIcon"
+                    remixicon="RiAlignRight"
                     className="size-4"
                   />
                 </ToggleGroupItem>
@@ -1837,8 +2130,12 @@ function EditorToolbar({
                   value="top"
                   onClick={() => applyVerticalAlignment("top")}
                 >
-                  <HugeiconsIcon
-                    icon={AlignBoxTopCenterIcon}
+                  <IconPlaceholder
+                    lucide="AlignVerticalJustifyStart"
+                    tabler="IconAlignBoxTopCenter"
+                    hugeicons="AlignBoxTopCenterIcon"
+                    phosphor="AlignTopIcon"
+                    remixicon="RiAlignTop"
                     className="size-4"
                   />
                 </ToggleGroupItem>
@@ -1850,8 +2147,12 @@ function EditorToolbar({
                   value="center"
                   onClick={() => applyVerticalAlignment("center")}
                 >
-                  <HugeiconsIcon
-                    icon={AlignBoxMiddleCenterIcon}
+                  <IconPlaceholder
+                    lucide="AlignVerticalJustifyCenter"
+                    tabler="IconAlignBoxCenterMiddle"
+                    hugeicons="AlignBoxMiddleCenterIcon"
+                    phosphor="AlignCenterVerticalIcon"
+                    remixicon="RiAlignVertically"
                     className="size-4"
                   />
                 </ToggleGroupItem>
@@ -1863,8 +2164,12 @@ function EditorToolbar({
                   value="bottom"
                   onClick={() => applyVerticalAlignment("bottom")}
                 >
-                  <HugeiconsIcon
-                    icon={AlignBoxBottomCenterIcon}
+                  <IconPlaceholder
+                    lucide="AlignVerticalJustifyEnd"
+                    tabler="IconAlignBoxBottomCenter"
+                    hugeicons="AlignBoxBottomCenterIcon"
+                    phosphor="AlignBottomIcon"
+                    remixicon="RiAlignBottom"
                     className="size-4"
                   />
                 </ToggleGroupItem>
@@ -1875,7 +2180,14 @@ function EditorToolbar({
               disabled={!canStyleSelection}
               onClick={() => applyStyle({ alignment: { wrapText: true } })}
             >
-              <HugeiconsIcon icon={TextWrapIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="WrapText"
+                tabler="IconTextWrap"
+                hugeicons="TextWrapIcon"
+                phosphor="ArrowElbowDownLeftIcon"
+                remixicon="RiTextWrap"
+                className="size-4"
+              />
             </ToolbarIconButton>
             <AlignmentMoreMenu
               disabled={!canStyleSelection}
@@ -1921,7 +2233,14 @@ function EditorToolbar({
                 disabled={!hasWorkbook || readOnly}
                 onClick={() => addSheet()}
               >
-                <HugeiconsIcon icon={Add01Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Plus"
+                  tabler="IconPlus"
+                  hugeicons="Add01Icon"
+                  phosphor="PlusIcon"
+                  remixicon="RiAddLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
             <ToolbarTooltip label="Remove active sheet">
@@ -1933,7 +2252,14 @@ function EditorToolbar({
                 disabled={sheets.length <= 1 || readOnly}
                 onClick={removeActiveSheet}
               >
-                <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Trash2Icon"
+                  tabler="IconTrash"
+                  hugeicons="Delete02Icon"
+                  phosphor="TrashIcon"
+                  remixicon="RiDeleteBinLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
             <Select
@@ -1977,7 +2303,14 @@ function EditorToolbar({
                 aria-label="Zoom out"
                 onClick={zoomOut}
               >
-                <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CircleMinus"
+                  tabler="IconCircleMinus"
+                  hugeicons="MinusSignCircleIcon"
+                  phosphor="MinusCircleIcon"
+                  remixicon="RiIndeterminateCircleLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
             <Select
@@ -2017,7 +2350,14 @@ function EditorToolbar({
                 aria-label="Zoom in"
                 onClick={zoomIn}
               >
-                <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CirclePlusIcon"
+                  tabler="IconCirclePlusFilled"
+                  hugeicons="PlusSignCircleIcon"
+                  phosphor="PlusCircleIcon"
+                  remixicon="RiAddCircleFill"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
           </div>
@@ -2292,7 +2632,14 @@ function XlsxEditorContent({
               className="mt-4"
               onClick={() => fileInputRef.current?.click()}
             >
-              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Upload"
+                tabler="IconUpload"
+                hugeicons="Upload01Icon"
+                phosphor="UploadSimpleIcon"
+                remixicon="RiUpload2Line"
+                className="size-4"
+              />
               Upload XLSX
             </Button>
           </div>
@@ -2327,7 +2674,14 @@ function XlsxEditorContent({
               className="mt-4"
               onClick={() => fileInputRef.current?.click()}
             >
-              <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Upload"
+                tabler="IconUpload"
+                hugeicons="Upload01Icon"
+                phosphor="UploadSimpleIcon"
+                remixicon="RiUpload2Line"
+                className="size-4"
+              />
               Upload XLSX
             </Button>
           </div>

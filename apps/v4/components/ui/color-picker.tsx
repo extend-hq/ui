@@ -1,8 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 const COLOR_PICKER_PRESETS = [
   "#111827",
@@ -255,7 +254,7 @@ function ColorPickerTooltip({
 export function ColorPicker({
   color,
   disabled,
-  icon,
+  icon: IconComponent,
   label,
   onTriggerMouseDown,
   onTriggerPointerDown,
@@ -263,7 +262,7 @@ export function ColorPicker({
 }: {
   color: string
   disabled?: boolean
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  icon: React.ComponentType<React.ComponentProps<"svg">>
   label: string
   onTriggerMouseDown?: React.MouseEventHandler<HTMLButtonElement>
   onTriggerPointerDown?: React.PointerEventHandler<HTMLButtonElement>
@@ -285,7 +284,7 @@ export function ColorPicker({
             onMouseDown={onTriggerMouseDown}
             onPointerDown={onTriggerPointerDown}
           >
-            <HugeiconsIcon icon={icon} className="size-4" />
+            <IconComponent className="size-4" />
             <span
               className="absolute right-1 bottom-1 h-1 w-4 rounded-full border border-background"
               style={{ backgroundColor: color }}
@@ -476,8 +475,12 @@ export function ColorPickerPanel({
               }}
             >
               {selected ? (
-                <HugeiconsIcon
-                  icon={CheckIcon}
+                <IconPlaceholder
+                  lucide="Check"
+                  tabler="IconCheck"
+                  hugeicons="CheckIcon"
+                  phosphor="CheckIcon"
+                  remixicon="RiCheckLine"
                   className={cn(
                     "size-3.5",
                     preset === "#ffffff" ? "text-foreground" : "text-white"

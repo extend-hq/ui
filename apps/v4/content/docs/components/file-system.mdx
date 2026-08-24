@@ -22,8 +22,6 @@ File System renders a flat manifest of files and folders — the shape you get b
 npx shadcn@latest add @extend/file-system
 ```
 
-<ExtendInstallPathNote />
-
 </TabsContent>
 
 <TabsContent value="manual">
@@ -35,8 +33,18 @@ npx shadcn@latest add @extend/file-system
 </Step>
 
 ```bash
-npm install @pierre/trees @hugeicons/react @hugeicons/core-free-icons
+npm install @pierre/trees
 ```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
 
 <Step>
   Copy `components/extend/file-system.tsx` from the registry item into your

@@ -14,17 +14,6 @@ import {
 
 import "@extend-ai/react-pptx/styles.css"
 
-import {
-  ArrowLeft01Icon,
-  ArrowRight01Icon,
-  Download01Icon,
-  MinusSignCircleIcon,
-  MoreHorizontalIcon,
-  PlusSignCircleIcon,
-  SidebarLeftIcon,
-  Upload01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 
 import { cn } from "@/lib/utils"
@@ -58,6 +47,7 @@ import {
   useInlineThumbnailSidebar,
 } from "@/components/extend/document-viewer-sidebar"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 const PPTX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.presentationml.presentation"
@@ -248,7 +238,14 @@ function PptxFileActionsMenu({
           size="icon-sm"
           aria-label="Open PowerPoint actions"
         >
-          <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+          <IconPlaceholder
+            lucide="Ellipsis"
+            tabler="IconDots"
+            hugeicons="MoreHorizontalIcon"
+            phosphor="DotsThreeIcon"
+            remixicon="RiMoreLine"
+            className="size-4"
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
@@ -257,14 +254,28 @@ function PptxFileActionsMenu({
             {isPreparingDownload ? (
               <Spinner className="size-4" />
             ) : (
-              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="Download"
+                tabler="IconDownload"
+                hugeicons="Download01Icon"
+                phosphor="DownloadSimpleIcon"
+                remixicon="RiDownload2Line"
+                className="size-4"
+              />
             )}
             Download
           </DropdownMenuItem>
         ) : null}
         {showUploadButton ? (
           <DropdownMenuItem disabled={controlsDisabled} onClick={onUploadClick}>
-            <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Upload"
+              tabler="IconUpload"
+              hugeicons="Upload01Icon"
+              phosphor="UploadSimpleIcon"
+              remixicon="RiUpload2Line"
+              className="size-4"
+            />
             Upload
           </DropdownMenuItem>
         ) : null}
@@ -407,7 +418,14 @@ function PptxToolbar({
               disabled={controlsDisabled}
               onClick={onToggleSidebar}
             >
-              <HugeiconsIcon icon={SidebarLeftIcon} className="size-4" />
+              <IconPlaceholder
+                lucide="PanelLeft"
+                tabler="IconLayoutSidebar"
+                hugeicons="SidebarLeftIcon"
+                phosphor="SidebarIcon"
+                remixicon="RiLayoutLeftLine"
+                className="size-4"
+              />
             </Button>
           </ToolbarTooltip>
           <Separator orientation="vertical" className="mx-1 h-4 self-center" />
@@ -420,7 +438,14 @@ function PptxToolbar({
               disabled={!canGoPrevious}
               onClick={() => onSlideChange(activeSlideIndex - 1)}
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="ChevronLeft"
+                tabler="IconChevronLeft"
+                hugeicons="ArrowLeft01Icon"
+                phosphor="CaretLeftIcon"
+                remixicon="RiArrowLeftSLine"
+                className="size-4"
+              />
             </Button>
           </ToolbarTooltip>
           <PptxSlideNumberControl
@@ -438,7 +463,14 @@ function PptxToolbar({
               disabled={!canGoNext}
               onClick={() => onSlideChange(activeSlideIndex + 1)}
             >
-              <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
+              <IconPlaceholder
+                lucide="ArrowRight"
+                tabler="IconArrowRight"
+                hugeicons="ArrowRight01Icon"
+                phosphor="ArrowRightIcon"
+                remixicon="RiArrowRightLine"
+                className="size-4"
+              />
             </Button>
           </ToolbarTooltip>
         </div>
@@ -455,7 +487,14 @@ function PptxToolbar({
                   setZoom((currentZoom) => getNextZoom(currentZoom, -1))
                 }
               >
-                <HugeiconsIcon icon={MinusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CircleMinus"
+                  tabler="IconCircleMinus"
+                  hugeicons="MinusSignCircleIcon"
+                  phosphor="MinusCircleIcon"
+                  remixicon="RiIndeterminateCircleLine"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
             <Select
@@ -490,7 +529,14 @@ function PptxToolbar({
                   setZoom((currentZoom) => getNextZoom(currentZoom, 1))
                 }
               >
-                <HugeiconsIcon icon={PlusSignCircleIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="CirclePlusIcon"
+                  tabler="IconCirclePlusFilled"
+                  hugeicons="PlusSignCircleIcon"
+                  phosphor="PlusCircleIcon"
+                  remixicon="RiAddCircleFill"
+                  className="size-4"
+                />
               </Button>
             </ToolbarTooltip>
           </div>
@@ -1254,7 +1300,14 @@ export function PptxViewerPreview({
                   className="mt-4"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <HugeiconsIcon icon={Upload01Icon} className="size-4" />
+                  <IconPlaceholder
+                    lucide="Upload"
+                    tabler="IconUpload"
+                    hugeicons="Upload01Icon"
+                    phosphor="UploadSimpleIcon"
+                    remixicon="RiUpload2Line"
+                    className="size-4"
+                  />
                   Upload PowerPoint
                 </Button>
               </div>

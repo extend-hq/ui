@@ -2,24 +2,6 @@
 
 import * as React from "react"
 import {
-  ArrowDown01Icon,
-  ArrowLeft01Icon,
-  ArrowRight01Icon,
-  ArrowUp01Icon,
-  ArrowUpDownIcon,
-  Calendar03Icon,
-  Cancel01Icon,
-  File01Icon,
-  FilterIcon,
-  GalleryThumbnailsIcon,
-  GridViewIcon,
-  LayoutThreeColumnIcon,
-  LeftToRightListBulletIcon,
-  Search01Icon,
-  Tick02Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import {
   createFileTreeIconResolver,
   getBuiltInSpriteSheet,
   prepareFileTreeInput,
@@ -74,6 +56,111 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function ArrowDown01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="ChevronDown"
+      tabler="IconChevronDown"
+      hugeicons="ArrowDown01Icon"
+      phosphor="CaretDownIcon"
+      remixicon="RiArrowDownSLine"
+      {...props}
+    />
+  )
+}
+
+function ArrowUp01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="ChevronUp"
+      tabler="IconChevronUp"
+      hugeicons="ArrowUp01Icon"
+      phosphor="CaretUpIcon"
+      remixicon="RiArrowUpSLine"
+      {...props}
+    />
+  )
+}
+
+function Calendar03Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Calendar"
+      tabler="IconCalendar"
+      hugeicons="Calendar03Icon"
+      phosphor="CalendarIcon"
+      remixicon="RiCalendarLine"
+      {...props}
+    />
+  )
+}
+
+function File01Glyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="FileArchiveIcon"
+      tabler="IconFileZip"
+      hugeicons="File01Icon"
+      phosphor="FileZipIcon"
+      remixicon="RiFileZipLine"
+      {...props}
+    />
+  )
+}
+
+function GalleryThumbnailsGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="GalleryThumbnails"
+      tabler="IconLayoutBottombar"
+      hugeicons="GalleryThumbnailsIcon"
+      phosphor="ImagesIcon"
+      remixicon="RiGalleryView"
+      {...props}
+    />
+  )
+}
+
+function GridViewGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="LayoutGrid"
+      tabler="IconLayoutGrid"
+      hugeicons="GridViewIcon"
+      phosphor="SquaresFourIcon"
+      remixicon="RiLayoutGridLine"
+      {...props}
+    />
+  )
+}
+
+function LayoutThreeColumnGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Columns3"
+      tabler="IconColumns3"
+      hugeicons="LayoutThreeColumnIcon"
+      phosphor="ColumnsIcon"
+      remixicon="RiLayoutColumnLine"
+      {...props}
+    />
+  )
+}
+
+function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
+  return (
+    <IconPlaceholder
+      lucide="Columns3Icon"
+      tabler="IconLayoutColumns"
+      hugeicons="LeftToRightListBulletIcon"
+      phosphor="ColumnsIcon"
+      remixicon="RiLayoutColumnLine"
+      {...props}
+    />
+  )
+}
 
 const LazyPDFViewer = React.lazy(() =>
   import("@/components/extend/pdf-viewer").then((mod) => ({
@@ -1297,7 +1384,14 @@ function FileVisual({
           onDoubleClick={(event) => event.stopPropagation()}
           className="flex size-6 items-center justify-center rounded-md bg-background/80 text-foreground shadow-xs backdrop-blur-sm transition-colors outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
         >
-          <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
+          <IconPlaceholder
+            lucide="ChevronLeft"
+            tabler="IconChevronLeft"
+            hugeicons="ArrowLeft01Icon"
+            phosphor="CaretLeftIcon"
+            remixicon="RiArrowLeftSLine"
+            className="size-3.5"
+          />
         </button>
         <span className="rounded-md bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground tabular-nums shadow-xs backdrop-blur-sm">
           {clampedPageIndex + 1}/{totalPages}
@@ -1314,7 +1408,14 @@ function FileVisual({
           onDoubleClick={(event) => event.stopPropagation()}
           className="flex size-6 items-center justify-center rounded-md bg-background/80 text-foreground shadow-xs backdrop-blur-sm transition-colors outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
         >
-          <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
+          <IconPlaceholder
+            lucide="ArrowRight"
+            tabler="IconArrowRight"
+            hugeicons="ArrowRight01Icon"
+            phosphor="ArrowRightIcon"
+            remixicon="RiArrowRightLine"
+            className="size-3.5"
+          />
         </button>
       </div>
     </div>
@@ -1322,14 +1423,14 @@ function FileVisual({
 }
 
 const VIEW_OPTIONS: Array<{
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  icon: React.ComponentType<React.ComponentProps<"svg">>
   label: string
   value: FileSystemView
 }> = [
-  { icon: GridViewIcon, label: "Grid", value: "icons" },
-  { icon: LeftToRightListBulletIcon, label: "List", value: "list" },
-  { icon: LayoutThreeColumnIcon, label: "Columns", value: "columns" },
-  { icon: GalleryThumbnailsIcon, label: "Gallery", value: "gallery" },
+  { icon: GridViewGlyph, label: "Grid", value: "icons" },
+  { icon: LeftToRightListBulletGlyph, label: "List", value: "list" },
+  { icon: LayoutThreeColumnGlyph, label: "Columns", value: "columns" },
+  { icon: GalleryThumbnailsGlyph, label: "Gallery", value: "gallery" },
 ]
 
 export function FileSystem({
@@ -2044,7 +2145,14 @@ export function FileSystem({
       aria-label="Close preview"
       render={<Button type="button" variant="ghost" size="icon-sm" />}
     >
-      <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
+      <IconPlaceholder
+        lucide="X"
+        tabler="IconX"
+        hugeicons="Cancel01Icon"
+        phosphor="XIcon"
+        remixicon="RiCloseLine"
+        className="size-4"
+      />
     </DialogClose>
   )
 
@@ -2077,7 +2185,14 @@ export function FileSystem({
             onClick={goBack}
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4.5" />
+            <IconPlaceholder
+              lucide="ChevronLeft"
+              tabler="IconChevronLeft"
+              hugeicons="ArrowLeft01Icon"
+              phosphor="CaretLeftIcon"
+              remixicon="RiArrowLeftSLine"
+              className="size-4.5"
+            />
           </button>
           <button
             type="button"
@@ -2087,7 +2202,14 @@ export function FileSystem({
             onClick={goForward}
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
           >
-            <HugeiconsIcon icon={ArrowRight01Icon} className="size-4.5" />
+            <IconPlaceholder
+              lucide="ArrowRight"
+              tabler="IconArrowRight"
+              hugeicons="ArrowRight01Icon"
+              phosphor="ArrowRightIcon"
+              remixicon="RiArrowRightLine"
+              className="size-4.5"
+            />
           </button>
           {headerLayout !== "minimal" ? (
             <span className="ml-1.5 truncate text-sm font-semibold">
@@ -2109,10 +2231,7 @@ export function FileSystem({
             >
               <SelectValue>
                 {activeViewOption ? (
-                  <HugeiconsIcon
-                    icon={activeViewOption.icon}
-                    className="size-4"
-                  />
+                  <activeViewOption.icon className="size-4" />
                 ) : null}
               </SelectValue>
             </SelectTrigger>
@@ -2120,7 +2239,7 @@ export function FileSystem({
               {VIEW_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   <span className="flex items-center gap-2">
-                    <HugeiconsIcon icon={option.icon} className="size-4" />
+                    <option.icon className="size-4" />
                     {option.label}
                   </span>
                 </SelectItem>
@@ -2142,7 +2261,7 @@ export function FileSystem({
                   title={option.label}
                   className="h-7 grow-0 px-2.5 sm:h-7"
                 >
-                  <HugeiconsIcon icon={option.icon} className="size-4" />
+                  <option.icon className="size-4" />
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -2386,8 +2505,12 @@ function FileSystemSearchField({
         isInline && "max-w-56"
       )}
     >
-      <HugeiconsIcon
-        icon={Search01Icon}
+      <IconPlaceholder
+        lucide="Search"
+        tabler="IconSearch"
+        hugeicons="Search01Icon"
+        phosphor="MagnifyingGlassIcon"
+        remixicon="RiSearchLine"
         className="pointer-events-none absolute left-2 size-3.5 text-muted-foreground"
       />
       <input
@@ -2421,7 +2544,14 @@ function FileSystemSearchField({
           }}
           className="absolute right-1 flex size-5 items-center justify-center rounded-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+          <IconPlaceholder
+            lucide="X"
+            tabler="IconX"
+            hugeicons="Cancel01Icon"
+            phosphor="XIcon"
+            remixicon="RiCloseLine"
+            className="size-3"
+          />
         </button>
       ) : null}
     </div>
@@ -2446,7 +2576,14 @@ function FileSystemSearchField({
           />
         }
       >
-        <HugeiconsIcon icon={Search01Icon} className="size-4" />
+        <IconPlaceholder
+          lucide="Search"
+          tabler="IconSearch"
+          hugeicons="Search01Icon"
+          phosphor="MagnifyingGlassIcon"
+          remixicon="RiSearchLine"
+          className="size-4"
+        />
         {value ? (
           <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
         ) : null}
@@ -2486,7 +2623,14 @@ function FileSystemSortSelect({
       >
         <SelectValue>
           <span className="flex items-center gap-1.5">
-            <HugeiconsIcon icon={ArrowUpDownIcon} className="size-4" />
+            <IconPlaceholder
+              lucide="ArrowUpDown"
+              tabler="IconArrowsUpDown"
+              hugeicons="ArrowUpDownIcon"
+              phosphor="ArrowsDownUpIcon"
+              remixicon="RiArrowUpDownLine"
+              className="size-4"
+            />
             {layout === "full" && showLabel ? activeOption?.triggerLabel : null}
           </span>
         </SelectValue>
@@ -2564,8 +2708,12 @@ function FileSystemFileTypeCommand({
                       keywords={[option.mime]}
                       onSelect={() => onToggle(option.mime, !isChecked)}
                     >
-                      <HugeiconsIcon
-                        icon={Tick02Icon}
+                      <IconPlaceholder
+                        lucide="Check"
+                        tabler="IconCheck"
+                        hugeicons="Tick02Icon"
+                        phosphor="CheckIcon"
+                        remixicon="RiCheckLine"
                         className={cn(
                           "size-4 text-foreground",
                           !isChecked && "opacity-0"
@@ -2620,7 +2768,14 @@ function FileSystemFilterMenu({
           />
         }
       >
-        <HugeiconsIcon icon={FilterIcon} className="size-4" />
+        <IconPlaceholder
+          lucide="Filter"
+          tabler="IconFilter"
+          hugeicons="FilterIcon"
+          phosphor="FunnelIcon"
+          remixicon="RiFilterLine"
+          className="size-4"
+        />
         {filters.length > 0 ? (
           <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
         ) : null}
@@ -2628,8 +2783,12 @@ function FileSystemFilterMenu({
       <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <HugeiconsIcon
-              icon={File01Icon}
+            <IconPlaceholder
+              lucide="FileArchiveIcon"
+              tabler="IconFileZip"
+              hugeicons="File01Icon"
+              phosphor="FileZipIcon"
+              remixicon="RiFileZipLine"
               className="size-4 text-muted-foreground"
             />
             File type
@@ -2645,8 +2804,12 @@ function FileSystemFilterMenu({
         {(["dateModified", "dateCreated"] as const).map((type) => (
           <DropdownMenuSub key={type}>
             <DropdownMenuSubTrigger>
-              <HugeiconsIcon
-                icon={Calendar03Icon}
+              <IconPlaceholder
+                lucide="Calendar"
+                tabler="IconCalendar"
+                hugeicons="Calendar03Icon"
+                phosphor="CalendarIcon"
+                remixicon="RiCalendarLine"
                 className="size-4 text-muted-foreground"
               />
               {FILTER_TYPE_LABELS[type]}
@@ -2720,10 +2883,11 @@ function FileSystemFilterPill({
           "rounded-l-md border-l text-primary"
         )}
       >
-        <HugeiconsIcon
-          icon={filter.type === "fileType" ? File01Icon : Calendar03Icon}
-          className="size-3"
-        />
+        {filter.type === "fileType" ? (
+          <File01Glyph className="size-3" />
+        ) : (
+          <Calendar03Glyph className="size-3" />
+        )}
         {FILTER_TYPE_LABELS[filter.type]}
       </span>
       <DropdownMenu>
@@ -2816,7 +2980,14 @@ function FileSystemFilterPill({
           "rounded-r-md px-1 text-muted-foreground hover:text-foreground"
         )}
       >
-        <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+        <IconPlaceholder
+          lucide="X"
+          tabler="IconX"
+          hugeicons="Cancel01Icon"
+          phosphor="XIcon"
+          remixicon="RiCloseLine"
+          className="size-3"
+        />
       </button>
     </div>
   )
@@ -2943,7 +3114,14 @@ function FileSystemRangeCalendar({
         }
         className="absolute top-0 left-0 flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
+        <IconPlaceholder
+          lucide="ChevronLeft"
+          tabler="IconChevronLeft"
+          hugeicons="ArrowLeft01Icon"
+          phosphor="CaretLeftIcon"
+          remixicon="RiArrowLeftSLine"
+          className="size-4"
+        />
       </button>
       <button
         type="button"
@@ -2956,7 +3134,14 @@ function FileSystemRangeCalendar({
         }
         className="absolute top-0 right-0 flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
+        <IconPlaceholder
+          lucide="ArrowRight"
+          tabler="IconArrowRight"
+          hugeicons="ArrowRight01Icon"
+          phosphor="ArrowRightIcon"
+          remixicon="RiArrowRightLine"
+          className="size-4"
+        />
       </button>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {months.map((month, monthIndex) => {
@@ -3076,8 +3261,12 @@ function FileSystemDateRangeDialog({
     <div className="flex flex-1 flex-col gap-1.5">
       <span className="text-xs font-medium">{label}</span>
       <div className="relative flex items-center">
-        <HugeiconsIcon
-          icon={Calendar03Icon}
+        <IconPlaceholder
+          lucide="Calendar"
+          tabler="IconCalendar"
+          hugeicons="Calendar03Icon"
+          phosphor="CalendarIcon"
+          remixicon="RiCalendarLine"
           className="pointer-events-none absolute left-2.5 size-3.5 text-muted-foreground"
         />
         <Input
@@ -3687,10 +3876,11 @@ function FileSystemListColumnHeader({
     >
       {label}
       {isActive ? (
-        <HugeiconsIcon
-          icon={sort.direction === "asc" ? ArrowUp01Icon : ArrowDown01Icon}
-          className="size-3 shrink-0"
-        />
+        sort.direction === "asc" ? (
+          <ArrowUp01Glyph className="size-3 shrink-0" />
+        ) : (
+          <ArrowDown01Glyph className="size-3 shrink-0" />
+        )
       ) : null}
     </button>
   )
@@ -4696,8 +4886,12 @@ const FileSystemColumn = React.memo(function FileSystemColumn({
                   <span className="min-w-0 flex-1 truncate">{entry.name}</span>
                   {entry.kind === "folder" &&
                   folderHasChildren(index, entry) ? (
-                    <HugeiconsIcon
-                      icon={ArrowRight01Icon}
+                    <IconPlaceholder
+                      lucide="ArrowRight"
+                      tabler="IconArrowRight"
+                      hugeicons="ArrowRight01Icon"
+                      phosphor="ArrowRightIcon"
+                      remixicon="RiArrowRightLine"
                       className={cn(
                         "size-3.5 shrink-0",
                         !isSelected && "text-muted-foreground/60"
