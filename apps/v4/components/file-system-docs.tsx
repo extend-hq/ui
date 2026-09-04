@@ -25,7 +25,7 @@ const PPTX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 const THUMBNAIL_WIDTH = 360
 
-type DemoThumbnailKind = "docx" | "none" | "pdf" | "url" | "xlsx"
+type DemoThumbnailKind = "docx" | "pdf" | "pptx" | "url" | "xlsx"
 
 type DemoSource = {
   contentType: string
@@ -94,7 +94,7 @@ const DEMO_SOURCES: DemoSource[] = [
     path: "Consulting proposal.pptx",
     previewAspectRatio: 16 / 9,
     size: 8840652,
-    thumbnail: "none",
+    thumbnail: "pptx",
     updatedAt: "2026-07-16T17:31:45Z",
     url: withUiBasePath("/samples/demo.pptx"),
   },
@@ -242,6 +242,14 @@ const XlsxThumbnailUrlGenerator = dynamic(
   { ssr: false }
 )
 
+const PptxThumbnailUrlGenerator = dynamic(
+  () =>
+    import("@/components/file-system-pptx-thumbnails").then(
+      (mod) => mod.PptxThumbnailUrlGenerator
+    ),
+  { ssr: false }
+)
+
 async function renderPdfPageThumbnail(url: string, pageIndex: number) {
   return renderPdfThumbnailUrl({
     pageIndex,
@@ -297,57 +305,28 @@ type DemoThumbnails = {
 // a hidden DOCX import + pagination, XLSX sheet paints).
 const demoThumbnailCache = new Map<string, DemoThumbnails>()
 
-// The hidden DOCX generator imports and paginates the whole 1.3MB demo.docx
-// on the main thread — by far the heaviest job on the page. Its output is
-// only gallery thumbnails, so hold it until the visible viewers have parsed.
-const DOCX_GENERATOR_DELAY_MS = 1200
-
-function useDeferredDocxGeneration() {
-  const [isReady, setIsReady] = React.useState(false)
-
-  React.useEffect(() => {
-    let idleCallbackId: number | null = null
-    let timeoutId: number | null = window.setTimeout(() => {
-      timeoutId = null
-
-      const markReady = () => setIsReady(true)
-
-      if ("requestIdleCallback" in window) {
-        idleCallbackId = window.requestIdleCallback(markReady, {
-          timeout: 4000,
-        })
-      } else {
-        markReady()
-      }
-    }, DOCX_GENERATOR_DELAY_MS)
-
-    return () => {
-      if (timeoutId !== null) window.clearTimeout(timeoutId)
-      if (idleCallbackId !== null && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleCallbackId)
-      }
-    }
-  }, [])
-
-  return isReady
-}
-
 export function useFileSystemDemoItems() {
   const [thumbnails, setThumbnails] = React.useState<
     Record<string, DemoThumbnails>
   >(() => Object.fromEntries(demoThumbnailCache))
-  const canGenerateDocx = useDeferredDocxGeneration()
   const setPathThumbnails = React.useCallback(
     (path: string, urls: string[], pageCount: number) => {
-      if (!demoThumbnailCache.has(path)) {
-        demoThumbnailCache.set(path, { pageCount, urls })
-      }
+      const nextThumbnails = { pageCount, urls }
+
+      demoThumbnailCache.set(path, nextThumbnails)
       React.startTransition(() => {
-        setThumbnails((previous) =>
-          previous[path]
-            ? previous
-            : { ...previous, [path]: { pageCount, urls } }
-        )
+        setThumbnails((previous) => {
+          const current = previous[path]
+
+          if (
+            current?.pageCount === pageCount &&
+            current.urls.length >= urls.length
+          ) {
+            return previous
+          }
+
+          return { ...previous, [path]: nextThumbnails }
+        })
       })
     },
     []
@@ -416,12 +395,14 @@ export function useFileSystemDemoItems() {
           }
         />
       ))}
-      {DEMO_SOURCES.filter(
-        (source) =>
+      {DEMO_SOURCES.filter((source) => {
+        const generated = thumbnails[source.path]
+
+        return (
           source.thumbnail === "docx" &&
-          canGenerateDocx &&
-          !thumbnails[source.path]
-      ).map((source) => (
+          (!generated || generated.urls.length < generated.pageCount)
+        )
+      }).map((source) => (
         <DocxThumbnailUrlGenerator
           key={source.path}
           fileName={source.path.split("/").pop() ?? source.path}
@@ -437,6 +418,22 @@ export function useFileSystemDemoItems() {
         <XlsxThumbnailUrlGenerator
           key={source.path}
           fileName={source.path.split("/").pop() ?? source.path}
+          url={source.url}
+          onUrls={(dataUrls, pageCount) =>
+            setPathThumbnails(source.path, dataUrls, pageCount)
+          }
+        />
+      ))}
+      {DEMO_SOURCES.filter((source) => {
+        const generated = thumbnails[source.path]
+
+        return (
+          source.thumbnail === "pptx" &&
+          (!generated || generated.urls.length < generated.pageCount)
+        )
+      }).map((source) => (
+        <PptxThumbnailUrlGenerator
+          key={source.path}
           url={source.url}
           onUrls={(dataUrls, pageCount) =>
             setPathThumbnails(source.path, dataUrls, pageCount)

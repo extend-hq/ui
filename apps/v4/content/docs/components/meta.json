@@ -3,6 +3,7 @@
   "pages": [
     "index",
     "[PDF Viewer](/docs/components/pdf-viewer)",
+    "[PDF Editor](/docs/components/pdf-editor)",
     "[DOCX Viewer](/docs/components/docx-viewer)",
     "[DOCX Editor](/docs/components/docx-editor)",
     "[Excel Viewer](/docs/components/xlsx-viewer)",

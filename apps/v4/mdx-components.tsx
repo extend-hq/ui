@@ -49,6 +49,7 @@ import {
 import { FileUploadDemo, FileUploadSource } from "@/components/file-upload-docs"
 import { getIconForLanguageExtension } from "@/components/icons"
 import { OcrBlocksDemo, OcrBlocksSource } from "@/components/layout-blocks-docs"
+import { PdfEditorDemo, PdfEditorSource } from "@/components/pdf-editor-docs"
 import { PdfViewerDemo, PdfViewerSource } from "@/components/pdf-viewer-docs"
 import { PptxViewerDemo, PptxViewerSource } from "@/components/pptx-viewer-docs"
 import {
@@ -406,6 +407,8 @@ export const mdxComponents = {
   SchemaBuilderSource,
   OcrBlocksDemo,
   OcrBlocksSource,
+  PdfEditorDemo,
+  PdfEditorSource,
   PdfViewerDemo,
   PdfViewerSource,
   PptxViewerDemo,

@@ -6,6 +6,7 @@ import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { groupVariants } from "@/components/ui/group"
 
 export const toggleVariants = cva(
   "relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border text-base font-medium whitespace-nowrap text-foreground transition-shadow outline-none select-none before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-64 data-pressed:bg-input/64 data-pressed:text-accent-foreground sm:text-sm pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 [&_svg]:pointer-events-none [&_svg]:-mx-0.5 [&_svg]:shrink-0 [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
@@ -76,6 +77,8 @@ export function ToggleGroup<Value extends string>({
     <ToggleGroupPrimitive
       className={cn(
         toggleGroupVariants({ orientation, spacing: resolvedSpacing }),
+        resolvedSpacing === "none" && groupVariants({ orientation }),
+        "inline-flex",
         className
       )}
       data-orientation={orientation}
@@ -96,10 +99,7 @@ export function ToggleGroupItem({
   VariantProps<typeof toggleVariants>): React.ReactElement {
   return (
     <Toggle
-      className={cn(
-        "in-data-[spacing=none]:rounded-none in-data-[spacing=none]:shadow-none in-data-[orientation=horizontal]:in-data-[spacing=none]:first:rounded-l-lg in-data-[orientation=horizontal]:in-data-[spacing=none]:last:rounded-r-lg in-data-[orientation=vertical]:in-data-[spacing=none]:first:rounded-t-lg in-data-[orientation=vertical]:in-data-[spacing=none]:last:rounded-b-lg",
-        className
-      )}
+      className={className}
       data-slot="toggle-group-item"
       size={size}
       variant={variant}

@@ -1172,7 +1172,7 @@ function BorderMenu({
             />
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent
-            className={cn("w-64 p-2", XLSX_DROPDOWN_Z_INDEX_CLASS)}
+            className={cn("w-auto p-3", XLSX_DROPDOWN_Z_INDEX_CLASS)}
           >
             <ColorPickerPanel
               label="Border color"

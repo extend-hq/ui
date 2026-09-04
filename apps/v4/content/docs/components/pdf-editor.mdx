@@ -1,0 +1,203 @@
+---
+title: React PDF Editor
+description: A React PDF editor with annotations, comments, redaction, form filling and design, signatures, rubber stamps, page organization, security, printing, and export, built on EmbedPDF.
+component: true
+featured: true
+---
+
+The React PDF Editor extends the PDF Viewer into a complete editing surface. It wires up every stable EmbedPDF plugin behind a shadcn-style toolbar, contextual side panels, and selection menus, and leaves persistence to your app through annotation JSON, form values, and PDF bytes.
+
+<PdfEditorDemo />
+
+## About
+
+PDF rendering and editing are powered by [EmbedPDF](https://www.embedpdf.com/). The editor registers the annotation, redaction, form, signature, stamp, history, bookmark, attachment, capture, print, export, fullscreen, pan, spread, rotate, search, selection, thumbnail, and zoom plugins on top of the shared PDFium engine used by the viewer.
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @extend/pdf-editor
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install @embedpdf/core@^2.15.0 @embedpdf/engines@^2.15.0 @embedpdf/models@^2.15.0 @embedpdf/plugin-annotation@^2.15.0 @embedpdf/plugin-attachment@^2.15.0 @embedpdf/plugin-bookmark@^2.15.0 @embedpdf/plugin-capture@^2.15.0 @embedpdf/plugin-document-manager@^2.15.0 @embedpdf/plugin-export@^2.15.0 @embedpdf/plugin-form@^2.15.0 @embedpdf/plugin-fullscreen@^2.15.0 @embedpdf/plugin-history@^2.15.0 @embedpdf/plugin-interaction-manager@^2.15.0 @embedpdf/plugin-pan@^2.15.0 @embedpdf/plugin-print@^2.15.0 @embedpdf/plugin-redaction@^2.15.0 @embedpdf/plugin-render@^2.15.0 @embedpdf/plugin-rotate@^2.15.0 @embedpdf/plugin-scroll@^2.15.0 @embedpdf/plugin-search@^2.15.0 @embedpdf/plugin-selection@^2.15.0 @embedpdf/plugin-signature@^2.15.0 @embedpdf/plugin-spread@^2.15.0 @embedpdf/plugin-stamp@^2.15.0 @embedpdf/plugin-thumbnail@^2.15.0 @embedpdf/plugin-tiling@^2.15.0 @embedpdf/plugin-viewport@^2.15.0 @embedpdf/plugin-zoom@^2.15.0 pdf-lib@^1.17.1
+```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
+
+<Step>
+  Install the Color Picker and Document Viewer Sidebar components because the
+  editor reuses them for the style panel and thumbnail rail.
+</Step>
+
+```bash
+npx shadcn@latest add @extend/color-picker @extend/document-viewer-sidebar
+```
+
+<Step>Copy and paste the following files into your project.</Step>
+
+<PdfEditorSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Modes
+
+The ribbon below the main toolbar switches between five modes. Each mode exposes its own tools and opens a matching side panel.
+
+| Mode       | Tools                                                                                                                                                                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `view`     | Select, hand (pan), zoom to area, capture area as image, single or two-page spreads, vertical or horizontal scrolling.                                                                                                                             |
+| `annotate` | Highlight, underline, strikethrough, squiggly, pen, highlighter pen, text box, callout, sticky note, rectangle, ellipse, line, arrow, polyline, polygon, image, link area, insert-text and replace-text marks, rubber stamps, and the style panel. |
+| `sign`     | Draw, type, or upload signatures and initials, then click to place them. Includes quick text, date, and freehand tools.                                                                                                                            |
+| `forms`    | Fill existing AcroForm fields, or switch to design mode to add and configure text fields, checkboxes, radio buttons, dropdowns, and list boxes. Import, export, and clear values as JSON.                                                          |
+| `redact`   | Mark text or areas for redaction, review pending marks, change their colors and overlay text, then permanently apply them.                                                                                                                         |
+
+## Useful behaviors
+
+- Text selection opens a floating menu with copy, markup, comment, link, and redaction actions plus any custom `selectionActions` you pass in. Custom actions receive the selected text and page-relative coordinates in PDF points and percentages.
+- Selected annotations get a contextual menu for comments, styling, links, locking, saving as a stamp, and deletion. Multi-selections can be grouped and ungrouped.
+- Undo and redo cover annotations, form edits, and redaction marks through the history plugin.
+- The left sidebar hosts thumbnails, the bookmark outline, embedded attachments, and a page organizer that rotates, reorders, inserts, deletes, extracts, and appends pages.
+- The right panel hosts annotation properties, comment threads, pending redactions, rubber stamp libraries, saved signatures, and form fields.
+- The document menu covers download, print, capture, full screen, document properties, password protection and permissions, flattening, and annotation JSON import and export.
+- Uploaded files replace the current document. Page operations, flattening, and encryption changes are written into the PDF bytes returned by `getDocumentBuffer` and `download`.
+
+## API Reference
+
+### PDFEditor
+
+| Prop                          | Type                                                                         | Default                                    | Required |
+| ----------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ | -------- |
+| `src`                         | `string \| ArrayBuffer \| Uint8Array \| Blob`                                | `-`                                        | No       |
+| `fileName`                    | `string`                                                                     | Derived from `src`                         | No       |
+| `className`                   | `string`                                                                     | `-`                                        | No       |
+| `defaultZoom`                 | `number \| "fit-page" \| "fit-width" \| "automatic"`                         | `"fit-width"`                              | No       |
+| `defaultMode`                 | `"view" \| "annotate" \| "sign" \| "forms" \| "redact"`                      | `"view"`                                   | No       |
+| `annotationAuthor`            | `string`                                                                     | `"Guest"`                                  | No       |
+| `colorPresets`                | `string[]`                                                                   | Eleven hex colors                          | No       |
+| `features`                    | `PdfEditorFeatureFlags`                                                      | Everything enabled                         | No       |
+| `showToolbar`                 | `boolean`                                                                    | `true`                                     | No       |
+| `showUpload`                  | `boolean`                                                                    | `true`                                     | No       |
+| `showDownload`                | `boolean`                                                                    | `true`                                     | No       |
+| `toolbarActions`              | `React.ReactNode`                                                            | `-`                                        | No       |
+| `selectionActions`            | `PdfEditorSelectionAction[]`                                                 | `[]`                                       | No       |
+| `persistSignatures`           | `boolean \| string`                                                          | `true` (localStorage)                      | No       |
+| `stampManifests`              | `string[]`                                                                   | EmbedPDF default stamps                    | No       |
+| `signatureFontsStylesheetUrl` | `string \| null`                                                             | Google Fonts handwriting styles            | No       |
+| `resolveScrollAreaViewport`   | `(container: HTMLDivElement) => HTMLDivElement \| null`                      | Finds `[data-slot="scroll-area-viewport"]` | No       |
+| `renderPageOverlay`           | `(props: PDFEditorPageOverlayProps) => React.ReactNode`                      | `-`                                        | No       |
+| `onDocumentLoadSuccess`       | `(info: { numPages: number; documentId: string; fileName: string }) => void` | `-`                                        | No       |
+| `onDocumentLoadError`         | `(message: string) => void`                                                  | `-`                                        | No       |
+| `onActivePageChange`          | `(pageNumber: number) => void`                                               | `-`                                        | No       |
+| `onModeChange`                | `(mode: PdfEditorMode) => void`                                              | `-`                                        | No       |
+| `onAnnotationEvent`           | `(event: AnnotationEvent) => void`                                           | `-`                                        | No       |
+| `onAnnotationsChange`         | `(items: AnnotationTransferItem[]) => void`                                  | `-`                                        | No       |
+| `onFormValuesChange`          | `(values: Record<string, string>) => void`                                   | `-`                                        | No       |
+| `onRedactionsApplied`         | `() => void`                                                                 | `-`                                        | No       |
+| `onSave`                      | `(result: { buffer: ArrayBuffer; fileName: string }) => void`                | `-`                                        | No       |
+| `onCapture`                   | `(event: CaptureAreaEvent) => void`                                          | `-`                                        | No       |
+| `onPdfUpload`                 | `(file: File) => void`                                                       | `-`                                        | No       |
+| `onToast`                     | `(toast: { message: string; tone: "info" \| "success" \| "error" }) => void` | Built-in bottom-right toast                | No       |
+| `onSelectionAction`           | `(actionId: string, payload: PdfEditorSelectionPayload) => void`             | `-`                                        | No       |
+
+`features` accepts booleans for `annotate`, `redact`, `forms`, `sign`, `stamps`, `pages`, `security`, `print`, `capture`, `outline`, `attachments`, `comments`, and `fullscreen`. Disabled features disappear from the toolbar, menus, and panels.
+
+The built-in toast viewport is scoped to the bottom-right corner of the editor. Pass `onToast` to route notices into an existing shadcn-compatible toast setup instead; when provided, the built-in toast is skipped.
+
+### Imperative handle
+
+Pass a `ref` to call into the editor from your own UI.
+
+| Method                          | Description                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `getDocumentBuffer()`           | Resolves the current PDF bytes including annotations, form values, and pending security changes. |
+| `download(fileName?)`           | Saves the document through the browser.                                                          |
+| `print(options?)`               | Opens the print dialog with optional `pageRange` and `includeAnnotations`.                       |
+| `exportAnnotations()`           | Resolves every annotation as `AnnotationTransferItem[]` (stamps include their image data).       |
+| `importAnnotations(items)`      | Adds previously exported annotations to the document.                                            |
+| `getFormValues()`               | Returns a `Record<string, string>` of field names and values.                                    |
+| `setFormValues(values)`         | Fills form fields by name.                                                                       |
+| `applyRedactions()`             | Permanently applies every pending redaction mark.                                                |
+| `setMode(mode)`                 | Switches the editing mode.                                                                       |
+| `setActiveTool(toolId \| null)` | Activates an EmbedPDF tool id such as `highlight`, `ink`, or `formTextField`.                    |
+| `scrollToPage(pageNumber)`      | Scrolls to a page.                                                                               |
+| `undo()` / `redo()`             | Steps through the history stack.                                                                 |
+| `getViewportElement()`          | Returns the scrolling viewport element.                                                          |
+
+### Selection actions
+
+Custom selection actions turn the editor into a review surface. Each action receives the selected text along with the bounding box in PDF points and as percentages of the page, so the host app can create citations, extract fields, or file approvals without touching the PDF.
+
+```tsx
+<PDFEditor
+  src="/contracts/msa.pdf"
+  selectionActions={[
+    {
+      id: "cite",
+      label: "Create citation",
+      onSelect: ({ pageNumber, text, normalizedRect }) => {
+        createCitation({ pageNumber, text, ...normalizedRect })
+      },
+    },
+    {
+      id: "extract",
+      label: "Extract as field",
+      keepSelection: true,
+      onSelect: (payload) => openFieldPicker(payload),
+    },
+  ]}
+/>
+```
+
+`PdfEditorSelectionPayload` contains `documentId`, `pageIndex`, `pageNumber`, `pageSize`, `text`, `rect`, `rects`, `normalizedRect`, `normalizedRects`, and a `pages` array for selections that span multiple pages.
+
+### Keyboard shortcuts
+
+| Keys                | Action                                      |
+| ------------------- | ------------------------------------------- |
+| `⌘ S` / `Ctrl S`    | Download                                    |
+| `⌘ P` / `Ctrl P`    | Print                                       |
+| `⌘ F` / `Ctrl F`    | Search                                      |
+| `⌘ Z`, `⇧ ⌘ Z`      | Undo, redo                                  |
+| `⌘ =`, `⌘ -`, `⌘ 0` | Zoom in, zoom out, fit page                 |
+| `V`, `H`            | Select tool, hand tool                      |
+| `Esc`               | Cancel the active tool and clear selection  |
+| `Delete`            | Delete the selected annotations             |
+| `⌘ A` / `Ctrl A`    | Select every annotation on the current page |
+
+## Notes
+
+- Redaction, flattening, and page deletion are destructive. The editor asks for confirmation and, once applied, the removed content cannot be restored with undo.
+- Password protection and permission restrictions are staged in memory and written into the PDF when it is downloaded or read through `getDocumentBuffer`.
+- Page organization rewrites and reopens the document, which clears the undo history. Protected documents must have their protection removed before pages can be reorganized.
+- Saved signatures persist in `localStorage` under `pdf-editor:signatures` unless `persistSignatures` is `false` or set to a custom key.

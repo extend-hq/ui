@@ -2,9 +2,31 @@
 
 import * as React from "react"
 
+import {
+  clamp,
+  cuspColorForHue,
+  formatColorValue,
+  formatCssColor,
+  getOklchPlanePixels,
+  hslToRgb,
+  hsvToHsl,
+  normalizeHue,
+  oklchPlaneToRgb,
+  oklchToRgb,
+  parseColorInput,
+  rgbaToHex,
+  rgbToHsv,
+  rgbToOklch,
+  rgbToOklchPlane,
+  type ColorFormat,
+  type ColorParts,
+  type HslColor,
+  type HsvColor,
+  type OklchColor,
+  type RgbColor,
+} from "@/lib/color-picker-utils"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
@@ -14,8 +36,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
+  SelectPrimitive,
 } from "@/components/ui/select"
 import {
   Tooltip,
@@ -24,276 +45,1103 @@ import {
 } from "@/components/ui/tooltip"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-const COLOR_PICKER_PRESETS = [
-  "#111827",
-  "#52525b",
-  "#dc2626",
-  "#ea580c",
-  "#ca8a04",
-  "#16a34a",
-  "#0891b2",
-  "#2563eb",
-  "#4f46e5",
-  "#9333ea",
-  "#db2777",
-  "#ffffff",
-] as const
-const COLOR_PICKER_FORMATS = ["hex", "rgb", "css", "hsl"] as const
+const cossInputKeyboardFocusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+const cossInputWrapperFocusRing =
+  "focus-within:border-input-focus focus-within:ring-1 focus-within:ring-input-focus/24 focus-within:ring-offset-0 dark:focus-within:border-input-focus dark:focus-within:ring-input-focus/24"
+const cossOutlineEdge =
+  "before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit]"
+const cossOutlineEdgeHighlight =
+  "before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]"
 
-type ColorPickerFormat = (typeof COLOR_PICKER_FORMATS)[number]
-type HslColor = [number, number, number]
-type HsvColor = [number, number, number]
+interface HsvaColor {
+  h: number
+  s: number
+  v: number
+  a: number
+}
 
-function normalizeHexColor(value?: string, fallback = "#111827") {
-  if (!value) return fallback
+type EyeDropperConstructor = new () => {
+  open: () => Promise<{ sRGBHex: string }>
+}
 
-  const trimmed = value.trim()
-  const threeDigit = /^#([0-9a-f]{3})$/i.exec(trimmed)
-  if (threeDigit?.[1]) {
-    const [red, green, blue] = threeDigit[1].split("")
-    return `#${red}${red}${green}${green}${blue}${blue}`.toLowerCase()
+declare global {
+  interface Window {
+    EyeDropper?: EyeDropperConstructor
   }
-
-  const sixDigit = /^#([0-9a-f]{6})$/i.exec(trimmed)
-  if (sixDigit?.[1]) {
-    return `#${sixDigit[1].toLowerCase()}`
-  }
-
-  return fallback
 }
 
-function clampNumber(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value))
+const COLOR_FORMAT_OPTIONS: Array<{ value: ColorFormat; label: string }> = [
+  { value: "oklch", label: "OKLCH" },
+  { value: "hsl", label: "HSL" },
+  { value: "rgb", label: "RGB" },
+  { value: "hex", label: "Hex" },
+]
+
+const OK_HUE_TRACK = `linear-gradient(to bottom, ${Array.from(
+  { length: 25 },
+  (_, i) => rgbaToHex(cuspColorForHue(i * 15))
+).join(", ")})`
+
+// Ignore hue noise from RGB round trips.
+function withHueContinuity<T extends { h: number }>(
+  next: T,
+  previousHue: number,
+  chromaFraction: number
+): T {
+  const delta = Math.abs(next.h - previousHue) % 360
+  const angular = Math.min(delta, 360 - delta)
+  const tolerance = Math.min(10, 1.5 / Math.max(chromaFraction, 0.15))
+  return angular < tolerance ? { ...next, h: previousHue } : next
 }
 
-function normalizeHue(value: number) {
-  return ((value % 360) + 360) % 360
-}
+const triggerGroupClass =
+  "relative flex h-10 w-full min-w-0 items-center rounded-md border border-input bg-popover not-dark:bg-clip-padding text-base text-foreground shadow-xs/5 ring-input-focus/32 transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-md)-1px)] not-has-disabled:not-has-focus-visible:before:shadow-[0_1px_--theme(--color-black/4%)] has-focus-visible:border-input-focus has-focus-visible:ring-[3px] has-disabled:opacity-64 has-[:disabled,:focus-visible]:shadow-none dark:bg-input/32 dark:ring-input-focus/32 dark:has-focus-visible:border-input-focus dark:not-has-focus-visible:border-white/[0.08] dark:not-has-disabled:before:shadow-[0_-1px_--theme(--color-white/2%)] dark:not-has-disabled:not-has-focus-visible:before:shadow-[0_-1px_--theme(--color-white/6%)]"
 
-function clampPercent(value: number) {
-  return clampNumber(value, 0, 100)
-}
+const fieldSurfaceClass = cn(
+  "relative rounded-md border border-input bg-popover text-foreground shadow-xs/5 transition-shadow not-dark:bg-clip-padding dark:border-white/[0.08] dark:bg-input/32",
+  cossOutlineEdge,
+  cossOutlineEdgeHighlight,
+  cossInputWrapperFocusRing
+)
 
-function clampByte(value: number) {
-  return clampNumber(Math.round(value), 0, 255)
-}
+const channelInputClass =
+  "h-full w-full min-w-0 border-0 bg-transparent px-1 py-0 text-center text-sm leading-none tabular-nums text-foreground outline-none [transition:background-color_5000000s_ease-in-out_0s] placeholder:text-muted-foreground/72 focus:border-0 focus:outline-none focus:ring-0"
 
-function parseHexToRgb(value: string): [number, number, number] | undefined {
-  const hex = normalizeHexColor(value, "")
-  const match = /^#([0-9a-f]{6})$/i.exec(hex)
-  if (!match?.[1]) return undefined
+const thumbShadow = "shadow-[0_0_0_1px_rgb(0_0_0/24%),0_1px_2px_rgb(0_0_0/32%)]"
 
-  return [
-    Number.parseInt(match[1].slice(0, 2), 16),
-    Number.parseInt(match[1].slice(2, 4), 16),
-    Number.parseInt(match[1].slice(4, 6), 16),
-  ]
-}
-
-function rgbToHsl(red: number, green: number, blue: number): HslColor {
-  const r = clampByte(red) / 255
-  const g = clampByte(green) / 255
-  const b = clampByte(blue) / 255
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  let h = 0
-  let s = 0
-  const l = (max + min) / 2
-
-  if (max !== min) {
-    const delta = max - min
-    s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min)
-    if (max === r) {
-      h = (g - b) / delta + (g < b ? 6 : 0)
-    } else if (max === g) {
-      h = (b - r) / delta + 2
-    } else {
-      h = (r - g) / delta + 4
-    }
-    h /= 6
-  }
-
-  return [
-    normalizeHue(h * 360),
-    clampNumber(s * 100, 0, 100),
-    clampNumber(l * 100, 0, 100),
-  ]
-}
-
-function hslToRgb(hue: number, saturation: number, lightness: number) {
-  const h = normalizeHue(hue) / 360
-  const s = clampPercent(saturation) / 100
-  const l = clampPercent(lightness) / 100
-
-  if (s === 0) {
-    const channel = clampByte(l * 255)
-    return [channel, channel, channel] as const
-  }
-
-  const hueToRgb = (p: number, q: number, value: number) => {
-    let t = value
-    if (t < 0) t += 1
-    if (t > 1) t -= 1
-    if (t < 1 / 6) return p + (q - p) * 6 * t
-    if (t < 1 / 2) return q
-    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
-    return p
-  }
-
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s
-  const p = 2 * l - q
-
-  return [
-    clampByte(hueToRgb(p, q, h + 1 / 3) * 255),
-    clampByte(hueToRgb(p, q, h) * 255),
-    clampByte(hueToRgb(p, q, h - 1 / 3) * 255),
-  ] as const
-}
-
-function hslToHex([h, s, l]: HslColor) {
-  return `#${hslToRgb(h, s, l)
-    .map((channel) => channel.toString(16).padStart(2, "0"))
-    .join("")}`
-}
-
-function hslToHsv([hue, saturation, lightness]: HslColor): HsvColor {
-  const s = clampPercent(saturation) / 100
-  const l = clampPercent(lightness) / 100
-  const value = l + s * Math.min(l, 1 - l)
-  const hsvSaturation = value === 0 ? 0 : 2 * (1 - l / value)
-
-  return [
-    normalizeHue(hue),
-    clampPercent(hsvSaturation * 100),
-    clampPercent(value * 100),
-  ]
-}
-
-function hsvToHsl([hue, saturation, value]: HsvColor): HslColor {
-  const s = clampPercent(saturation) / 100
-  const v = clampPercent(value) / 100
-  const lightness = v * (1 - s / 2)
-  const hslSaturation =
-    lightness === 0 || lightness === 1
-      ? 0
-      : (v - lightness) / Math.min(lightness, 1 - lightness)
-
-  return [
-    normalizeHue(hue),
-    clampPercent(hslSaturation * 100),
-    clampPercent(lightness * 100),
-  ]
-}
-
-function normalizeHslColor([hue, saturation, lightness]: HslColor): HslColor {
-  return [normalizeHue(hue), clampPercent(saturation), clampPercent(lightness)]
-}
-
-function normalizeHsvColor([hue, saturation, value]: HsvColor): HsvColor {
-  return [normalizeHue(hue), clampPercent(saturation), clampPercent(value)]
-}
-
-function parseColor(value: string): HslColor | undefined {
-  const trimmed = value.trim()
-  if (!trimmed) return undefined
-
-  const rgbFromHex = parseHexToRgb(trimmed)
-  if (rgbFromHex) return rgbToHsl(...rgbFromHex)
-
-  const rgbMatch = /^rgba?\(([^)]+)\)$/i.exec(trimmed)
-  if (rgbMatch?.[1]) {
-    const values = rgbMatch[1].match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? []
-    if (values.length >= 3) return rgbToHsl(values[0], values[1], values[2])
-  }
-
-  const hslMatch = /^hsla?\(([^)]+)\)$/i.exec(trimmed)
-  if (hslMatch?.[1]) {
-    const values = hslMatch[1].match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? []
-    if (values.length >= 3) {
-      return [
-        normalizeHue(values[0]),
-        clampPercent(values[1]),
-        clampPercent(values[2]),
-      ]
-    }
-  }
-
-  return undefined
-}
-
-function formatColor(color: HslColor, format: ColorPickerFormat) {
-  const [h, s, l] = color
-  const [red, green, blue] = hslToRgb(h, s, l)
-
-  if (format === "rgb") return `rgb(${red}, ${green}, ${blue})`
-  if (format === "css") return `rgba(${red}, ${green}, ${blue}, 1)`
-  if (format === "hsl") {
-    return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`
-  }
-
-  return hslToHex(color)
-}
-
-function ColorPickerTooltip({
-  label,
-  children,
+function Checkerboard({
+  className,
+  size = 8,
 }: {
-  label: string
-  children: React.ReactNode
+  className?: string
+  size?: number
 }) {
   return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute inset-0 bg-white [--checker:#00000024] dark:bg-neutral-700 dark:[--checker:#ffffff2e]",
+        className
+      )}
+      style={{
+        backgroundImage:
+          "conic-gradient(var(--checker) 0 25%, transparent 0 50%, var(--checker) 0 75%, transparent 0)",
+        backgroundSize: `${size}px ${size}px`,
+      }}
+    />
+  )
+}
+
+interface DraftInputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "value" | "onChange"
+  > {
+  value: string
+  onCommitText: (text: string) => void
+  onStep?: (direction: 1 | -1, big: boolean) => void
+  copyValue?: () => string
+  inputRef?: React.MutableRefObject<HTMLInputElement | null>
+}
+
+function DraftInput({
+  value,
+  onCommitText,
+  onStep,
+  copyValue,
+  inputRef,
+  ...props
+}: DraftInputProps) {
+  const [draft, setDraft] = React.useState<string | null>(null)
+  const internalRef = React.useRef<HTMLInputElement | null>(null)
+  // Keep mouseup from clearing the focus selection.
+  const keepSelectionRef = React.useRef(false)
+
+  const setRefs = (node: HTMLInputElement | null) => {
+    internalRef.current = node
+    if (inputRef) inputRef.current = node
+  }
+
+  const commitDraft = () => {
+    if (draft !== null && draft.trim() !== value) onCommitText(draft)
+    setDraft(null)
+  }
+
+  const reselect = () => {
+    requestAnimationFrame(() => internalRef.current?.select())
+  }
+
+  return (
+    <input
+      autoComplete="off"
+      autoCorrect="off"
+      spellCheck={false}
+      type="text"
+      {...props}
+      ref={setRefs}
+      value={draft ?? value}
+      onFocus={(event) => {
+        setDraft(event.currentTarget.value)
+        event.currentTarget.select()
+        keepSelectionRef.current = true
+      }}
+      onMouseUp={(event) => {
+        if (keepSelectionRef.current) {
+          event.preventDefault()
+          keepSelectionRef.current = false
+        }
+      }}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={commitDraft}
+      onCopy={(event) => {
+        if (!copyValue) return
+        const input = event.currentTarget
+        const fullySelected =
+          input.value.length > 0 &&
+          input.selectionStart === 0 &&
+          input.selectionEnd === input.value.length
+        if (!fullySelected) return
+        event.preventDefault()
+        event.clipboardData.setData("text/plain", copyValue())
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          commitDraft()
+          reselect()
+        } else if (event.key === "Escape") {
+          if (draft !== null) {
+            event.stopPropagation()
+            setDraft(null)
+          }
+        } else if (
+          onStep &&
+          (event.key === "ArrowUp" || event.key === "ArrowDown")
+        ) {
+          event.preventDefault()
+          setDraft(null)
+          onStep(event.key === "ArrowUp" ? 1 : -1, event.shiftKey)
+          reselect()
+        }
+      }}
+    />
+  )
+}
+
+interface ChannelSpec {
+  key: string
+  label: string
+  ariaLabel: string
+  value: string
+  numericValue: number
+  step: number
+  bigStep: number
+  commit: (next: number) => void
+}
+
+function parseChannelText(text: string): number | null {
+  const numeric = Number.parseFloat(text.replace(/[%°]/g, "").trim())
+  return Number.isFinite(numeric) ? numeric : null
+}
+
+function ChannelGroup({
+  channels,
+  copyValue,
+  disabled,
+}: {
+  channels: ChannelSpec[]
+  copyValue: string
+  disabled?: boolean
+}) {
+  return (
+    <div className="flex items-start gap-1.5">
+      <div className="min-w-0 flex-1">
+        <div className={cn(fieldSurfaceClass, "grid h-8 grid-cols-3")}>
+          {channels.map((channel) => (
+            <DraftInput
+              key={channel.key}
+              aria-label={channel.ariaLabel}
+              className={channelInputClass}
+              disabled={disabled}
+              inputMode="decimal"
+              value={channel.value}
+              onCommitText={(text) => {
+                const numeric = parseChannelText(text)
+                if (numeric !== null) channel.commit(numeric)
+              }}
+              onStep={(direction, big) =>
+                channel.commit(
+                  channel.numericValue +
+                    direction * (big ? channel.bigStep : channel.step)
+                )
+              }
+            />
+          ))}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-1/3 w-px bg-input dark:bg-white/[0.08]"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-2/3 w-px bg-input dark:bg-white/[0.08]"
+          />
+        </div>
+        <div className="mt-1 grid h-4 grid-cols-3 items-center text-center text-xs font-medium text-muted-foreground">
+          {channels.map((channel) => (
+            <span key={channel.key}>{channel.label}</span>
+          ))}
+        </div>
+      </div>
+      <CopyColorButton text={copyValue} />
+    </div>
+  )
+}
+
+function SaturationValueArea({
+  hue,
+  s,
+  v,
+  color,
+  onMove,
+}: {
+  hue: number
+  s: number
+  v: number
+  color: string
+  onMove: (s: number, v: number) => void
+}) {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
+  // Avoid redraws for imperceptible hue changes.
+  const quantizedHue = Math.round(normalizeHue(hue) * 2) / 2
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current
+    const context = canvas?.getContext("2d")
+    if (!canvas || !context) return
+    const image = context.createImageData(canvas.width, canvas.height)
+    image.data.set(
+      getOklchPlanePixels(canvas.width, canvas.height, quantizedHue)
+    )
+    context.putImageData(image, 0, 0)
+  }, [quantizedHue])
+
+  const update = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const inset = 7
+    onMove(
+      clamp(
+        ((event.clientX - rect.left - inset) / (rect.width - inset * 2)) * 100,
+        0,
+        100
+      ),
+      clamp(
+        100 -
+          ((event.clientY - rect.top - inset) / (rect.height - inset * 2)) *
+            100,
+        0,
+        100
+      )
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label="Chroma and lightness"
+      className={cn(
+        "relative size-53 shrink-0 cursor-crosshair touch-none rounded-lg",
+        cossInputKeyboardFocusRing
+      )}
+      onPointerDown={(event) => {
+        event.preventDefault()
+        event.currentTarget.setPointerCapture(event.pointerId)
+        event.currentTarget.focus()
+        update(event)
+      }}
+      onPointerMove={(event) => {
+        if ((event.buttons & 1) === 0) return
+        update(event)
+      }}
+      onKeyDown={(event) => {
+        const delta = event.shiftKey ? 10 : 1
+        let next: [number, number] | null = null
+        if (event.key === "ArrowLeft") next = [s - delta, v]
+        if (event.key === "ArrowRight") next = [s + delta, v]
+        if (event.key === "ArrowUp") next = [s, v + delta]
+        if (event.key === "ArrowDown") next = [s, v - delta]
+        if (next) {
+          event.preventDefault()
+          onMove(clamp(next[0], 0, 100), clamp(next[1], 0, 100))
+        }
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        width={168}
+        height={168}
+        className="pointer-events-none absolute inset-0 size-full rounded-[inherit]"
+      />
+      <span
+        className={cn(
+          "pointer-events-none absolute size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-white",
+          thumbShadow
+        )}
+        style={{
+          left: `calc(7px + (100% - 14px) * ${clamp(s, 0, 100) / 100})`,
+          top: `calc(7px + (100% - 14px) * ${clamp(100 - v, 0, 100) / 100})`,
+          backgroundColor: color,
+        }}
+      />
+    </button>
+  )
+}
+
+function VerticalSlider({
+  ariaLabel,
+  ariaValueMax,
+  ariaValueNow,
+  ariaValueText,
+  fraction,
+  onFraction,
+  onStep,
+  track,
+}: {
+  ariaLabel: string
+  ariaValueMax: number
+  ariaValueNow: number
+  ariaValueText?: string
+  fraction: number
+  onFraction: (fraction: number) => void
+  onStep: (direction: 1 | -1, big: boolean) => void
+  track: React.ReactNode
+}) {
+  const update = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const inset = 2.5
+    onFraction(
+      clamp(
+        (event.clientY - rect.top - inset) / (rect.height - inset * 2),
+        0,
+        1
+      )
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      role="slider"
+      aria-label={ariaLabel}
+      aria-orientation="vertical"
+      aria-valuemin={0}
+      aria-valuemax={ariaValueMax}
+      aria-valuenow={ariaValueNow}
+      aria-valuetext={ariaValueText}
+      className={cn(
+        "relative w-3 shrink-0 touch-none self-stretch rounded-full",
+        cossInputKeyboardFocusRing
+      )}
+      onPointerDown={(event) => {
+        event.preventDefault()
+        event.currentTarget.setPointerCapture(event.pointerId)
+        event.currentTarget.focus()
+        update(event)
+      }}
+      onPointerMove={(event) => {
+        if ((event.buttons & 1) === 0) return
+        update(event)
+      }}
+      onKeyDown={(event) => {
+        let direction: 1 | -1 | null = null
+        if (event.key === "ArrowUp" || event.key === "ArrowRight") direction = 1
+        if (event.key === "ArrowDown" || event.key === "ArrowLeft")
+          direction = -1
+        if (direction) {
+          event.preventDefault()
+          onStep(direction, event.shiftKey)
+        }
+      }}
+    >
+      <span className="absolute inset-0 overflow-hidden rounded-full ring-1 ring-black/8 ring-inset dark:ring-white/12">
+        {track}
+      </span>
+      <span
+        className="pointer-events-none absolute left-1/2 h-[5px] w-[calc(100%+3px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_1px_rgb(0_0_0/20%),0_1px_2px_rgb(0_0_0/24%)]"
+        style={{ top: `calc(2.5px + (100% - 5px) * ${clamp(fraction, 0, 1)})` }}
+      />
+    </button>
+  )
+}
+
+function CopyColorButton({
+  text,
+  label = "Copy color",
+}: {
+  text: string
+  label?: string
+}) {
+  const [copied, setCopied] = React.useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1200)
+    } catch {
+      // Clipboard access can be unavailable outside secure browser contexts.
+    }
+  }
+
+  return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="inline-flex">{children}</span>
+      <TooltipTrigger
+        render={
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            aria-label={label}
+            className="size-8! shrink-0"
+            onClick={handleCopy}
+          />
+        }
+      >
+        <IconPlaceholder
+          lucide={copied ? "Check" : "Copy"}
+          tabler={copied ? "IconCheck" : "IconCopy"}
+          hugeicons={copied ? "Tick02Icon" : "Copy01Icon"}
+          phosphor={copied ? "CheckIcon" : "CopyIcon"}
+          remixicon={copied ? "RiCheckLine" : "RiFileCopyLine"}
+          className="size-4"
+        />
       </TooltipTrigger>
-      <TooltipContent side="bottom">{label}</TooltipContent>
+      <TooltipContent side="top">{copied ? "Copied" : "Copy"}</TooltipContent>
     </Tooltip>
   )
 }
 
-export function ColorPicker({
-  color,
+function AlphaScrubField({
+  alphaPercent,
   disabled,
-  icon: IconComponent,
-  label,
-  onTriggerMouseDown,
-  onTriggerPointerDown,
-  onChange,
+  onCommit,
+  scrubbable = true,
+  className,
+  inputClassName,
+  suffixClassName,
 }: {
-  color: string
+  alphaPercent: number
   disabled?: boolean
-  icon: React.ComponentType<React.ComponentProps<"svg">>
-  label: string
+  onCommit: (percent: number) => void
+  scrubbable?: boolean
+  className?: string
+  inputClassName?: string
+  suffixClassName?: string
+}) {
+  const inputRef = React.useRef<HTMLInputElement | null>(null)
+  const scrubRef = React.useRef<{
+    startX: number
+    startPercent: number
+    scrubbed: boolean
+  } | null>(null)
+  const rounded = Math.round(alphaPercent)
+
+  const scrubHandlers: React.HTMLAttributes<HTMLDivElement> = scrubbable
+    ? {
+        onPointerDown: (event) => {
+          if (disabled) return
+          if (document.activeElement === inputRef.current) return
+          event.preventDefault()
+          event.currentTarget.setPointerCapture(event.pointerId)
+          scrubRef.current = {
+            startX: event.clientX,
+            startPercent: alphaPercent,
+            scrubbed: false,
+          }
+        },
+        onPointerMove: (event) => {
+          const scrub = scrubRef.current
+          if (!scrub || (event.buttons & 1) === 0) return
+          const dx = event.clientX - scrub.startX
+          if (!scrub.scrubbed && Math.abs(dx) < 3) return
+          scrub.scrubbed = true
+          onCommit(clamp(scrub.startPercent + dx / 2, 0, 100))
+        },
+        onPointerUp: () => {
+          const scrub = scrubRef.current
+          scrubRef.current = null
+          if (scrub && !scrub.scrubbed) inputRef.current?.focus()
+        },
+        onPointerCancel: () => {
+          scrubRef.current = null
+        },
+      }
+    : {}
+
+  return (
+    <div
+      className={cn(
+        "flex h-full shrink-0 items-center gap-0.5",
+        scrubbable && "cursor-ew-resize touch-none select-none",
+        className
+      )}
+      {...scrubHandlers}
+    >
+      <DraftInput
+        aria-label="Opacity"
+        className={cn(
+          "border-0 bg-transparent p-0 text-right tabular-nums outline-none focus:border-0 focus:ring-0",
+          inputClassName ?? "w-8 text-base"
+        )}
+        disabled={disabled}
+        inputMode="decimal"
+        inputRef={inputRef}
+        value={String(rounded)}
+        onCommitText={(text) => {
+          const numeric = parseChannelText(text)
+          if (numeric !== null) onCommit(clamp(numeric, 0, 100))
+        }}
+        onStep={(direction, big) =>
+          onCommit(clamp(alphaPercent + direction * (big ? 10 : 1), 0, 100))
+        }
+      />
+      <span
+        className={cn("text-muted-foreground", suffixClassName ?? "text-base")}
+      >
+        %
+      </span>
+    </div>
+  )
+}
+
+export type ColorPickerProps = {
+  value?: string
+  color?: string
+  onChange?: (value: string) => void
+  label?: string
+  disabled?: boolean
+  showAlpha?: boolean
+  defaultFormat?: ColorFormat
+  variant?: "input" | "swatch" | "panel"
+  className?: string
+  icon?: React.ComponentType<React.ComponentProps<"svg">>
+  rainbowTrigger?: boolean
   onTriggerMouseDown?: React.MouseEventHandler<HTMLButtonElement>
   onTriggerPointerDown?: React.PointerEventHandler<HTMLButtonElement>
-  onChange: (color: string) => void
-}) {
+}
+
+export function ColorPicker({
+  value: valueProp,
+  color,
+  onChange,
+  label = "Choose color",
+  disabled = false,
+  showAlpha = false,
+  defaultFormat = "hex",
+  variant,
+  className,
+  icon: IconComponent,
+  rainbowTrigger = false,
+  onTriggerMouseDown,
+  onTriggerPointerDown,
+}: ColorPickerProps) {
+  const value = valueProp ?? color ?? "#111827"
+  const resolvedVariant = variant ?? (color !== undefined ? "swatch" : "input")
   const [open, setOpen] = React.useState(false)
+
+  // Keep drag coordinates independent from exact typed RGB values.
+  const [picker, setPicker] = React.useState<{
+    plane: HsvColor
+    rgb: RgbColor
+    a: number
+  }>(() => {
+    const parsed = parseColorInput(value, "hex")
+    if (!parsed)
+      return { plane: { h: 0, s: 0, v: 0 }, rgb: { r: 0, g: 0, b: 0 }, a: 1 }
+    return {
+      plane: rgbToOklchPlane(parsed.rgb),
+      rgb: parsed.rgb,
+      a: showAlpha ? (parsed.alpha ?? 1) : 1,
+    }
+  })
+  const [format, setFormat] = React.useState<ColorFormat>(defaultFormat)
+  const lastCommitAtRef = React.useRef(0)
+  const triggerGroupRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!value) return
+    // User input wins over delayed controlled-value echoes.
+    if (Date.now() - lastCommitAtRef.current < 400) return
+    const parsed = parseColorInput(value, "hex")
+    if (!parsed) return
+    setPicker((prev) => {
+      // Preserve opacity when the parent stores only RGB.
+      const alpha = showAlpha ? (parsed.alpha ?? prev.a) : 1
+      // Preserve unrounded channel precision.
+      if (rgbaToHex(prev.rgb, prev.a) === rgbaToHex(parsed.rgb, alpha))
+        return prev
+      const derived = rgbToOklchPlane(parsed.rgb, prev.plane.h)
+      return {
+        plane: withHueContinuity(derived, prev.plane.h, derived.s / 100),
+        rgb: parsed.rgb,
+        a: alpha,
+      }
+    })
+  }, [value, showAlpha])
+
+  const applyState = (next: { plane: HsvColor; rgb: RgbColor; a: number }) => {
+    setPicker(next)
+    lastCommitAtRef.current = Date.now()
+    const hex = rgbaToHex(next.rgb, next.a)
+    onChange?.(hex)
+  }
+
+  const commitHsva = (next: HsvaColor) => {
+    const plane: HsvColor = {
+      h: clamp(next.h, 0, 360),
+      s: clamp(next.s, 0, 100),
+      v: clamp(next.v, 0, 100),
+    }
+    applyState({
+      plane,
+      rgb: oklchPlaneToRgb(plane),
+      a: showAlpha ? clamp(next.a, 0, 1) : 1,
+    })
+  }
+
+  const hsva: HsvaColor = { ...picker.plane, a: picker.a }
+  const rgb = picker.rgb
+  // Preserve hue for achromatic colors.
+  const srgbHueRef = React.useRef(0)
+  const displayHsv = rgbToHsv(rgb, srgbHueRef.current)
+  srgbHueRef.current = displayHsv.h
+  const hsl = hsvToHsl(displayHsv)
+  const rawOklch = rgbToOklch(rgb, hsva.h)
+  const oklch = withHueContinuity(rawOklch, hsva.h, rawOklch.c / 0.33)
+  const parts: ColorParts = { rgb, hsl, oklch, alpha: hsva.a }
+  const opaqueColor = `rgb(${Math.round(rgb.r)} ${Math.round(rgb.g)} ${Math.round(rgb.b)})`
+  const currentColor = `rgb(${Math.round(rgb.r)} ${Math.round(rgb.g)} ${Math.round(rgb.b)} / ${hsva.a})`
+
+  const commitRgb = (
+    nextRgb: RgbColor,
+    alpha?: number | null,
+    intendedHue?: number
+  ) => {
+    const exact: RgbColor = {
+      r: clamp(nextRgb.r, 0, 255),
+      g: clamp(nextRgb.g, 0, 255),
+      b: clamp(nextRgb.b, 0, 255),
+    }
+    const targetHue = intendedHue ?? picker.plane.h
+    const derived = rgbToOklchPlane(exact, targetHue)
+    applyState({
+      plane: withHueContinuity(derived, targetHue, derived.s / 100),
+      rgb: exact,
+      a: showAlpha ? clamp(alpha ?? picker.a, 0, 1) : 1,
+    })
+  }
+  const commitHsl = (nextHsl: HslColor) => commitRgb(hslToRgb(nextHsl))
+  const commitOklch = (nextOklch: OklchColor) =>
+    commitRgb(oklchToRgb(nextOklch), undefined, normalizeHue(nextOklch.h))
+  const commitText = (text: string) => {
+    const parsed = parseColorInput(text, format)
+    if (!parsed) return
+    if (parsed.format && parsed.format !== format) setFormat(parsed.format)
+    commitRgb(parsed.rgb, parsed.alpha)
+  }
+
+  const cssColor = formatCssColor(format, parts, { includeAlpha: showAlpha })
+  const portalContainer =
+    typeof document === "undefined" ? undefined : document.body
+  const supportsEyeDropper =
+    typeof window !== "undefined" && window.EyeDropper !== undefined
+
+  const handleEyeDropper = () => {
+    const eyeDropperCtor = window.EyeDropper
+    if (!eyeDropperCtor) return
+    new eyeDropperCtor()
+      .open()
+      .then((result) => {
+        const parsed = parseColorInput(result.sRGBHex, "hex")
+        if (parsed) commitRgb(parsed.rgb)
+      })
+      .catch(() => {})
+  }
+
+  const oklchChannels: ChannelSpec[] = [
+    {
+      key: "l",
+      label: "L",
+      ariaLabel: "OKLCH lightness",
+      value: (oklch.l * 100).toFixed(1),
+      numericValue: oklch.l * 100,
+      step: 1,
+      bigStep: 10,
+      commit: (next) => commitOklch({ ...oklch, l: clamp(next, 0, 100) / 100 }),
+    },
+    {
+      key: "c",
+      label: "C",
+      ariaLabel: "OKLCH chroma",
+      value: oklch.c.toFixed(3),
+      numericValue: oklch.c,
+      step: 0.01,
+      bigStep: 0.05,
+      commit: (next) => commitOklch({ ...oklch, c: Math.max(0, next) }),
+    },
+    {
+      key: "h",
+      label: "H",
+      ariaLabel: "OKLCH hue",
+      value: oklch.h.toFixed(1),
+      numericValue: oklch.h,
+      step: 1,
+      bigStep: 10,
+      commit: (next) => commitOklch({ ...oklch, h: normalizeHue(next) }),
+    },
+  ]
+
+  const hslChannels: ChannelSpec[] = [
+    {
+      key: "h",
+      label: "H",
+      ariaLabel: "HSL hue",
+      value: hsl.h.toFixed(1),
+      numericValue: hsl.h,
+      step: 1,
+      bigStep: 10,
+      commit: (next) => commitHsl({ ...hsl, h: normalizeHue(next) }),
+    },
+    {
+      key: "s",
+      label: "S",
+      ariaLabel: "HSL saturation",
+      value: hsl.s.toFixed(1),
+      numericValue: hsl.s,
+      step: 1,
+      bigStep: 10,
+      commit: (next) => commitHsl({ ...hsl, s: clamp(next, 0, 100) }),
+    },
+    {
+      key: "l",
+      label: "L",
+      ariaLabel: "HSL lightness",
+      value: hsl.l.toFixed(1),
+      numericValue: hsl.l,
+      step: 1,
+      bigStep: 10,
+      commit: (next) => commitHsl({ ...hsl, l: clamp(next, 0, 100) }),
+    },
+  ]
+
+  const rgbChannels: ChannelSpec[] = (["r", "g", "b"] as const).map(
+    (channel) => ({
+      key: channel,
+      label: channel.toUpperCase(),
+      ariaLabel: { r: "Red", g: "Green", b: "Blue" }[channel],
+      value: String(Math.round(rgb[channel])),
+      numericValue: rgb[channel],
+      step: 1,
+      bigStep: 10,
+      commit: (next) => commitRgb({ ...rgb, [channel]: clamp(next, 0, 255) }),
+    })
+  )
+
+  const panel = (
+    <div
+      className={cn(
+        "flex items-stretch gap-3",
+        resolvedVariant === "panel" && className
+      )}
+    >
+      <SaturationValueArea
+        hue={hsva.h}
+        s={hsva.s}
+        v={hsva.v}
+        color={opaqueColor}
+        onMove={(s, v) => commitHsva({ ...hsva, s, v })}
+      />
+
+      <div className="flex shrink-0 flex-col items-center gap-1.5 self-stretch">
+        <div className="flex min-h-0 flex-1 items-stretch gap-2">
+          {showAlpha && (
+            <VerticalSlider
+              ariaLabel="Opacity"
+              ariaValueMax={100}
+              ariaValueNow={Math.round(hsva.a * 100)}
+              ariaValueText={`${Math.round(hsva.a * 100)}%`}
+              fraction={1 - hsva.a}
+              onFraction={(fraction) =>
+                commitHsva({ ...hsva, a: 1 - fraction })
+              }
+              onStep={(direction, big) =>
+                commitHsva({
+                  ...hsva,
+                  a: clamp(hsva.a + direction * (big ? 0.1 : 0.01), 0, 1),
+                })
+              }
+              track={
+                <>
+                  <Checkerboard size={6} />
+                  <span
+                    className="absolute inset-0"
+                    style={{
+                      background: `linear-gradient(to bottom, ${opaqueColor}, transparent)`,
+                    }}
+                  />
+                </>
+              }
+            />
+          )}
+
+          <VerticalSlider
+            ariaLabel="Hue"
+            ariaValueMax={360}
+            ariaValueNow={Math.round(hsva.h)}
+            fraction={clamp(hsva.h, 0, 360) / 360}
+            onFraction={(fraction) =>
+              commitHsva({ ...hsva, h: fraction * 360 })
+            }
+            onStep={(direction, big) =>
+              commitHsva({
+                ...hsva,
+                h: clamp(hsva.h - direction * (big ? 10 : 1), 0, 360),
+              })
+            }
+            track={
+              <span
+                className="absolute inset-0"
+                style={{ background: OK_HUE_TRACK }}
+              />
+            }
+          />
+        </div>
+        {supportsEyeDropper ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label="Pick color from screen"
+                  className="size-8! shrink-0"
+                  onClick={handleEyeDropper}
+                />
+              }
+            >
+              <IconPlaceholder
+                lucide="Pipette"
+                tabler="IconColorPicker"
+                hugeicons="ColorPickerIcon"
+                phosphor="EyedropperIcon"
+                remixicon="RiColorPickerLine"
+                className="size-4"
+              />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="whitespace-nowrap">
+              Pick color from screen
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+      </div>
+
+      <div className="flex w-64 shrink-0 flex-col gap-2">
+        <ChannelGroup
+          channels={oklchChannels}
+          copyValue={formatCssColor("oklch", parts, {
+            includeAlpha: showAlpha,
+          })}
+          disabled={disabled}
+        />
+        <ChannelGroup
+          channels={hslChannels}
+          copyValue={formatCssColor("hsl", parts, { includeAlpha: showAlpha })}
+          disabled={disabled}
+        />
+        <ChannelGroup
+          channels={rgbChannels}
+          copyValue={formatCssColor("rgb", parts, { includeAlpha: showAlpha })}
+          disabled={disabled}
+        />
+
+        <div className="flex items-center gap-1.5">
+          <div
+            className={cn(
+              fieldSurfaceClass,
+              "flex h-8 min-w-0 flex-1 items-center"
+            )}
+          >
+            <DraftInput
+              aria-label="Color value"
+              className="h-full min-w-0 flex-1 rounded-[inherit] border-0 bg-transparent px-2 py-0 text-center text-sm leading-none tabular-nums outline-none focus:border-0 focus:ring-0"
+              copyValue={() => cssColor}
+              value={formatColorValue(format, parts)}
+              onCommitText={commitText}
+            />
+            {showAlpha && (
+              <AlphaScrubField
+                alphaPercent={hsva.a * 100}
+                disabled={disabled}
+                scrubbable={false}
+                className="gap-0.5 pr-2 pl-0.5"
+                inputClassName="w-8 text-sm"
+                suffixClassName="text-sm"
+                onCommit={(percent) =>
+                  commitHsva({ ...hsva, a: percent / 100 })
+                }
+              />
+            )}
+          </div>
+          <Select
+            value={format}
+            onValueChange={(next) => {
+              if (next !== null) setFormat(next)
+            }}
+          >
+            <SelectPrimitive.Trigger
+              render={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label="Color format"
+                  className="size-8! shrink-0"
+                />
+              }
+            >
+              <IconPlaceholder
+                lucide="ChevronsUpDown"
+                tabler="IconSelector"
+                hugeicons="UnfoldMoreIcon"
+                phosphor="CaretUpDownIcon"
+                remixicon="RiExpandUpDownLine"
+                className="size-3.5"
+              />
+            </SelectPrimitive.Trigger>
+            <SelectContent
+              align="end"
+              className="min-w-28"
+              portalProps={{ container: portalContainer }}
+            >
+              {COLOR_FORMAT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  )
+
+  if (resolvedVariant === "panel") return panel
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <ColorPickerTooltip label={label}>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            disabled={disabled}
-            aria-label={label}
-            className="relative"
-            onMouseDown={onTriggerMouseDown}
-            onPointerDown={onTriggerPointerDown}
-          >
-            <IconComponent className="size-4" />
-            <span
-              className="absolute right-1 bottom-1 h-1 w-4 rounded-full border border-background"
-              style={{ backgroundColor: color }}
+      {resolvedVariant === "swatch" ? (
+        <PopoverTrigger
+          render={
+            <Button
+              type="button"
+              variant={IconComponent || rainbowTrigger ? "ghost" : "outline"}
+              size="icon-sm"
+              aria-label={label}
+              disabled={disabled}
+              data-color-picker-trigger=""
+              className={cn("relative shrink-0", className)}
+              onMouseDown={onTriggerMouseDown}
+              onPointerDown={onTriggerPointerDown}
             />
-          </Button>
+          }
+        >
+          {rainbowTrigger ? (
+            <span
+              aria-hidden="true"
+              className="size-5 shrink-0 rounded-full bg-[conic-gradient(from_90deg,#ff3b30,#ffcc00,#34c759,#00c7be,#007aff,#af52de,#ff2d55,#ff3b30)] shadow-[0_0_0_1px_rgb(0_0_0/10%)]"
+            />
+          ) : IconComponent ? (
+            <>
+              <IconComponent className="size-4" />
+              <span
+                aria-hidden="true"
+                className="absolute right-1 bottom-1 h-1 w-4 rounded-full border border-background"
+                style={{ backgroundColor: currentColor }}
+              />
+            </>
+          ) : (
+            <span className="relative size-4 shrink-0 overflow-hidden rounded-[4px]">
+              <Checkerboard size={4} />
+              <span
+                aria-hidden="true"
+                className="absolute inset-0"
+                style={{ backgroundColor: currentColor }}
+              />
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 rounded-[inherit] ring-1 ring-black/12 ring-inset dark:ring-white/16"
+              />
+            </span>
+          )}
         </PopoverTrigger>
-      </ColorPickerTooltip>
-      <PopoverContent align="start" className="z-40 w-72 p-1">
-        <ColorPickerPanel color={color} label={label} onChange={onChange} />
+      ) : (
+        <div
+          ref={triggerGroupRef}
+          data-color-picker-trigger=""
+          data-slot="color-picker"
+          className={cn(triggerGroupClass, className)}
+        >
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                aria-label={label}
+                disabled={disabled}
+                className={cn(
+                  "relative ml-2 size-6 shrink-0 overflow-hidden rounded-[calc(var(--radius-md)-2px)]",
+                  cossInputKeyboardFocusRing
+                )}
+              />
+            }
+          >
+            <Checkerboard size={6} />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{ backgroundColor: currentColor }}
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-[inherit] ring-1 ring-black/12 ring-inset dark:ring-white/16"
+            />
+          </PopoverTrigger>
+          <DraftInput
+            aria-label={`${label} value`}
+            className="h-full w-full min-w-0 grow border-0 bg-transparent px-[calc(--spacing(2.5)-1px)] text-base tabular-nums outline-none [transition:background-color_5000000s_ease-in-out_0s] placeholder:text-muted-foreground/72 focus:border-0 focus:ring-0"
+            copyValue={() => cssColor}
+            disabled={disabled}
+            value={formatColorValue(format, parts)}
+            onCommitText={commitText}
+          />
+          {showAlpha && (
+            <AlphaScrubField
+              alphaPercent={hsva.a * 100}
+              disabled={disabled}
+              className="pr-[calc(--spacing(3)-1px)] pl-1"
+              onCommit={(percent) => commitHsva({ ...hsva, a: percent / 100 })}
+            />
+          )}
+        </div>
+      )}
+      <PopoverContent
+        anchor={resolvedVariant === "swatch" ? undefined : triggerGroupRef}
+        align={resolvedVariant === "swatch" ? "end" : "start"}
+        sideOffset={8}
+        portalProps={{ container: portalContainer }}
+        className="w-auto p-0 [&>[data-slot=popover-viewport]]:p-3.5!"
+      >
+        {panel}
       </PopoverContent>
     </Popover>
   )
@@ -304,193 +1152,22 @@ export function ColorPickerPanel({
   color,
   label,
   onChange,
+  showAlpha = false,
 }: {
   className?: string
   color: string
   label: string
   onChange: (color: string) => void
+  showAlpha?: boolean
 }) {
-  const parsedColor = React.useMemo(
-    () => parseColor(color) ?? parseColor("#111827")!,
-    [color]
-  )
-  const parsedFieldColor = React.useMemo(
-    () => hslToHsv(parsedColor),
-    [parsedColor]
-  )
-  const [format, setFormat] = React.useState<ColorPickerFormat>("hex")
-  const [hsl, setHsl] = React.useState<HslColor>(parsedColor)
-  const [fieldHsv, setFieldHsv] = React.useState<HsvColor>(parsedFieldColor)
-  const [inputValue, setInputValue] = React.useState(() =>
-    formatColor(parsedColor, "hex")
-  )
-
-  React.useEffect(() => {
-    setHsl(parsedColor)
-    setFieldHsv(parsedFieldColor)
-    setInputValue(formatColor(parsedColor, format))
-  }, [format, parsedColor, parsedFieldColor])
-
-  function applyColor(nextColor: HslColor, nextFieldColor?: HsvColor) {
-    const normalizedColor = normalizeHslColor(nextColor)
-    const normalizedFieldColor = normalizeHsvColor(
-      nextFieldColor ?? hslToHsv(normalizedColor)
-    )
-    setHsl(normalizedColor)
-    setFieldHsv(normalizedFieldColor)
-    setInputValue(formatColor(normalizedColor, format))
-    onChange(hslToHex(normalizedColor))
-  }
-
-  function updateColorField(
-    event: React.PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>
-  ) {
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = clampNumber(event.clientX - rect.left, 0, rect.width)
-    const y = clampNumber(event.clientY - rect.top, 0, rect.height)
-    const nextFieldColor: HsvColor = [
-      fieldHsv[0],
-      Math.round((x / rect.width) * 100),
-      Math.round(100 - (y / rect.height) * 100),
-    ]
-
-    applyColor(hsvToHsl(nextFieldColor), nextFieldColor)
-  }
-
-  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const nextValue = event.target.value
-    setInputValue(nextValue)
-
-    const parsed = parseColor(nextValue)
-    if (parsed) {
-      setHsl(parsed)
-      setFieldHsv(hslToHsv(parsed))
-      onChange(hslToHex(parsed))
-    }
-  }
-
   return (
-    <div className={cn("space-y-1.5", className)}>
-      <div className="flex justify-end">
-        <Select
-          value={format}
-          onValueChange={(value) => {
-            const nextFormat = value as ColorPickerFormat
-            setFormat(nextFormat)
-            setInputValue(formatColor(hsl, nextFormat))
-          }}
-        >
-          <SelectTrigger
-            size="sm"
-            className="h-7 w-24 text-xs"
-            aria-label="Color format"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="end" alignItemWithTrigger={false}>
-            {COLOR_PICKER_FORMATS.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option.toUpperCase()}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div
-        className="relative h-32 cursor-crosshair overflow-hidden rounded-lg"
-        style={{
-          background: `
-                linear-gradient(to top, rgb(0 0 0), transparent),
-                linear-gradient(to right, rgb(255 255 255), rgb(255 255 255 / 0)),
-                hsl(${hsl[0]} 100% 50%)
-              `,
-        }}
-        onPointerDown={(event) => {
-          event.preventDefault()
-          event.currentTarget.setPointerCapture(event.pointerId)
-          updateColorField(event)
-        }}
-        onPointerMove={(event) => {
-          if (event.buttons !== 1) return
-          updateColorField(event)
-        }}
-      >
-        <span
-          className="absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_1px_4px_rgb(0_0_0/0.45)] ring-1 ring-black/20"
-          style={{
-            left: `${fieldHsv[1]}%`,
-            top: `${100 - fieldHsv[2]}%`,
-            backgroundColor: hslToHex(hsl),
-          }}
-        />
-      </div>
-
-      <input
-        type="range"
-        min={0}
-        max={359}
-        value={hsl[0]}
-        aria-label="Hue"
-        className="h-3 w-full cursor-pointer appearance-none rounded-full border border-border bg-transparent accent-foreground"
-        style={{
-          background:
-            "linear-gradient(to right, hsl(0 100% 50%), hsl(60 100% 50%), hsl(120 100% 50%), hsl(180 100% 50%), hsl(240 100% 50%), hsl(300 100% 50%), hsl(360 100% 50%))",
-        }}
-        onChange={(event) =>
-          applyColor(
-            hsvToHsl([Number(event.target.value), fieldHsv[1], fieldHsv[2]]),
-            [Number(event.target.value), fieldHsv[1], fieldHsv[2]]
-          )
-        }
-      />
-
-      <Input
-        value={inputValue}
-        aria-label={`${label} value`}
-        className="h-8 w-full font-mono text-xs"
-        spellCheck={false}
-        onChange={handleInputChange}
-        onBlur={() => setInputValue(formatColor(hsl, format))}
-      />
-
-      <div className="grid grid-cols-6 gap-1.5">
-        {COLOR_PICKER_PRESETS.map((preset) => {
-          const selected = hslToHex(hsl) === preset
-
-          return (
-            <button
-              key={preset}
-              type="button"
-              className={cn(
-                "grid size-6 place-items-center rounded-full border shadow-xs transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                selected && "ring-2 ring-ring ring-offset-2"
-              )}
-              style={{ backgroundColor: preset }}
-              aria-label={`Use ${preset}`}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => {
-                const parsedPreset = parseColor(preset)
-                if (parsedPreset) applyColor(parsedPreset)
-              }}
-            >
-              {selected ? (
-                <IconPlaceholder
-                  lucide="Check"
-                  tabler="IconCheck"
-                  hugeicons="CheckIcon"
-                  phosphor="CheckIcon"
-                  remixicon="RiCheckLine"
-                  className={cn(
-                    "size-3.5",
-                    preset === "#ffffff" ? "text-foreground" : "text-white"
-                  )}
-                />
-              ) : null}
-            </button>
-          )
-        })}
-      </div>
-    </div>
+    <ColorPicker
+      className={className}
+      value={color}
+      label={label}
+      onChange={onChange}
+      showAlpha={showAlpha}
+      variant="panel"
+    />
   )
 }

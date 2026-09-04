@@ -220,7 +220,7 @@ function DropdownMenuRadioItem({
       data-slot="dropdown-menu-radio-item"
       {...props}
     >
-      <span className="pointer-events-none absolute start-2 flex size-4 items-center justify-center">
+      <span className="pointer-events-none absolute start-2 flex size-4 items-center justify-center rounded-full border border-input">
         <DropdownMenuPrimitive.RadioItemIndicator>
           <span className="size-2 rounded-full bg-current" />
         </DropdownMenuPrimitive.RadioItemIndicator>

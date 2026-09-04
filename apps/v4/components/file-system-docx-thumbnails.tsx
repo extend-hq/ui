@@ -11,9 +11,6 @@ import {
 const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 const THUMBNAIL_WIDTH = 360
-// Quiet period after the last reported page-count change before the DOCX
-// page thumbnails are captured.
-const DOCX_PAGINATION_SETTLE_MS = 600
 
 // The docx canvas reports "ready" once for the blank pre-import page; only
 // capture once actual content has been painted.
@@ -58,14 +55,14 @@ export function DocxThumbnailUrlGenerator({
   })
   const { importDocxFile } = editor
   const [isImported, setIsImported] = React.useState(false)
-  // Pagination reports the live page count through the viewer while pages
-  // are still being measured (1, 2, … final); mirror it so the thumbnails
-  // hook covers every page.
   const [reportedPageCount, setReportedPageCount] = React.useState(0)
-  // Capturing at the first reported count would snapshot a partially
-  // paginated document, so wait until the count stops changing.
-  const [settledPageCount, setSettledPageCount] = React.useState(0)
-  const settledPageCountRef = React.useRef(0)
+  const reportedPageCountRef = React.useRef(0)
+  const handlePageCountChange = React.useCallback((pageCount: number) => {
+    const nextPageCount = Math.max(1, Math.round(pageCount || 1))
+
+    reportedPageCountRef.current = nextPageCount
+    setReportedPageCount(nextPageCount)
+  }, [])
   const thumbnailEditor = React.useMemo<DocxEditorController>(
     () => ({
       ...editor,
@@ -86,6 +83,8 @@ export function DocxThumbnailUrlGenerator({
       []
     )
   )
+  const isCoverCapturedRef = React.useRef(false)
+  const isCoverCapturingRef = React.useRef(false)
   const isCapturedRef = React.useRef(false)
   const isCapturingRef = React.useRef(false)
 
@@ -121,23 +120,40 @@ export function DocxThumbnailUrlGenerator({
   }, [fileName, importDocxFile, url])
 
   React.useEffect(() => {
-    if (!isImported || reportedPageCount === 0) return
+    const coverThumbnail = thumbnails[0]
 
-    settledPageCountRef.current = 0
-    setSettledPageCount(0)
+    if (!isImported || reportedPageCount === 0 || !coverThumbnail?.isMounted) {
+      return
+    }
+    if (isCoverCapturedRef.current || isCoverCapturingRef.current) return
 
-    const timeoutId = window.setTimeout(() => {
-      settledPageCountRef.current = reportedPageCount
-      setSettledPageCount(reportedPageCount)
-    }, DOCX_PAGINATION_SETTLE_MS)
+    isCoverCapturingRef.current = true
 
-    return () => window.clearTimeout(timeoutId)
-  }, [isImported, reportedPageCount])
+    const canvas = document.createElement("canvas")
+
+    canvas.width = coverThumbnail.pixelWidthPx
+    canvas.height = coverThumbnail.pixelHeightPx
+
+    void coverThumbnail
+      .renderToCanvas(canvas)
+      .then(() => {
+        if (isCapturedRef.current || isCoverCapturedRef.current) return
+        if (reportedPageCountRef.current !== reportedPageCount) return
+        if (!canvasHasInk(canvas)) return
+
+        isCoverCapturedRef.current = true
+        onUrls([canvas.toDataURL("image/png")], reportedPageCount)
+      })
+      .catch(() => {})
+      .finally(() => {
+        isCoverCapturingRef.current = false
+      })
+  }, [isImported, onUrls, reportedPageCount, thumbnails])
 
   React.useEffect(() => {
-    if (settledPageCount === 0) return
+    if (!isImported || reportedPageCount === 0) return
     if (isCapturedRef.current || isCapturingRef.current) return
-    if (thumbnails.length < settledPageCount) return
+    if (thumbnails.length < reportedPageCount) return
     if (thumbnails.some((thumbnail) => !thumbnail.isMounted)) return
 
     // Guarded by a ref instead of effect cleanup: each render call updates
@@ -160,8 +176,8 @@ export function DocxThumbnailUrlGenerator({
 
         if (isCapturedRef.current) return
         // Pagination moved on while the capture was in flight — drop the
-        // stale snapshot and let the next settled count retry.
-        if (settledPageCountRef.current !== settledPageCount) return
+        // stale snapshot and let the next reported count retry.
+        if (reportedPageCountRef.current !== reportedPageCount) return
         // The first paint can race the imported content; skip blank frames
         // so the next thumbnail state change retries.
         if (!canvases[0] || !canvasHasInk(canvases[0])) return
@@ -175,7 +191,7 @@ export function DocxThumbnailUrlGenerator({
       .catch(() => {
         isCapturingRef.current = false
       })
-  }, [onUrls, settledPageCount, thumbnails])
+  }, [isImported, onUrls, reportedPageCount, thumbnails])
 
   return (
     <div
@@ -190,9 +206,7 @@ export function DocxThumbnailUrlGenerator({
           pageGapBackgroundColor="transparent"
           pageVirtualization={{ enabled: false }}
           deferInitialPaginationPaint={false}
-          onPageCountChange={(pageCount) =>
-            setReportedPageCount(Math.max(1, Math.round(pageCount || 1)))
-          }
+          onPageCountChange={handlePageCountChange}
         />
       </div>
     </div>

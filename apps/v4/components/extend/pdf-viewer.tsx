@@ -529,6 +529,7 @@ function PDFViewerFallbackShell({
               </Button>
             </ToolbarTooltip>
           }
+          sidebarOpen={sidebarOpen}
           showDownload={showDownload}
           showRotateControls={showRotateControls}
           showUpload={showUpload}
@@ -1036,6 +1037,7 @@ function PDFViewerToolbar({
   isPreparingDownload = false,
   numPages,
   searchControl,
+  sidebarOpen,
   showDownload,
   showRotateControls,
   showUpload,
@@ -1054,6 +1056,7 @@ function PDFViewerToolbar({
   isPreparingDownload?: boolean
   numPages: number
   searchControl: React.ReactNode
+  sidebarOpen: boolean
   showDownload: boolean
   showRotateControls: boolean
   showUpload: boolean
@@ -1069,12 +1072,18 @@ function PDFViewerToolbar({
     <div className="flex min-h-12 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2">
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <TooltipProvider>
-          <ToolbarTooltip label="Toggle thumbnails">
+          <ToolbarTooltip label="Pages sidebar">
             <Button
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="Toggle thumbnails"
+              aria-label="Pages sidebar"
+              aria-pressed={sidebarOpen}
+              data-active={sidebarOpen ? "" : undefined}
+              className={cn(
+                sidebarOpen &&
+                  "bg-accent text-accent-foreground ring-1 ring-ring/40 ring-inset"
+              )}
               disabled={controlsDisabled}
               onClick={onToggleSidebar}
             >
@@ -2643,6 +2652,7 @@ function PDFViewerInner({
               controlsDisabled={controlsDisabled}
             />
           }
+          sidebarOpen={sidebarOpen}
           showDownload={showDownload}
           showRotateControls={showRotateControls}
           showUpload={showUpload}

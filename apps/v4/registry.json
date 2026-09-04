@@ -173,10 +173,9 @@
       "name": "color-picker",
       "type": "registry:ui",
       "title": "Color Picker",
-      "description": "A compact popover color picker with hex, RGB, CSS, and HSL input formats.",
+      "description": "An OKLCH-aware popover color picker with OKLCH, HSL, RGB, and hex input formats.",
       "registryDependencies": [
         "button",
-        "input",
         "popover",
         "select",
         "tooltip",
@@ -187,6 +186,11 @@
           "path": "components/ui/color-picker.tsx",
           "type": "registry:ui",
           "target": "@ui/color-picker.tsx"
+        },
+        {
+          "path": "lib/color-picker-utils.ts",
+          "type": "registry:lib",
+          "target": "@/lib/color-picker-utils.ts"
         }
       ]
     },
@@ -429,6 +433,21 @@
       ]
     },
     {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "A binary toggle control built on Base UI.",
+      "dependencies": ["@base-ui/react@^1.4.1"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/ui/switch.tsx",
+          "type": "registry:ui",
+          "target": "@ui/switch.tsx"
+        }
+      ]
+    },
+    {
       "name": "tabs",
       "type": "registry:ui",
       "title": "Tabs",
@@ -440,6 +459,21 @@
           "path": "registry/new-york-v4/ui/tabs.tsx",
           "type": "registry:ui",
           "target": "@ui/tabs.tsx"
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "A toast provider built on Base UI.",
+      "dependencies": ["@base-ui/react@^1.4.1"],
+      "registryDependencies": ["button", "utils"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/ui/toast.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toast.tsx"
         }
       ]
     },
@@ -587,20 +621,20 @@
       "title": "PDF Viewer",
       "description": "A PDF viewer with page virtualization, thumbnails, search, zoom, rotation, upload, and page overlay hooks.",
       "dependencies": [
-        "@embedpdf/core@^2.14.4",
-        "@embedpdf/engines@^2.14.4",
-        "@embedpdf/models@^2.14.4",
-        "@embedpdf/plugin-document-manager@^2.14.4",
-        "@embedpdf/plugin-interaction-manager@^2.14.4",
-        "@embedpdf/plugin-render@^2.14.4",
-        "@embedpdf/plugin-rotate@^2.14.4",
-        "@embedpdf/plugin-scroll@^2.14.4",
-        "@embedpdf/plugin-search@^2.14.4",
-        "@embedpdf/plugin-selection@^2.14.4",
-        "@embedpdf/plugin-thumbnail@^2.14.4",
-        "@embedpdf/plugin-tiling@^2.14.4",
-        "@embedpdf/plugin-viewport@^2.14.4",
-        "@embedpdf/plugin-zoom@^2.14.4",
+        "@embedpdf/core@^2.15.0",
+        "@embedpdf/engines@^2.15.0",
+        "@embedpdf/models@^2.15.0",
+        "@embedpdf/plugin-document-manager@^2.15.0",
+        "@embedpdf/plugin-interaction-manager@^2.15.0",
+        "@embedpdf/plugin-render@^2.15.0",
+        "@embedpdf/plugin-rotate@^2.15.0",
+        "@embedpdf/plugin-scroll@^2.15.0",
+        "@embedpdf/plugin-search@^2.15.0",
+        "@embedpdf/plugin-selection@^2.15.0",
+        "@embedpdf/plugin-thumbnail@^2.15.0",
+        "@embedpdf/plugin-tiling@^2.15.0",
+        "@embedpdf/plugin-viewport@^2.15.0",
+        "@embedpdf/plugin-zoom@^2.15.0",
         "pdf-lib@^1.17.1"
       ],
       "registryDependencies": [
@@ -623,6 +657,95 @@
           "path": "components/extend/pdf-viewer.tsx",
           "type": "registry:ui",
           "target": "@components/extend/pdf-viewer.tsx"
+        },
+        {
+          "path": "lib/pdf-thumbnail-utils.ts",
+          "type": "registry:lib",
+          "target": "@lib/pdf-thumbnail-utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "pdf-editor",
+      "type": "registry:ui",
+      "title": "PDF Editor",
+      "description": "A PDF editor with annotations, comments, redaction, form filling and design, signatures, rubber stamps, page organization, security, printing, and export.",
+      "dependencies": [
+        "@embedpdf/core@^2.15.0",
+        "@embedpdf/engines@^2.15.0",
+        "@embedpdf/models@^2.15.0",
+        "@embedpdf/plugin-annotation@^2.15.0",
+        "@embedpdf/plugin-attachment@^2.15.0",
+        "@embedpdf/plugin-bookmark@^2.15.0",
+        "@embedpdf/plugin-capture@^2.15.0",
+        "@embedpdf/plugin-document-manager@^2.15.0",
+        "@embedpdf/plugin-export@^2.15.0",
+        "@embedpdf/plugin-form@^2.15.0",
+        "@embedpdf/plugin-fullscreen@^2.15.0",
+        "@embedpdf/plugin-history@^2.15.0",
+        "@embedpdf/plugin-interaction-manager@^2.15.0",
+        "@embedpdf/plugin-pan@^2.15.0",
+        "@embedpdf/plugin-print@^2.15.0",
+        "@embedpdf/plugin-redaction@^2.15.0",
+        "@embedpdf/plugin-render@^2.15.0",
+        "@embedpdf/plugin-rotate@^2.15.0",
+        "@embedpdf/plugin-scroll@^2.15.0",
+        "@embedpdf/plugin-search@^2.15.0",
+        "@embedpdf/plugin-selection@^2.15.0",
+        "@embedpdf/plugin-signature@^2.15.0",
+        "@embedpdf/plugin-spread@^2.15.0",
+        "@embedpdf/plugin-stamp@^2.15.0",
+        "@embedpdf/plugin-thumbnail@^2.15.0",
+        "@embedpdf/plugin-tiling@^2.15.0",
+        "@embedpdf/plugin-viewport@^2.15.0",
+        "@embedpdf/plugin-zoom@^2.15.0",
+        "pdf-lib@^1.17.1"
+      ],
+      "registryDependencies": [
+        "badge",
+        "button",
+        "@extend/color-picker",
+        "dialog",
+        "@extend/document-viewer-sidebar",
+        "dropdown-menu",
+        "input",
+        "kbd",
+        "popover",
+        "scroll-area",
+        "select",
+        "spinner",
+        "switch",
+        "toast",
+        "toggle",
+        "tooltip",
+        "utils"
+      ],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/extend/pdf-editor.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-shared.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-shared.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-dialogs.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-dialogs.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-properties.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-properties.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-panels.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-panels.tsx"
         },
         {
           "path": "lib/pdf-thumbnail-utils.ts",
@@ -1043,6 +1166,21 @@
           "path": "registry/new-york-v4/blocks/docx-editor.tsx",
           "type": "registry:component",
           "target": "@components/blocks/docx-editor.tsx"
+        }
+      ]
+    },
+    {
+      "name": "pdf-editor-block",
+      "type": "registry:block",
+      "title": "PDF Editor",
+      "description": "A full PDF editor block with annotation, redaction, form, signature, stamp, page organization, security, print, and export tools.",
+      "registryDependencies": ["@extend/pdf-editor"],
+      "categories": ["documents", "blocks"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/blocks/pdf-editor-block.tsx",
+          "type": "registry:component",
+          "target": "@components/blocks/pdf-editor-block.tsx"
         }
       ]
     },

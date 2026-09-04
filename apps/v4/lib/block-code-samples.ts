@@ -31,6 +31,7 @@ export const blockIds = [
   "document-splits",
   "excel-editor",
   "docx-editor-block",
+  "pdf-editor-block",
   "file-system",
 ]
 
@@ -54,6 +55,7 @@ const blockCodeDependencies: Record<string, string[]> = {
   ],
   "excel-editor": ["xlsx-editor"],
   "docx-editor-block": ["docx-editor", "file-thumbnail"],
+  "pdf-editor-block": ["pdf-editor", "document-viewer-sidebar", "color-picker"],
   "file-system": [
     "file-system",
     "file-thumbnail",

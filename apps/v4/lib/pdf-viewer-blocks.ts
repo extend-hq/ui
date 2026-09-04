@@ -81,6 +81,17 @@ export const PDF_VIEWER_BLOCKS = [
     viewHref: "/view/blocks/excel-editor",
   },
   {
+    id: "pdf-editor-block",
+    title: "PDF Editor",
+    badge: "New",
+    description:
+      "A full PDF editor with annotations, comments, redaction, forms, signatures, stamps, page organization, security, print, and export.",
+    command: getRegistryAddCommand("pdf-editor-block"),
+    docsHref: "/docs/components/pdf-editor",
+    viewHref: "/view/blocks/pdf-editor-block",
+    previewHeightClassName: "h-[760px]",
+  },
+  {
     id: "docx-editor-block",
     title: "DOCX Editor",
     badge: "Experimental",

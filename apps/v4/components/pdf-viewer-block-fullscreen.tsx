@@ -61,6 +61,12 @@ const XlsxEditorBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
   { loading: () => <BlockViewPlaceholder /> }
 )
 
+const PdfEditorBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
+  () =>
+    import("@/components/pdf-editor-docs").then((mod) => mod.PdfEditorBlock),
+  { loading: () => <BlockViewPlaceholder /> }
+)
+
 const DocxEditorBlock = dynamic<PdfViewerBlockFullscreenPreviewProps>(
   () =>
     import("@/components/docx-editor-docs").then((mod) => mod.DocxEditorBlock),
@@ -85,6 +91,7 @@ const blockComponents = {
   "document-splits": DocumentSplitsBlock,
   "excel-editor": XlsxEditorBlock,
   "docx-editor-block": DocxEditorBlock,
+  "pdf-editor-block": PdfEditorBlock,
   "file-system": FileSystemFinderBlock,
 } satisfies Record<
   PdfViewerBlockId,
