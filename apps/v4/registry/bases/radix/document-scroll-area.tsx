@@ -35,8 +35,11 @@ export function ScrollArea({
   const {
     className: viewportPropsClassName,
     ref: viewportPropsRef,
+    style: viewportStyle,
     ...resolvedViewportProps
   } = viewportProps ?? {}
+  const resolvedViewportStyle = { ...viewportStyle }
+  delete resolvedViewportStyle.overflow
   const composedViewportRef = React.useMemo(
     () => composeRefs(localViewportRef, viewportPropsRef, viewportRef),
     [viewportPropsRef, viewportRef]
@@ -107,6 +110,7 @@ export function ScrollArea({
     >
       <ScrollAreaPrimitive.Viewport
         {...resolvedViewportProps}
+        style={resolvedViewportStyle}
         ref={composedViewportRef}
         data-slot="scroll-area-viewport"
         className={cn(
