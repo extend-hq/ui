@@ -4,6 +4,7 @@ import * as React from "react"
 import { createPluginRegistration } from "@embedpdf/core"
 import {
   EmbedPDF,
+  PDFContext,
   useDocumentPermissions,
   useRegistry,
 } from "@embedpdf/core/react"
@@ -161,8 +162,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { ToastPrimitive, ToastProvider } from "@/components/ui/toast"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import {
-  DocumentViewerSidebarSkeleton,
-  DocumentViewerThumbnailSidebar,
   useElementWidth,
   useInlineThumbnailSidebar,
 } from "@/components/extend/document-viewer-sidebar"
@@ -279,6 +278,7 @@ import {
   type PdfEditorSelectionPage,
   type PdfEditorSelectionPayload,
 } from "@/components/extend/pdf-editor-shared"
+import { PdfEditorWorkspace } from "@/components/extend/pdf-editor-workspace"
 
 export type {
   PdfEditorFeatureFlags,
@@ -390,9 +390,6 @@ const THUMBNAIL_WIDTH = THUMBNAIL_PAGE_WIDTH + THUMBNAIL_IMAGE_PADDING * 2
 const THUMBNAIL_LABEL_HEIGHT = 24
 const THUMBNAIL_GAP = 12
 const THUMBNAIL_PANE_PADDING_Y = 16
-const LEFT_SIDEBAR_WIDTH_CLASS = "w-56"
-const LEFT_SIDEBAR_CLOSED_CLASS = "-ml-56"
-const RIGHT_PANEL_WIDTH_CLASS = "w-84"
 const RIGHT_PANEL_INLINE_MIN_WIDTH = 1100
 const TOOLBAR_STACK_MAX_WIDTH = 640
 const ZOOM_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4]
@@ -487,93 +484,72 @@ function useEditorSource(
   src: PDFEditorProps["src"],
   fileName: string | undefined
 ) {
-  const [state, setState] = React.useState<{
-    src: PDFEditorProps["src"]
-    source: EditorSource | null
-    loading: boolean
-  }>({ src: undefined, source: null, loading: false })
+  const sourceId = React.useId()
+  const [input, setInput] = React.useState({ src, fileName, version: 0 })
+  if (input.src !== src || input.fileName !== fileName) {
+    setInput({ src, fileName, version: input.version + 1 })
+  }
+  const immediateSource = React.useMemo<EditorSource | null>(() => {
+    const key = `${sourceId}-${input.version}`
+    if (typeof input.src === "string") {
+      return {
+        key,
+        kind: "url",
+        url: input.src,
+        name: getPdfFileName(input.fileName, input.src),
+      }
+    }
+    if (input.src instanceof ArrayBuffer || input.src instanceof Uint8Array) {
+      return {
+        key,
+        kind: "buffer",
+        buffer:
+          input.src instanceof ArrayBuffer
+            ? input.src.slice(0)
+            : bytesToArrayBuffer(input.src),
+        name: getPdfFileName(input.fileName),
+      }
+    }
+    return null
+  }, [input, sourceId])
+  const [resolved, setResolved] = React.useState<{
+    input: typeof input
+    source: EditorSource
+  } | null>(null)
 
   React.useEffect(() => {
-    if (src === undefined || src === null) {
-      setState({ src, source: null, loading: false })
-      return
-    }
-
-    if (typeof src === "string") {
-      setState({
-        src,
-        source: {
-          key: nextSourceKey(),
-          kind: "url",
-          url: src,
-          name: getPdfFileName(fileName, src),
-        },
-        loading: false,
-      })
-      return
-    }
-
-    if (src instanceof ArrayBuffer) {
-      setState({
-        src,
-        source: {
-          key: nextSourceKey(),
-          kind: "buffer",
-          buffer: src.slice(0),
-          name: getPdfFileName(fileName),
-        },
-        loading: false,
-      })
-      return
-    }
-
-    if (src instanceof Uint8Array) {
-      setState({
-        src,
-        source: {
-          key: nextSourceKey(),
-          kind: "buffer",
-          buffer: bytesToArrayBuffer(src),
-          name: getPdfFileName(fileName),
-        },
-        loading: false,
-      })
-      return
-    }
-
+    if (!(input.src instanceof Blob)) return
     let cancelled = false
-    const blobName = fileName ?? (src instanceof File ? src.name : undefined)
-
-    setState({ src, source: null, loading: true })
-    src.arrayBuffer().then((buffer) => {
+    const blobName =
+      input.fileName ?? (input.src instanceof File ? input.src.name : undefined)
+    input.src.arrayBuffer().then((buffer) => {
       if (cancelled) return
-
-      setState({
-        src,
+      setResolved({
+        input,
         source: {
           key: nextSourceKey(),
           kind: "buffer",
           buffer,
           name: getPdfFileName(blobName),
         },
-        loading: false,
       })
     })
-
     return () => {
       cancelled = true
     }
-  }, [fileName, src])
+  }, [input])
 
-  const replace = React.useCallback((buffer: ArrayBuffer, name: string) => {
-    setState((previous) => ({
-      ...previous,
-      source: { key: nextSourceKey(), kind: "buffer", buffer, name },
-      loading: false,
-    }))
-  }, [])
-
-  return { source: state.source, loading: state.loading, replace }
+  const replace = React.useCallback(
+    (buffer: ArrayBuffer, name: string) => {
+      setResolved({
+        input,
+        source: { key: nextSourceKey(), kind: "buffer", buffer, name },
+      })
+    },
+    [input]
+  )
+  const source = resolved?.input === input ? resolved.source : immediateSource
+  return { source, loading: input.src instanceof Blob && !source, replace }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1756,12 +1732,14 @@ function PanelTabStrip<T extends string>({
   onChange,
   onClose,
   label,
+  disabled = false,
 }: {
   tabs: Array<{ id: T; label: string; glyph: PdfEditorGlyph }>
   value: T | null
   onChange: (value: T) => void
   onClose: () => void
   label: string
+  disabled?: boolean
 }) {
   return (
     <div className="flex shrink-0 items-center justify-between gap-1 border-b px-1.5 py-1">
@@ -1781,6 +1759,7 @@ function PanelTabStrip<T extends string>({
                 active={value === tab.id}
                 role="tab"
                 aria-selected={value === tab.id}
+                disabled={disabled}
                 onClick={() => onChange(tab.id)}
               >
                 <Glyph className="size-4" />
@@ -1791,41 +1770,13 @@ function PanelTabStrip<T extends string>({
         <PdfEditorToolButton
           label="Close panel"
           size="icon-xs"
+          disabled={disabled}
           onClick={onClose}
         >
           <CloseGlyph className="size-3.5" />
         </PdfEditorToolButton>
       </TooltipProvider>
     </div>
-  )
-}
-
-function PdfEditorRightPanelShell({
-  open,
-  inline,
-  children,
-}: {
-  open: boolean
-  inline: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <aside
-      data-slot="pdf-editor-right-panel"
-      data-panel-open={open ? "true" : "false"}
-      className={cn(
-        "absolute inset-y-0 right-0 z-30 flex shrink-0 flex-col overflow-hidden border-l bg-sidebar shadow-lg transition-[translate,margin-right] duration-200 ease-out",
-        RIGHT_PANEL_WIDTH_CLASS,
-        inline && "relative z-auto translate-x-0 shadow-none",
-        open
-          ? "mr-0 translate-x-0"
-          : inline
-            ? "-mr-84 border-l-0"
-            : "pointer-events-none translate-x-full border-l-0"
-      )}
-    >
-      {children}
-    </aside>
   )
 }
 
@@ -1872,45 +1823,32 @@ function PdfEditorSignaturePersistence({
 /* Fallback shell (engine loading, document loading, errors, empty)           */
 /* -------------------------------------------------------------------------- */
 
-function PdfEditorFallbackShell({
-  className,
-  fileName,
-  showToolbar,
-  showUpload,
+function PdfEditorDocumentStatus({
   state,
-  errorMessage = "The PDF could not be loaded.",
+  errorMessage,
   onUploadFile,
-  children,
 }: {
-  className?: string
-  fileName?: string
-  showToolbar: boolean
-  showUpload: boolean
-  state: "loading" | "error" | "empty" | "password"
+  state: "loading" | "error" | "empty"
   errorMessage?: string
   onUploadFile?: (file: File) => void
-  children?: React.ReactNode
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
-
   return (
     <div
-      data-slot="pdf-editor"
+      data-slot="pdf-editor-document-status"
       data-state={state}
-      className={cn(
-        "flex h-full max-h-full min-h-0 w-full flex-col overflow-hidden bg-background",
-        className
-      )}
+      className="grid min-h-0 flex-1 place-items-center p-6 text-center text-sm text-muted-foreground"
     >
-      {showToolbar ? (
-        <div className="flex min-h-12 items-center justify-between gap-2 border-b px-3 py-2">
-          <div className="flex min-w-0 items-center gap-2 text-sm">
-            <FileTextGlyph className="size-4 shrink-0 text-muted-foreground" />
-            <span className="truncate text-muted-foreground">
-              {fileName ?? "PDF editor"}
-            </span>
+      {state === "loading" ? (
+        <Spinner className="size-4" />
+      ) : (
+        <div className="flex max-w-sm flex-col items-center gap-3">
+          <div role={state === "error" ? "alert" : undefined}>
+            {state === "error"
+              ? (errorMessage ?? "The PDF could not be loaded.")
+              : "Open a PDF to start editing"}
           </div>
-          {showUpload && onUploadFile ? (
+          {onUploadFile ? (
             <>
               <input
                 ref={inputRef}
@@ -1936,34 +1874,20 @@ function PdfEditorFallbackShell({
             </>
           ) : null}
         </div>
-      ) : null}
-      <div className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30">
-        {children ? (
-          children
-        ) : state === "loading" ? (
-          <div className="grid flex-1 place-items-center">
-            <Spinner className="size-4" />
-          </div>
-        ) : state === "error" ? (
-          <div className="grid flex-1 place-items-center p-6 text-center text-sm text-muted-foreground">
-            {errorMessage}
-          </div>
-        ) : (
-          <div className="grid flex-1 place-items-center p-6 text-center text-sm text-muted-foreground">
-            <div className="max-w-sm space-y-3">
-              <div className="font-medium text-foreground">
-                Open a PDF to start editing
-              </div>
-              <div>
-                Pass a URL or file with the <code>src</code> prop, or use the
-                upload control.
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   )
+}
+
+const EMPTY_EDITOR_CONTEXT: React.ContextType<typeof PDFContext> = {
+  registry: null,
+  coreState: null,
+  isInitializing: true,
+  pluginsReady: false,
+  activeDocumentId: null,
+  activeDocument: null,
+  documents: {},
+  documentStates: [],
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1975,6 +1899,8 @@ type EditorHandleImpl = PDFEditorHandle
 type PdfEditorInnerProps = {
   documentId: string
   document: PdfDocumentObject | null
+  documentState: "loading" | "ready" | "empty" | "error" | "password"
+  unavailableContent?: React.ReactNode
   fileName: string
   className?: string
   defaultZoom: PDFEditorZoomLevel
@@ -2069,6 +1995,8 @@ const RIGHT_PANEL_TABS: Array<{
 function PdfEditorInner({
   documentId,
   document: pdfDocument,
+  documentState,
+  unavailableContent,
   fileName,
   className,
   defaultZoom,
@@ -2151,7 +2079,6 @@ function PdfEditorInner({
 
   const activePage = scrollState.currentPage
   const numPages = pdfDocument?.pageCount ?? 0
-  const isLoading = !pdfDocument
   const controlsDisabled = !numPages
   const currentZoom = zoomState.currentZoomLevel
   const selectedAnnotations = React.useMemo(
@@ -2310,8 +2237,8 @@ function PdfEditorInner({
   /* ---- callbacks: page, annotations, forms, redactions ------------------ */
 
   React.useEffect(() => {
-    if (activePage > 0) onActivePageChange?.(activePage)
-  }, [activePage, onActivePageChange])
+    if (!controlsDisabled && activePage > 0) onActivePageChange?.(activePage)
+  }, [activePage, controlsDisabled, onActivePageChange])
 
   const onAnnotationEventRef = React.useRef(onAnnotationEvent)
   const onAnnotationsChangeRef = React.useRef(onAnnotationsChange)
@@ -2574,6 +2501,7 @@ function PdfEditorInner({
   /* ---- imperative handle ------------------------------------------------ */
 
   React.useEffect(() => {
+    if (controlsDisabled) return
     handleRef.current = {
       getDocumentBuffer,
       download: downloadDocument,
@@ -2608,6 +2536,7 @@ function PdfEditorInner({
     }
   }, [
     annotation,
+    controlsDisabled,
     downloadDocument,
     formScope,
     getDocumentBuffer,
@@ -2623,6 +2552,7 @@ function PdfEditorInner({
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (controlsDisabled) return
       const key = event.key
       const mod = event.metaKey || event.ctrlKey
 
@@ -2723,6 +2653,7 @@ function PdfEditorInner({
       activePage,
       annotation,
       annotationState.pages,
+      controlsDisabled,
       deactivateTools,
       deleteSelectedAnnotations,
       downloadDocument,
@@ -3416,6 +3347,8 @@ function PdfEditorInner({
         <div
           data-slot="pdf-editor"
           data-mode={mode}
+          data-state={documentState}
+          aria-busy={documentState === "loading"}
           data-fullscreen={fullscreenState.isFullscreen ? "" : undefined}
           className={cn(
             "flex h-full max-h-full min-h-0 w-full flex-col overflow-hidden bg-background",
@@ -3460,303 +3393,317 @@ function PdfEditorInner({
 
             {showToolbar ? (
               <TooltipProvider delay={TOOLTIP_DELAY_MS}>
-                <div
-                  data-slot="pdf-editor-toolbar"
-                  className={cn(
-                    "flex min-h-12 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2",
-                    compactToolbar && "gap-0 px-0 py-0"
-                  )}
-                >
+                <fieldset disabled={controlsDisabled} className="contents">
                   <div
+                    data-slot="pdf-editor-toolbar"
                     className={cn(
-                      "flex min-w-0 items-center gap-2",
-                      compactToolbar && "w-full px-3 py-2"
+                      "flex min-h-12 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2",
+                      compactToolbar && "gap-0 px-0 py-0"
                     )}
-                  >
-                    <PdfEditorToolButton
-                      label="Pages sidebar"
-                      active={leftPanel !== null}
-                      disabled={controlsDisabled}
-                      onClick={() => toggleLeftPanel("thumbnails")}
-                    >
-                      <PanelLeftGlyph className="size-4" />
-                    </PdfEditorToolButton>
-                    <PdfEditorPageControl
-                      activePage={activePage}
-                      numPages={numPages}
-                      disabled={controlsDisabled}
-                      onPageChange={(pageNumber) => scrollToPage(pageNumber)}
-                    />
-                  </div>
-                  <ScrollArea
-                    orientation="horizontal"
-                    scrollFade
-                    scrollbarOverflowOnly
-                    className={cn(
-                      "min-w-0 flex-1",
-                      compactToolbar && "h-12 w-full flex-none border-t"
-                    )}
-                    viewportClassName={cn(compactToolbar && "px-3 py-2")}
                   >
                     <div
                       className={cn(
-                        "flex w-max min-w-full items-center gap-1",
-                        compactToolbar ? "justify-start" : "justify-end"
+                        "flex min-w-0 items-center gap-2",
+                        compactToolbar && "w-full px-3 py-2"
                       )}
                     >
-                      <div className="flex items-center gap-0.5">
-                        <PdfEditorToolButton
-                          label="Undo"
-                          shortcut="mod+Z"
-                          disabled={!historyState.canUndo}
-                          onClick={() => historyScope?.undo()}
-                        >
-                          <UndoGlyph className="size-4" />
-                        </PdfEditorToolButton>
-                        <PdfEditorToolButton
-                          label="Redo"
-                          shortcut="mod+shift+Z"
-                          disabled={!historyState.canRedo}
-                          onClick={() => historyScope?.redo()}
-                        >
-                          <RedoGlyph className="size-4" />
-                        </PdfEditorToolButton>
-                      </div>
-                      <PdfEditorToolbarSeparator />
-                      <PdfEditorZoomControl
-                        documentId={documentId}
-                        disabled={controlsDisabled}
-                      />
-                      <PdfEditorToolbarSeparator />
-                      <div className="flex items-center gap-0.5">
-                        <PdfEditorToolButton
-                          label="Rotate counterclockwise"
-                          disabled={controlsDisabled}
-                          onClick={() => rotate?.rotateBackward()}
-                        >
-                          <RotateGlyph className="size-4 -scale-x-100" />
-                        </PdfEditorToolButton>
-                        <PdfEditorToolButton
-                          label="Rotate clockwise"
-                          disabled={controlsDisabled}
-                          onClick={() => rotate?.rotateForward()}
-                        >
-                          <RotateGlyph className="size-4" />
-                        </PdfEditorToolButton>
-                      </div>
-                      <PdfEditorToolbarSeparator />
-                      <PdfEditorSearchControl
-                        documentId={documentId}
-                        disabled={controlsDisabled}
-                        open={searchOpen}
-                        onOpenChange={setSearchOpen}
-                      />
                       <PdfEditorToolButton
-                        label="Details panel"
-                        active={rightPanel !== null}
+                        label="Pages sidebar"
+                        active={leftPanel !== null}
                         disabled={controlsDisabled}
-                        onClick={() => toggleRightPanel("properties")}
+                        onClick={() => toggleLeftPanel("thumbnails")}
                       >
-                        <PanelRightGlyph className="size-4" />
+                        <PanelLeftGlyph className="size-4" />
                       </PdfEditorToolButton>
-                      {toolbarActions ? (
-                        <>
-                          <PdfEditorToolbarSeparator />
-                          {toolbarActions}
-                        </>
-                      ) : null}
-                      <PdfEditorToolbarSeparator />
-                      {showDownload ? (
-                        <PdfEditorToolButton
-                          label="Download"
-                          shortcut="mod+S"
-                          disabled={controlsDisabled || isDownloading}
-                          onClick={() => void downloadDocument()}
-                        >
-                          {isDownloading ? (
-                            <Spinner className="size-4" />
-                          ) : (
-                            <DownloadGlyph className="size-4" />
-                          )}
-                        </PdfEditorToolButton>
-                      ) : null}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label="More actions"
+                      <PdfEditorPageControl
+                        activePage={activePage}
+                        numPages={numPages}
+                        disabled={controlsDisabled}
+                        onPageChange={(pageNumber) => scrollToPage(pageNumber)}
+                      />
+                    </div>
+                    <ScrollArea
+                      orientation="horizontal"
+                      scrollFade
+                      scrollbarOverflowOnly
+                      className={cn(
+                        "min-w-0 flex-1",
+                        compactToolbar && "h-12 w-full flex-none border-t"
+                      )}
+                      viewportClassName={cn(compactToolbar && "px-3 py-2")}
+                    >
+                      <div
+                        className={cn(
+                          "flex w-max min-w-full items-center gap-1",
+                          compactToolbar ? "justify-start" : "justify-end"
+                        )}
+                      >
+                        <div className="flex items-center gap-0.5">
+                          <PdfEditorToolButton
+                            label="Undo"
+                            shortcut="mod+Z"
+                            disabled={!historyState.canUndo}
+                            onClick={() => historyScope?.undo()}
                           >
-                            <MoreGlyph className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-60">
-                          <DropdownMenuGroup>
-                            <DropdownMenuLabel className="truncate">
-                              {fileName}
-                            </DropdownMenuLabel>
-                            {showUpload ? (
-                              <DropdownMenuItem
-                                onClick={() => uploadInputRef.current?.click()}
-                              >
-                                <UploadGlyph className="size-4" />
-                                Open PDF…
-                              </DropdownMenuItem>
-                            ) : null}
-                            {showDownload ? (
+                            <UndoGlyph className="size-4" />
+                          </PdfEditorToolButton>
+                          <PdfEditorToolButton
+                            label="Redo"
+                            shortcut="mod+shift+Z"
+                            disabled={!historyState.canRedo}
+                            onClick={() => historyScope?.redo()}
+                          >
+                            <RedoGlyph className="size-4" />
+                          </PdfEditorToolButton>
+                        </div>
+                        <PdfEditorToolbarSeparator />
+                        <PdfEditorZoomControl
+                          documentId={documentId}
+                          disabled={controlsDisabled}
+                        />
+                        <PdfEditorToolbarSeparator />
+                        <div className="flex items-center gap-0.5">
+                          <PdfEditorToolButton
+                            label="Rotate counterclockwise"
+                            disabled={controlsDisabled}
+                            onClick={() => rotate?.rotateBackward()}
+                          >
+                            <RotateGlyph className="size-4 -scale-x-100" />
+                          </PdfEditorToolButton>
+                          <PdfEditorToolButton
+                            label="Rotate clockwise"
+                            disabled={controlsDisabled}
+                            onClick={() => rotate?.rotateForward()}
+                          >
+                            <RotateGlyph className="size-4" />
+                          </PdfEditorToolButton>
+                        </div>
+                        <PdfEditorToolbarSeparator />
+                        <PdfEditorSearchControl
+                          documentId={documentId}
+                          disabled={controlsDisabled}
+                          open={searchOpen}
+                          onOpenChange={setSearchOpen}
+                        />
+                        <PdfEditorToolButton
+                          label="Details panel"
+                          active={rightPanel !== null}
+                          disabled={controlsDisabled}
+                          onClick={() => toggleRightPanel("properties")}
+                        >
+                          <PanelRightGlyph className="size-4" />
+                        </PdfEditorToolButton>
+                        {toolbarActions ? (
+                          <>
+                            <PdfEditorToolbarSeparator />
+                            {toolbarActions}
+                          </>
+                        ) : null}
+                        <PdfEditorToolbarSeparator />
+                        {showDownload ? (
+                          <PdfEditorToolButton
+                            label="Download"
+                            shortcut="mod+S"
+                            disabled={controlsDisabled || isDownloading}
+                            onClick={() => void downloadDocument()}
+                          >
+                            {isDownloading ? (
+                              <Spinner className="size-4" />
+                            ) : (
+                              <DownloadGlyph className="size-4" />
+                            )}
+                          </PdfEditorToolButton>
+                        ) : null}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="More actions"
+                            >
+                              <MoreGlyph className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-60">
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel className="truncate">
+                                {fileName}
+                              </DropdownMenuLabel>
+                              {showUpload ? (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    uploadInputRef.current?.click()
+                                  }
+                                >
+                                  <UploadGlyph className="size-4" />
+                                  Open PDF…
+                                </DropdownMenuItem>
+                              ) : null}
+                              {showDownload ? (
+                                <DropdownMenuItem
+                                  disabled={controlsDisabled}
+                                  onClick={() => void downloadDocument()}
+                                >
+                                  <DownloadGlyph className="size-4" />
+                                  Download
+                                  <DropdownMenuShortcut>
+                                    ⌘S
+                                  </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                              ) : null}
+                              {features.print ? (
+                                <DropdownMenuItem
+                                  disabled={
+                                    controlsDisabled || !permissions.canPrint
+                                  }
+                                  onClick={() => setDialog({ type: "print" })}
+                                >
+                                  <PrintGlyph className="size-4" />
+                                  Print…
+                                  <DropdownMenuShortcut>
+                                    ⌘P
+                                  </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                              ) : null}
+                              {features.capture ? (
+                                <DropdownMenuItem
+                                  disabled={controlsDisabled}
+                                  onClick={() =>
+                                    capture?.toggleMarqueeCapture()
+                                  }
+                                >
+                                  <CameraGlyph className="size-4" />
+                                  Capture area as image
+                                </DropdownMenuItem>
+                              ) : null}
+                              {features.fullscreen ? (
+                                <DropdownMenuItem
+                                  onClick={() => fullscreen?.toggleFullscreen()}
+                                >
+                                  {fullscreenState.isFullscreen ? (
+                                    <ExitFullscreenGlyph className="size-4" />
+                                  ) : (
+                                    <FullscreenGlyph className="size-4" />
+                                  )}
+                                  {fullscreenState.isFullscreen
+                                    ? "Exit full screen"
+                                    : "Full screen"}
+                                </DropdownMenuItem>
+                              ) : null}
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
                               <DropdownMenuItem
                                 disabled={controlsDisabled}
-                                onClick={() => void downloadDocument()}
+                                onClick={() =>
+                                  setDialog({ type: "properties" })
+                                }
                               >
-                                <DownloadGlyph className="size-4" />
-                                Download
-                                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                                <InfoGlyph className="size-4" />
+                                Document properties…
                               </DropdownMenuItem>
-                            ) : null}
-                            {features.print ? (
+                              {features.security ? (
+                                <DropdownMenuItem
+                                  disabled={controlsDisabled}
+                                  onClick={() =>
+                                    setDialog({ type: "security" })
+                                  }
+                                >
+                                  <ShieldGlyph className="size-4" />
+                                  Security…
+                                </DropdownMenuItem>
+                              ) : null}
                               <DropdownMenuItem
                                 disabled={
-                                  controlsDisabled || !permissions.canPrint
+                                  controlsDisabled ||
+                                  !permissions.canModifyContents
                                 }
-                                onClick={() => setDialog({ type: "print" })}
+                                onClick={flattenDocument}
                               >
-                                <PrintGlyph className="size-4" />
-                                Print…
-                                <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
+                                <LayersGlyph className="size-4" />
+                                Flatten annotations…
                               </DropdownMenuItem>
-                            ) : null}
-                            {features.capture ? (
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
                               <DropdownMenuItem
                                 disabled={controlsDisabled}
-                                onClick={() => capture?.toggleMarqueeCapture()}
+                                onClick={exportAnnotationsJson}
                               >
-                                <CameraGlyph className="size-4" />
-                                Capture area as image
+                                <DownloadGlyph className="size-4" />
+                                Export annotations (JSON)
                               </DropdownMenuItem>
-                            ) : null}
-                            {features.fullscreen ? (
                               <DropdownMenuItem
-                                onClick={() => fullscreen?.toggleFullscreen()}
+                                disabled={
+                                  controlsDisabled ||
+                                  !permissions.canModifyAnnotations
+                                }
+                                onClick={() =>
+                                  annotationImportInputRef.current?.click()
+                                }
                               >
-                                {fullscreenState.isFullscreen ? (
-                                  <ExitFullscreenGlyph className="size-4" />
-                                ) : (
-                                  <FullscreenGlyph className="size-4" />
-                                )}
-                                {fullscreenState.isFullscreen
-                                  ? "Exit full screen"
-                                  : "Full screen"}
+                                <UploadGlyph className="size-4" />
+                                Import annotations (JSON)…
                               </DropdownMenuItem>
-                            ) : null}
-                          </DropdownMenuGroup>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuGroup>
-                            <DropdownMenuItem
-                              disabled={controlsDisabled}
-                              onClick={() => setDialog({ type: "properties" })}
-                            >
-                              <InfoGlyph className="size-4" />
-                              Document properties…
-                            </DropdownMenuItem>
-                            {features.security ? (
-                              <DropdownMenuItem
-                                disabled={controlsDisabled}
-                                onClick={() => setDialog({ type: "security" })}
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>Page layout</DropdownMenuLabel>
+                              <DropdownMenuRadioGroup
+                                value={spreadMode}
+                                onValueChange={(value) =>
+                                  spread?.setSpreadMode(
+                                    String(value) as SpreadMode
+                                  )
+                                }
                               >
-                                <ShieldGlyph className="size-4" />
-                                Security…
-                              </DropdownMenuItem>
-                            ) : null}
+                                <DropdownMenuRadioItem value={SpreadMode.None}>
+                                  Single page
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value={SpreadMode.Odd}>
+                                  Two pages
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value={SpreadMode.Even}>
+                                  Two pages, cover first
+                                </DropdownMenuRadioItem>
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              disabled={
-                                controlsDisabled ||
-                                !permissions.canModifyContents
-                              }
-                              onClick={flattenDocument}
+                              onClick={() => setDialog({ type: "shortcuts" })}
                             >
-                              <LayersGlyph className="size-4" />
-                              Flatten annotations…
+                              <KeyboardGlyph className="size-4" />
+                              Keyboard shortcuts
                             </DropdownMenuItem>
-                          </DropdownMenuGroup>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuGroup>
-                            <DropdownMenuItem
-                              disabled={controlsDisabled}
-                              onClick={exportAnnotationsJson}
-                            >
-                              <DownloadGlyph className="size-4" />
-                              Export annotations (JSON)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={
-                                controlsDisabled ||
-                                !permissions.canModifyAnnotations
-                              }
-                              onClick={() =>
-                                annotationImportInputRef.current?.click()
-                              }
-                            >
-                              <UploadGlyph className="size-4" />
-                              Import annotations (JSON)…
-                            </DropdownMenuItem>
-                          </DropdownMenuGroup>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuGroup>
-                            <DropdownMenuLabel>Page layout</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup
-                              value={spreadMode}
-                              onValueChange={(value) =>
-                                spread?.setSpreadMode(
-                                  String(value) as SpreadMode
-                                )
-                              }
-                            >
-                              <DropdownMenuRadioItem value={SpreadMode.None}>
-                                Single page
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value={SpreadMode.Odd}>
-                                Two pages
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value={SpreadMode.Even}>
-                                Two pages, cover first
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuGroup>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => setDialog({ type: "shortcuts" })}
-                          >
-                            <KeyboardGlyph className="size-4" />
-                            Keyboard shortcuts
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </ScrollArea>
-                </div>
-                <div
-                  data-slot="pdf-editor-ribbon"
-                  className="flex min-h-10 items-center gap-1 border-b bg-muted/30 px-3 py-1.5"
-                >
-                  <PdfEditorModeSwitch
-                    mode={mode}
-                    features={features}
-                    compact={compactToolbar}
-                    onModeChange={setMode}
-                  />
-                  <PdfEditorToolbarSeparator className="mx-1.5" />
-                  <ScrollArea
-                    orientation="horizontal"
-                    scrollFade
-                    scrollbarOverflowOnly
-                    className="min-w-0 flex-1 self-stretch"
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </ScrollArea>
+                  </div>
+                  <div
+                    data-slot="pdf-editor-ribbon"
+                    className="flex min-h-10 items-center gap-1 border-b bg-muted/30 px-3 py-1.5"
                   >
-                    <div className="flex w-max min-w-full items-center gap-0.5 py-0.5">
-                      {ribbon}
-                    </div>
-                  </ScrollArea>
-                </div>
+                    <PdfEditorModeSwitch
+                      mode={mode}
+                      features={features}
+                      compact={compactToolbar}
+                      onModeChange={setMode}
+                    />
+                    <PdfEditorToolbarSeparator className="mx-1.5" />
+                    <ScrollArea
+                      orientation="horizontal"
+                      scrollFade
+                      scrollbarOverflowOnly
+                      className="min-w-0 flex-1 self-stretch"
+                    >
+                      <div className="flex w-max min-w-full items-center gap-0.5 py-0.5">
+                        {ribbon}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </fieldset>
               </TooltipProvider>
             ) : null}
 
@@ -3764,27 +3711,11 @@ function PdfEditorInner({
               ref={shellRef}
               className="relative flex min-h-0 flex-1 overflow-hidden bg-muted/30"
             >
-              {isLoading ? (
-                <div className="absolute inset-0 z-20 flex bg-muted/30">
-                  {leftPanel ? (
-                    <DocumentViewerSidebarSkeleton
-                      className={LEFT_SIDEBAR_WIDTH_CLASS}
-                      inline={leftInline}
-                    />
-                  ) : null}
-                  <div className="grid min-w-0 flex-1 place-items-center">
-                    <Spinner className="size-4" />
-                  </div>
-                </div>
-              ) : null}
-              <div className="flex h-full max-h-full min-h-0 w-full flex-1 overflow-hidden">
-                <DocumentViewerThumbnailSidebar
-                  closedInlineClassName={LEFT_SIDEBAR_CLOSED_CLASS}
-                  inline={leftInline}
-                  open={leftPanel !== null && !isLoading}
-                  widthClassName={LEFT_SIDEBAR_WIDTH_CLASS}
-                >
-                  {leftPanel !== null && !isLoading ? (
+              <PdfEditorWorkspace
+                leftInline={leftInline}
+                rightInline={rightInline}
+                left={
+                  leftPanel !== null ? (
                     <div className="flex h-full flex-col">
                       <PanelTabStrip
                         tabs={visibleLeftTabs}
@@ -3792,30 +3723,16 @@ function PdfEditorInner({
                         onChange={setLeftPanel}
                         onClose={() => setLeftPanel(null)}
                         label="Sidebar panels"
+                        disabled={controlsDisabled}
                       />
-                      <div className="min-h-0 flex-1">{leftPanelContent}</div>
+                      <div className="min-h-0 flex-1">
+                        {controlsDisabled ? null : leftPanelContent}
+                      </div>
                     </div>
-                  ) : null}
-                </DocumentViewerThumbnailSidebar>
-
-                <PdfEditorViewport
-                  documentId={documentId}
-                  className="relative h-full max-h-full min-h-0 min-w-0 flex-1"
-                >
-                  <PdfEditorViewportBridge
-                    viewportElementRef={viewportElementRef}
-                  />
-                  <GlobalPointerProvider documentId={documentId}>
-                    <Scroller documentId={documentId} renderPage={renderPage} />
-                  </GlobalPointerProvider>
-                  <CopyToClipboard />
-                </PdfEditorViewport>
-
-                <PdfEditorRightPanelShell
-                  open={rightPanel !== null && !isLoading}
-                  inline={rightInline}
-                >
-                  {rightPanel !== null && !isLoading ? (
+                  ) : null
+                }
+                right={
+                  rightPanel !== null ? (
                     <div className="flex h-full flex-col">
                       <PanelTabStrip
                         tabs={visibleRightTabs}
@@ -3823,9 +3740,11 @@ function PdfEditorInner({
                         onChange={setRightPanel}
                         onClose={() => setRightPanel(null)}
                         label="Detail panels"
+                        disabled={controlsDisabled}
                       />
                       <div className="min-h-0 flex-1 overflow-hidden">
-                        {rightPanel === "properties" ? (
+                        {controlsDisabled ? null : rightPanel ===
+                          "properties" ? (
                           <PdfEditorScrollArea
                             className="h-full w-full"
                             scrollbarGutter={false}
@@ -3837,75 +3756,98 @@ function PdfEditorInner({
                         )}
                       </div>
                     </div>
-                  ) : null}
-                </PdfEditorRightPanelShell>
-              </div>
+                  ) : null
+                }
+              >
+                {controlsDisabled ? (
+                  unavailableContent
+                ) : (
+                  <PdfEditorViewport
+                    documentId={documentId}
+                    className="relative h-full max-h-full min-h-0 min-w-0 flex-1"
+                  >
+                    <PdfEditorViewportBridge
+                      viewportElementRef={viewportElementRef}
+                    />
+                    <GlobalPointerProvider documentId={documentId}>
+                      <Scroller
+                        documentId={documentId}
+                        renderPage={renderPage}
+                      />
+                    </GlobalPointerProvider>
+                    <CopyToClipboard />
+                  </PdfEditorViewport>
+                )}
+              </PdfEditorWorkspace>
             </div>
 
-            <PdfEditorSignaturePersistence storageKey={null} />
-            {features.capture ? (
-              <PdfEditorCaptureDialog documentId={documentId} />
+            {!controlsDisabled ? (
+              <>
+                {features.capture ? (
+                  <PdfEditorCaptureDialog documentId={documentId} />
+                ) : null}
+                <PdfEditorPrintDialog
+                  documentId={documentId}
+                  open={dialog?.type === "print"}
+                  onOpenChange={(open) => {
+                    if (!open) setDialog(null)
+                  }}
+                />
+                <PdfEditorSecurityDialog
+                  documentId={documentId}
+                  open={dialog?.type === "security"}
+                  onOpenChange={(open) => {
+                    if (!open) setDialog(null)
+                  }}
+                />
+                <PdfEditorPropertiesDialog
+                  documentId={documentId}
+                  open={dialog?.type === "properties"}
+                  onOpenChange={(open) => {
+                    if (!open) setDialog(null)
+                  }}
+                />
+                <PdfEditorShortcutsDialog
+                  open={dialog?.type === "shortcuts"}
+                  onOpenChange={(open) => {
+                    if (!open) setDialog(null)
+                  }}
+                />
+                <PdfEditorSignatureDialog
+                  open={dialog?.type === "signature"}
+                  onOpenChange={(open) => {
+                    if (!open) setDialog(null)
+                  }}
+                />
+                <PdfEditorLinkDialog
+                  documentId={documentId}
+                  open={dialog?.type === "link"}
+                  source={dialog?.type === "link" ? dialog.source : "selection"}
+                  onOpenChange={(open) => {
+                    if (!open) setDialog(null)
+                  }}
+                />
+                <PdfEditorConfirmDialog
+                  open={dialog?.type === "confirm"}
+                  title={dialog?.type === "confirm" ? dialog.title : ""}
+                  description={
+                    dialog?.type === "confirm" ? dialog.description : undefined
+                  }
+                  confirmLabel={
+                    dialog?.type === "confirm" ? dialog.confirmLabel : undefined
+                  }
+                  destructive={
+                    dialog?.type === "confirm" ? dialog.destructive : false
+                  }
+                  onConfirm={() => {
+                    if (dialog?.type === "confirm") dialog.onConfirm()
+                  }}
+                  onOpenChange={(open) => {
+                    if (!open) setDialog(null)
+                  }}
+                />
+              </>
             ) : null}
-            <PdfEditorPrintDialog
-              documentId={documentId}
-              open={dialog?.type === "print"}
-              onOpenChange={(open) => {
-                if (!open) setDialog(null)
-              }}
-            />
-            <PdfEditorSecurityDialog
-              documentId={documentId}
-              open={dialog?.type === "security"}
-              onOpenChange={(open) => {
-                if (!open) setDialog(null)
-              }}
-            />
-            <PdfEditorPropertiesDialog
-              documentId={documentId}
-              open={dialog?.type === "properties"}
-              onOpenChange={(open) => {
-                if (!open) setDialog(null)
-              }}
-            />
-            <PdfEditorShortcutsDialog
-              open={dialog?.type === "shortcuts"}
-              onOpenChange={(open) => {
-                if (!open) setDialog(null)
-              }}
-            />
-            <PdfEditorSignatureDialog
-              open={dialog?.type === "signature"}
-              onOpenChange={(open) => {
-                if (!open) setDialog(null)
-              }}
-            />
-            <PdfEditorLinkDialog
-              documentId={documentId}
-              open={dialog?.type === "link"}
-              source={dialog?.type === "link" ? dialog.source : "selection"}
-              onOpenChange={(open) => {
-                if (!open) setDialog(null)
-              }}
-            />
-            <PdfEditorConfirmDialog
-              open={dialog?.type === "confirm"}
-              title={dialog?.type === "confirm" ? dialog.title : ""}
-              description={
-                dialog?.type === "confirm" ? dialog.description : undefined
-              }
-              confirmLabel={
-                dialog?.type === "confirm" ? dialog.confirmLabel : undefined
-              }
-              destructive={
-                dialog?.type === "confirm" ? dialog.destructive : false
-              }
-              onConfirm={() => {
-                if (dialog?.type === "confirm") dialog.onConfirm()
-              }}
-              onOpenChange={(open) => {
-                if (!open) setDialog(null)
-              }}
-            />
           </div>
         </div>
       </ToastProvider>
@@ -3921,14 +3863,17 @@ type PdfEditorDocumentLoaderProps = Omit<
   PdfEditorInnerProps,
   | "documentId"
   | "document"
+  | "documentState"
   | "fileName"
   | "leftPanel"
   | "setLeftPanel"
   | "formDesignMode"
   | "setFormDesignMode"
+  | "unavailableContent"
 > & {
   source: EditorSource | null
   sourceLoading: boolean
+  engineError?: string
   fileNameOverride?: string
   signatureStorageKey: string | null
   onDocumentLoadSuccess?: PDFEditorProps["onDocumentLoadSuccess"]
@@ -3938,15 +3883,24 @@ type PdfEditorDocumentLoaderProps = Omit<
 function PdfEditorDocumentLoader({
   source,
   sourceLoading,
+  engineError,
   fileNameOverride,
   signatureStorageKey,
   onDocumentLoadSuccess,
   onDocumentLoadError,
   ...innerProps
 }: PdfEditorDocumentLoaderProps) {
+  const registryState = useRegistry()
   const { provides: documentManager } = useDocumentManagerCapability()
   const { activeDocumentId, activeDocument } = useActiveDocument()
-  const [loadError, setLoadError] = React.useState<string | null>(null)
+  const [loadError, setLoadError] = React.useState<{
+    sourceKey: string
+    message: string
+  } | null>(null)
+  const [requestedDocument, setRequestedDocument] = React.useState<{
+    sourceKey: string
+    documentId: string
+  } | null>(null)
   const [leftPanel, setLeftPanel] = React.useState<PdfEditorLeftPanel | null>(
     null
   )
@@ -3973,7 +3927,7 @@ function PdfEditorDocumentLoader({
     const fail = (message: string) => {
       if (openedSourceRef.current !== source.key) return
 
-      setLoadError(message)
+      setLoadError({ sourceKey: source.key, message })
       errorRef.current?.(message)
     }
 
@@ -3993,8 +3947,14 @@ function PdfEditorDocumentLoader({
 
     task.wait(
       (response) => {
+        if (openedSourceRef.current !== source.key) return
+        setRequestedDocument({
+          sourceKey: source.key,
+          documentId: response.documentId,
+        })
         response.task.wait(
           (openedDocument) => {
+            if (openedSourceRef.current !== source.key) return
             documentManager.setActiveDocument(response.documentId)
             successRef.current?.({
               numPages: openedDocument.pageCount,
@@ -4009,7 +3969,10 @@ function PdfEditorDocumentLoader({
           },
           (failure) => {
             // Password prompts are handled through the document state.
-            if (failure?.reason?.code === PdfErrorCode.Password) return
+            if (failure?.reason?.code === PdfErrorCode.Password) {
+              documentManager.setActiveDocument(response.documentId)
+              return
+            }
             fail(failure?.reason?.message ?? "The PDF could not be loaded.")
           }
         )
@@ -4022,64 +3985,76 @@ function PdfEditorDocumentLoader({
   const fileName = fileNameOverride
     ? getPdfFileName(fileNameOverride)
     : (source?.name ?? getPdfFileName(undefined))
+  const isRequestedDocument =
+    requestedDocument?.sourceKey === source?.key &&
+    requestedDocument?.documentId === activeDocumentId
+  const currentError =
+    loadError?.sourceKey === source?.key ? loadError?.message : undefined
   const passwordRequired =
+    isRequestedDocument &&
     activeDocument?.status === "error" &&
     activeDocument.errorCode === PdfErrorCode.Password
   const documentFailed =
-    loadError !== null ||
-    (activeDocument?.status === "error" && !passwordRequired)
-
-  if (
-    !source ||
-    sourceLoading ||
-    !activeDocumentId ||
-    documentFailed ||
-    passwordRequired
-  ) {
-    return (
-      <PdfEditorFallbackShell
-        className={innerProps.className}
-        fileName={source?.name}
-        showToolbar={innerProps.showToolbar}
-        showUpload={innerProps.showUpload}
-        state={
-          !source && !sourceLoading
-            ? "empty"
-            : passwordRequired
-              ? "password"
-              : documentFailed
-                ? "error"
-                : "loading"
-        }
-        errorMessage={loadError ?? activeDocument?.error ?? undefined}
-        onUploadFile={innerProps.onUploadFile}
-      >
-        {passwordRequired && activeDocument ? (
-          <div className="flex-1">
-            <PdfEditorPasswordPrompt documentState={activeDocument} />
-          </div>
-        ) : null}
-      </PdfEditorFallbackShell>
-    )
-  }
+    currentError !== undefined ||
+    (isRequestedDocument &&
+      activeDocument?.status === "error" &&
+      !passwordRequired)
 
   const document =
-    activeDocument?.status === "loaded" ? activeDocument.document : null
+    !sourceLoading &&
+    !documentFailed &&
+    !engineError &&
+    isRequestedDocument &&
+    activeDocument?.status === "loaded"
+      ? activeDocument.document
+      : null
+  const status =
+    engineError || documentFailed
+      ? "error"
+      : !source && !sourceLoading
+        ? "empty"
+        : "loading"
 
   return (
     <TooltipProvider delay={TOOLTIP_DELAY_MS}>
       <PdfEditorSignaturePersistence storageKey={signatureStorageKey} />
-      <PdfEditorInner
-        key={activeDocumentId}
-        {...innerProps}
-        documentId={activeDocumentId}
-        document={document}
-        fileName={fileName}
-        leftPanel={leftPanel}
-        setLeftPanel={setLeftPanel}
-        formDesignMode={formDesignMode}
-        setFormDesignMode={setFormDesignMode}
-      />
+      <PDFContext.Provider
+        value={document ? registryState : EMPTY_EDITOR_CONTEXT}
+      >
+        <PdfEditorInner
+          {...innerProps}
+          documentId={document ? activeDocumentId! : ""}
+          document={document}
+          documentState={
+            document ? "ready" : passwordRequired ? "password" : status
+          }
+          fileName={fileName}
+          leftPanel={leftPanel}
+          setLeftPanel={setLeftPanel}
+          formDesignMode={formDesignMode}
+          setFormDesignMode={setFormDesignMode}
+          unavailableContent={
+            passwordRequired && activeDocument ? (
+              <PDFContext.Provider value={registryState}>
+                <PdfEditorPasswordPrompt documentState={activeDocument} />
+              </PDFContext.Provider>
+            ) : (
+              <PdfEditorDocumentStatus
+                state={status}
+                errorMessage={
+                  engineError ??
+                  currentError ??
+                  activeDocument?.error ??
+                  undefined
+                }
+                onUploadFile={
+                  innerProps.showUpload ? innerProps.onUploadFile : undefined
+                }
+              />
+            )
+          }
+        />
+      </PDFContext.Provider>
     </TooltipProvider>
   )
 }
@@ -4279,73 +4254,58 @@ export const PDFEditor = React.forwardRef<PDFEditorHandle, PDFEditorProps>(
       []
     )
 
-    if (engineError) {
-      return (
-        <PdfEditorFallbackShell
-          className={className}
-          fileName={source?.name}
-          showToolbar={showToolbar}
-          showUpload={showUpload}
-          state="error"
-          errorMessage="The PDF engine could not be loaded."
-          onUploadFile={handleUploadFile}
-        />
-      )
-    }
-
-    if (!engine) {
-      return (
-        <PdfEditorFallbackShell
-          className={className}
-          fileName={source?.name}
-          showToolbar={showToolbar}
-          showUpload={showUpload}
-          state="loading"
-          onUploadFile={handleUploadFile}
-        />
-      )
-    }
-
+    const editor = (
+      <PdfEditorDocumentLoader
+        engineError={
+          engineError ? "The PDF engine could not be loaded." : undefined
+        }
+        source={source}
+        sourceLoading={sourceLoading}
+        fileNameOverride={fileName}
+        signatureStorageKey={signatureStorageKey}
+        className={className}
+        defaultZoom={defaultZoom}
+        defaultMode={defaultMode}
+        annotationAuthor={annotationAuthor}
+        features={resolvedFeatures}
+        showToolbar={showToolbar}
+        showUpload={showUpload}
+        showDownload={showDownload}
+        toolbarActions={toolbarActions}
+        selectionActions={resolvedSelectionActions}
+        signatureFontsStylesheetUrl={signatureFontsStylesheetUrl}
+        renderPageOverlay={renderPageOverlay}
+        handleRef={handleRef}
+        onReplaceDocument={replace}
+        onUploadFile={handleUploadFile}
+        onDocumentLoadSuccess={onDocumentLoadSuccess}
+        onDocumentLoadError={onDocumentLoadError}
+        onActivePageChange={onActivePageChange}
+        onModeChange={onModeChange}
+        onAnnotationEvent={onAnnotationEvent}
+        onAnnotationsChange={onAnnotationsChange}
+        onFormValuesChange={onFormValuesChange}
+        onRedactionsApplied={onRedactionsApplied}
+        onSave={onSave}
+        onCapture={onCapture}
+        onToast={onToast}
+        onSelectionAction={onSelectionAction}
+      />
+    )
     return (
-      <PdfEditorScrollAreaResolverContext.Provider
-        value={resolveScrollAreaViewport ?? resolveDefaultScrollAreaViewport}
-      >
-        <EmbedPDF engine={engine} plugins={plugins}>
-          <PdfEditorDocumentLoader
-            source={source}
-            sourceLoading={sourceLoading}
-            fileNameOverride={fileName}
-            signatureStorageKey={signatureStorageKey}
-            className={className}
-            defaultZoom={defaultZoom}
-            defaultMode={defaultMode}
-            annotationAuthor={annotationAuthor}
-            features={resolvedFeatures}
-            showToolbar={showToolbar}
-            showUpload={showUpload}
-            showDownload={showDownload}
-            toolbarActions={toolbarActions}
-            selectionActions={resolvedSelectionActions}
-            signatureFontsStylesheetUrl={signatureFontsStylesheetUrl}
-            renderPageOverlay={renderPageOverlay}
-            handleRef={handleRef}
-            onReplaceDocument={replace}
-            onUploadFile={handleUploadFile}
-            onDocumentLoadSuccess={onDocumentLoadSuccess}
-            onDocumentLoadError={onDocumentLoadError}
-            onActivePageChange={onActivePageChange}
-            onModeChange={onModeChange}
-            onAnnotationEvent={onAnnotationEvent}
-            onAnnotationsChange={onAnnotationsChange}
-            onFormValuesChange={onFormValuesChange}
-            onRedactionsApplied={onRedactionsApplied}
-            onSave={onSave}
-            onCapture={onCapture}
-            onToast={onToast}
-            onSelectionAction={onSelectionAction}
-          />
-        </EmbedPDF>
-      </PdfEditorScrollAreaResolverContext.Provider>
+      <PDFContext.Provider value={EMPTY_EDITOR_CONTEXT}>
+        <PdfEditorScrollAreaResolverContext.Provider
+          value={resolveScrollAreaViewport ?? resolveDefaultScrollAreaViewport}
+        >
+          {engine ? (
+            <EmbedPDF engine={engine} plugins={plugins}>
+              {editor}
+            </EmbedPDF>
+          ) : (
+            editor
+          )}
+        </PdfEditorScrollAreaResolverContext.Provider>
+      </PDFContext.Provider>
     )
   }
 )

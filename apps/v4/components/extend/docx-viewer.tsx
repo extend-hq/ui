@@ -229,6 +229,12 @@ function normalizeDocxZoomScale(value: number | undefined): number {
 
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   const [showSpinner, setShowSpinner] = React.useState(false)
+  const [previousIsLoading, setPreviousIsLoading] = React.useState(isLoading)
+
+  if (previousIsLoading !== isLoading) {
+    setPreviousIsLoading(isLoading)
+    setShowSpinner(false)
+  }
 
   React.useEffect(() => {
     if (!isLoading) return
@@ -237,10 +243,7 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
       setShowSpinner(true)
     }, delayMs)
 
-    return () => {
-      window.clearTimeout(timeoutId)
-      setShowSpinner(false)
-    }
+    return () => window.clearTimeout(timeoutId)
   }, [delayMs, isLoading])
 
   return isLoading && showSpinner
@@ -477,12 +480,6 @@ function DocxPageNumberControl({
   const displayPage = pageCount ? activePage : 1
   const [isEditing, setIsEditing] = React.useState(false)
   const [draftPage, setDraftPage] = React.useState(() => String(displayPage))
-
-  React.useEffect(() => {
-    if (!isEditing) {
-      setDraftPage(String(displayPage))
-    }
-  }, [displayPage, isEditing])
 
   React.useEffect(() => {
     if (!isEditing) return
@@ -1166,7 +1163,7 @@ function DocxViewerContent({
   const [uploadedDocxFile, setUploadedDocxFile] =
     React.useState<UploadedDocxFile | null>(null)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
-  const activePageStore = React.useMemo(createDocxActivePageStore, [])
+  const activePageStore = React.useMemo(() => createDocxActivePageStore(), [])
   const resolvedDefaultZoomScale = normalizeDocxZoomScale(defaultZoom)
   const activeUploadedDocxFile =
     uploadedDocxFile?.sourceUrl === url ? uploadedDocxFile : null

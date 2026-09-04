@@ -74,14 +74,14 @@ function useElementWidth<T extends HTMLElement>() {
   return [setNode, width] as const
 }
 
+const subscribeToHydration = () => () => {}
+
 function useMounted() {
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  return mounted
+  return React.useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false
+  )
 }
 
 function getSavedLayout(key: string) {

@@ -124,11 +124,22 @@ function SignatureDialog({
     [fieldBbox]
   )
 
-  React.useEffect(() => {
+  const [previousOpen, setPreviousOpen] = React.useState(open)
+  if (previousOpen !== open) {
+    setPreviousOpen(open)
     if (!open) {
       setGuideSize(null)
-      return
+      setIsReady(false)
+      setHasSignature(false)
     }
+  }
+  const canInitialize = Boolean(
+    open && guideSize && guideSize.width > 1 && guideSize.height > 1
+  )
+  if (!canInitialize && isReady) setIsReady(false)
+
+  React.useEffect(() => {
+    if (!open) return
 
     let frameId = 0
     let resizeObserver: ResizeObserver | null = null
@@ -191,10 +202,6 @@ function SignatureDialog({
     if (!open || !guideSize || guideSize.width <= 1 || guideSize.height <= 1) {
       signaturePadRef.current?.off()
       signaturePadRef.current = null
-      setIsReady(false)
-      if (!open) {
-        setHasSignature(false)
-      }
       return
     }
 

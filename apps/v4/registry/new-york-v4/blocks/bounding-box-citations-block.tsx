@@ -59,10 +59,9 @@ export function HumanReviewBlock({
   const activeLocation =
     hoverLocation ?? getReviewFieldLocation(activeField, resolveFieldLocation)
 
-  React.useEffect(() => {
-    if (activeFieldKey || !fields[0]) return
+  if (!activeFieldKey && fields[0]) {
     setActiveFieldKey(fields[0].key)
-  }, [activeFieldKey, fields])
+  }
 
   const focusField = React.useCallback(
     (field: ReviewField) => {

@@ -130,11 +130,15 @@ function PdfThumbnailPreview({
   const [imageUrl, setImageUrl] = React.useState<string | null>(null)
   const [hasError, setHasError] = React.useState(false)
 
-  React.useEffect(() => {
-    let isCurrent = true
-
+  const [previousUrl, setPreviousUrl] = React.useState(file.url)
+  if (previousUrl !== file.url) {
+    setPreviousUrl(file.url)
     setImageUrl(null)
     setHasError(false)
+  }
+
+  React.useEffect(() => {
+    let isCurrent = true
 
     void renderPdfThumbnailUrl({
       pageIndex: 0,
@@ -205,22 +209,24 @@ function DocxThumbnailPreview({
     )
   )
   const firstThumbnail = thumbnails[0]
-  const docxCanvasRef =
-    React.useRef<React.RefCallback<HTMLCanvasElement> | null>(null)
-  const [thumbnailRenderState, setThumbnailRenderState] =
-    React.useState<DocxThumbnailRenderState | null>(null)
-  const attachDocxThumbnailCanvas = React.useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      docxCanvasRef.current?.(canvas)
-    },
-    []
-  )
+  const thumbnailRenderState = firstThumbnail
+  const attachDocxThumbnailCanvas = firstThumbnail?.canvasRef
+
+  const [previousInputs, setPreviousInputs] = React.useState({
+    file,
+    importDocxFile,
+  })
+  if (
+    previousInputs.file !== file ||
+    previousInputs.importDocxFile !== importDocxFile
+  ) {
+    setPreviousInputs({ file, importDocxFile })
+    setIsLoading(true)
+    setHasError(false)
+  }
 
   React.useEffect(() => {
     let isCurrent = true
-
-    setIsLoading(true)
-    setHasError(false)
 
     void fetchFile(file)
       .then((docxFile) => importDocxFile(docxFile))
@@ -240,23 +246,6 @@ function DocxThumbnailPreview({
       isCurrent = false
     }
   }, [file, importDocxFile])
-
-  React.useEffect(() => {
-    if (!firstThumbnail) {
-      docxCanvasRef.current = null
-      setThumbnailRenderState(null)
-      return
-    }
-
-    docxCanvasRef.current = firstThumbnail.canvasRef
-    setThumbnailRenderState({
-      aspectRatio: firstThumbnail.aspectRatio,
-      isMounted: firstThumbnail.isMounted,
-      pixelHeightPx: firstThumbnail.pixelHeightPx,
-      pixelWidthPx: firstThumbnail.pixelWidthPx,
-      status: firstThumbnail.status,
-    })
-  }, [firstThumbnail])
 
   const thumbnailIsLoading =
     isLoading ||
@@ -324,12 +313,16 @@ function XlsxThumbnailPreview({
   const [imageUrl, setImageUrl] = React.useState<string | null>(null)
   const [hasError, setHasError] = React.useState(false)
 
-  React.useEffect(() => {
-    let isCurrent = true
-
+  const [previousInputs, setPreviousInputs] = React.useState({ file })
+  if (previousInputs.file !== file) {
+    setPreviousInputs({ file })
     setWorkbookBuffer(null)
     setImageUrl(null)
     setHasError(false)
+  }
+
+  React.useEffect(() => {
+    let isCurrent = true
 
     void fetch(file.url)
       .then(async (response) => {

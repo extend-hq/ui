@@ -314,24 +314,24 @@ function ensureDarkThemeObserver() {
   })
 }
 
-function useIsDarkTheme() {
-  const [isDark, setIsDark] = React.useState(readIsDarkTheme)
-
-  React.useEffect(() => {
-    ensureDarkThemeObserver()
-    setIsDark(sharedIsDarkTheme)
-    darkThemeListeners.add(setIsDark)
-
-    return () => {
-      darkThemeListeners.delete(setIsDark)
-      if (darkThemeListeners.size === 0 && darkThemeObserver) {
-        darkThemeObserver.disconnect()
-        darkThemeObserver = null
-      }
+function subscribeToDarkTheme(listener: () => void) {
+  ensureDarkThemeObserver()
+  darkThemeListeners.add(listener)
+  return () => {
+    darkThemeListeners.delete(listener)
+    if (darkThemeListeners.size === 0 && darkThemeObserver) {
+      darkThemeObserver.disconnect()
+      darkThemeObserver = null
     }
-  }, [])
+  }
+}
 
-  return isDark
+function useIsDarkTheme() {
+  return React.useSyncExternalStore(
+    subscribeToDarkTheme,
+    readIsDarkTheme,
+    () => false
+  )
 }
 
 function useHumanReviewGridTheme() {
@@ -2344,9 +2344,13 @@ export function HumanReviewPanel({
     initialExpectedValues
   )
 
-  React.useEffect(() => {
+  const [previousExpectedValues, setPreviousExpectedValues] = React.useState(
+    initialExpectedValues
+  )
+  if (!Object.is(previousExpectedValues, initialExpectedValues)) {
+    setPreviousExpectedValues(initialExpectedValues)
     setExpected(initialExpectedValues)
-  }, [initialExpectedValues])
+  }
 
   const updateValue = React.useCallback((key: string, value: JsonValue) => {
     setExpected((current) =>

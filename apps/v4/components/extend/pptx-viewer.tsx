@@ -3,11 +3,11 @@
 import * as React from "react"
 import {
   ReactPptxViewer,
-  usePptxViewer,
   usePptxViewerThumbnails,
   type ParsedPresentation,
   type PptxSlideThumbnailItem,
   type PptxSlideThumbnailRenderWindow,
+  type PptxViewerController,
   type PptxViewerError,
   type PresentationSource,
 } from "@extend-ai/react-pptx"
@@ -154,19 +154,25 @@ function getNextZoom(currentZoom: number, direction: 1 | -1) {
 }
 
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
-  const [visible, setVisible] = React.useState(false)
+  const [showSpinner, setShowSpinner] = React.useState(false)
+  const [previousIsLoading, setPreviousIsLoading] = React.useState(isLoading)
+
+  if (previousIsLoading !== isLoading) {
+    setPreviousIsLoading(isLoading)
+    setShowSpinner(false)
+  }
 
   React.useEffect(() => {
-    if (!isLoading) {
-      setVisible(false)
-      return
-    }
+    if (!isLoading) return
 
-    const timeoutId = window.setTimeout(() => setVisible(true), delayMs)
+    const timeoutId = window.setTimeout(() => {
+      setShowSpinner(true)
+    }, delayMs)
+
     return () => window.clearTimeout(timeoutId)
   }, [delayMs, isLoading])
 
-  return visible
+  return isLoading && showSpinner
 }
 
 function useDebouncedValue<TValue>(value: TValue, delayMs: number) {
@@ -299,10 +305,6 @@ function PptxSlideNumberControl({
   const displaySlide = slideCount ? activeSlideIndex + 1 : 1
   const [isEditing, setIsEditing] = React.useState(false)
   const [draftSlide, setDraftSlide] = React.useState(() => String(displaySlide))
-
-  React.useEffect(() => {
-    if (!isEditing) setDraftSlide(String(displaySlide))
-  }, [displaySlide, isEditing])
 
   React.useEffect(() => {
     if (!isEditing) return
@@ -839,7 +841,7 @@ function PptxThumbnailSidebarContent({
   slideCount,
 }: {
   activeSlideIndex: number
-  controller: ReturnType<typeof usePptxViewer>["controller"]
+  controller: PptxViewerController | null
   displayFileName: string
   isLoading: boolean
   onSelectSlide: (slideIndex: number) => void
@@ -945,7 +947,8 @@ export function PptxViewerPreview({
   const [isLoading, setIsLoading] = React.useState(Boolean(src))
   const [loadError, setLoadError] = React.useState<string>()
   const [isPreparingDownload, setIsPreparingDownload] = React.useState(false)
-  const viewer = usePptxViewer()
+  const [controller, setController] =
+    React.useState<PptxViewerController | null>(null)
   const sidebarInline = useInlineThumbnailSidebar(viewerShellWidth)
   const activeUploadedPresentation =
     uploadedPresentation?.sourceUrl === src ? uploadedPresentation : null
@@ -993,16 +996,27 @@ export function PptxViewerPreview({
     }
   }, [])
 
-  React.useEffect(() => {
-    if (thumbnailSidebarVisible) setThumbnailSidebarMounted(true)
-  }, [thumbnailSidebarVisible])
+  if (thumbnailSidebarVisible && !thumbnailSidebarMounted) {
+    setThumbnailSidebarMounted(true)
+  }
 
-  React.useEffect(() => {
-    cancelPendingSlideNavigation()
+  const [previousSource, setPreviousSource] = React.useState({
+    sourceIdentity,
+    defaultZoom,
+  })
+  if (
+    previousSource.sourceIdentity !== sourceIdentity ||
+    previousSource.defaultZoom !== defaultZoom
+  ) {
+    setPreviousSource({ sourceIdentity, defaultZoom })
     setSlideCount(0)
     setZoom(Math.min(400, Math.max(10, Math.round(defaultZoom))))
     setLoadError(undefined)
     setIsLoading(Boolean(sourceIdentity))
+  }
+
+  React.useEffect(() => {
+    cancelPendingSlideNavigation()
     viewportElement?.scrollTo({ top: 0, left: 0 })
   }, [
     cancelPendingSlideNavigation,
@@ -1016,15 +1030,26 @@ export function PptxViewerPreview({
     [cancelPendingSlideNavigation]
   )
 
-  React.useEffect(() => {
+  const [initialSlideSource, setInitialSlideSource] = React.useState({
+    sourceIdentity,
+    requestedInitialSlideIndex,
+  })
+  if (
+    initialSlideSource.sourceIdentity !== sourceIdentity ||
+    initialSlideSource.requestedInitialSlideIndex !== requestedInitialSlideIndex
+  ) {
+    setInitialSlideSource({ sourceIdentity, requestedInitialSlideIndex })
     setActiveSlideIndex(requestedInitialSlideIndex)
-    if (viewer.controller?.isReady()) {
-      void viewer.controller.goToSlide(requestedInitialSlideIndex, {
+  }
+
+  React.useEffect(() => {
+    if (controller?.isReady()) {
+      void controller.goToSlide(requestedInitialSlideIndex, {
         behavior: "instant",
         block: "center",
       })
     }
-  }, [requestedInitialSlideIndex, sourceIdentity, viewer.controller])
+  }, [requestedInitialSlideIndex, sourceIdentity, controller])
 
   const navigateToSlide = React.useCallback(
     (nextSlideIndex: number, behavior: ScrollBehavior) => {
@@ -1059,12 +1084,12 @@ export function PptxViewerPreview({
       }
 
       setActiveSlideIndex(normalizedSlideIndex)
-      void viewer.controller?.goToSlide(normalizedSlideIndex, {
+      void controller?.goToSlide(normalizedSlideIndex, {
         behavior: resolvedBehavior,
         block: "center",
       })
     },
-    [cancelPendingSlideNavigation, slideCount, viewer.controller]
+    [cancelPendingSlideNavigation, slideCount, controller]
   )
   const handleSlideChange = React.useCallback(
     (nextSlideIndex: number) => navigateToSlide(nextSlideIndex, "smooth"),
@@ -1111,7 +1136,6 @@ export function PptxViewerPreview({
         currentSlideIndex === 0 ? currentSlideIndex : 0
       )
 
-      const controller = viewer.controller
       if (!isLoading && controller && controller.getSlideIndex() !== 0) {
         void controller.goToSlide(0, {
           behavior: "instant",
@@ -1119,7 +1143,7 @@ export function PptxViewerPreview({
         })
       }
     },
-    [isLoading, viewer.controller]
+    [isLoading, controller]
   )
   const handleViewerUserScrollIntent = React.useCallback(
     (event: React.SyntheticEvent<HTMLDivElement>) => {
@@ -1260,7 +1284,7 @@ export function PptxViewerPreview({
           {thumbnailSidebarMounted && hasPresentation ? (
             <PptxThumbnailSidebarContent
               activeSlideIndex={sidebarActiveSlideIndex}
-              controller={viewer.controller}
+              controller={controller}
               displayFileName={displayFileName}
               isLoading={isLoading}
               onSelectSlide={handleThumbnailSlideChange}
@@ -1315,7 +1339,7 @@ export function PptxViewerPreview({
           ) : (
             <ReactPptxViewer
               key={sourceIdentity}
-              ref={viewer.ref}
+              ref={setController}
               source={source}
               mode="continuous"
               initialSlide={requestedInitialSlideIndex}

@@ -686,13 +686,18 @@
         "@embedpdf/plugin-zoom@^2.15.0",
         "pdf-lib@^1.17.1"
       ],
-      "registryDependencies": ["@extend/document-viewer-sidebar"],
+      "registryDependencies": ["@extend/document-viewer-sidebar", "resizable"],
       "categories": ["documents"],
       "files": [
         {
           "path": "components/extend/pdf-editor.tsx",
           "type": "registry:ui",
           "target": "@components/extend/pdf-editor.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-workspace.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-workspace.tsx"
         },
         {
           "path": "components/extend/pdf-editor-shared.tsx",

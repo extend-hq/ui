@@ -100,6 +100,12 @@ const publicItems = catalog
   )
   .map((item) => item.name)
 assert(publicItems.includes("pdf-editor"))
+const selectedItems =
+  process.env.EXTEND_FIXTURE_ITEMS?.split(",") ?? publicItems
+assert(
+  selectedItems.every((name) => publicItems.includes(name)),
+  "Unknown fixture entry"
+)
 const readItem = async (family: Family, name: string): Promise<RegistryItem> =>
   JSON.parse(
     await readFile(
@@ -113,8 +119,16 @@ async function iconProbe(
   library: keyof typeof iconLibraries
 ): Promise<RegistryItem> {
   const files = new Map<string, RegistryFile>()
-  for (const definition of catalog) {
-    for (const file of (await readItem(family, definition.name)).files ?? []) {
+  const visited = new Set<string>()
+  const include = async (name: string) => {
+    if (visited.has(name)) return
+    visited.add(name)
+    const item = await readItem(family, name)
+    for (const dependency of item.registryDependencies ?? []) {
+      if (dependency.startsWith("@extend/"))
+        await include(dependency.slice("@extend/".length))
+    }
+    for (const file of item.files ?? []) {
       if (
         file.target?.match(/^@components\/(extend|blocks)\//) &&
         file.content?.includes("IconPlaceholder")
@@ -126,6 +140,7 @@ async function iconProbe(
       }
     }
   }
+  for (const name of selectedItems) await include(name)
   assert(files.size > 0)
   return {
     name: `icon-probe-${library}`,
@@ -218,6 +233,14 @@ async function checkFamily(family: Family) {
       }
     }
     include(entry)
+    for (const support of [
+      "document-controls",
+      "document-scroll-area",
+      "document-color-popover",
+      "registry-icon-props",
+    ]) {
+      assert(!closure.has(support), `${entry} installs an inline support file`)
+    }
     const dependencies = new Set(
       [...closure.values()].flatMap((item) => item.registryDependencies ?? [])
     )
@@ -227,6 +250,7 @@ async function checkFamily(family: Family) {
         .map((name) => name.match(/^(@[^/]+\/[^@]+|[^@]+)/)![0])
     )
     const files = [...closure.values()].flatMap((item) => item.files ?? [])
+    if (entry === "xlsx-viewer") assert.equal(files.length, 1)
     const modules = new Set(
       files.map((file) =>
         file.target
@@ -350,7 +374,7 @@ async function checkFamily(family: Family) {
   const utilsBefore = await checksum(path.join(directory, "src/lib/utils.ts"))
   await run(
     shadcn,
-    ["add", ...publicItems.map((name) => `@extend/${name}`), "-y"],
+    ["add", ...selectedItems.map((name) => `@extend/${name}`), "-y"],
     directory,
     true
   )
@@ -390,7 +414,7 @@ async function checkFamily(family: Family) {
   )
   await run("npm", ["run", "build"], directory)
   console.log(
-    `PASS ${name}: all public components, all icon libraries, unchanged consumer primitives, production build`
+    `PASS ${name}: ${selectedItems.length} public entries, all icon libraries, unchanged consumer primitives, production build`
   )
   if (process.env.EXTEND_SKIP_STYLE_MATRIX === "1") return
   const otherStyles = styles

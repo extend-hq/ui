@@ -160,15 +160,17 @@ export function PdfEditorPrintDialog({
   const [isPrinting, setIsPrinting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
-  React.useEffect(() => {
-    if (open) return
-
-    setSelection("all")
-    setCustomPages("")
-    setIncludeAnnotations(true)
-    setIsPrinting(false)
-    setError(null)
-  }, [open])
+  const [previousOpen, setPreviousOpen] = React.useState(open)
+  if (previousOpen !== open) {
+    setPreviousOpen(open)
+    if (!open) {
+      setSelection("all")
+      setCustomPages("")
+      setIncludeAnnotations(true)
+      setIsPrinting(false)
+      setError(null)
+    }
+  }
 
   const canSubmit =
     !isPrinting && (selection !== "custom" || customPages.trim().length > 0)
@@ -516,21 +518,23 @@ export function PdfEditorSecurityDialog({
   const [isApplying, setIsApplying] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
-  React.useEffect(() => {
-    if (!open) return
-
-    setUnlockPassword("")
-    setIsUnlocking(false)
-    setRequireOpenPassword(false)
-    setOpenPassword("")
-    setConfirmOpenPassword("")
-    setRestrictPermissions(false)
-    setOwnerPassword("")
-    setConfirmOwnerPassword("")
-    setAllowedFlags(new Set(PERMISSION_OPTIONS.map((option) => option.flag)))
-    setIsApplying(false)
-    setError(null)
-  }, [open])
+  const [previousOpen, setPreviousOpen] = React.useState(open)
+  if (previousOpen !== open) {
+    setPreviousOpen(open)
+    if (open) {
+      setUnlockPassword("")
+      setIsUnlocking(false)
+      setRequireOpenPassword(false)
+      setOpenPassword("")
+      setConfirmOpenPassword("")
+      setRestrictPermissions(false)
+      setOwnerPassword("")
+      setConfirmOwnerPassword("")
+      setAllowedFlags(new Set(PERMISSION_OPTIONS.map((option) => option.flag)))
+      setIsApplying(false)
+      setError(null)
+    }
+  }
 
   const openPasswordValid =
     !requireOpenPassword ||
@@ -887,16 +891,31 @@ export function PdfEditorPropertiesDialog({
     creationDate: Date | null
     modificationDate: Date | null
   }>({ creationDate: null, modificationDate: null })
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(
+    Boolean(open && registry && document)
+  )
   const [isSaving, setIsSaving] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+
+  const [metadataRequest, setMetadataRequest] = React.useState({
+    document,
+    open,
+    registry,
+  })
+  if (
+    metadataRequest.document !== document ||
+    metadataRequest.open !== open ||
+    metadataRequest.registry !== registry
+  ) {
+    setMetadataRequest({ document, open, registry })
+    setIsLoading(Boolean(open && registry && document))
+    setError(null)
+  }
 
   React.useEffect(() => {
     if (!open || !registry || !document) return
 
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
 
     registry
       .getEngine()
@@ -1278,16 +1297,18 @@ export function PdfEditorSignatureDialog({
     setInitials(null)
   }, [clearInitialsUpload, clearSignatureUpload])
 
-  React.useEffect(() => {
-    if (open) return
-
-    setTab("draw")
-    setColor(SIGNATURE_COLORS[0].value)
-    setFontFamily(PDF_EDITOR_SIGNATURE_FONTS[0].family)
-    setActiveTarget("signature")
-    setSignature(null)
-    setInitials(null)
-  }, [open])
+  const [previousOpen, setPreviousOpen] = React.useState(open)
+  if (previousOpen !== open) {
+    setPreviousOpen(open)
+    if (!open) {
+      setTab("draw")
+      setColor(SIGNATURE_COLORS[0].value)
+      setFontFamily(PDF_EDITOR_SIGNATURE_FONTS[0].family)
+      setActiveTarget("signature")
+      setSignature(null)
+      setInitials(null)
+    }
+  }
 
   const handleTabChange = (nextTab: SignatureCreationTab) => {
     clearAll()
@@ -1566,26 +1587,31 @@ export function PdfEditorLinkDialog({
     [documentId, selectionCapability]
   )
 
-  React.useEffect(() => {
-    if (!open) return
-
-    const selected =
-      source === "annotation" ? annotationScope?.getSelectedAnnotation() : null
-
-    if (selected && selected.object.type === PdfAnnotationSubtype.LINK) {
-      const existing = readLinkTarget(
-        (selected.object as PdfLinkAnnoObject).target
-      )
+  const [linkRequest, setLinkRequest] = React.useState({
+    annotationScope,
+    open: false,
+    source,
+  })
+  if (
+    linkRequest.annotationScope !== annotationScope ||
+    linkRequest.open !== open ||
+    linkRequest.source !== source
+  ) {
+    setLinkRequest({ annotationScope, open, source })
+    if (open) {
+      const selected =
+        source === "annotation"
+          ? annotationScope?.getSelectedAnnotation()
+          : null
+      const existing =
+        selected?.object.type === PdfAnnotationSubtype.LINK
+          ? readLinkTarget((selected.object as PdfLinkAnnoObject).target)
+          : { tab: "url" as const, url: "", pageNumber: 1 }
       setTab(existing.tab)
       setUrl(existing.url)
       setPageNumber(existing.pageNumber ?? 1)
-      return
     }
-
-    setTab("url")
-    setUrl("")
-    setPageNumber(1)
-  }, [annotationScope, open, source])
+  }
 
   const buildTarget = (): PdfLinkTarget | null => {
     if (tab === "url") {

@@ -677,34 +677,54 @@ export function ColorPicker({
     }
   })
   const [format, setFormat] = React.useState<ColorFormat>(defaultFormat)
-  const lastCommitAtRef = React.useRef(0)
+  const [controlledValue, setControlledValue] = React.useState({
+    value,
+    showAlpha,
+    pending: [] as string[],
+  })
   const triggerGroupRef = React.useRef<HTMLDivElement>(null)
 
-  React.useEffect(() => {
-    if (!value) return
-    // User input wins over delayed controlled-value echoes.
-    if (Date.now() - lastCommitAtRef.current < 400) return
-    const parsed = parseColorInput(value, "hex")
-    if (!parsed) return
-    setPicker((prev) => {
-      // Preserve opacity when the parent stores only RGB.
-      const alpha = showAlpha ? (parsed.alpha ?? prev.a) : 1
-      // Preserve unrounded channel precision.
-      if (rgbaToHex(prev.rgb, prev.a) === rgbaToHex(parsed.rgb, alpha))
-        return prev
-      const derived = rgbToOklchPlane(parsed.rgb, prev.plane.h)
-      return {
-        plane: withHueContinuity(derived, prev.plane.h, derived.s / 100),
-        rgb: parsed.rgb,
-        a: alpha,
-      }
+  if (
+    controlledValue.value !== value ||
+    controlledValue.showAlpha !== showAlpha
+  ) {
+    const parsed = value ? parseColorInput(value, "hex") : null
+    const alpha = showAlpha ? (parsed?.alpha ?? picker.a) : 1
+    const incoming = parsed ? rgbaToHex(parsed.rgb, alpha) : null
+    const echoIndex =
+      incoming === null ? -1 : controlledValue.pending.lastIndexOf(incoming)
+    setControlledValue({
+      value,
+      showAlpha,
+      pending:
+        echoIndex < 0 ? [] : controlledValue.pending.slice(echoIndex + 1),
     })
-  }, [value, showAlpha])
+    if (
+      parsed &&
+      (echoIndex < 0 ||
+        echoIndex === controlledValue.pending.length - 1 ||
+        controlledValue.showAlpha !== showAlpha)
+    ) {
+      if (rgbaToHex(picker.rgb, picker.a) !== incoming) {
+        const derived = rgbToOklchPlane(parsed.rgb, picker.plane.h)
+        setPicker({
+          plane: withHueContinuity(derived, picker.plane.h, derived.s / 100),
+          rgb: parsed.rgb,
+          a: alpha,
+        })
+      }
+    }
+  }
 
   const applyState = (next: { plane: HsvColor; rgb: RgbColor; a: number }) => {
     setPicker(next)
-    lastCommitAtRef.current = Date.now()
     const hex = rgbaToHex(next.rgb, next.a)
+    if ((valueProp !== undefined || color !== undefined) && onChange) {
+      setControlledValue((current) => ({
+        ...current,
+        pending: [...current.pending, hex],
+      }))
+    }
     onChange?.(hex)
   }
 
@@ -724,9 +744,9 @@ export function ColorPicker({
   const hsva: HsvaColor = { ...picker.plane, a: picker.a }
   const rgb = picker.rgb
   // Preserve hue for achromatic colors.
-  const srgbHueRef = React.useRef(0)
-  const displayHsv = rgbToHsv(rgb, srgbHueRef.current)
-  srgbHueRef.current = displayHsv.h
+  const [srgbHue, setSrgbHue] = React.useState(0)
+  const displayHsv = rgbToHsv(rgb, srgbHue)
+  if (srgbHue !== displayHsv.h) setSrgbHue(displayHsv.h)
   const hsl = hsvToHsl(displayHsv)
   const rawOklch = rgbToOklch(rgb, hsva.h)
   const oklch = withHueContinuity(rawOklch, hsva.h, rawOklch.c / 0.33)

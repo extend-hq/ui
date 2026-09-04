@@ -4,6 +4,10 @@ import * as React from "react"
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area"
 
 import { cn } from "@/lib/utils"
+import {
+  ScrollArea as NativeScrollArea,
+  ScrollBar,
+} from "@/components/ui/scroll-area"
 
 type ScrollAreaProps = ScrollAreaPrimitive.Root.Props & {
   orientation?: "vertical" | "horizontal" | "both"
@@ -37,6 +41,32 @@ export function ScrollArea({
     [viewportPropsRef, viewportRef]
   )
 
+  if (
+    !viewportProps &&
+    !viewportRef &&
+    !viewportClassName &&
+    !scrollFade &&
+    !scrollbarGutter &&
+    !scrollbarOverflowOnly
+  ) {
+    return (
+      <NativeScrollArea
+        {...props}
+        className={cn(
+          "size-full min-h-0",
+          orientation === "horizontal" &&
+            "[&>[data-orientation=vertical]]:hidden",
+          className
+        )}
+      >
+        {children}
+        {orientation !== "vertical" ? (
+          <ScrollBar orientation="horizontal" />
+        ) : null}
+      </NativeScrollArea>
+    )
+  }
+
   return (
     <ScrollAreaPrimitive.Root
       className={cn(
@@ -64,22 +94,10 @@ export function ScrollArea({
         {children}
       </ScrollAreaPrimitive.Viewport>
       {orientation !== "horizontal" ? (
-        <ScrollAreaPrimitive.Scrollbar
-          data-slot="scroll-area-scrollbar"
-          orientation="vertical"
-          className="m-1 flex w-1.5"
-        >
-          <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-foreground/20" />
-        </ScrollAreaPrimitive.Scrollbar>
+        <ScrollBar orientation="vertical" />
       ) : null}
       {orientation !== "vertical" ? (
-        <ScrollAreaPrimitive.Scrollbar
-          data-slot="scroll-area-scrollbar"
-          orientation="horizontal"
-          className="m-1 flex h-1.5 flex-col"
-        >
-          <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-foreground/20" />
-        </ScrollAreaPrimitive.Scrollbar>
+        <ScrollBar orientation="horizontal" />
       ) : null}
       {orientation === "both" ? <ScrollAreaPrimitive.Corner /> : null}
     </ScrollAreaPrimitive.Root>

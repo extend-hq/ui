@@ -1,9 +1,13 @@
 "use client"
 
 import * as React from "react"
-import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
+import { ScrollArea as ScrollAreaPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+import {
+  ScrollArea as NativeScrollArea,
+  ScrollBar,
+} from "@/components/ui/scroll-area"
 
 type ScrollAreaProps = React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
   orientation?: "vertical" | "horizontal" | "both"
@@ -68,6 +72,32 @@ export function ScrollArea({
     }
   }, [scrollFade])
 
+  if (
+    !viewportProps &&
+    !viewportRef &&
+    !viewportClassName &&
+    !scrollFade &&
+    !scrollbarGutter &&
+    !scrollbarOverflowOnly
+  ) {
+    return (
+      <NativeScrollArea
+        {...props}
+        className={cn(
+          "size-full min-h-0",
+          orientation === "horizontal" &&
+            "[&>[data-orientation=vertical]]:hidden",
+          className
+        )}
+      >
+        {children}
+        {orientation !== "vertical" ? (
+          <ScrollBar orientation="horizontal" />
+        ) : null}
+      </NativeScrollArea>
+    )
+  }
+
   return (
     <ScrollAreaPrimitive.Root
       type={scrollbarOverflowOnly ? "auto" : "hover"}
@@ -92,22 +122,10 @@ export function ScrollArea({
         {children}
       </ScrollAreaPrimitive.Viewport>
       {orientation !== "horizontal" ? (
-        <ScrollAreaPrimitive.ScrollAreaScrollbar
-          orientation="vertical"
-          data-slot="scroll-area-scrollbar"
-          className="m-1 flex w-1.5 touch-none select-none"
-        >
-          <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-foreground/20" />
-        </ScrollAreaPrimitive.ScrollAreaScrollbar>
+        <ScrollBar orientation="vertical" />
       ) : null}
       {orientation !== "vertical" ? (
-        <ScrollAreaPrimitive.ScrollAreaScrollbar
-          orientation="horizontal"
-          data-slot="scroll-area-scrollbar"
-          className="m-1 flex h-1.5 touch-none flex-col select-none"
-        >
-          <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-foreground/20" />
-        </ScrollAreaPrimitive.ScrollAreaScrollbar>
+        <ScrollBar orientation="horizontal" />
       ) : null}
       {orientation === "both" ? <ScrollAreaPrimitive.Corner /> : null}
     </ScrollAreaPrimitive.Root>

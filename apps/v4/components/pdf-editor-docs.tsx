@@ -4,6 +4,7 @@ import * as React from "react"
 import dynamic from "next/dynamic"
 
 import { cn } from "@/lib/utils"
+import { useMounted } from "@/hooks/use-mounted"
 import { Spinner } from "@/components/ui/spinner"
 import { DocsViewCodeBlock } from "@/components/docs-code-block"
 
@@ -104,17 +105,17 @@ export function PdfEditorBlock({
 }
 
 export function PdfEditorSource() {
-  const [shouldLoadSource, setShouldLoadSource] = React.useState(false)
+  const [hasIntersected, setShouldLoadSource] = React.useState(false)
+  const isMounted = useMounted()
+  const shouldLoadSource =
+    hasIntersected || (isMounted && !("IntersectionObserver" in window))
   const containerRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    if (!("IntersectionObserver" in window)) {
-      setShouldLoadSource(true)
-      return
-    }
+    if (!("IntersectionObserver" in window)) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {

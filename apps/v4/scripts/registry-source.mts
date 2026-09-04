@@ -23,6 +23,29 @@ export function transformRegistrySource(
     true,
     ts.ScriptKind.TSX
   )
+  let needsEnhancedScrollArea = false
+  const inspectScrollArea = (node: ts.Node) => {
+    if (
+      (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
+      node.tagName.getText(source) === "ScrollArea"
+    ) {
+      needsEnhancedScrollArea ||= node.attributes.properties.some(
+        (prop) =>
+          ts.isJsxSpreadAttribute(prop) ||
+          [
+            "viewportRef",
+            "viewportProps",
+            "viewportClassName",
+            "scrollFade",
+            "scrollbarGutter",
+            "scrollbarOverflowOnly",
+            "orientation",
+          ].includes(prop.name.getText(source))
+      )
+    }
+    ts.forEachChild(node, inspectScrollArea)
+  }
+  inspectScrollArea(source)
   const f = ts.factory
   const extraImports = new Map<string, Set<string>>()
   let buttonProps = false
@@ -149,7 +172,11 @@ export function transformRegistrySource(
           )
         }
         if (!imports.length) return undefined
-        modulePath = customModules[modulePath] ?? modulePath
+        modulePath =
+          modulePath === "@/components/ui/scroll-area" &&
+          !needsEnhancedScrollArea
+            ? modulePath
+            : (customModules[modulePath] ?? modulePath)
         return f.updateImportDeclaration(
           node,
           node.modifiers,

@@ -27,11 +27,10 @@ export function Spinner({ className, ...props }: RegistryIconProps) {
 export function DialogPanel({
   className,
   children,
-  scrollFade = true,
   ...props
-}: React.ComponentProps<"div"> & { scrollFade?: boolean }) {
+}: React.ComponentProps<"div">) {
   return (
-    <ScrollArea scrollFade={scrollFade} className="min-h-0">
+    <ScrollArea className="min-h-0">
       <div
         data-slot="dialog-panel"
         className={cn("min-h-0", className)}

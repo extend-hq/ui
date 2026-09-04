@@ -1312,10 +1312,12 @@ function FileVisual({
     fileRef.current = file
   })
 
-  React.useEffect(() => {
+  const [previousFilePath, setPreviousFilePath] = React.useState(file.path)
+  if (!Object.is(previousFilePath, file.path)) {
+    setPreviousFilePath(file.path)
     setPageIndex(0)
     setLazyPageUrls({})
-  }, [file.path])
+  }
 
   // Keyed by path (not object identity) so manifest churn doesn't re-request
   // the page already being loaded.

@@ -16,6 +16,7 @@ import {
 import { useTheme } from "next-themes"
 
 import { cn } from "@/lib/utils"
+import { useMounted } from "@/hooks/use-mounted"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CopyButton } from "@/components/copy-button"
 
@@ -150,11 +151,7 @@ function ScrollAreaVirtualizer({
 
 function useCodeThemeType(): CodeThemeType {
   const { resolvedTheme } = useTheme()
-  const [isMounted, setIsMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useMounted()
 
   return isMounted && resolvedTheme === "dark" ? "dark" : "light"
 }
@@ -344,7 +341,12 @@ export function HighlightedCodeBlock({
   scrollResetKey?: React.Key
   useScrollArea?: boolean
 }) {
-  const [isVisible, setIsVisible] = React.useState(!lazy)
+  const [hasIntersected, setIsVisible] = React.useState(false)
+  const isMounted = useMounted()
+  const isVisible =
+    !lazy ||
+    hasIntersected ||
+    (isMounted && !("IntersectionObserver" in window))
   const [renderedCodeKey, setRenderedCodeKey] = React.useState<string | null>(
     null
   )
@@ -374,8 +376,14 @@ export function HighlightedCodeBlock({
   const hasRenderedCode = renderedCodeKey === codeRenderKey
   const shouldShowFallback = renderFallbackCode && isVisible && !hasRenderedCode
 
-  React.useLayoutEffect(() => {
+  const [previousCodeRenderKey, setPreviousCodeRenderKey] =
+    React.useState(codeRenderKey)
+  if (previousCodeRenderKey !== codeRenderKey) {
+    setPreviousCodeRenderKey(codeRenderKey)
     setRenderedCodeKey(null)
+  }
+
+  React.useLayoutEffect(() => {
     pendingScrollResetKeyRef.current = codeRenderKey
 
     const container = containerRef.current
@@ -427,18 +435,12 @@ export function HighlightedCodeBlock({
   )
 
   React.useEffect(() => {
-    if (!lazy) {
-      setIsVisible(true)
-      return
-    }
+    if (!lazy) return
 
     const container = containerRef.current
     if (!container) return
 
-    if (!("IntersectionObserver" in window)) {
-      setIsVisible(true)
-      return
-    }
+    if (!("IntersectionObserver" in window)) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {

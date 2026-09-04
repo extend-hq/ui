@@ -410,12 +410,15 @@ function scrollXlsxCellIntoView({
 
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   const [showSpinner, setShowSpinner] = React.useState(false)
+  const [previousIsLoading, setPreviousIsLoading] = React.useState(isLoading)
+
+  if (previousIsLoading !== isLoading) {
+    setPreviousIsLoading(isLoading)
+    setShowSpinner(false)
+  }
 
   React.useEffect(() => {
-    if (!isLoading) {
-      setShowSpinner(false)
-      return
-    }
+    if (!isLoading) return
 
     const timeoutId = window.setTimeout(() => {
       setShowSpinner(true)
@@ -424,7 +427,7 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
     return () => window.clearTimeout(timeoutId)
   }, [delayMs, isLoading])
 
-  return showSpinner
+  return isLoading && showSpinner
 }
 
 function ToolbarTooltip({
@@ -630,10 +633,8 @@ export function WorkbookTableHeaderMenu({
 
 function WorkbookSearchPopover({
   viewportRef,
-  workbookIdentity,
 }: {
   viewportRef: React.RefObject<HTMLDivElement | null>
-  workbookIdentity: string
 }) {
   const controller = useXlsxViewer()
   const [searchDraft, setSearchDraft] = React.useState("")
@@ -698,20 +699,24 @@ function WorkbookSearchPopover({
   }, [])
 
   React.useEffect(() => {
-    const trimmedDraft = searchDraft.trim()
+    if (!searchDraft.trim()) return
 
-    if (!trimmedDraft) {
-      runSearch("")
-      return
-    }
-
-    setIsSearching(true)
     const timeoutId = window.setTimeout(() => {
       runSearch(searchDraft)
     }, XLSX_SEARCH_DEBOUNCE_MS)
 
     return () => window.clearTimeout(timeoutId)
   }, [runSearch, searchDraft])
+
+  const handleSearchDraftChange = (nextDraft: string) => {
+    searchRequestIdRef.current += 1
+    setSearchDraft(nextDraft)
+    if (!nextDraft.trim()) {
+      runSearch("")
+      return
+    }
+    setIsSearching(true)
+  }
 
   const clearSearch = React.useCallback(() => {
     searchRequestIdRef.current += 1
@@ -739,14 +744,10 @@ function WorkbookSearchPopover({
   )
 
   React.useEffect(() => {
-    searchRequestIdRef.current += 1
-    setSearchDraft("")
-    setSearchQuery("")
-    setSearchResults([])
-    setActiveResultIndex(0)
-    setIsSearching(false)
-    appliedResultKeyRef.current = ""
-  }, [workbookIdentity])
+    return () => {
+      searchRequestIdRef.current += 1
+    }
+  }, [])
 
   React.useEffect(() => {
     if (!activeResult) return
@@ -805,7 +806,7 @@ function WorkbookSearchPopover({
           <Input
             placeholder="Search workbook"
             value={searchDraft}
-            onChange={(event) => setSearchDraft(event.target.value)}
+            onChange={(event) => handleSearchDraftChange(event.target.value)}
             onKeyDown={(event) => {
               if (event.key !== "Enter") return
 
@@ -993,8 +994,8 @@ function WorkbookToolbar({
           </div>
           <Separator orientation="vertical" className="mx-1 h-4 self-center" />
           <WorkbookSearchPopover
+            key={workbookIdentity}
             viewportRef={viewportRef}
-            workbookIdentity={workbookIdentity}
           />
           {toolbarActions ? (
             <>
@@ -1074,7 +1075,6 @@ type WorkbookSheetTabsInnerProps = {
   activeSheetIndex: number
   onActiveSheetIndexChange: (index: number) => void
   sheets: WorkbookSheetTab[]
-  workbookIdentity: string
 }
 
 export function WorkbookSheetTabs({
@@ -1091,10 +1091,10 @@ export function WorkbookSheetTabs({
 
   return (
     <WorkbookSheetTabsInner
+      key={workbookIdentity}
       activeSheetIndex={activeSheetIndex}
       onActiveSheetIndexChange={handleActiveSheetIndexChange}
       sheets={sheets}
-      workbookIdentity={workbookIdentity}
     />
   )
 }
@@ -1103,7 +1103,6 @@ const WorkbookSheetTabsInner = React.memo(function WorkbookSheetTabsInner({
   activeSheetIndex,
   onActiveSheetIndexChange,
   sheets,
-  workbookIdentity,
 }: WorkbookSheetTabsInnerProps) {
   const [visiblePreviewIndex, setVisiblePreviewIndex] = React.useState<
     number | null
@@ -1211,14 +1210,6 @@ const WorkbookSheetTabsInner = React.memo(function WorkbookSheetTabsInner({
       clearCloseTimeout()
     }
   }, [clearCloseTimeout, clearOpenTimeout])
-
-  React.useEffect(() => {
-    clearOpenTimeout()
-    clearCloseTimeout()
-    setVisiblePreviewIndex(null)
-    setPreviewPosition({ left: 0, top: 0 })
-    setThumbnailUrls({})
-  }, [clearCloseTimeout, clearOpenTimeout, workbookIdentity])
 
   React.useEffect(() => {
     thumbnails.forEach((thumbnail) => {
@@ -1344,7 +1335,7 @@ const WorkbookSheetTabsInner = React.memo(function WorkbookSheetTabsInner({
               <div className="relative aspect-[11/7] w-full overflow-hidden bg-muted/60">
                 {/* eslint-disable-next-line @next/next/no-img-element -- Workbook sheet previews are generated runtime image URLs. */}
                 <img
-                  key={`${workbookIdentity}-${visiblePreviewIndex}-${previewUrl}`}
+                  key={`${visiblePreviewIndex}-${previewUrl}`}
                   src={previewUrl}
                   alt={`${previewSheet.name} preview`}
                   className="absolute inset-0 h-full w-full object-cover object-left-top"
@@ -1485,6 +1476,7 @@ export function XlsxViewerPreview({
 }) {
   return (
     <XlsxViewerContent
+      key={src}
       className={className}
       effectiveIsDark={isDark}
       fileName={fileName}
@@ -1548,19 +1540,9 @@ function XlsxViewerContent({
 
   React.useEffect(() => {
     let isCurrent = true
-    if (url) {
-      setUploadedWorkbook(null)
-    }
 
     async function loadWorkbook(): Promise<void> {
-      if (!url) {
-        setWorkbookBuffer(null)
-        setLoadError(undefined)
-        return
-      }
-
-      setWorkbookBuffer(null)
-      setLoadError(undefined)
+      if (!url) return
 
       try {
         const response = await fetch(url)

@@ -381,12 +381,15 @@ function formatWorkbookName(fileName: string | undefined, url: string) {
 
 function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
   const [showSpinner, setShowSpinner] = React.useState(false)
+  const [previousIsLoading, setPreviousIsLoading] = React.useState(isLoading)
+
+  if (previousIsLoading !== isLoading) {
+    setPreviousIsLoading(isLoading)
+    setShowSpinner(false)
+  }
 
   React.useEffect(() => {
-    if (!isLoading) {
-      setShowSpinner(false)
-      return
-    }
+    if (!isLoading) return
 
     const timeoutId = window.setTimeout(() => {
       setShowSpinner(true)
@@ -395,7 +398,7 @@ function useDelayedLoadingIndicator(isLoading: boolean, delayMs: number) {
     return () => window.clearTimeout(timeoutId)
   }, [delayMs, isLoading])
 
-  return showSpinner
+  return isLoading && showSpinner
 }
 
 function normalizeHexColor(value: string, fallback = DEFAULT_TEXT_COLOR) {
@@ -1406,27 +1409,22 @@ function EditorToolbar({
       )
   )
 
-  React.useEffect(() => {
-    if (
-      appliedMergeRegions.length === 0 ||
-      worksheetMergeRegions.length === 0
-    ) {
-      return
-    }
-
-    setAppliedMergeRegions((currentRegions) =>
-      currentRegions.filter(
-        (currentRegion) =>
-          !worksheetMergeRegions.some((worksheetRegion) =>
-            rangesIntersect(currentRegion, worksheetRegion)
-          )
+  const pendingMergeRegions = appliedMergeRegions.filter(
+    (currentRegion) =>
+      !worksheetMergeRegions.some((worksheetRegion) =>
+        rangesIntersect(currentRegion, worksheetRegion)
       )
-    )
-  }, [appliedMergeRegions.length, worksheetMergeRegions])
+  )
+  if (pendingMergeRegions.length !== appliedMergeRegions.length) {
+    setAppliedMergeRegions(pendingMergeRegions)
+  }
 
-  React.useEffect(() => {
+  const [previousSheetIndex, setPreviousSheetIndex] =
+    React.useState(activeSheetIndex)
+  if (!Object.is(previousSheetIndex, activeSheetIndex)) {
+    setPreviousSheetIndex(activeSheetIndex)
     setAppliedMergeRegions([])
-  }, [activeSheetIndex])
+  }
   const selectionIsSingleCell = activeRange
     ? isSingleCellRange(activeRange)
     : true
@@ -1450,11 +1448,6 @@ function EditorToolbar({
   )
   const currentZoom = Math.round(zoomScale)
   const selectedCellInputValue = selectedFormula || selectedValue
-
-  React.useEffect(() => {
-    if (formulaFocused) return
-    setFormulaDraft(selectedCellInputValue)
-  }, [formulaFocused, selectedCellInputValue, activeCellAddress])
 
   const activeCellStyle = React.useMemo(() => {
     // Worksheet style objects are mutable; revision invalidates this read after edits.
@@ -2384,7 +2377,7 @@ function EditorToolbar({
                 XLSX_EDITOR_FORMULA_INPUT_CHROME_CLASS
               )}
               disabled={!hasActiveCell || readOnly}
-              value={formulaDraft}
+              value={formulaFocused ? formulaDraft : selectedCellInputValue}
               onBlur={() => {
                 commitFormula()
                 setFormulaFocused(false)
@@ -2392,7 +2385,8 @@ function EditorToolbar({
               onChange={(event) => setFormulaDraft(event.target.value)}
               onFocus={() => {
                 formulaEditCellRef.current = activeCell
-                formulaInitialValueRef.current = formulaDraft
+                formulaInitialValueRef.current = selectedCellInputValue
+                setFormulaDraft(selectedCellInputValue)
                 setFormulaFocused(true)
               }}
               onKeyDown={(event) => {
@@ -2499,6 +2493,7 @@ export function XlsxEditorPreview({
 }) {
   return (
     <XlsxEditorContent
+      key={src}
       className={className}
       effectiveIsDark={isDark}
       fileName={fileName}
@@ -2546,19 +2541,8 @@ function XlsxEditorContent({
   React.useEffect(() => {
     let isCurrent = true
 
-    if (url) {
-      setUploadedWorkbook(null)
-    }
-
     async function loadWorkbook(): Promise<void> {
-      if (!url) {
-        setWorkbookBuffer(null)
-        setLoadError(undefined)
-        return
-      }
-
-      setWorkbookBuffer(null)
-      setLoadError(undefined)
+      if (!url) return
 
       try {
         const response = await fetch(url)

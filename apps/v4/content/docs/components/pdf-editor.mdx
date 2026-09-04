@@ -62,7 +62,7 @@ prop for your library.
 </Step>
 
 ```bash
-npx shadcn@latest add @extend/color-picker @extend/document-viewer-sidebar
+npx shadcn@latest add @extend/color-picker @extend/document-viewer-sidebar resizable
 ```
 
 <Step>Copy and paste the following files into your project.</Step>
@@ -96,6 +96,8 @@ The ribbon below the main toolbar switches between five modes. Each mode exposes
 - Undo and redo cover annotations, form edits, and redaction marks through the history plugin.
 - The left sidebar hosts thumbnails, the bookmark outline, embedded attachments, and a page organizer that rotates, reorders, inserts, deletes, extracts, and appends pages.
 - The right panel hosts annotation properties, comment threads, pending redactions, rubber stamp libraries, saved signatures, and form fields.
+- Drag either panel border to resize it. The left panel ranges from 14rem to 28rem and the right from 21rem to 32rem. A tapered 1px border indicator appears on hover, keyboard focus, or while dragging. The page organizer adds evenly sized columns as its panel widens.
+- The toolbar and mode ribbon remain visible and disabled while a document loads; only the document area shows loading, error, or password states.
 - The document menu covers download, print, capture, full screen, document properties, password protection and permissions, flattening, and annotation JSON import and export.
 - Uploaded files replace the current document. Page operations, flattening, and encryption changes are written into the PDF bytes returned by `getDocumentBuffer` and `download`.
 

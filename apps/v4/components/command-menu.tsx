@@ -122,6 +122,8 @@ export function CommandMenu({
     [setSearch, trackSearchQuery]
   )
 
+  if (!open && renderDelayedGroups) setRenderDelayedGroups(false)
+
   // Cleanup timeout on unmount.
   React.useEffect(() => {
     if (open) {
@@ -133,8 +135,6 @@ export function CommandMenu({
         cancelAnimationFrame(frame)
       }
     }
-
-    setRenderDelayedGroups(false)
   }, [open])
 
   React.useEffect(() => {

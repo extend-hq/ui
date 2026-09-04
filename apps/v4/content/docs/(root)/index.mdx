@@ -22,6 +22,10 @@ The document-specific React components are maintained in Extend UI. This site us
 
 Configure the style-aware registry in `components.json`:
 
+If your existing `@extend` URL ends in `/r/{name}.json`, replace it with the
+URL below. That older endpoint always serves Base UI components, even when
+your project's `style` is Radix.
+
 ```json
 {
   "registries": {

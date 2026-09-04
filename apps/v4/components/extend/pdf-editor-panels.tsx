@@ -112,6 +112,35 @@ import {
 const THUMBNAIL_FOCUS_RING_CLASS =
   "group-focus-visible/pdf-editor-thumbnails:ring-2 group-focus-visible/pdf-editor-thumbnails:ring-ring group-focus-visible/pdf-editor-thumbnails:ring-offset-1 group-focus-visible/pdf-editor-thumbnails:ring-offset-background"
 
+function createFormFieldStore(
+  scope: {
+    getFormFields: () => FormFieldInfo[]
+    onFormReady: (listener: (fields: FormFieldInfo[]) => void) => () => void
+    onFieldValueChange: (listener: () => void) => () => void
+  } | null
+) {
+  let fields: FormFieldInfo[] = scope?.getFormFields() ?? []
+  return {
+    getSnapshot: () => fields,
+    subscribe: (listener: () => void) => {
+      if (!scope) return () => {}
+      const update = (next: FormFieldInfo[]) => {
+        fields = next
+        listener()
+      }
+      const unsubscribeReady = scope.onFormReady(update)
+      const unsubscribeChange = scope.onFieldValueChange(() =>
+        update(scope.getFormFields())
+      )
+      update(scope.getFormFields())
+      return () => {
+        unsubscribeReady()
+        unsubscribeChange()
+      }
+    },
+  }
+}
+
 export function PdfEditorThumbnailsPanel({
   documentId,
   activePage,
@@ -235,6 +264,7 @@ export function PdfEditorThumbnailsPanel({
                 aria-selected={isActive}
                 aria-current={isActive ? "page" : undefined}
                 aria-label={`Page ${pageNumber}`}
+                style={{ maxWidth: meta.width + imagePadding * 2 + 16 }}
                 className={cn(
                   "flex h-full w-full cursor-default flex-col items-center justify-between rounded-md px-2 text-xs transition-shadow outline-none select-none hover:bg-sidebar-accent",
                   isActive
@@ -1016,7 +1046,10 @@ export function PdfEditorPagesPanel({
         className="min-h-0 flex-1"
         viewportClassName="px-2.5 py-3"
       >
-        <div className="grid grid-cols-2 gap-2">
+        <div
+          data-slot="pdf-editor-pages-grid"
+          className="grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] items-start gap-2"
+        >
           {metas.map((meta) => {
             const pageNumber = meta.pageIndex + 1
             const isSelected = selected.has(meta.pageIndex)
@@ -1030,7 +1063,7 @@ export function PdfEditorPagesPanel({
                 className={cn(
                   "group flex min-w-0 flex-col items-center gap-1.5 rounded-lg border p-1.5 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   isSelected
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                    ? "border-primary bg-primary/5"
                     : "border-transparent hover:bg-sidebar-accent",
                   isActive && !isSelected && "border-border"
                 )}
@@ -1046,23 +1079,15 @@ export function PdfEditorPagesPanel({
                 }}
                 onDoubleClick={() => scrollToPage(pageNumber)}
               >
-                <span
-                  className={cn(
-                    "grid place-items-center rounded-md border p-1 transition-colors",
-                    isSelected
-                      ? "border-primary/40 bg-primary/5"
-                      : "border-border/60 bg-muted/30"
-                  )}
-                >
+                <span className="grid w-full place-items-center rounded-md border border-border/60 bg-muted/30 p-1">
                   <span
-                    className="grid place-items-center overflow-hidden rounded-sm bg-white shadow-xs"
-                    style={{ width: meta.width, height: meta.height }}
+                    className="grid w-full place-items-center overflow-hidden rounded-sm bg-white shadow-xs"
+                    style={{ aspectRatio: `${meta.width} / ${meta.height}` }}
                   >
                     <ThumbImg
                       documentId={documentId}
                       meta={meta}
-                      className="block object-contain"
-                      style={{ width: meta.width, height: meta.height }}
+                      className="block size-full object-contain"
                     />
                   </span>
                 </span>
@@ -1673,14 +1698,12 @@ export function PdfEditorStampsPanel({ documentId }: { documentId: string }) {
     })),
   ]
 
-  React.useEffect(() => {
-    if (
-      libraryId !== "all" &&
-      !libraries.some((library) => library.id === libraryId)
-    ) {
-      setLibraryId("all")
-    }
-  }, [libraries, libraryId])
+  if (
+    libraryId !== "all" &&
+    !libraries.some((library) => library.id === libraryId)
+  ) {
+    setLibraryId("all")
+  }
 
   const placeStamp = (targetLibraryId: string, stamp: StampDefinition) => {
     if (!stampCapability) return
@@ -2097,25 +2120,14 @@ export function PdfEditorFormsPanel({ documentId }: { documentId: string }) {
     () => form?.forDocument(documentId) ?? null,
     [documentId, form]
   )
-  const [fields, setFields] = React.useState<FormFieldInfo[]>([])
+  const fieldStore = React.useMemo(() => createFormFieldStore(scope), [scope])
+  const fields = React.useSyncExternalStore(
+    fieldStore.subscribe,
+    fieldStore.getSnapshot,
+    fieldStore.getSnapshot
+  )
   const importInputRef = React.useRef<HTMLInputElement>(null)
   const designModeId = React.useId()
-
-  React.useEffect(() => {
-    if (!scope) return
-
-    setFields(scope.getFormFields())
-
-    const unsubscribeReady = scope.onFormReady((list) => setFields(list))
-    const unsubscribeChange = scope.onFieldValueChange(() =>
-      setFields(scope.getFormFields())
-    )
-
-    return () => {
-      unsubscribeReady()
-      unsubscribeChange()
-    }
-  }, [scope])
 
   const widgetsByName = React.useMemo(() => {
     const map = new Map<string, PdfWidgetAnnoObject>()

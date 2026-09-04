@@ -12,17 +12,18 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { useMounted } from "@/hooks/use-mounted"
 import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
-import { DocsViewCodeBlock } from "@/components/docs-code-block"
 import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { DocsViewCodeBlock } from "@/components/docs-code-block"
 
 function ToolbarTooltip({
   label,
@@ -213,17 +214,17 @@ export function PdfViewerDemo() {
 }
 
 export function PdfViewerSource() {
-  const [shouldLoadSource, setShouldLoadSource] = React.useState(false)
+  const [hasIntersected, setShouldLoadSource] = React.useState(false)
+  const isMounted = useMounted()
+  const shouldLoadSource =
+    hasIntersected || (isMounted && !("IntersectionObserver" in window))
   const containerRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    if (!("IntersectionObserver" in window)) {
-      setShouldLoadSource(true)
-      return
-    }
+    if (!("IntersectionObserver" in window)) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {

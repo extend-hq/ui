@@ -7,8 +7,11 @@ build time and formats separate Base and Radix artifacts in
 
 Installed components import ordinary primitives directly from the consumer's
 `components/ui` alias. Extend does not ship replacements for those primitives
-as document dependencies. Enhanced scrolling, color-picker positioning, loading
-buttons, and document notifications live in separately named Extend components.
+as document dependencies. The build inlines only the support code each component
+uses: document controls, enhanced scroll viewports, color-picker positioning, and
+icon prop types. Ordinary scrolling uses the consumer's ScrollArea; enhanced
+viewports reuse its ScrollBar. These helpers do not create additional installed
+files. Larger document components and document notifications remain shared entries.
 
 The route `/r/styles/{style}/{name}.json` selects the family artifact and resolves
 standard dependencies against the same upstream style. It does not translate
@@ -42,6 +45,8 @@ incompatible older primitive and dependency APIs; migrate it before installing.
 `EXTEND_KEEP_FIXTURES=1` retains temporary projects for debugging.
 `EXTEND_FIXTURE_FAMILY=base|radix` and `EXTEND_SKIP_STYLE_MATRIX=1` narrow a local
 run; neither should be used for release validation.
+`EXTEND_FIXTURE_ITEMS=pdf-editor` limits CLI installation and icon probes to a
+comma-separated selection and its dependency closure for focused checks.
 
 ## Release
 

@@ -1,10 +1,13 @@
 import { spawnSync } from "node:child_process"
-import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import os from "node:os"
 import path from "node:path"
 import { format, resolveConfig } from "prettier"
 import ts from "typescript"
 
+import { inlineRegistrySupport } from "./inline-registry-support.mts"
 import { transformRegistrySource } from "./registry-source.mts"
+import { getRegistrySupport } from "./registry-support.mts"
 
 type RegistryFile = {
   path: string
@@ -23,10 +26,13 @@ type RegistryItem = {
 
 const appRoot = process.cwd()
 const outputRoot = path.join(appRoot, "public/r")
+const sourceRoot = await mkdtemp(
+  path.join(os.tmpdir(), "extend-registry-source-")
+)
 const formatOptions = await resolveConfig(path.join(appRoot, "package.json"))
 const build = spawnSync(
   path.join(appRoot, "node_modules/.bin/shadcn"),
-  ["build", "--output", "public/r"],
+  ["build", "--output", sourceRoot],
   { stdio: "inherit" }
 )
 if (build.status !== 0) process.exit(build.status ?? 1)
@@ -49,11 +55,12 @@ for (const item of registry.items)
   }
 
 for (const family of ["base", "radix"] as const) {
+  const support = await getRegistrySupport(appRoot, family)
   const directory = path.join(outputRoot, "bases", family)
   await mkdir(directory, { recursive: true })
   for (const definition of registry.items) {
     const item = JSON.parse(
-      await readFile(path.join(outputRoot, `${definition.name}.json`), "utf8")
+      await readFile(path.join(sourceRoot, `${definition.name}.json`), "utf8")
     ) as RegistryItem
     const dependencies = new Set(item.dependencies)
     const registryDependencies = new Set(item.registryDependencies ?? [])
@@ -84,11 +91,21 @@ for (const family of ["base", "radix"] as const) {
       const isDocumentSource =
         file.target?.startsWith("@components/extend/") ||
         file.target?.startsWith("@components/blocks/")
-      if (isDocumentSource && /\.[jt]sx?$/.test(file.path))
-        content = await format(transformRegistrySource(content, family), {
+      if (/\.[jt]sx?$/.test(file.path)) {
+        if (
+          isDocumentSource &&
+          !["document-scroll-area", "document-color-popover"].includes(
+            item.name
+          )
+        ) {
+          content = transformRegistrySource(content, family)
+        }
+        content = inlineRegistrySupport(content, support)
+        content = await format(content, {
           ...formatOptions,
           filepath: path.join(appRoot, file.path),
         })
+      }
       const source = ts.createSourceFile(
         file.path,
         content,
@@ -158,8 +175,15 @@ for (const definition of registry.items) {
         path.join(outputRoot, "bases/base", `${definition.name}.json`)
       )
     )
+  } else {
+    await writeFile(
+      path.join(outputRoot, `${definition.name}.json`),
+      await readFile(path.join(sourceRoot, `${definition.name}.json`))
+    )
   }
 }
+
+await rm(sourceRoot, { recursive: true, force: true })
 
 console.log(
   "Built Base and Radix registry artifacts with direct primitive imports."

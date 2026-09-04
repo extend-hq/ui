@@ -364,9 +364,11 @@ function useDebouncedCommit<T>(
     onCommitRef.current = onCommit
   })
 
-  React.useEffect(() => {
+  const [previousValue, setPreviousValue] = React.useState(value)
+  if (!Object.is(previousValue, value)) {
+    setPreviousValue(value)
     setDraft(value)
-  }, [value])
+  }
 
   React.useEffect(
     () => () => {
@@ -1381,10 +1383,18 @@ function WidgetProperties({
   const field = widget.field
   const fieldLabel = getFormFieldTypeLabel(field.type)
 
-  React.useEffect(() => {
+  const [previousField, setPreviousField] = React.useState({
+    id: widget.id,
+    name: widget.field.name,
+  })
+  if (
+    previousField.id !== widget.id ||
+    previousField.name !== widget.field.name
+  ) {
+    setPreviousField({ id: widget.id, name: widget.field.name })
     setNameDraft(widget.field.name)
     setNameError(null)
-  }, [widget.field.name, widget.id])
+  }
 
   const updateField = React.useCallback(
     (patch: Partial<PdfWidgetAnnoField>) => {
@@ -1955,9 +1965,11 @@ function NoteEditor({
 }) {
   const [draft, setDraft] = React.useState(value)
 
-  React.useEffect(() => {
+  const [previousValue, setPreviousValue] = React.useState(value)
+  if (!Object.is(previousValue, value)) {
+    setPreviousValue(value)
     setDraft(value)
-  }, [value])
+  }
 
   return (
     <textarea

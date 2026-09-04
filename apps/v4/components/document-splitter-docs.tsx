@@ -702,9 +702,13 @@ function useWorkbookSheetThumbnailUrls(workbookIdentity: string) {
     Record<number, string>
   >({})
 
-  React.useEffect(() => {
+  const [previousInputs, setPreviousInputs] = React.useState({
+    workbookIdentity,
+  })
+  if (previousInputs.workbookIdentity !== workbookIdentity) {
+    setPreviousInputs({ workbookIdentity })
     setThumbnailUrls({})
-  }, [workbookIdentity])
+  }
 
   React.useEffect(() => {
     thumbnails.forEach((thumbnail) => {
@@ -1114,9 +1118,11 @@ function usePdfThumbnailImages(documentKey: string, splits: SplitGroup[]) {
     [splits]
   )
 
-  React.useEffect(() => {
+  const [previousInputs, setPreviousInputs] = React.useState({ documentKey })
+  if (previousInputs.documentKey !== documentKey) {
+    setPreviousInputs({ documentKey })
     setThumbnailImages({})
-  }, [documentKey])
+  }
 
   React.useEffect(() => {
     let isCurrent = true
@@ -1196,11 +1202,18 @@ function WorkbookSplitsPane({
     [thumbnailUrls]
   )
 
-  React.useEffect(() => {
-    if (sheets.length === 0) return
-
-    setSplits(createInitialWorkbookSplits(sheets.length))
-  }, [sheets.length, workbookIdentity])
+  const sheetCount = sheets.length
+  const [previousWorkbook, setPreviousWorkbook] = React.useState({
+    workbookIdentity,
+    sheetCount,
+  })
+  if (
+    previousWorkbook.workbookIdentity !== workbookIdentity ||
+    previousWorkbook.sheetCount !== sheetCount
+  ) {
+    setPreviousWorkbook({ workbookIdentity, sheetCount })
+    if (sheetCount > 0) setSplits(createInitialWorkbookSplits(sheetCount))
+  }
 
   return (
     <DocumentSplits
@@ -1292,9 +1305,17 @@ export function DocumentSplitsBlock({
     }
   }, [])
 
-  React.useEffect(() => {
+  const [previousInputs, setPreviousInputs] = React.useState({
+    numPages,
+    pdfUrl,
+  })
+  if (
+    previousInputs.numPages !== numPages ||
+    previousInputs.pdfUrl !== pdfUrl
+  ) {
+    setPreviousInputs({ numPages, pdfUrl })
     setSplits(createInitialGroups(numPages || DEFAULT_PREVIEW_PAGE_COUNT))
-  }, [numPages, pdfUrl])
+  }
 
   const handlePdfUpload = React.useCallback((file: File) => {
     const nextUrl = URL.createObjectURL(file)
@@ -1441,9 +1462,14 @@ function DocumentSplitsPreview({ file }: { file: string }) {
     }
   }, [file])
 
-  React.useEffect(() => {
+  const [previousInputs, setPreviousInputs] = React.useState({
+    file,
+    pageCount,
+  })
+  if (previousInputs.file !== file || previousInputs.pageCount !== pageCount) {
+    setPreviousInputs({ file, pageCount })
     setSplits(createInitialGroups(pageCount || DEFAULT_PREVIEW_PAGE_COUNT))
-  }, [file, pageCount])
+  }
 
   return (
     <DocumentSplits

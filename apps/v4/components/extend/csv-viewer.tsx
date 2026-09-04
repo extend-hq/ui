@@ -340,14 +340,12 @@ function CsvSearchPopover({
   headers,
   rows,
   gridRef,
-  dataIdentity,
   controlsDisabled,
   onGridSelectionChange,
 }: {
   headers: string[]
   rows: string[][]
   gridRef: React.RefObject<DataEditorRef | null>
-  dataIdentity: string
   controlsDisabled: boolean
   onGridSelectionChange: (selection: GridSelection) => void
 }) {
@@ -407,20 +405,23 @@ function CsvSearchPopover({
   )
 
   React.useEffect(() => {
-    const trimmedDraft = searchDraft.trim()
-
-    if (!trimmedDraft) {
-      runSearch("")
-      return
-    }
-
-    setIsSearching(true)
+    if (!searchDraft.trim()) return
     const timeoutId = window.setTimeout(() => {
       runSearch(searchDraft)
     }, CSV_SEARCH_DEBOUNCE_MS)
 
     return () => window.clearTimeout(timeoutId)
   }, [runSearch, searchDraft])
+
+  const handleSearchDraftChange = (nextDraft: string) => {
+    searchRequestIdRef.current += 1
+    setSearchDraft(nextDraft)
+    if (!nextDraft.trim()) {
+      runSearch("")
+      return
+    }
+    setIsSearching(true)
+  }
 
   const clearSearch = React.useCallback(() => {
     searchRequestIdRef.current += 1
@@ -448,15 +449,10 @@ function CsvSearchPopover({
   )
 
   React.useEffect(() => {
-    searchRequestIdRef.current += 1
-    setSearchDraft("")
-    setSearchQuery("")
-    setSearchResults([])
-    setActiveResultIndex(0)
-    setIsSearching(false)
-    appliedResultKeyRef.current = ""
-    onGridSelectionChange(emptyGridSelection)
-  }, [dataIdentity, onGridSelectionChange])
+    return () => {
+      searchRequestIdRef.current += 1
+    }
+  }, [])
 
   React.useEffect(() => {
     if (!activeResult) return
@@ -511,7 +507,7 @@ function CsvSearchPopover({
           <Input
             placeholder="Search CSV"
             value={searchDraft}
-            onChange={(event) => setSearchDraft(event.target.value)}
+            onChange={(event) => handleSearchDraftChange(event.target.value)}
             onKeyDown={(event) => {
               if (event.key !== "Enter") return
 
@@ -606,28 +602,21 @@ function readIsDarkTheme() {
   )
 }
 
+function subscribeToDarkTheme(listener: () => void) {
+  const observer = new MutationObserver(listener)
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  })
+  return () => observer.disconnect()
+}
+
 function useIsDarkTheme() {
-  const [isDark, setIsDark] = React.useState(readIsDarkTheme)
-
-  React.useEffect(() => {
-    if (typeof document === "undefined") return
-
-    const updateTheme = () => setIsDark(readIsDarkTheme())
-
-    updateTheme()
-
-    if (typeof MutationObserver === "undefined") return
-
-    const observer = new MutationObserver(updateTheme)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    })
-
-    return () => observer.disconnect()
-  }, [])
-
-  return isDark
+  return React.useSyncExternalStore(
+    subscribeToDarkTheme,
+    readIsDarkTheme,
+    () => false
+  )
 }
 
 export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
@@ -660,19 +649,29 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
     []
   )
 
-  React.useEffect(() => {
+  const [previousData, setPreviousData] = React.useState(data)
+  if (!Object.is(previousData, data)) {
+    setPreviousData(data)
     if (data) {
       setParsed(parseDelimitedText(data))
       setUploadedFileName(null)
       setDataRevision((revision) => revision + 1)
     }
-  }, [data])
+  }
 
-  React.useEffect(() => {
-    if (!search) {
+  const [selectionSource, setSelectionSource] = React.useState({
+    dataRevision,
+    search,
+  })
+  if (
+    selectionSource.dataRevision !== dataRevision ||
+    selectionSource.search !== search
+  ) {
+    setSelectionSource({ dataRevision, search })
+    if (selectionSource.dataRevision !== dataRevision || !search) {
       setGridSelection(emptyGridSelection)
     }
-  }, [search])
+  }
 
   React.useEffect(() => {
     let mounted = true
@@ -878,7 +877,7 @@ export function CsvViewer({ className, data, search = false }: CsvViewerProps) {
                   headers={parsed.headers}
                   rows={parsed.rows}
                   gridRef={gridRef}
-                  dataIdentity={dataIdentity}
+                  key={dataIdentity}
                   controlsDisabled={searchDisabled}
                   onGridSelectionChange={handleGridSelectionChange}
                 />

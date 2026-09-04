@@ -502,13 +502,15 @@ function ScrollAreaVirtualizer({
   )
 }
 
+const subscribeToHydration = () => () => {}
+
 function useResolvedCodeThemeType(theme?: SchemaBuilderTheme) {
   const { resolvedTheme } = useTheme()
-  const [isMounted, setIsMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = React.useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false
+  )
 
   if (theme) return theme
 

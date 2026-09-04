@@ -26,9 +26,11 @@ export function DocumentSplitsBlock({
   const viewerRef = React.useRef<PDFViewerHandle>(null)
   const uploadedPdfUrlRef = React.useRef<string | null>(null)
 
-  React.useEffect(() => {
+  const [previousFile, setPreviousFile] = React.useState(file)
+  if (!Object.is(previousFile, file)) {
+    setPreviousFile(file)
     setPdfFile(file)
-  }, [file])
+  }
 
   React.useEffect(() => {
     return () => {

@@ -32,13 +32,9 @@ export function OcrBlocksBlock({
     activeBlockIdRef.current = activeBlockId
   }, [activeBlockId])
 
-  React.useEffect(() => {
-    if (!blocks.length || blocks.some((block) => block.id === activeBlockId)) {
-      return
-    }
-
+  if (blocks.length && !blocks.some((block) => block.id === activeBlockId)) {
     setActiveBlockId(blocks[0].id)
-  }, [activeBlockId, blocks])
+  }
 
   const focusBlock = React.useCallback((block: OcrBlock) => {
     if (block.id === activeBlockIdRef.current) return

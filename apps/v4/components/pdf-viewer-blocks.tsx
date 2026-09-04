@@ -290,19 +290,12 @@ function PdfViewerBlockPreview({
     return () => window.clearTimeout(timer)
   }, [isCommandCopied])
 
-  React.useEffect(() => {
-    if (!codeSamples.length) {
-      setActiveFile(null)
-      return
-    }
-
-    if (
-      !activeFile ||
-      !codeSamples.some((sample) => sample.targetPath === activeFile)
-    ) {
-      setActiveFile(codeSamples[0]?.targetPath ?? null)
-    }
-  }, [activeFile, codeSamples])
+  const validActiveFile = codeSamples.some(
+    (sample) => sample.targetPath === activeFile
+  )
+    ? activeFile
+    : (codeSamples[0]?.targetPath ?? null)
+  if (activeFile !== validActiveFile) setActiveFile(validActiveFile)
 
   async function copyInstallCommand() {
     const copied = await copyToClipboardWithMeta(block.command, {
@@ -456,16 +449,16 @@ function PdfViewerBlockPreview({
 
 function useLazyBlockPreview() {
   const [node, setNode] = React.useState<HTMLElement | null>(null)
-  const [shouldMountPreview, setShouldMountPreview] = React.useState(false)
+  const [hasIntersected, setShouldMountPreview] = React.useState(false)
+  const isMounted = useMounted()
+  const shouldMountPreview =
+    hasIntersected || (isMounted && !("IntersectionObserver" in window))
 
   React.useEffect(() => {
     if (shouldMountPreview) return
     if (!node) return
 
-    if (!("IntersectionObserver" in window)) {
-      setShouldMountPreview(true)
-      return
-    }
+    if (!("IntersectionObserver" in window)) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
