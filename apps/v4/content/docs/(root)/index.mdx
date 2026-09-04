@@ -16,6 +16,30 @@ Extend is built around the work of turning raw PDFs, spreadsheets, scans, and te
 
 ## Component set
 
-The document-specific React components are maintained in Extend UI. The rest of the base primitives are from [Coss UI](https://coss.com/ui/docs), including the shared button, tooltip, select, popover, dialog, and menu patterns. Icons follow the `iconLibrary` in your `components.json` — the CLI supports [Lucide](https://lucide.dev/), [Tabler](https://tabler.io/icons), [Hugeicons](https://hugeicons.com/), [Phosphor](https://phosphoricons.com/), and [Remix Icon](https://remixicon.com/), and this site renders Hugeicons.
+The document-specific React components are maintained in Extend UI. This site uses [Coss UI](https://coss.com/ui/docs). Installed document components use your project's Base UI or Radix primitives, selected by the `style` in `components.json`. Icons follow your `iconLibrary`: [Lucide](https://lucide.dev/), [Tabler](https://tabler.io/icons), [Hugeicons](https://hugeicons.com/), [Phosphor](https://phosphoricons.com/), or [Remix Icon](https://remixicon.com/). This site renders Hugeicons.
+
+## Installation
+
+Configure the style-aware registry in `components.json`:
+
+```json
+{
+  "registries": {
+    "@extend": "https://www.extend.ai/ui/r/styles/{style}/{name}.json"
+  }
+}
+```
+
+Then install the component you need:
+
+```bash
+npx shadcn@latest add @extend/pdf-editor
+```
+
+The CLI installs missing dependencies and respects your component aliases.
+Keep your existing primitives when prompted; no overwrite flag is required.
+Your primitives should use current shadcn APIs. Projects using the
+[deprecated `default` style](https://ui.shadcn.com/docs/components-json#style)
+must migrate before installing.
 
 Start with [Components](/docs/components) for the full list, or jump into [Blocks](/blocks) for composed examples.

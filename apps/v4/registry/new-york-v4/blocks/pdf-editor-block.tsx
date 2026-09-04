@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import { PDFEditor, type PdfEditorMode } from "@/components/extend/pdf-editor"
 
 export function PdfEditorBlock({

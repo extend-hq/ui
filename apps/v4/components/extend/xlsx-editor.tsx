@@ -17,6 +17,7 @@ import {
   type XlsxTableHeaderMenuRenderProps,
 } from "@extend-ai/react-xlsx"
 
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ColorPicker, ColorPickerPanel } from "@/components/ui/color-picker"
@@ -56,7 +57,7 @@ import {
 } from "@/components/extend/xlsx-viewer"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-function BorderAll01Glyph(props: React.ComponentProps<"svg">) {
+function BorderAll01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Grid2x2"
@@ -69,7 +70,7 @@ function BorderAll01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderBottom01Glyph(props: React.ComponentProps<"svg">) {
+function BorderBottom01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelBottom"
@@ -82,7 +83,7 @@ function BorderBottom01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderLeft01Glyph(props: React.ComponentProps<"svg">) {
+function BorderLeft01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelLeft"
@@ -95,7 +96,7 @@ function BorderLeft01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderNone01Glyph(props: React.ComponentProps<"svg">) {
+function BorderNone01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="SquareDashed"
@@ -108,7 +109,7 @@ function BorderNone01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderRight01Glyph(props: React.ComponentProps<"svg">) {
+function BorderRight01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelRight"
@@ -121,7 +122,7 @@ function BorderRight01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderTop01Glyph(props: React.ComponentProps<"svg">) {
+function BorderTop01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelTop"
@@ -134,7 +135,7 @@ function BorderTop01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Calendar03Glyph(props: React.ComponentProps<"svg">) {
+function Calendar03Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Calendar"
@@ -147,7 +148,7 @@ function Calendar03Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function DollarCircleGlyph(props: React.ComponentProps<"svg">) {
+function DollarCircleGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="CircleDollarSign"
@@ -160,7 +161,7 @@ function DollarCircleGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Moon02Glyph(props: React.ComponentProps<"svg">) {
+function Moon02Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Moon"
@@ -173,7 +174,7 @@ function Moon02Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function PaintBucketGlyph(props: React.ComponentProps<"svg">) {
+function PaintBucketGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PaintBucket"
@@ -186,7 +187,7 @@ function PaintBucketGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function PercentGlyph(props: React.ComponentProps<"svg">) {
+function PercentGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Percent"
@@ -199,7 +200,7 @@ function PercentGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Sun03Glyph(props: React.ComponentProps<"svg">) {
+function Sun03Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Sun"
@@ -212,7 +213,7 @@ function Sun03Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextColorGlyph(props: React.ComponentProps<"svg">) {
+function TextColorGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Baseline"
@@ -225,7 +226,7 @@ function TextColorGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextNumberSignGlyph(props: React.ComponentProps<"svg">) {
+function TextNumberSignGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Hash"
@@ -238,7 +239,7 @@ function TextNumberSignGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextWrapGlyph(props: React.ComponentProps<"svg">) {
+function TextWrapGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="WrapText"
@@ -283,7 +284,7 @@ type UploadedWorkbook = {
 type NumberFormatOption = {
   formatString?: string
   formatType: NonNullable<XlsxCellStyleInput["numberFormat"]>["formatType"]
-  icon: React.ComponentType<React.ComponentProps<"svg">>
+  icon: React.ComponentType<RegistryIconProps>
   id?: number
   label: string
   value: string
@@ -291,7 +292,7 @@ type NumberFormatOption = {
 
 type BorderOption = {
   action: XlsxBorderAction
-  icon: React.ComponentType<React.ComponentProps<"svg">>
+  icon: React.ComponentType<RegistryIconProps>
   label: string
 }
 
@@ -874,7 +875,7 @@ function StyleDropdownItem({
   onClick,
 }: {
   children: React.ReactNode
-  icon: React.ComponentType<React.ComponentProps<"svg">>
+  icon: React.ComponentType<RegistryIconProps>
   onClick: () => void
 }) {
   const IconComponent = icon

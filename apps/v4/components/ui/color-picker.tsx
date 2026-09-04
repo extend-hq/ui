@@ -25,6 +25,7 @@ import {
   type OklchColor,
   type RgbColor,
 } from "@/lib/color-picker-utils"
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -635,7 +636,7 @@ export type ColorPickerProps = {
   defaultFormat?: ColorFormat
   variant?: "input" | "swatch" | "panel"
   className?: string
-  icon?: React.ComponentType<React.ComponentProps<"svg">>
+  icon?: React.ComponentType<RegistryIconProps>
   rainbowTrigger?: boolean
   onTriggerMouseDown?: React.MouseEventHandler<HTMLButtonElement>
   onTriggerPointerDown?: React.PointerEventHandler<HTMLButtonElement>
@@ -946,7 +947,7 @@ export function ColorPicker({
                 tabler="IconColorPicker"
                 hugeicons="ColorPickerIcon"
                 phosphor="EyedropperIcon"
-                remixicon="RiColorPickerLine"
+                remixicon="RiDropperLine"
                 className="size-4"
               />
             </TooltipTrigger>
@@ -1007,7 +1008,11 @@ export function ColorPicker({
           <Select
             value={format}
             onValueChange={(next) => {
-              if (next !== null) setFormat(next)
+              if (
+                COLOR_FORMAT_OPTIONS.some((option) => option.value === next)
+              ) {
+                setFormat(next as ColorFormat)
+              }
             }}
           >
             <SelectPrimitive.Trigger
@@ -1031,6 +1036,7 @@ export function ColorPicker({
               />
             </SelectPrimitive.Trigger>
             <SelectContent
+              alignItemWithTrigger={false}
               align="end"
               className="min-w-28"
               portalProps={{ container: portalContainer }}

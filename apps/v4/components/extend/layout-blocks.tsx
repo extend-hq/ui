@@ -7,11 +7,12 @@ import rehypeRaw from "rehype-raw"
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
 import remarkGfm from "remark-gfm"
 
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-function AlignBoxBottomCenterGlyph(props: React.ComponentProps<"svg">) {
+function AlignBoxBottomCenterGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="AlignVerticalJustifyEnd"
@@ -24,7 +25,7 @@ function AlignBoxBottomCenterGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Heading01Glyph(props: React.ComponentProps<"svg">) {
+function Heading01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Heading1"
@@ -37,7 +38,7 @@ function Heading01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function ImageCompositionGlyph(props: React.ComponentProps<"svg">) {
+function ImageCompositionGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Image"
@@ -50,7 +51,7 @@ function ImageCompositionGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
+function LeftToRightListBulletGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Columns3Icon"
@@ -63,7 +64,7 @@ function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function ParagraphGlyph(props: React.ComponentProps<"svg">) {
+function ParagraphGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Pilcrow"
@@ -76,7 +77,7 @@ function ParagraphGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Table01Glyph(props: React.ComponentProps<"svg">) {
+function Table01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Table"
@@ -89,7 +90,7 @@ function Table01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextCenterlineCenterTopGlyph(props: React.ComponentProps<"svg">) {
+function TextCenterlineCenterTopGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelTop"
@@ -102,7 +103,7 @@ function TextCenterlineCenterTopGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextNumberSignGlyph(props: React.ComponentProps<"svg">) {
+function TextNumberSignGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Hash"
@@ -8041,7 +8042,7 @@ const BLOCK_STYLES: Record<
   OcrBlockType,
   {
     label: string
-    icon: React.ComponentType<React.ComponentProps<"svg">>
+    icon: React.ComponentType<RegistryIconProps>
     overlay: string
     mutedOverlay: string
     ring: string

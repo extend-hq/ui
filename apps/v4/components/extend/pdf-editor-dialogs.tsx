@@ -64,7 +64,6 @@ import {
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import {
-  CloseGlyph,
   CopyGlyph,
   downloadBlob,
   DownloadGlyph,
@@ -78,7 +77,6 @@ import {
   PdfEditorFieldLabel,
   PdfEditorSection,
   PdfEditorSwatch,
-  PdfEditorToolButton,
   ShieldGlyph,
   UnlockGlyph,
   usePdfEditor,

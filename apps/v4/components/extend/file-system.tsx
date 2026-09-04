@@ -11,6 +11,7 @@ import {
 import { FileTree as PierreFileTree, useFileTree } from "@pierre/trees/react"
 import { createPortal } from "react-dom"
 
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -45,7 +46,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { ScrollArea, ScrollAreaPrimitive } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
@@ -55,10 +56,11 @@ import {
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollAreaContent } from "@/components/extend/document-scroll-content"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-function ArrowDown01Glyph(props: React.ComponentProps<"svg">) {
+function ArrowDown01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="ChevronDown"
@@ -71,7 +73,7 @@ function ArrowDown01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function ArrowUp01Glyph(props: React.ComponentProps<"svg">) {
+function ArrowUp01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="ChevronUp"
@@ -84,7 +86,7 @@ function ArrowUp01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Calendar03Glyph(props: React.ComponentProps<"svg">) {
+function Calendar03Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Calendar"
@@ -97,7 +99,7 @@ function Calendar03Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function File01Glyph(props: React.ComponentProps<"svg">) {
+function File01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="FileArchiveIcon"
@@ -110,7 +112,7 @@ function File01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function GalleryThumbnailsGlyph(props: React.ComponentProps<"svg">) {
+function GalleryThumbnailsGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="GalleryThumbnails"
@@ -123,7 +125,7 @@ function GalleryThumbnailsGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function GridViewGlyph(props: React.ComponentProps<"svg">) {
+function GridViewGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="LayoutGrid"
@@ -136,7 +138,7 @@ function GridViewGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function LayoutThreeColumnGlyph(props: React.ComponentProps<"svg">) {
+function LayoutThreeColumnGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Columns3"
@@ -149,7 +151,7 @@ function LayoutThreeColumnGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
+function LeftToRightListBulletGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Columns3Icon"
@@ -1423,7 +1425,7 @@ function FileVisual({
 }
 
 const VIEW_OPTIONS: Array<{
-  icon: React.ComponentType<React.ComponentProps<"svg">>
+  icon: React.ComponentType<RegistryIconProps>
   label: string
   value: FileSystemView
 }> = [
@@ -2142,18 +2144,24 @@ export function FileSystem({
   const activeViewOption = VIEW_OPTIONS.find((option) => option.value === view)
   const viewerCloseToolbarAction = (
     <DialogClose
-      aria-label="Close preview"
-      render={<Button type="button" variant="ghost" size="icon-sm" />}
-    >
-      <IconPlaceholder
-        lucide="X"
-        tabler="IconX"
-        hugeicons="Cancel01Icon"
-        phosphor="XIcon"
-        remixicon="RiCloseLine"
-        className="size-4"
-      />
-    </DialogClose>
+      render={
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Close preview"
+        >
+          <IconPlaceholder
+            lucide="X"
+            tabler="IconX"
+            hugeicons="Cancel01Icon"
+            phosphor="XIcon"
+            remixicon="RiCloseLine"
+            className="size-4"
+          />
+        </Button>
+      }
+    ></DialogClose>
   )
 
   return (
@@ -2566,27 +2574,25 @@ function FileSystemSearchField({
 
   return (
     <Popover open={isExpanded} onOpenChange={onExpandedChange}>
-      <PopoverTrigger
-        render={
-          <button
-            type="button"
-            aria-label="Search"
-            title="Search"
-            className={cn(TOOLBAR_ICON_BUTTON_CLASSNAME, "relative")}
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Search"
+          title="Search"
+          className={cn(TOOLBAR_ICON_BUTTON_CLASSNAME, "relative")}
+        >
+          <IconPlaceholder
+            lucide="Search"
+            tabler="IconSearch"
+            hugeicons="Search01Icon"
+            phosphor="MagnifyingGlassIcon"
+            remixicon="RiSearchLine"
+            className="size-4"
           />
-        }
-      >
-        <IconPlaceholder
-          lucide="Search"
-          tabler="IconSearch"
-          hugeicons="Search01Icon"
-          phosphor="MagnifyingGlassIcon"
-          remixicon="RiSearchLine"
-          className="size-4"
-        />
-        {value ? (
-          <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
-        ) : null}
+          {value ? (
+            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
+          ) : null}
+        </button>
       </PopoverTrigger>
       <PopoverContent align="end" sideOffset={6} className="w-64 p-1">
         {input}
@@ -2756,29 +2762,27 @@ function FileSystemFilterMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            aria-label="Filter"
-            title="Filter"
-            className="relative size-7 sm:size-7"
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          aria-label="Filter"
+          title="Filter"
+          className="relative size-7 sm:size-7"
+        >
+          <IconPlaceholder
+            lucide="Filter"
+            tabler="IconFilter"
+            hugeicons="FilterIcon"
+            phosphor="FunnelIcon"
+            remixicon="RiFilterLine"
+            className="size-4"
           />
-        }
-      >
-        <IconPlaceholder
-          lucide="Filter"
-          tabler="IconFilter"
-          hugeicons="FilterIcon"
-          phosphor="FunnelIcon"
-          remixicon="RiFilterLine"
-          className="size-4"
-        />
-        {filters.length > 0 ? (
-          <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
-        ) : null}
+          {filters.length > 0 ? (
+            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
+          ) : null}
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuSub>
@@ -2891,15 +2895,13 @@ function FileSystemFilterPill({
         {FILTER_TYPE_LABELS[filter.type]}
       </span>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              className={cn(FILTER_PILL_BUTTON_CLASSNAME, "text-primary")}
-            />
-          }
-        >
-          {FILTER_OPERATOR_LABELS[filter.operator]}
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className={cn(FILTER_PILL_BUTTON_CLASSNAME, "text-primary")}
+          >
+            {FILTER_OPERATOR_LABELS[filter.operator]}
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="min-w-28">
           {filterOperatorChoices(filter).map((operator) => (
@@ -2914,18 +2916,16 @@ function FileSystemFilterPill({
       </DropdownMenu>
       {filter.type === "fileType" ? (
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                title={selectedTypeLabels.join(", ")}
-                className={FILTER_PILL_BUTTON_CLASSNAME}
-              />
-            }
-          >
-            {filter.value.length === 1
-              ? selectedTypeLabels[0]
-              : `${filter.value.length} selected`}
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              title={selectedTypeLabels.join(", ")}
+              className={FILTER_PILL_BUTTON_CLASSNAME}
+            >
+              {filter.value.length === 1
+                ? selectedTypeLabels[0]
+                : `${filter.value.length} selected`}
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-60">
             <FileSystemFileTypeCommand
@@ -2947,12 +2947,10 @@ function FileSystemFilterPill({
         </button>
       ) : (
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button type="button" className={FILTER_PILL_BUTTON_CLASSNAME} />
-            }
-          >
-            {filter.value[0]}
+          <DropdownMenuTrigger asChild>
+            <button type="button" className={FILTER_PILL_BUTTON_CLASSNAME}>
+              {filter.value[0]}
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <ScrollArea orientation="vertical" className="h-auto max-h-72">
@@ -4663,7 +4661,7 @@ function FileSystemColumnsView(props: FileSystemViewProps) {
           scrollbar hides; the viewport alone only observes its own box. Its
           built-in inline min-width (fit-content) would beat a min-w-full
           class, so the full-width floor is inline too. */}
-      <ScrollAreaPrimitive.Content
+      <ScrollAreaContent
         className="flex h-full w-max"
         style={{ minWidth: "100%" }}
         onKeyDown={handleKeyDown}
@@ -4736,7 +4734,7 @@ function FileSystemColumnsView(props: FileSystemViewProps) {
             </div>
           </ScrollArea>
         ) : null}
-      </ScrollAreaPrimitive.Content>
+      </ScrollAreaContent>
     </ScrollArea>
   )
 }

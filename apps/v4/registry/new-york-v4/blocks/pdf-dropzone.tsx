@@ -2,11 +2,12 @@
 
 import * as React from "react"
 
+import { type RegistryIconProps } from "@/lib/registry-icon-props"
 import { FileUpload } from "@/components/extend/file-upload"
 import { PDFViewer } from "@/components/extend/pdf-viewer"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-function FileUploadGlyph(props: React.ComponentProps<"svg">) {
+function FileUploadGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="FileUp"

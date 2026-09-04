@@ -7,12 +7,21 @@ import type {
   DocxTrackedChangeCardRenderProps,
 } from "@extend-ai/react-docx"
 
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 
+type AnnotationBadgeVariant =
+  | "outline"
+  | "secondary"
+  | "success"
+  | "error"
+  | "warning"
+  | "info"
+
 function trackedChangeBadgeVariant(
   kind: DocxTrackedChangeCardRenderProps["change"]["kind"]
-): React.ComponentProps<typeof Badge>["variant"] {
+): AnnotationBadgeVariant {
   switch (kind) {
     case "insertion":
     case "move-to":
@@ -55,7 +64,7 @@ function DocxAnnotationCard({
 }: {
   anchorText?: string
   badge: string
-  badgeVariant?: React.ComponentProps<typeof Badge>["variant"]
+  badgeVariant?: AnnotationBadgeVariant
   date?: string
   documentTheme: DocxDocumentTheme
   meta: string
@@ -92,9 +101,18 @@ function DocxAnnotationCard({
           {date ? <div className="mt-0.5 truncate">{date}</div> : null}
         </div>
         <Badge
-          variant={badgeVariant}
+          variant={badgeVariant === "outline" ? "outline" : "secondary"}
           size="sm"
-          className="max-w-[92px] truncate"
+          className={cn(
+            "max-w-[92px] truncate",
+            badgeVariant === "success" &&
+              "bg-green-500/10 text-green-700 dark:text-green-300",
+            badgeVariant === "error" && "bg-destructive/10 text-destructive",
+            badgeVariant === "warning" &&
+              "bg-amber-500/10 text-amber-700 dark:text-amber-300",
+            badgeVariant === "info" &&
+              "bg-blue-500/10 text-blue-700 dark:text-blue-300"
+          )}
         >
           {badge}
         </Badge>

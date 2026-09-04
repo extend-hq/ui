@@ -527,7 +527,7 @@
       "type": "registry:component",
       "title": "PDF Block Resizable Shell",
       "description": "A reusable resizable left document viewer and right review panel shell for PDF-style blocks.",
-      "registryDependencies": ["resizable", "utils"],
+      "registryDependencies": ["utils"],
       "categories": ["documents", "blocks"],
       "files": [
         {
@@ -543,7 +543,7 @@
       "title": "File Upload",
       "description": "A drag-and-drop file upload surface with accepted file type icons and a compact file list.",
       "dependencies": ["border-beam@^1.0.1"],
-      "registryDependencies": ["card", "@extend/file-thumbnail", "utils"],
+      "registryDependencies": ["@extend/file-thumbnail", "utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -574,20 +574,10 @@
       "description": "A macOS Finder-style file browser for flat object-store manifests with icon, list, column, and gallery views.",
       "dependencies": ["@pierre/trees@1.0.0-beta.4"],
       "registryDependencies": [
-        "button",
-        "command",
-        "dialog",
         "@extend/docx-viewer",
-        "dropdown-menu",
         "@extend/file-thumbnail",
-        "input",
         "@extend/pdf-viewer",
         "@extend/pptx-viewer",
-        "popover",
-        "scroll-area",
-        "select",
-        "spinner",
-        "tabs",
         "utils",
         "@extend/xlsx-viewer"
       ],
@@ -637,20 +627,7 @@
         "@embedpdf/plugin-zoom@^2.15.0",
         "pdf-lib@^1.17.1"
       ],
-      "registryDependencies": [
-        "button",
-        "@extend/document-viewer-sidebar",
-        "dropdown-menu",
-        "input",
-        "popover",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "toggle",
-        "tooltip",
-        "utils"
-      ],
+      "registryDependencies": ["@extend/document-viewer-sidebar", "utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -670,6 +647,14 @@
       "type": "registry:ui",
       "title": "PDF Editor",
       "description": "A PDF editor with annotations, comments, redaction, form filling and design, signatures, rubber stamps, page organization, security, printing, and export.",
+      "registryDependencies": ["@extend/pdf-editor-core"],
+      "categories": ["documents"]
+    },
+    {
+      "name": "pdf-editor-core",
+      "type": "registry:ui",
+      "title": "PDF Editor Core",
+      "description": "Shared PDF editor behavior and state for the Base UI and Radix UI artifacts.",
       "dependencies": [
         "@embedpdf/core@^2.15.0",
         "@embedpdf/engines@^2.15.0",
@@ -701,25 +686,7 @@
         "@embedpdf/plugin-zoom@^2.15.0",
         "pdf-lib@^1.17.1"
       ],
-      "registryDependencies": [
-        "badge",
-        "button",
-        "@extend/color-picker",
-        "dialog",
-        "@extend/document-viewer-sidebar",
-        "dropdown-menu",
-        "input",
-        "kbd",
-        "popover",
-        "scroll-area",
-        "select",
-        "spinner",
-        "switch",
-        "@extend/toast",
-        "toggle",
-        "tooltip",
-        "utils"
-      ],
+      "registryDependencies": ["@extend/document-viewer-sidebar"],
       "categories": ["documents"],
       "files": [
         {
@@ -764,18 +731,8 @@
         "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
-        "badge",
-        "button",
-        "card",
         "@extend/document-viewer-sidebar",
-        "dropdown-menu",
         "@extend/file-thumbnail",
-        "input",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip",
         "utils"
       ],
       "categories": ["documents"],
@@ -797,21 +754,10 @@
       "type": "registry:ui",
       "title": "DOCX Editor",
       "description": "An experimental DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
-      "dependencies": ["@base-ui/react@^1.4.1", "@extend-ai/react-docx@^0.9.0"],
+      "dependencies": ["@extend-ai/react-docx@^0.9.0"],
       "registryDependencies": [
-        "badge",
-        "button",
-        "card",
-        "@extend/color-picker",
         "@extend/document-viewer-sidebar",
-        "dropdown-menu",
         "@extend/file-thumbnail",
-        "input",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip",
         "utils"
       ],
       "categories": ["documents"],
@@ -834,17 +780,7 @@
       "title": "Excel Viewer",
       "description": "An XLSX viewer with workbook loading, thumbnails, sheet tabs, upload, zoom, and theme controls.",
       "dependencies": ["@extend-ai/react-xlsx@0.16.1"],
-      "registryDependencies": [
-        "button",
-        "dropdown-menu",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tabs",
-        "tooltip",
-        "utils"
-      ],
+      "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -864,16 +800,8 @@
         "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
-        "button",
         "@extend/document-viewer-sidebar",
-        "dropdown-menu",
         "@extend/file-thumbnail",
-        "input",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip",
         "utils"
       ],
       "categories": ["documents"],
@@ -891,20 +819,7 @@
       "title": "Excel Editor",
       "description": "An experimental XLSX editor with formula input, undo and redo, sheet controls, export, and live workbook mutation.",
       "dependencies": ["@extend-ai/react-xlsx@0.16.1"],
-      "registryDependencies": [
-        "button",
-        "@extend/color-picker",
-        "@extend/group",
-        "input",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "toggle",
-        "tooltip",
-        "utils",
-        "@extend/xlsx-viewer"
-      ],
+      "registryDependencies": ["utils", "@extend/xlsx-viewer"],
       "categories": ["documents"],
       "files": [
         {
@@ -924,15 +839,7 @@
         "papaparse@^5.5.3"
       ],
       "devDependencies": ["@types/papaparse@^5.5.2"],
-      "registryDependencies": [
-        "button",
-        "input",
-        "popover",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip"
-      ],
+      "registryDependencies": [],
       "categories": ["documents"],
       "files": [
         {
@@ -969,7 +876,7 @@
         "rehype-sanitize@^6.0.0",
         "remark-gfm@^4.0.1"
       ],
-      "registryDependencies": ["scroll-area", "utils"],
+      "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -1005,11 +912,8 @@
       "description": "A PDF signature review block with field overlays and signing actions.",
       "dependencies": ["pdf-lib@^1.17.1", "signature_pad@^5.1.3"],
       "registryDependencies": [
-        "button",
-        "dialog",
         "@extend/pdf-block-resizable-shell",
         "@extend/pdf-viewer",
-        "scroll-area",
         "utils"
       ],
       "categories": ["documents", "blocks"],
@@ -1030,14 +934,7 @@
         "@glideapps/glide-data-grid@6.0.4-alpha24",
         "@pierre/diffs@^1.1.22"
       ],
-      "registryDependencies": [
-        "button",
-        "input",
-        "scroll-area",
-        "tabs",
-        "tooltip",
-        "utils"
-      ],
+      "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -1059,14 +956,7 @@
         "@pierre/diffs@^1.2.7",
         "next-themes@0.4.6"
       ],
-      "registryDependencies": [
-        "button",
-        "collapsible",
-        "dropdown-menu",
-        "scroll-area",
-        "tabs",
-        "utils"
-      ],
+      "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -1105,12 +995,7 @@
         "@dnd-kit/sortable@^10.0.0",
         "@dnd-kit/utilities@^3.2.2"
       ],
-      "registryDependencies": [
-        "button",
-        "@extend/file-thumbnail",
-        "scroll-area",
-        "utils"
-      ],
+      "registryDependencies": ["@extend/file-thumbnail", "utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -1196,6 +1081,96 @@
           "path": "components/extend/document-viewer-sidebar.tsx",
           "type": "registry:ui",
           "target": "@components/extend/document-viewer-sidebar.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-color-popover",
+      "type": "registry:ui",
+      "title": "Color Picker Popover",
+      "files": [
+        {
+          "path": "registry/bases/base/document-color-popover.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-color-popover.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-controls",
+      "type": "registry:ui",
+      "title": "document-controls",
+      "files": [
+        {
+          "path": "registry/extend/document-controls.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-controls.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-scroll-area",
+      "type": "registry:ui",
+      "title": "document-scroll-area",
+      "files": [
+        {
+          "path": "registry/bases/base/document-scroll-area.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-scroll-area.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-preview-card",
+      "type": "registry:ui",
+      "title": "document-preview-card",
+      "files": [
+        {
+          "path": "components/extend/document-preview-card.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-preview-card.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-color-picker",
+      "type": "registry:ui",
+      "title": "document-color-picker",
+      "files": [
+        {
+          "path": "components/ui/color-picker.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-color-picker.tsx"
+        },
+        {
+          "path": "lib/color-picker-utils.ts",
+          "type": "registry:lib",
+          "target": "@lib/color-picker-utils.ts"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "document-toast",
+      "type": "registry:ui",
+      "title": "document-toast",
+      "files": [
+        {
+          "path": "components/extend/ui-toast.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/ui-toast.tsx"
+        }
+      ]
+    },
+    {
+      "name": "registry-icon-props",
+      "type": "registry:ui",
+      "title": "registry-icon-props",
+      "files": [
+        {
+          "path": "lib/registry-icon-props.ts",
+          "type": "registry:lib",
+          "target": "@lib/registry-icon-props.ts"
         }
       ]
     }

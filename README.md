@@ -32,7 +32,17 @@ and Tailwind code.
 
 ## Getting Started
 
-Install a component with the shadcn CLI:
+Configure the style-aware registry in your `components.json`:
+
+```json
+{
+  "registries": {
+    "@extend": "https://www.extend.ai/ui/r/styles/{style}/{name}.json"
+  }
+}
+```
+
+Then install a component with the shadcn CLI:
 
 ```bash
 npx shadcn@latest add @extend/pdf-viewer
@@ -41,10 +51,10 @@ npx shadcn@latest add @extend/pdf-viewer
 Then render the installed component from your app:
 
 ```tsx
-import { PDFViewer } from "@/components/ui/pdf-viewer"
+import { PDFViewer } from "@/components/extend/pdf-viewer"
 
 export default function Page() {
-  return <PDFViewer file="/sample.pdf" className="h-[720px]" />
+  return <PDFViewer src="/sample.pdf" className="h-[720px]" />
 }
 ```
 
@@ -53,12 +63,18 @@ The `react-pdf` version of the PDF viewer is available at
 
 Extend UI components are copied into your project as source, so you can adapt
 them to your app. Shared primitives such as `Button`, `Select`, `Dialog`,
-`ScrollArea`, and `Tooltip` are expected to use the primitives your app already
-has. If your project uses a different alias or design-system path, update the
+and `Tooltip` are imported directly from your existing UI components. The
+registry selects Base or Radix source using your configured style and transforms
+icons for your selected icon library. Keep existing primitives when the CLI
+asks about overwriting them. If your project uses a different alias or design-system path, update the
 generated imports to match, for example changing
 `@/components/ui/button` or `@/components/ui/select` to your local primitive
 paths. You can also set those aliases in `components.json` before installing so
 new components are generated closer to your app structure.
+
+Use current shadcn primitive APIs. The historical `default` style is
+[deprecated upstream](https://ui.shadcn.com/docs/components-json#style) and must
+be migrated before installing.
 
 ## Examples
 
@@ -74,7 +90,7 @@ npx shadcn@latest add @extend/layout-blocks-block
 ```
 
 ```tsx
-import type { ParsedOcrOutput } from "@/components/ui/layout-blocks"
+import type { ParsedOcrOutput } from "@/components/extend/layout-blocks"
 import { OcrBlocksBlock } from "@/components/blocks/layout-blocks-block"
 
 const output: ParsedOcrOutput = {
@@ -113,7 +129,7 @@ npx shadcn@latest add @extend/bounding-box-citations-block
 ```
 
 ```tsx
-import type { ReviewField } from "@/components/ui/bounding-box-citations"
+import type { ReviewField } from "@/components/extend/bounding-box-citations"
 import { HumanReviewBlock } from "@/components/blocks/bounding-box-citations-block"
 
 const fields: ReviewField[] = [
@@ -157,7 +173,7 @@ npx shadcn@latest add @extend/file-system-block
 ```
 
 ```tsx
-import type { FileSystemItem } from "@/components/ui/file-system"
+import type { FileSystemItem } from "@/components/extend/file-system"
 import { FileSystemBlock } from "@/components/blocks/file-system-block"
 
 const items: FileSystemItem[] = [

@@ -1,10 +1,21 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
+import {
+  getRegistryFamily,
+  styleRegistryDependencies,
+} from "@/lib/registry-style"
+
 export const dynamic = "force-dynamic"
 
 type RegistryCatalog = {
   items: Array<{ name: string }>
+  [key: string]: unknown
+}
+
+type RegistryItem = {
+  name: string
+  registryDependencies?: string[]
   [key: string]: unknown
 }
 
@@ -17,6 +28,15 @@ class RegistryJsonNotFoundError extends Error {
 const registryJsonCache = new Map<string, Promise<unknown>>()
 
 function parseRegistryPath(pathSegments: string[]) {
+  if (pathSegments.length === 3 && pathSegments[0] === "styles") {
+    const [, style, segment] = pathSegments
+    const match = /^([a-z0-9-]+)\.json$/.exec(segment)
+
+    if (!match || !/^[a-z0-9-]+$/.test(style)) return null
+
+    return { name: match[1], style, type: "item" as const }
+  }
+
   if (pathSegments.length !== 1) return null
 
   const [segment] = pathSegments
@@ -29,7 +49,7 @@ function parseRegistryPath(pathSegments: string[]) {
 
   if (!match) return null
 
-  return { name: match[1], type: "item" as const }
+  return { name: match[1], style: undefined, type: "item" as const }
 }
 
 function isFileNotFoundError(error: unknown) {
@@ -104,9 +124,25 @@ export async function GET(
       )
     }
 
-    return Response.json(
-      await loadBuiltRegistryJson<unknown>(`${parsedPath.name}.json`)
+    const family = parsedPath.style ? getRegistryFamily(parsedPath.style) : null
+
+    if (parsedPath.style && !family) {
+      return Response.json(
+        { error: `Registry style "${parsedPath.style}" is not supported.` },
+        { status: 404 }
+      )
+    }
+
+    const builtItem = await loadBuiltRegistryJson<RegistryItem>(
+      family
+        ? `bases/${family}/${parsedPath.name}.json`
+        : `${parsedPath.name}.json`
     )
+    const item = parsedPath.style
+      ? styleRegistryDependencies(builtItem, parsedPath.style)
+      : builtItem
+
+    return Response.json(item)
   } catch (error) {
     if (error instanceof RegistryJsonNotFoundError) {
       return Response.json(

@@ -3,12 +3,13 @@
 import * as React from "react"
 import { BorderBeam } from "border-beam"
 
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-function FileImageGlyph(props: React.ComponentProps<"svg">) {
+function FileImageGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="FileImage"
@@ -21,7 +22,7 @@ function FileImageGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function FileSpreadsheetGlyph(props: React.ComponentProps<"svg">) {
+function FileSpreadsheetGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="FileSpreadsheet"
@@ -34,7 +35,7 @@ function FileSpreadsheetGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function FileUploadGlyph(props: React.ComponentProps<"svg">) {
+function FileUploadGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="FileUp"
@@ -57,7 +58,7 @@ type FileUploadItem = {
 
 type AcceptedFileType = {
   label: string
-  icon: React.ComponentType<React.ComponentProps<"svg">>
+  icon: React.ComponentType<RegistryIconProps>
 }
 
 type FileUploadProps = {

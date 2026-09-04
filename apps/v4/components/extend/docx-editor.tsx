@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card"
 import {
   DocxEditorViewer,
   paragraphLetterheadFloatSideAtNodeIndex,
@@ -21,6 +20,7 @@ import {
   type ParagraphStyleDefinition,
 } from "@extend-ai/react-docx"
 
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ColorPicker } from "@/components/ui/color-picker"
@@ -50,6 +50,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
+  PreviewCard,
+  PreviewCardContent,
+  PreviewCardTrigger,
+} from "@/components/extend/document-preview-card"
+import {
   DocumentViewerThumbnailSidebar,
   useElementWidth,
   useInlineThumbnailSidebar,
@@ -61,7 +66,7 @@ import {
 import { FileThumbnail } from "@/components/extend/file-thumbnail"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-function ArrowExpandDiagonal01Glyph(props: React.ComponentProps<"svg">) {
+function ArrowExpandDiagonal01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="ArrowDownRight"
@@ -74,7 +79,7 @@ function ArrowExpandDiagonal01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function ArrowExpandDiagonal02Glyph(props: React.ComponentProps<"svg">) {
+function ArrowExpandDiagonal02Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="ArrowUpRight"
@@ -87,7 +92,7 @@ function ArrowExpandDiagonal02Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderAll01Glyph(props: React.ComponentProps<"svg">) {
+function BorderAll01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Grid2x2"
@@ -100,7 +105,7 @@ function BorderAll01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderBottom01Glyph(props: React.ComponentProps<"svg">) {
+function BorderBottom01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelBottom"
@@ -113,7 +118,7 @@ function BorderBottom01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderHorizontalGlyph(props: React.ComponentProps<"svg">) {
+function BorderHorizontalGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="SeparatorHorizontal"
@@ -126,7 +131,7 @@ function BorderHorizontalGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderInnerGlyph(props: React.ComponentProps<"svg">) {
+function BorderInnerGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="SquarePlus"
@@ -139,7 +144,7 @@ function BorderInnerGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderLeft01Glyph(props: React.ComponentProps<"svg">) {
+function BorderLeft01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelLeft"
@@ -152,7 +157,7 @@ function BorderLeft01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderNone01Glyph(props: React.ComponentProps<"svg">) {
+function BorderNone01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="SquareDashed"
@@ -165,7 +170,7 @@ function BorderNone01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderRight01Glyph(props: React.ComponentProps<"svg">) {
+function BorderRight01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelRight"
@@ -178,7 +183,7 @@ function BorderRight01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderTop01Glyph(props: React.ComponentProps<"svg">) {
+function BorderTop01Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="PanelTop"
@@ -191,7 +196,7 @@ function BorderTop01Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function BorderVerticalGlyph(props: React.ComponentProps<"svg">) {
+function BorderVerticalGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="SeparatorVertical"
@@ -204,7 +209,7 @@ function BorderVerticalGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function LineGlyph(props: React.ComponentProps<"svg">) {
+function LineGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Minus"
@@ -217,7 +222,7 @@ function LineGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Moon02Glyph(props: React.ComponentProps<"svg">) {
+function Moon02Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Moon"
@@ -230,7 +235,7 @@ function Moon02Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function Sun03Glyph(props: React.ComponentProps<"svg">) {
+function Sun03Glyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Sun"
@@ -243,7 +248,7 @@ function Sun03Glyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextColorGlyph(props: React.ComponentProps<"svg">) {
+function TextColorGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Baseline"
@@ -647,13 +652,6 @@ function paragraphStylePreviewStyle(
   }
 }
 
-function paragraphStylePreviewTriggerId(prefix: string, styleId: string) {
-  return `${prefix}-paragraph-style-preview-${styleId.replace(
-    /[^a-zA-Z0-9_-]/g,
-    "_"
-  )}`
-}
-
 function parseToolbarSectionColumns(
   sectionPropertiesXml?: string
 ): { count: number; gapPx: number } | undefined {
@@ -877,27 +875,9 @@ function DocxEditorToolbar({
     paragraphStyleOptions.find((option) => "isDefault" in option)?.id ??
     paragraphStyleOptions[0]?.id ??
     "Normal"
-  const selectedParagraphStyleOption =
-    paragraphStyleOptions.find(
-      (option) => option.id === selectedParagraphStyleValue
-    ) ??
-    paragraphStyleOptions[0] ??
-    FALLBACK_PARAGRAPH_STYLE_OPTIONS[0]
-  const paragraphStylePreviewHandle = React.useMemo(
-    () => PreviewCardPrimitive.createHandle<ParagraphStyleDefinition>(),
-    []
-  )
-  const paragraphStylePreviewIdPrefix = React.useId()
-  const [isParagraphStyleMenuOpen, setIsParagraphStyleMenuOpen] =
-    React.useState(false)
-  const openParagraphStylePreview = React.useCallback(
-    (styleId: string) => {
-      paragraphStylePreviewHandle.open(
-        paragraphStylePreviewTriggerId(paragraphStylePreviewIdPrefix, styleId)
-      )
-    },
-    [paragraphStylePreviewHandle, paragraphStylePreviewIdPrefix]
-  )
+  const [paragraphStylePreviewId, setParagraphStylePreviewId] = React.useState<
+    string | null
+  >(null)
   const selectedLineSpacingValue = React.useMemo(() => {
     const current = Number.isFinite(lineSpacing.multiple)
       ? lineSpacing.multiple
@@ -1161,109 +1141,71 @@ function DocxEditorToolbar({
 
           <ToolbarSeparator />
 
-          <PreviewCardPrimitive.Root handle={paragraphStylePreviewHandle}>
-            {({ payload }) => {
-              const previewOption = payload ?? selectedParagraphStyleOption
-
-              return (
-                <>
-                  <Select
-                    value={selectedParagraphStyleValue}
-                    onOpenChange={(open) => {
-                      setIsParagraphStyleMenuOpen(open)
-
-                      if (!open) {
-                        paragraphStylePreviewHandle.close()
-                        return
-                      }
-
-                      window.requestAnimationFrame(() => {
-                        openParagraphStylePreview(selectedParagraphStyleValue)
-                      })
-                    }}
-                    onValueChange={(value) => {
-                      if (value) {
-                        setParagraphStyle(value)
-                      }
-                    }}
-                    disabled={!canEdit}
-                    modal={false}
-                  >
-                    <SelectTrigger
-                      size="sm"
-                      className="w-[136px] min-w-[136px]"
-                      aria-label="Paragraph style"
-                    >
-                      <SelectValue placeholder="Style" />
-                    </SelectTrigger>
-                    <SelectContent
-                      align="start"
-                      alignItemWithTrigger={false}
-                      className="z-40 min-w-[210px]"
-                    >
-                      {paragraphStyleOptions.map((option) => {
-                        const previewTriggerId = paragraphStylePreviewTriggerId(
-                          paragraphStylePreviewIdPrefix,
-                          option.id
-                        )
-
-                        return (
-                          <SelectItem
-                            key={option.id}
-                            value={option.id}
-                            label={option.name}
-                            className="relative min-w-[190px]"
-                            onFocus={() => openParagraphStylePreview(option.id)}
-                            onPointerEnter={() =>
-                              openParagraphStylePreview(option.id)
-                            }
-                          >
-                            <span className="block truncate">
-                              {option.name}
-                            </span>
-                            <PreviewCardPrimitive.Trigger
-                              id={previewTriggerId}
-                              handle={paragraphStylePreviewHandle}
-                              payload={option}
-                              delay={0}
-                              closeDelay={120}
-                              render={
-                                <span
-                                  aria-hidden="true"
-                                  className="pointer-events-none absolute inset-0 block"
-                                />
-                              }
-                            />
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                  {isParagraphStyleMenuOpen && previewOption ? (
-                    <PreviewCardPrimitive.Portal>
-                      <PreviewCardPrimitive.Positioner
-                        side="right"
-                        align="start"
-                        sideOffset={10}
-                        alignOffset={-4}
-                        className="z-40 transition-[top,left,right,bottom,transform] duration-100 ease-out data-instant:transition-none"
-                      >
-                        <PreviewCardPrimitive.Popup
-                          data-slot="paragraph-style-preview-card"
-                          className="origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground shadow-lg/5 transition-opacity duration-100 outline-none not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:opacity-0 data-starting-style:opacity-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]"
-                        >
-                          <ParagraphStylePreviewCard
-                            documentTheme={documentTheme}
-                            option={previewOption}
-                          />
-                        </PreviewCardPrimitive.Popup>
-                      </PreviewCardPrimitive.Positioner>
-                    </PreviewCardPrimitive.Portal>
-                  ) : null}
-                </>
-              )
+          <Select
+            value={selectedParagraphStyleValue}
+            onOpenChange={() => setParagraphStylePreviewId(null)}
+            onValueChange={(value) => {
+              if (value) {
+                setParagraphStyle(value)
+              }
             }}
-          </PreviewCardPrimitive.Root>
+            disabled={!canEdit}
+            modal={false}
+          >
+            <SelectTrigger
+              size="sm"
+              className="w-[136px] min-w-[136px]"
+              aria-label="Paragraph style"
+            >
+              <SelectValue placeholder="Style" />
+            </SelectTrigger>
+            <SelectContent
+              align="start"
+              alignItemWithTrigger={false}
+              className="z-40 min-w-[210px]"
+            >
+              {paragraphStyleOptions.map((option) => (
+                <PreviewCard
+                  key={option.id}
+                  open={paragraphStylePreviewId === option.id}
+                  onOpenChange={(open) => {
+                    setParagraphStylePreviewId((current) =>
+                      open ? option.id : current === option.id ? null : current
+                    )
+                  }}
+                  openDelay={0}
+                  closeDelay={120}
+                >
+                  <SelectItem
+                    value={option.id}
+                    label={option.name}
+                    className="relative min-w-[190px]"
+                    onFocus={() => setParagraphStylePreviewId(option.id)}
+                    onPointerEnter={() => setParagraphStylePreviewId(option.id)}
+                  >
+                    <PreviewCardTrigger asChild>
+                      <span className="block w-full truncate">
+                        {option.name}
+                      </span>
+                    </PreviewCardTrigger>
+                  </SelectItem>
+                  <PreviewCardContent
+                    side="right"
+                    align="start"
+                    sideOffset={10}
+                    alignOffset={-4}
+                    data-slot="paragraph-style-preview-card"
+                    className="origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground shadow-lg/5 transition-opacity duration-100 outline-none not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:opacity-0 data-starting-style:opacity-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]"
+                  >
+                    <ParagraphStylePreviewCard
+                      documentTheme={documentTheme}
+                      option={option}
+                    />
+                  </PreviewCardContent>
+                </PreviewCard>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Select
             value={selectedRunStyle?.fontFamily ?? "Calibri"}

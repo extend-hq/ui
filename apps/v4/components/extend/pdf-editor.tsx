@@ -5,7 +5,6 @@ import { createPluginRegistration } from "@embedpdf/core"
 import {
   EmbedPDF,
   useDocumentPermissions,
-  useDocumentState,
   useRegistry,
 } from "@embedpdf/core/react"
 import {
@@ -4068,7 +4067,7 @@ function PdfEditorDocumentLoader({
     activeDocument?.status === "loaded" ? activeDocument.document : null
 
   return (
-    <>
+    <TooltipProvider delay={TOOLTIP_DELAY_MS}>
       <PdfEditorSignaturePersistence storageKey={signatureStorageKey} />
       <PdfEditorInner
         key={activeDocumentId}
@@ -4081,7 +4080,7 @@ function PdfEditorDocumentLoader({
         formDesignMode={formDesignMode}
         setFormDesignMode={setFormDesignMode}
       />
-    </>
+    </TooltipProvider>
   )
 }
 

@@ -39,6 +39,7 @@ import {
 } from "@pierre/diffs/react"
 import { useTheme } from "next-themes"
 
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -62,7 +63,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-function CancelCircleGlyph(props: React.ComponentProps<"svg">) {
+function CancelCircleGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="CircleX"
@@ -75,7 +76,7 @@ function CancelCircleGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function InputNumericGlyph(props: React.ComponentProps<"svg">) {
+function InputNumericGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Hash"
@@ -88,7 +89,7 @@ function InputNumericGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function InputTextGlyph(props: React.ComponentProps<"svg">) {
+function InputTextGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="TextCursorInput"
@@ -101,7 +102,7 @@ function InputTextGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
+function LeftToRightListBulletGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Columns3Icon"
@@ -114,7 +115,7 @@ function LeftToRightListBulletGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function SecondBracketGlyph(props: React.ComponentProps<"svg">) {
+function SecondBracketGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Brackets"
@@ -127,7 +128,7 @@ function SecondBracketGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function SourceCodeSquareGlyph(props: React.ComponentProps<"svg">) {
+function SourceCodeSquareGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="SquareCode"
@@ -140,7 +141,7 @@ function SourceCodeSquareGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextCheckGlyph(props: React.ComponentProps<"svg">) {
+function TextCheckGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="CaptionsIcon"
@@ -323,7 +324,7 @@ type SchemaBuilderTypeStyleKey =
 const TYPE_STYLES: Record<
   SchemaBuilderTypeStyleKey,
   {
-    icon: React.ComponentType<React.ComponentProps<"svg">>
+    icon: React.ComponentType<RegistryIconProps>
     badge: string
   }
 > = {
@@ -1451,7 +1452,7 @@ function InlineTextInput({
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement>) {
   const handleInput = React.useCallback(
-    (event: React.FormEvent<HTMLInputElement>) => {
+    (event: React.InputEvent<HTMLInputElement>) => {
       onInput?.(event)
       onChange?.(event as unknown as React.ChangeEvent<HTMLInputElement>)
     },

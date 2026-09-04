@@ -30,6 +30,7 @@ import {
 } from "@pierre/diffs/react"
 import { flushSync } from "react-dom"
 
+import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,7 +46,7 @@ import { IconPlaceholder } from "@/components/icon-placeholder"
 
 import "@glideapps/glide-data-grid/dist/index.css"
 
-function InputNumericGlyph(props: React.ComponentProps<"svg">) {
+function InputNumericGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Hash"
@@ -58,7 +59,7 @@ function InputNumericGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function InputTextGlyph(props: React.ComponentProps<"svg">) {
+function InputTextGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="TextCursorInput"
@@ -71,7 +72,7 @@ function InputTextGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function SecondBracketGlyph(props: React.ComponentProps<"svg">) {
+function SecondBracketGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="Brackets"
@@ -84,7 +85,7 @@ function SecondBracketGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function SourceCodeSquareGlyph(props: React.ComponentProps<"svg">) {
+function SourceCodeSquareGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="SquareCode"
@@ -97,7 +98,7 @@ function SourceCodeSquareGlyph(props: React.ComponentProps<"svg">) {
   )
 }
 
-function TextCheckGlyph(props: React.ComponentProps<"svg">) {
+function TextCheckGlyph(props: RegistryIconProps) {
   return (
     <IconPlaceholder
       lucide="CaptionsIcon"
@@ -233,7 +234,6 @@ function ScrollAreaVirtualizer({
   )
 }
 
-const DEFAULT_ZOOM = 1
 const REVIEW_HIGHLIGHT_STYLE =
   "border-blue-500/70 bg-blue-500/12 shadow-[0_4px_16px_rgb(59_130_246_/_10%)]"
 

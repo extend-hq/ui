@@ -57,7 +57,6 @@ import type { degrees, ParseSpeeds, PDFDocument } from "pdf-lib"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -90,7 +89,6 @@ import {
   PaperclipGlyph,
   PdfEditorEmptyState,
   PdfEditorScrollArea,
-  PdfEditorSection,
   PdfEditorToolbarSeparator,
   PdfEditorToolButton,
   PlusGlyph,
