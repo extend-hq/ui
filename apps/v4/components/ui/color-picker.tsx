@@ -37,7 +37,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectPrimitive,
+  SelectTrigger,
 } from "@/components/ui/select"
 import {
   Tooltip,
@@ -1035,26 +1035,21 @@ export function ColorPicker({
               }
             }}
           >
-            <SelectPrimitive.Trigger
-              render={
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label="Color format"
-                  className="size-8! shrink-0"
-                />
-              }
+            <SelectTrigger
+              aria-label="Color format"
+              className="size-8! min-h-0 min-w-0 shrink-0 justify-center p-0 [&>[data-slot=select-icon]]:hidden [&>svg]:hidden"
             >
-              <IconPlaceholder
-                lucide="ChevronsUpDown"
-                tabler="IconSelector"
-                hugeicons="UnfoldMoreIcon"
-                phosphor="CaretUpDownIcon"
-                remixicon="RiExpandUpDownLine"
-                className="size-3.5"
-              />
-            </SelectPrimitive.Trigger>
+              <span className="flex items-center justify-center">
+                <IconPlaceholder
+                  lucide="ChevronsUpDown"
+                  tabler="IconSelector"
+                  hugeicons="UnfoldMoreIcon"
+                  phosphor="CaretUpDownIcon"
+                  remixicon="RiExpandUpDownLine"
+                  className="size-3.5"
+                />
+              </span>
+            </SelectTrigger>
             <SelectContent
               alignItemWithTrigger={false}
               align="end"

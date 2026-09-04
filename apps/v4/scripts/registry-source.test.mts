@@ -194,6 +194,36 @@ test("The icon-only color select uses popup positioning", () => {
   assert.doesNotMatch(source, /RiColorPickerLine/)
 })
 
+test("Color picker select parts share the consumer primitive context", () => {
+  const source = readFileSync(
+    new URL("../components/ui/color-picker.tsx", import.meta.url),
+    "utf8"
+  )
+  for (const family of ["base", "radix"] as const) {
+    const output = transformRegistrySource(source, family)
+    assert.match(
+      output,
+      /import \{ Select, SelectContent, SelectItem, SelectTrigger \} from "@\/components\/ui\/select"/
+    )
+    assert.match(output, /<SelectTrigger\s+aria-label="Color format"/)
+    assert.doesNotMatch(
+      output,
+      /SelectPrimitive|@radix-ui\/react-select|@base-ui\/react\/select/
+    )
+  }
+})
+
+test("Dialog footers retain consumer spacing and explicit class overrides", () => {
+  for (const family of ["base", "radix"] as const) {
+    const output = transformRegistrySource(
+      'const footer = <><DialogFooter /><DialogFooter variant="bare" /><DialogFooter className="gap-4" /></>',
+      family
+    )
+    assert.match(output, /<DialogFooter className="gap-4"/)
+    assert.doesNotMatch(output, /variant=|pt-3|pt-4|border-t|bg-muted/)
+  }
+})
+
 test("Editor loading keeps the normal controls without a document-keyed remount", () => {
   const source = readFileSync(
     new URL("../components/extend/pdf-editor.tsx", import.meta.url),

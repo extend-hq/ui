@@ -1745,7 +1745,7 @@ function PanelTabStrip<T extends string>({
     <div className="flex shrink-0 items-center justify-between gap-1 border-b px-1.5 py-1">
       <TooltipProvider delay={TOOLTIP_DELAY_MS}>
         <div
-          className="flex min-w-0 items-center gap-0.5 overflow-x-auto"
+          className="flex min-w-0 items-center gap-0.5 overflow-x-auto overflow-y-hidden"
           role="tablist"
           aria-label={label}
         >

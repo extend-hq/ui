@@ -253,11 +253,6 @@ export function transformRegistrySource(
           }
         }
         if (name === "DialogFooter") {
-          classes(
-            value("variant") === '"bare"'
-              ? '"pt-3"'
-              : '"border-t bg-muted/72 pt-4"'
-          )
           remove("variant")
         }
         if (name === "DropdownMenuCheckboxItem") {
