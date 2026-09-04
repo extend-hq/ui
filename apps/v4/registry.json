@@ -715,7 +715,7 @@
         "select",
         "spinner",
         "switch",
-        "toast",
+        "@extend/toast",
         "toggle",
         "tooltip",
         "utils"
