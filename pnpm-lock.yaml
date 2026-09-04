@@ -124,8 +124,8 @@ importers:
         specifier: 2.15.0
         version: 2.15.0(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2))
       '@extend-ai/react-docx':
-        specifier: 0.9.0
-        version: 0.9.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.9.1
+        version: 0.9.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-pptx':
         specifier: 0.2.0
         version: 0.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1466,8 +1466,8 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@extend-ai/react-docx@0.9.0':
-    resolution: {integrity: sha512-Jna0kV6u/lVCsoI1y5Ryl5KpXMb7wmCigK+ffQ4ha5bEdWViN9V0g2i/+uALaR7O26/4CB5O/52rB5cOY0Rr5g==}
+  '@extend-ai/react-docx@0.9.1':
+    resolution: {integrity: sha512-h3vL+AJqprMwvEMBjKwwrpaSdmtN+haKgLeCKcsOyJPmSG9KZMQUBOwxFCW7LE1XFu5K3so/Qvt5VxURotM7DA==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -7567,7 +7567,7 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@extend-ai/react-docx@0.9.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-docx@0.9.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@chenglou/pretext': 0.0.8
       '@tanstack/react-virtual': 3.13.26(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
