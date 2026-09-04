@@ -729,7 +729,7 @@ export function LineGlyph({ className, style }: PdfEditorGlyphProps) {
     <IconPlaceholder
       lucide="Minus"
       tabler="IconLine"
-      hugeicons="LineIcon"
+      hugeicons="MinusSignIcon"
       phosphor="LineSegmentIcon"
       remixicon="RiSubtractLine"
       className={className}

@@ -8,11 +8,6 @@ type RegistryCatalog = {
   [key: string]: unknown
 }
 
-type RegistryItem = {
-  registryDependencies?: string[]
-  [key: string]: unknown
-}
-
 class RegistryJsonNotFoundError extends Error {
   constructor(readonly fileName: string) {
     super(`Registry JSON file "${fileName}" was not found.`)
@@ -20,35 +15,6 @@ class RegistryJsonNotFoundError extends Error {
 }
 
 const registryJsonCache = new Map<string, Promise<unknown>>()
-
-function getRegistryItemNames(registry: RegistryCatalog) {
-  return new Set(registry.items.map((item) => item.name))
-}
-
-function isExternalDependency(dependency: string) {
-  return (
-    dependency.startsWith("http://") ||
-    dependency.startsWith("https://") ||
-    dependency.startsWith("@")
-  )
-}
-
-function rewriteLocalRegistryDependencies(
-  item: RegistryItem,
-  localItemNames: Set<string>,
-  origin: string
-) {
-  if (!item.registryDependencies) return item
-
-  return {
-    ...item,
-    registryDependencies: item.registryDependencies.map((dependency) =>
-      !isExternalDependency(dependency) && localItemNames.has(dependency)
-        ? `${origin}/r/${dependency}.json`
-        : dependency
-    ),
-  }
-}
 
 function parseRegistryPath(pathSegments: string[]) {
   if (pathSegments.length !== 1) return null
@@ -91,7 +57,10 @@ function getRegistryDirectories() {
 async function readRegistryJson<T>(fileName: string): Promise<T> {
   for (const registryDirectory of getRegistryDirectories()) {
     try {
-      const file = await readFile(path.join(registryDirectory, fileName), "utf8")
+      const file = await readFile(
+        path.join(registryDirectory, fileName),
+        "utf8"
+      )
 
       return JSON.parse(file) as T
     } catch (error) {
@@ -116,7 +85,7 @@ function loadBuiltRegistryJson<T>(fileName: string) {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   context: {
     params: Promise<{ path?: string[] }>
   }
@@ -135,17 +104,8 @@ export async function GET(
       )
     }
 
-    const [registry, item] = await Promise.all([
-      loadBuiltRegistryJson<RegistryCatalog>("registry.json"),
-      loadBuiltRegistryJson<RegistryItem>(`${parsedPath.name}.json`),
-    ])
-
     return Response.json(
-      rewriteLocalRegistryDependencies(
-        item,
-        getRegistryItemNames(registry),
-        new URL(request.url).origin
-      )
+      await loadBuiltRegistryJson<unknown>(`${parsedPath.name}.json`)
     )
   } catch (error) {
     if (error instanceof RegistryJsonNotFoundError) {
