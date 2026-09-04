@@ -21,6 +21,16 @@ function PanelBorder({ side }: { side: "left" | "right" }) {
   )
 }
 
+function SidebarPanel({
+  defaultSize,
+  ...props
+}: React.ComponentProps<typeof ResizablePanel>) {
+  // Keep the registration size stable until the panel is mounted again.
+  const [initialSize] = React.useState(defaultSize)
+
+  return <ResizablePanel {...props} defaultSize={initialSize} />
+}
+
 export function PdfEditorWorkspace({
   children,
   left,
@@ -48,7 +58,7 @@ export function PdfEditorWorkspace({
       setRightSize(rightElement.current.getBoundingClientRect().width)
   }
   const sidebar = (side: "left" | "right", content: React.ReactNode) => (
-    <ResizablePanel
+    <SidebarPanel
       id={side === "left" ? leftId : rightId}
       defaultSize={side === "left" ? leftSize : rightSize}
       minSize={side === "left" ? "14rem" : "21rem"}
@@ -63,7 +73,7 @@ export function PdfEditorWorkspace({
       >
         {content}
       </aside>
-    </ResizablePanel>
+    </SidebarPanel>
   )
 
   return (
