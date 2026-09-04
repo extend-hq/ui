@@ -53,6 +53,17 @@ const PdfEditorSourceCode = dynamic(
   }
 )
 
+const PdfEditorDependencySourceCode = dynamic(
+  () =>
+    import("@/components/pdf-editor-dependency-source-code").then(
+      (mod) => mod.PdfEditorDependencySourceCode
+    ),
+  {
+    ssr: false,
+    loading: () => <PdfEditorSourceShell />,
+  }
+)
+
 function PdfEditorSourceShell() {
   return (
     <div
@@ -104,7 +115,11 @@ export function PdfEditorBlock({
   return <PdfEditorPreview heightClassName={heightClassName} />
 }
 
-export function PdfEditorSource() {
+export function PdfEditorSource({
+  sharedDependencies = false,
+}: {
+  sharedDependencies?: boolean
+}) {
   const [hasIntersected, setShouldLoadSource] = React.useState(false)
   const isMounted = useMounted()
   const shouldLoadSource =
@@ -132,9 +147,13 @@ export function PdfEditorSource() {
     return () => observer.disconnect()
   }, [])
 
+  const SourceCode = sharedDependencies
+    ? PdfEditorDependencySourceCode
+    : PdfEditorSourceCode
+
   return (
     <div ref={containerRef}>
-      {shouldLoadSource ? <PdfEditorSourceCode /> : <PdfEditorSourceShell />}
+      {shouldLoadSource ? <SourceCode /> : <PdfEditorSourceShell />}
     </div>
   )
 }

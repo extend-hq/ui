@@ -56,14 +56,19 @@ so make sure that library's package is installed. When copying the source
 manually, replace each `IconPlaceholder` element with the icon named by the
 prop for your library.
 
-<Step>
-  Install the Color Picker and Document Viewer Sidebar components because the
-  editor reuses them for the style panel and thumbnail rail.
-</Step>
+<Step>Copy the shared component dependencies into your project.</Step>
+
+The editor uses Color Picker, Document Viewer Sidebar, and Resizable for its
+style controls, thumbnail rail, and resizable panels. Copy these components and
+their supporting utilities below.
+
+Install the Resizable package dependency:
 
 ```bash
-npx shadcn@latest add @extend/color-picker @extend/document-viewer-sidebar resizable
+npm install react-resizable-panels@^4.11.2
 ```
+
+<PdfEditorSource sharedDependencies />
 
 <Step>Copy and paste the following files into your project.</Step>
 
