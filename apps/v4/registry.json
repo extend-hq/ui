@@ -190,7 +190,7 @@
         {
           "path": "lib/color-picker-utils.ts",
           "type": "registry:lib",
-          "target": "@/lib/color-picker-utils.ts"
+          "target": "@lib/color-picker-utils.ts"
         }
       ]
     },

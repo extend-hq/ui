@@ -507,14 +507,25 @@ function CopyColorButton({
           />
         }
       >
-        <IconPlaceholder
-          lucide={copied ? "Check" : "Copy"}
-          tabler={copied ? "IconCheck" : "IconCopy"}
-          hugeicons={copied ? "Tick02Icon" : "Copy01Icon"}
-          phosphor={copied ? "CheckIcon" : "CopyIcon"}
-          remixicon={copied ? "RiCheckLine" : "RiFileCopyLine"}
-          className="size-4"
-        />
+        {copied ? (
+          <IconPlaceholder
+            lucide="Check"
+            tabler="IconCheck"
+            hugeicons="Tick02Icon"
+            phosphor="CheckIcon"
+            remixicon="RiCheckLine"
+            className="size-4"
+          />
+        ) : (
+          <IconPlaceholder
+            lucide="Copy"
+            tabler="IconCopy"
+            hugeicons="Copy01Icon"
+            phosphor="CopyIcon"
+            remixicon="RiFileCopyLine"
+            className="size-4"
+          />
+        )}
       </TooltipTrigger>
       <TooltipContent side="top">{copied ? "Copied" : "Copy"}</TooltipContent>
     </Tooltip>
