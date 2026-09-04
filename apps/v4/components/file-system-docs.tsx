@@ -357,8 +357,8 @@ export function useFileSystemDemoItems() {
     [thumbnails]
   )
 
-  // PDF previews render on demand; data URLs are memoized per page so
-  // revisiting a page is instant without shipping generated thumbnail assets.
+  // Document previews render on demand and are memoized per page so revisiting
+  // a page is instant without shipping generated thumbnail assets.
   const lazyPageCacheRef = React.useRef(
     new Map<string, Promise<string | null>>()
   )
@@ -368,13 +368,35 @@ export function useFileSystemDemoItems() {
         (demoSource) => demoSource.path === file.path
       )
 
-      if (source?.thumbnail !== "pdf") return Promise.resolve(null)
+      if (!source) return Promise.resolve(null)
 
       const cacheKey = `${source.url}#${pageIndex}`
       let pagePromise = lazyPageCacheRef.current.get(cacheKey)
 
       if (!pagePromise) {
-        pagePromise = renderPdfPageThumbnail(source.url, pageIndex)
+        if (source.thumbnail === "pdf") {
+          pagePromise = renderPdfPageThumbnail(source.url, pageIndex)
+        } else if (source.thumbnail === "docx") {
+          pagePromise = import("@/components/file-system-docx-thumbnails").then(
+            (module) =>
+              module
+                .renderDocxThumbnailUrl({
+                  fileName: source.path.split("/").pop() ?? source.path,
+                  pageIndex,
+                  url: source.url,
+                })
+                .then((thumbnail) => thumbnail?.url ?? null)
+          )
+        } else if (source.thumbnail === "pptx") {
+          pagePromise = import("@/components/file-system-pptx-thumbnails").then(
+            (module) =>
+              module
+                .renderPptxThumbnailUrl({ pageIndex, url: source.url })
+                .then((thumbnail) => thumbnail?.url ?? null)
+          )
+        } else {
+          return Promise.resolve(null)
+        }
         lazyPageCacheRef.current.set(cacheKey, pagePromise)
       }
       return pagePromise
@@ -395,14 +417,9 @@ export function useFileSystemDemoItems() {
           }
         />
       ))}
-      {DEMO_SOURCES.filter((source) => {
-        const generated = thumbnails[source.path]
-
-        return (
-          source.thumbnail === "docx" &&
-          (!generated || generated.urls.length < generated.pageCount)
-        )
-      }).map((source) => (
+      {DEMO_SOURCES.filter(
+        (source) => source.thumbnail === "docx" && !thumbnails[source.path]
+      ).map((source) => (
         <DocxThumbnailUrlGenerator
           key={source.path}
           fileName={source.path.split("/").pop() ?? source.path}
@@ -424,14 +441,9 @@ export function useFileSystemDemoItems() {
           }
         />
       ))}
-      {DEMO_SOURCES.filter((source) => {
-        const generated = thumbnails[source.path]
-
-        return (
-          source.thumbnail === "pptx" &&
-          (!generated || generated.urls.length < generated.pageCount)
-        )
-      }).map((source) => (
+      {DEMO_SOURCES.filter(
+        (source) => source.thumbnail === "pptx" && !thumbnails[source.path]
+      ).map((source) => (
         <PptxThumbnailUrlGenerator
           key={source.path}
           url={source.url}

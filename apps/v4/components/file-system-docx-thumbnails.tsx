@@ -2,42 +2,92 @@
 
 import * as React from "react"
 import {
-  DocxEditorViewer,
-  useDocxEditor,
-  useDocxViewerThumbnails,
-  type DocxEditorController,
+  createDocxThumbnailRenderer,
+  parseDocxForViewer,
+  type DocxThumbnailRenderer,
 } from "@extend-ai/react-docx"
 
-const DOCX_MIME_TYPE =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 const THUMBNAIL_WIDTH = 360
 
-// The docx canvas reports "ready" once for the blank pre-import page; only
-// capture once actual content has been painted.
-function canvasHasInk(canvas: HTMLCanvasElement) {
-  const sampleSize = 32
-  const sample = document.createElement("canvas")
+type DocxThumbnailSource = {
+  pageCount: number
+  renderer: DocxThumbnailRenderer
+}
 
-  sample.width = sampleSize
-  sample.height = sampleSize
+type DocxThumbnailResult = {
+  pageCount: number
+  url: string
+}
 
-  const context = sample.getContext("2d")
+const sourceCache = new Map<string, Promise<DocxThumbnailSource>>()
+const thumbnailCache = new Map<string, Promise<DocxThumbnailResult | null>>()
 
-  if (!context) return false
+function getDocxThumbnailSource(url: string, fileName: string) {
+  let sourcePromise = sourceCache.get(url)
 
-  context.drawImage(canvas, 0, 0, sampleSize, sampleSize)
+  if (!sourcePromise) {
+    sourcePromise = fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch document (${response.status})`)
+        }
+        return response.blob()
+      })
+      .then((blob) =>
+        parseDocxForViewer(blob, {
+          fileName,
+          loadEmbeddedFonts: false,
+        })
+      )
+      .then((document) => {
+        const renderer = createDocxThumbnailRenderer(document, {
+          pixelRatio: 1,
+          resolution: {
+            maxHeight: THUMBNAIL_WIDTH * 1.35,
+            maxWidth: THUMBNAIL_WIDTH,
+          },
+          scheduling: "immediate",
+        })
 
-  const { data } = context.getImageData(0, 0, sampleSize, sampleSize)
-
-  for (let index = 0; index < data.length; index += 4) {
-    if (
-      data[index + 3] > 0 &&
-      (data[index] < 240 || data[index + 1] < 240 || data[index + 2] < 240)
-    ) {
-      return true
-    }
+        return { pageCount: renderer.pageCount, renderer }
+      })
+    sourceCache.set(url, sourcePromise)
   }
-  return false
+  return sourcePromise
+}
+
+export function renderDocxThumbnailUrl({
+  fileName,
+  pageIndex,
+  url,
+}: {
+  fileName: string
+  pageIndex: number
+  url: string
+}) {
+  const cacheKey = `${url}#${pageIndex}`
+  let thumbnailPromise = thumbnailCache.get(cacheKey)
+
+  if (!thumbnailPromise) {
+    thumbnailPromise = getDocxThumbnailSource(url, fileName).then(
+      async ({ pageCount, renderer }) => {
+        if (pageIndex < 0 || pageIndex >= pageCount) return null
+
+        const result = await renderer.renderPage(pageIndex, {
+          maxHeight: THUMBNAIL_WIDTH * 1.35,
+          maxWidth: THUMBNAIL_WIDTH,
+          output: "blob",
+          pixelRatio: 1,
+          scheduling: "immediate",
+        })
+
+        if (!result.blob) return null
+        return { pageCount, url: URL.createObjectURL(result.blob) }
+      }
+    )
+    thumbnailCache.set(cacheKey, thumbnailPromise)
+  }
+  return thumbnailPromise
 }
 
 export function DocxThumbnailUrlGenerator({
@@ -46,70 +96,16 @@ export function DocxThumbnailUrlGenerator({
   url,
 }: {
   fileName: string
-  onUrls: (dataUrls: string[], pageCount: number) => void
+  onUrls: (urls: string[], pageCount: number) => void
   url: string
 }) {
-  const editor = useDocxEditor({
-    initialDocumentTheme: "light",
-    initialFileName: fileName,
-  })
-  const { importDocxFile } = editor
-  const [isImported, setIsImported] = React.useState(false)
-  const [reportedPageCount, setReportedPageCount] = React.useState(0)
-  const reportedPageCountRef = React.useRef(0)
-  const handlePageCountChange = React.useCallback((pageCount: number) => {
-    const nextPageCount = Math.max(1, Math.round(pageCount || 1))
-
-    reportedPageCountRef.current = nextPageCount
-    setReportedPageCount(nextPageCount)
-  }, [])
-  const thumbnailEditor = React.useMemo<DocxEditorController>(
-    () => ({
-      ...editor,
-      totalPages: Math.max(editor.totalPages, reportedPageCount, 1),
-    }),
-    [editor, reportedPageCount]
-  )
-  const { thumbnails } = useDocxViewerThumbnails(
-    thumbnailEditor,
-    React.useMemo(
-      () => ({
-        pixelRatio: 2,
-        resolution: {
-          maxHeight: THUMBNAIL_WIDTH * 1.35,
-          maxWidth: THUMBNAIL_WIDTH,
-        },
-      }),
-      []
-    )
-  )
-  const isCoverCapturedRef = React.useRef(false)
-  const isCoverCapturingRef = React.useRef(false)
-  const isCapturedRef = React.useRef(false)
-  const isCapturingRef = React.useRef(false)
-
   React.useEffect(() => {
     let isCurrent = true
 
-    void fetch(url)
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch ${fileName} (${response.status})`)
-        }
-
-        const blob = await response.blob()
-
-        return new File([blob], fileName, {
-          type: blob.type || DOCX_MIME_TYPE,
-        })
-      })
-      .then((docxFile) => {
-        if (isCurrent) {
-          return importDocxFile(docxFile).then(() => {
-            if (isCurrent) {
-              setIsImported(true)
-            }
-          })
+    void renderDocxThumbnailUrl({ fileName, pageIndex: 0, url })
+      .then((thumbnail) => {
+        if (isCurrent && thumbnail) {
+          onUrls([thumbnail.url], thumbnail.pageCount)
         }
       })
       .catch(() => {})
@@ -117,98 +113,7 @@ export function DocxThumbnailUrlGenerator({
     return () => {
       isCurrent = false
     }
-  }, [fileName, importDocxFile, url])
+  }, [fileName, onUrls, url])
 
-  React.useEffect(() => {
-    const coverThumbnail = thumbnails[0]
-
-    if (!isImported || reportedPageCount === 0 || !coverThumbnail?.isMounted) {
-      return
-    }
-    if (isCoverCapturedRef.current || isCoverCapturingRef.current) return
-
-    isCoverCapturingRef.current = true
-
-    const canvas = document.createElement("canvas")
-
-    canvas.width = coverThumbnail.pixelWidthPx
-    canvas.height = coverThumbnail.pixelHeightPx
-
-    void coverThumbnail
-      .renderToCanvas(canvas)
-      .then(() => {
-        if (isCapturedRef.current || isCoverCapturedRef.current) return
-        if (reportedPageCountRef.current !== reportedPageCount) return
-        if (!canvasHasInk(canvas)) return
-
-        isCoverCapturedRef.current = true
-        onUrls([canvas.toDataURL("image/png")], reportedPageCount)
-      })
-      .catch(() => {})
-      .finally(() => {
-        isCoverCapturingRef.current = false
-      })
-  }, [isImported, onUrls, reportedPageCount, thumbnails])
-
-  React.useEffect(() => {
-    if (!isImported || reportedPageCount === 0) return
-    if (isCapturedRef.current || isCapturingRef.current) return
-    if (thumbnails.length < reportedPageCount) return
-    if (thumbnails.some((thumbnail) => !thumbnail.isMounted)) return
-
-    // Guarded by a ref instead of effect cleanup: each render call updates
-    // the hook's thumbnail state, which would cancel an abortable effect
-    // before the capture ever finished.
-    isCapturingRef.current = true
-
-    void Promise.all(
-      thumbnails.map(async (thumbnail) => {
-        const canvas = document.createElement("canvas")
-
-        canvas.width = thumbnail.pixelWidthPx
-        canvas.height = thumbnail.pixelHeightPx
-        await thumbnail.renderToCanvas(canvas)
-        return canvas
-      })
-    )
-      .then((canvases) => {
-        isCapturingRef.current = false
-
-        if (isCapturedRef.current) return
-        // Pagination moved on while the capture was in flight — drop the
-        // stale snapshot and let the next reported count retry.
-        if (reportedPageCountRef.current !== reportedPageCount) return
-        // The first paint can race the imported content; skip blank frames
-        // so the next thumbnail state change retries.
-        if (!canvases[0] || !canvasHasInk(canvases[0])) return
-
-        isCapturedRef.current = true
-        onUrls(
-          canvases.map((canvas) => canvas.toDataURL("image/png")),
-          canvases.length
-        )
-      })
-      .catch(() => {
-        isCapturingRef.current = false
-      })
-  }, [isImported, onUrls, reportedPageCount, thumbnails])
-
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none fixed top-0 left-0 -z-10 h-[1056px] w-[816px] overflow-hidden bg-white opacity-0 [contain:layout_paint]"
-    >
-      <div className="w-[816px]">
-        <DocxEditorViewer
-          editor={editor}
-          mode="read-only"
-          pageBackgroundColor="#ffffff"
-          pageGapBackgroundColor="transparent"
-          pageVirtualization={{ enabled: false }}
-          deferInitialPaginationPaint={false}
-          onPageCountChange={handlePageCountChange}
-        />
-      </div>
-    </div>
-  )
+  return null
 }
