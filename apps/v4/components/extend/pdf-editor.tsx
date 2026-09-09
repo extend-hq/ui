@@ -3982,9 +3982,7 @@ function PdfEditorDocumentLoader({
     )
   }, [documentManager, source])
 
-  const fileName = fileNameOverride
-    ? getPdfFileName(fileNameOverride)
-    : (source?.name ?? getPdfFileName(undefined))
+  const fileName = source?.name ?? getPdfFileName(fileNameOverride)
   const isRequestedDocument =
     requestedDocument?.sourceKey === source?.key &&
     requestedDocument?.documentId === activeDocumentId
