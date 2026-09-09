@@ -57,7 +57,7 @@
     "@embedpdf/utils": "2.15.0",
     "@extend-ai/react-docx": "0.9.1",
     "@extend-ai/react-pptx": "0.2.0",
-    "@extend-ai/react-xlsx": "0.16.1",
+    "@extend-ai/react-xlsx": "0.16.4",
     "@glideapps/glide-data-grid": "6.0.4-alpha24",
     "@hugeicons/core-free-icons": "^4.2.0",
     "@hugeicons/react": "^1.1.6",

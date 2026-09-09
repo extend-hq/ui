@@ -130,8 +130,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-xlsx':
-        specifier: 0.16.1
-        version: 0.16.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.16.4
+        version: 0.16.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@glideapps/glide-data-grid':
         specifier: 6.0.4-alpha24
         version: 6.0.4-alpha24(lodash@4.18.1)(marked@16.4.2)(react-dom@19.2.3(react@19.2.3))(react-responsive-carousel@3.2.23)(react@19.2.3)
@@ -584,8 +584,8 @@ packages:
     resolution: {integrity: sha512-kwQB5KcAegxw/+NGUgXAo5ovyOSjlMhoXSSnSEpDhoHJwzMcMO0HE1U0VCYZ7jbAeCMGamed9XdWzOA5ixtTNg==}
     hasBin: true
 
-  '@dukelib/sheets-wasm@0.1.21':
-    resolution: {integrity: sha512-YJpLUo/K7N9iGZv+A74D8o6XlT1VjMdlq9i/pIj/DwAO9/7jqppaV60VdL0TgJ0UzUlbhChWR+qQGNTmESINlw==}
+  '@dukelib/sheets-wasm@0.1.23':
+    resolution: {integrity: sha512-E/vHXR2I/EodNCpyVcFq0p8/u5qxmKxatUZvB7bsFfghUPQ2GMxg81MBFjOEQtLKXnzR7xjXOyzPzBTLbv2e1g==}
 
   '@ecies/ciphers@0.2.6':
     resolution: {integrity: sha512-patgsRPKGkhhoBjETV4XxD0En4ui5fbX0hzayqI3M8tvNMGUoUvmyYAIWwlxBc1KX5cturfqByYdj5bYGRpN9g==}
@@ -1478,8 +1478,8 @@ packages:
       react: '>=18.2 <20'
       react-dom: '>=18.2 <20'
 
-  '@extend-ai/react-xlsx@0.16.1':
-    resolution: {integrity: sha512-yDaBv4YzpDi91OH16oN8aBxO+JySyn1cOPdA7cus1hjDSIjU4ddCyKSPDoMG5CoFdFZQNNovjG6zjpbZQ1bfow==}
+  '@extend-ai/react-xlsx@0.16.4':
+    resolution: {integrity: sha512-j8QrsBl3eRvzTDm9ERg49y1zDER15cjYngtFQ5fy5Hu6aCPkGMq2ELFB9WYghQ93V2G5kB5q264Fe+eauUnxBw==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -6907,7 +6907,7 @@ snapshots:
       which: 4.0.0
       yocto-spinner: 1.2.0
 
-  '@dukelib/sheets-wasm@0.1.21': {}
+  '@dukelib/sheets-wasm@0.1.23': {}
 
   '@ecies/ciphers@0.2.6(@noble/ciphers@1.3.0)':
     dependencies:
@@ -7589,9 +7589,9 @@ snapshots:
       regl: 2.1.1
       topojson-client: 3.1.0
 
-  '@extend-ai/react-xlsx@0.16.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-xlsx@0.16.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
-      '@dukelib/sheets-wasm': 0.1.21
+      '@dukelib/sheets-wasm': 0.1.23
       '@tanstack/react-virtual': 3.13.26(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       d3-geo: 3.1.1
       d3-hierarchy: 3.1.2
