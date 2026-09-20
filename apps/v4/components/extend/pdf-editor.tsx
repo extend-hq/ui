@@ -128,6 +128,7 @@ import {
 } from "@embedpdf/plugin-zoom/react"
 
 import { loadSharedPdfEngine } from "@/lib/pdf-thumbnail-utils"
+import { whenPdfViewportReady } from "@/lib/pdf-viewport-ready"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -2033,6 +2034,7 @@ function PdfEditorInner({
   const { state: scrollState, provides: scroll } = useScroll(documentId)
   const { provides: scrollCapability } = useScrollCapability()
   const { state: zoomState, provides: zoom } = useZoom(documentId)
+  const { provides: viewport } = useViewportCapability()
   const { provides: rotate } = useRotate(documentId)
   const { spreadMode, provides: spread } = useSpread(documentId)
   const { provides: pan, isPanning } = usePan(documentId)
@@ -2305,17 +2307,24 @@ function PdfEditorInner({
     })
   }, [notify, redaction])
 
-  /* ---- initial zoom (numeric defaults never lift the viewport gate) ----- */
-
+  // A loaded PDF can precede the first nonzero viewport measurement (for
+  // example, on a fast route remount). EmbedPDF ignores zoom requests while
+  // either dimension is zero, and only retries mode-based zoom automatically.
+  // Wait for a usable viewport before marking initial zoom complete; otherwise
+  // a numeric default leaves the viewport gate closed and the PDF blank.
   const initialZoomDocumentRef = React.useRef<string | null>(null)
 
   React.useEffect(() => {
-    if (!pdfDocument || !zoom) return
+    if (!pdfDocument || !viewport || !zoom) return
     if (initialZoomDocumentRef.current === documentId) return
 
-    initialZoomDocumentRef.current = documentId
-    zoom.requestZoom(toZoomLevel(defaultZoom))
-  }, [defaultZoom, documentId, pdfDocument, zoom])
+    return whenPdfViewportReady(viewport, documentId, () => {
+      if (initialZoomDocumentRef.current === documentId) return
+
+      initialZoomDocumentRef.current = documentId
+      zoom.requestZoom(toZoomLevel(defaultZoom))
+    })
+  }, [defaultZoom, documentId, pdfDocument, viewport, zoom])
 
   /* ---- document actions ------------------------------------------------- */
 
