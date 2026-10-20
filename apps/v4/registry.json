@@ -639,6 +639,11 @@
           "path": "lib/pdf-thumbnail-utils.ts",
           "type": "registry:lib",
           "target": "@lib/pdf-thumbnail-utils.ts"
+        },
+        {
+          "path": "lib/pdf-viewport-ready.ts",
+          "type": "registry:lib",
+          "target": "@lib/pdf-viewport-ready.ts"
         }
       ]
     },
@@ -723,6 +728,11 @@
           "path": "lib/pdf-thumbnail-utils.ts",
           "type": "registry:lib",
           "target": "@lib/pdf-thumbnail-utils.ts"
+        },
+        {
+          "path": "lib/pdf-viewport-ready.ts",
+          "type": "registry:lib",
+          "target": "@lib/pdf-viewport-ready.ts"
         }
       ]
     },
