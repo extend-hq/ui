@@ -65,6 +65,7 @@ import {
 import { flushSync } from "react-dom"
 
 import { loadSharedPdfEngine } from "@/lib/pdf-thumbnail-utils"
+import { whenPdfViewportReady } from "@/lib/pdf-viewport-ready"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -2269,6 +2270,7 @@ function PDFViewerInner({
   const { registry } = useRegistry()
   const { state: scrollState, provides: scroll } = useScroll(documentId)
   const { state: zoomState, provides: zoom } = useZoom(documentId)
+  const { provides: viewport } = useViewportCapability()
   const { provides: thumbnails } = useThumbnailCapability()
   const { plugin: thumbnailPlugin } = useThumbnailPlugin()
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
@@ -2373,17 +2375,23 @@ function PDFViewerInner({
     return () => window.cancelAnimationFrame(frame)
   }, [activePage, documentId, thumbnailSidebarVisible, thumbnails])
 
-  // The zoom plugin only releases its viewport gate for mode-based zoom
-  // levels (automatic/fit); with a numeric default the gate would never
-  // lift, so apply the initial zoom explicitly once the document loads.
+  // A loaded PDF can precede the first nonzero viewport measurement (for
+  // example, on a fast route remount). EmbedPDF ignores zoom requests while
+  // either dimension is zero, and only retries mode-based zoom automatically.
+  // Wait for a usable viewport before marking initial zoom complete; otherwise
+  // a numeric default leaves the viewport gate closed and the PDF blank.
   const initialZoomDocumentRef = React.useRef<string | null>(null)
   React.useEffect(() => {
-    if (!pdfDocument || !zoom) return
+    if (!pdfDocument || !viewport || !zoom) return
     if (initialZoomDocumentRef.current === documentId) return
 
-    initialZoomDocumentRef.current = documentId
-    zoom.requestZoom(toZoomLevel(defaultZoom))
-  }, [defaultZoom, documentId, pdfDocument, zoom])
+    return whenPdfViewportReady(viewport, documentId, () => {
+      if (initialZoomDocumentRef.current === documentId) return
+
+      initialZoomDocumentRef.current = documentId
+      zoom.requestZoom(toZoomLevel(defaultZoom))
+    })
+  }, [defaultZoom, documentId, pdfDocument, viewport, zoom])
 
   const scrollToPage = React.useCallback(
     (pageNumber: number, options?: ScrollIntoViewOptions) => {
