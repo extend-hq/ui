@@ -9,9 +9,9 @@ overrides:
   '@types/react-dom': 19.2.2
 
 patchedDependencies:
-  '@extend-ai/react-docx@0.12.0':
-    hash: 6jpfdezkpalcaczkxwnedel2hi
-    path: patches/@extend-ai__react-docx@0.12.0.patch
+  '@extend-ai/react-docx@0.13.4':
+    hash: 4ln4m3ssclybpuz52ehchmyjo4
+    path: patches/@extend-ai__react-docx@0.13.4.patch
 
 importers:
 
@@ -129,8 +129,8 @@ importers:
         specifier: 2.15.0
         version: 2.15.0(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2))
       '@extend-ai/react-docx':
-        specifier: 0.12.0
-        version: 0.12.0(patch_hash=6jpfdezkpalcaczkxwnedel2hi)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.13.4
+        version: 0.13.4(patch_hash=4ln4m3ssclybpuz52ehchmyjo4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-pptx':
         specifier: 0.2.1
         version: 0.2.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1484,8 +1484,8 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@extend-ai/react-docx@0.12.0':
-    resolution: {integrity: sha512-PbapIQrN2naad7D6yHJV7v7UDcvfupfisHJMU5Mo/ZSQpTPGr4kIWuK09nRmaSDl7fdfbz+z1mj/SBdC6GlBMA==}
+  '@extend-ai/react-docx@0.13.4':
+    resolution: {integrity: sha512-TbTeAZ7oowxwoc/WC27SJgRCs7VSw3PefcHnC+V1e5WOp8iRzE1C0aDl2vyZfBBDIH6ggjKCD9QbbNrFiqDyKA==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -7648,7 +7648,7 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@extend-ai/react-docx@0.12.0(patch_hash=6jpfdezkpalcaczkxwnedel2hi)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-docx@0.13.4(patch_hash=4ln4m3ssclybpuz52ehchmyjo4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@chenglou/pretext': 0.0.8
       csstype: 3.2.3

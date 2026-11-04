@@ -16,9 +16,13 @@ import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-
 import { PDFViewer, type PDFViewerHandle } from "@/components/extend/pdf-viewer"
 
 export function OcrBlocksBlock({
+  autoSaveId = "pdf-block-ocr",
+  defaultViewerZoom = 1,
   file = PDF_URL,
   output = ATTENTION_OCR_OUTPUT,
 }: {
+  autoSaveId?: string
+  defaultViewerZoom?: number
   file?: string
   output?: ParsedOcrOutput
 }) {
@@ -82,12 +86,12 @@ export function OcrBlocksBlock({
 
   return (
     <PdfBlockResizableShell
-      autoSaveId="pdf-block-ocr"
+      autoSaveId={autoSaveId}
       left={
         <PDFViewer
           ref={viewerRef}
           src={file}
-          defaultZoom={1}
+          defaultZoom={defaultViewerZoom}
           renderPageOverlay={renderPageOverlay}
         />
       }

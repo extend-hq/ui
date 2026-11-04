@@ -271,6 +271,7 @@ const CODE_HIGHLIGHTER_OPTIONS = {
 } satisfies WorkerInitializationRenderOptions
 
 const CODE_WORKER_POOL_OPTIONS = {
+  poolSize: 2,
   workerFactory: () =>
     new Worker(new URL("@pierre/diffs/worker/worker.js", import.meta.url), {
       type: "module",
@@ -2420,7 +2421,7 @@ export function HumanReviewPanel({
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="json" keepMounted className="min-h-0 flex-1">
+        <TabsContent value="json" className="min-h-0 flex-1">
           {showExpected ? (
             <JsonDiffView
               actual={actualValues}

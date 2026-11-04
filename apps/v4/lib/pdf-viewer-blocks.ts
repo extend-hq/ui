@@ -101,6 +101,16 @@ export const PDF_VIEWER_BLOCKS = [
     viewHref: "/view/blocks/docx-editor-block",
     previewHeightClassName: "h-[720px]",
   },
+  {
+    id: "docx-layout-blocks",
+    title: "DOCX Layout Blocks",
+    description:
+      "Inspect parsed layout blocks in the read-only DOCX viewer and select a block to reveal its source.",
+    command: getRegistryAddCommand("docx-layout-blocks"),
+    docsHref: "/docs/components/docx-viewer#layout-blocks",
+    viewHref: "/view/blocks/docx-layout-blocks",
+    previewHeightClassName: "h-[720px]",
+  },
 ] as const satisfies readonly PdfViewerBlockConfig[]
 
 export type PdfViewerBlockId = (typeof PDF_VIEWER_BLOCKS)[number]["id"]

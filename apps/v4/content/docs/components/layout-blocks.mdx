@@ -6,7 +6,7 @@ component: true
 
 Layout Blocks help users debug and review the text layer behind scanned or image-heavy PDFs. They should show document structure without replacing the original page image.
 
-See it composed with the PDF Viewer in the [Layout Blocks block](/blocks#layout-blocks).
+The [PDF Layout Blocks](/blocks#layout-blocks) and [DOCX Layout Blocks](/blocks#docx-layout-blocks) previews share the same panel, cards, and type badges.
 
 <OcrBlocksDemo />
 
@@ -46,7 +46,11 @@ so make sure that library's package is installed. When copying the source
 manually, replace each `IconPlaceholder` element with the icon named by the
 prop for your library.
 
-<Step>Copy and paste the following code into your project.</Step>
+<Step>Install the shared panel, then copy the PDF layout component.</Step>
+
+```bash
+npx shadcn@latest add @extend/layout-blocks-panel
+```
 
 <OcrBlocksSource />
 

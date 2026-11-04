@@ -1097,8 +1097,17 @@ function DocxThumbnailSidebarContent({
   )
 }
 
+export type DocxViewerLayoutProps = {
+  children: React.ReactNode
+  model?: DocxEditorController["model"]
+  viewportRef: React.RefObject<HTMLDivElement | null>
+  isLoading: boolean
+  loadError?: string
+}
+
 export function DocxViewerPreview({
   className,
+  layout: Layout,
   defaultZoom = DEFAULT_ZOOM,
   fileName,
   isDark,
@@ -1110,6 +1119,7 @@ export function DocxViewerPreview({
   toolbarActions,
 }: {
   className?: string
+  layout?: React.ComponentType<DocxViewerLayoutProps>
   defaultZoom?: ViewerZoomLevel
   fileName?: string
   isDark: boolean
@@ -1122,6 +1132,7 @@ export function DocxViewerPreview({
 }) {
   return (
     <DocxViewerContent
+      layout={Layout}
       className={className}
       defaultZoom={defaultZoom}
       effectiveIsDark={isDark}
@@ -1139,6 +1150,7 @@ export function DocxViewerPreview({
 
 function DocxViewerContent({
   className,
+  layout: Layout,
   defaultZoom,
   effectiveIsDark,
   fileName,
@@ -1151,6 +1163,7 @@ function DocxViewerContent({
   url,
 }: {
   className?: string
+  layout?: React.ComponentType<DocxViewerLayoutProps>
   defaultZoom?: ViewerZoomLevel
   effectiveIsDark: boolean
   fileName?: string
@@ -1490,7 +1503,7 @@ function DocxViewerContent({
     })
   }
 
-  return (
+  const content = (
     <div
       className={cn(
         "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
@@ -1629,5 +1642,18 @@ function DocxViewerContent({
         </ScrollArea>
       </div>
     </div>
+  )
+
+  return Layout ? (
+    <Layout
+      model={controlsDisabled ? undefined : editor.model}
+      viewportRef={viewportRef}
+      isLoading={isLoadingDocument}
+      loadError={loadError}
+    >
+      {content}
+    </Layout>
+  ) : (
+    content
   )
 }

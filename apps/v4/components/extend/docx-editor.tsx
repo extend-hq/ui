@@ -1867,6 +1867,79 @@ function DocxEditorToolbar({
   )
 }
 
+function DocxEditorThumbnails({
+  editor,
+  pageCount,
+  activePage,
+  displayFileName,
+  scrollToPage,
+}: {
+  editor: DocxEditorController
+  pageCount: number
+  activePage: number
+  displayFileName: string
+  scrollToPage: (page: number) => void
+}) {
+  const thumbnailEditor = React.useMemo<DocxEditorController>(
+    () => ({
+      ...editor,
+      totalPages: Math.max(editor.totalPages, pageCount),
+    }),
+    [editor, pageCount]
+  )
+  const thumbnailOptions = React.useMemo(
+    () => ({
+      pixelRatio: 2,
+      resolution: {
+        maxHeight: DOCX_THUMBNAIL_WIDTH * 1.35,
+        maxWidth: DOCX_THUMBNAIL_WIDTH,
+      },
+    }),
+    []
+  )
+  const { thumbnails } = useDocxViewerThumbnails(
+    thumbnailEditor,
+    thumbnailOptions
+  )
+  return (
+    <div className="flex flex-col items-center gap-3">
+      {thumbnails.slice(0, pageCount).map((thumbnail) => (
+        <Button
+          key={thumbnail.pageIndex}
+          type="button"
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "!h-auto w-full flex-col items-center gap-2 p-2 text-xs shadow-none hover:bg-sidebar-accent",
+            thumbnail.pageNumber === activePage &&
+              "bg-sidebar-accent text-foreground",
+            thumbnail.pageNumber !== activePage && "text-muted-foreground"
+          )}
+          onFocus={(event) => event.currentTarget.blur()}
+          onClick={() => scrollToPage(thumbnail.pageNumber)}
+        >
+          <DocxSidebarThumbnail
+            canvasRef={thumbnail.canvasRef}
+            displayFileName={displayFileName}
+            hasError={thumbnail.status === "error"}
+            isActive={thumbnail.pageNumber === activePage}
+            isLoading={
+              !thumbnail.isMounted &&
+              thumbnail.status !== "ready" &&
+              thumbnail.status !== "error"
+            }
+            pageNumber={thumbnail.pageNumber}
+            pixelHeightPx={thumbnail.pixelHeightPx}
+            pixelWidthPx={thumbnail.pixelWidthPx}
+            previewAspectRatio={thumbnail.aspectRatio}
+          />
+          {thumbnail.pageNumber}
+        </Button>
+      ))}
+    </div>
+  )
+}
+
 export function DocxEditorPreview({
   className,
   defaultZoomScale = DOCX_EDITOR_DEFAULT_ZOOM_SCALE,
@@ -1954,27 +2027,6 @@ function DocxEditorContent({
   const { layout: pageLayout } = useDocxPageLayout(editor)
   const { importDocxFile, setDocumentTheme, status } = editor
   const [reportedPageCount, setReportedPageCount] = React.useState(0)
-  const thumbnailEditor = React.useMemo<DocxEditorController>(
-    () => ({
-      ...editor,
-      totalPages: Math.max(editor.totalPages, reportedPageCount),
-    }),
-    [editor, reportedPageCount]
-  )
-  const thumbnailOptions = React.useMemo(
-    () => ({
-      pixelRatio: 2,
-      resolution: {
-        maxHeight: DOCX_THUMBNAIL_WIDTH * 1.35,
-        maxWidth: DOCX_THUMBNAIL_WIDTH,
-      },
-    }),
-    []
-  )
-  const { thumbnails } = useDocxViewerThumbnails(
-    thumbnailEditor,
-    thumbnailOptions
-  )
   const shouldShowDocumentSpinner = useDelayedLoadingIndicator(
     isLoadingDocument,
     DOCX_LOADING_INDICATOR_DELAY_MS
@@ -2299,42 +2351,15 @@ function DocxEditorContent({
                   <div className="mx-auto mt-3 h-3 w-10 rounded-full bg-muted" />
                 </>
               ) : (
-                <div className="flex flex-col items-center gap-3">
-                  {thumbnails.slice(0, pageCount || 0).map((thumbnail) => (
-                    <Button
-                      key={thumbnail.pageIndex}
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "!h-auto w-full flex-col items-center gap-2 p-2 text-xs shadow-none hover:bg-sidebar-accent",
-                        thumbnail.pageNumber === activePage &&
-                          "bg-sidebar-accent text-foreground",
-                        thumbnail.pageNumber !== activePage &&
-                          "text-muted-foreground"
-                      )}
-                      onFocus={(event) => event.currentTarget.blur()}
-                      onClick={() => scrollToPage(thumbnail.pageNumber)}
-                    >
-                      <DocxSidebarThumbnail
-                        canvasRef={thumbnail.canvasRef}
-                        displayFileName={displayFileName}
-                        hasError={thumbnail.status === "error"}
-                        isActive={thumbnail.pageNumber === activePage}
-                        isLoading={
-                          !thumbnail.isMounted &&
-                          thumbnail.status !== "ready" &&
-                          thumbnail.status !== "error"
-                        }
-                        pageNumber={thumbnail.pageNumber}
-                        pixelHeightPx={thumbnail.pixelHeightPx}
-                        pixelWidthPx={thumbnail.pixelWidthPx}
-                        previewAspectRatio={thumbnail.aspectRatio}
-                      />
-                      {thumbnail.pageNumber}
-                    </Button>
-                  ))}
-                </div>
+                thumbnailSidebarOpen && (
+                  <DocxEditorThumbnails
+                    editor={editor}
+                    pageCount={pageCount}
+                    activePage={activePage}
+                    displayFileName={displayFileName}
+                    scrollToPage={scrollToPage}
+                  />
+                )
               )}
             </div>
           </ScrollArea>
@@ -2404,7 +2429,6 @@ function DocxEditorContent({
                   }
                   pageGapBackgroundColor={viewerBackgroundColor}
                   pageVirtualization={pageVirtualization}
-                  deferInitialPaginationPaint={false}
                   onPageCountChange={handlePageCountChange}
                 />
               </div>

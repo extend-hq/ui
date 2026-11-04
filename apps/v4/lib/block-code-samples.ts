@@ -31,6 +31,7 @@ export const blockIds = [
   "document-splits",
   "excel-editor",
   "docx-editor-block",
+  "docx-layout-blocks",
   "pdf-editor-block",
   "file-system",
 ]
@@ -38,6 +39,8 @@ export const blockIds = [
 const blockCodeDependencies: Record<string, string[]> = {
   "pdf-dropzone": ["file-upload", "pdf-viewer", "file-thumbnail"],
   "layout-blocks": [
+    "layout-blocks-panel",
+    "layout-blocks",
     "pdf-block-resizable-shell",
     "pdf-viewer",
     "file-thumbnail",
@@ -54,6 +57,12 @@ const blockCodeDependencies: Record<string, string[]> = {
     "pdf-viewer",
   ],
   "excel-editor": ["xlsx-editor"],
+  "docx-layout-blocks": [
+    "docx-viewer",
+    "layout-blocks-panel",
+    "pdf-block-resizable-shell",
+    "file-thumbnail",
+  ],
   "docx-editor-block": ["docx-editor", "file-thumbnail"],
   "pdf-editor-block": ["pdf-editor", "document-viewer-sidebar", "color-picker"],
   "file-system": [

@@ -35,7 +35,7 @@ npx shadcn@latest add @extend/docx-viewer
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @extend-ai/react-docx@0.12.0 @tanstack/react-virtual@3.13.26
+npm install @extend-ai/react-docx@0.13.4 @tanstack/react-virtual@3.13.26
 ```
 
 <Step>Install the icon library configured in your `components.json`:</Step>
@@ -93,9 +93,18 @@ The DocxViewerPreview component renders a DOCX file with upload, theme, and zoom
 | `defaultZoom`    | `number \| "fit-page" \| "fit-width" \| "automatic"` | `50`    | No       |
 | `fileName`       | `string`                                             | `-`     | No       |
 | `isDark`         | `boolean`                                            | `-`     | Yes      |
+| `layout`         | `React.ComponentType<DocxViewerLayoutProps>`          | `-`     | No       |
 | `onIsDarkChange` | `(isDark: boolean) => void`                          | `-`     | Yes      |
 | `showDownload`   | `boolean`                                            | `true`  | No       |
 | `showToolbar`    | `boolean`                                            | `true`  | No       |
 | `showUpload`     | `boolean`                                            | `true`  | No       |
 | `src`            | `string`                                             | `-`     | No       |
 | `toolbarActions` | `React.ReactNode`                                    | `-`     | No       |
+
+## Layout blocks
+
+[Open the DOCX Layout Blocks preview](/view/blocks/docx-layout-blocks) to inspect the parser output alongside the read-only viewer. Select a block to reveal its source in the document. The list includes nested blocks.
+
+```bash
+pnpm dlx shadcn@latest add @extend/docx-layout-blocks
+```

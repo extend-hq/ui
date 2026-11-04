@@ -311,6 +311,13 @@ function PdfThumbnailUrlGenerator({
   return null
 }
 
+const thumbnailGeneratorsByKind = {
+  docx: DocxThumbnailUrlGenerator,
+  pdf: PdfThumbnailUrlGenerator,
+  pptx: PptxThumbnailUrlGenerator,
+  xlsx: XlsxThumbnailUrlGenerator,
+}
+
 type DemoThumbnails = {
   pageCount: number
   urls: string[]
@@ -323,7 +330,8 @@ const demoThumbnailCache = new Map<string, DemoThumbnails>()
 
 export function useFileSystemDemoItems({
   staticThumbnails = false,
-}: { staticThumbnails?: boolean } = {}) {
+  thumbnailPath,
+}: { staticThumbnails?: boolean; thumbnailPath?: string | null } = {}) {
   const [thumbnails, setThumbnails] = React.useState<
     Record<string, DemoThumbnails>
   >(() => Object.fromEntries(demoThumbnailCache))
@@ -353,6 +361,9 @@ export function useFileSystemDemoItems({
   const items = React.useMemo<FileSystemItem[]>(
     () => [
       ...DEMO_SOURCES.map<FileSystemItem>((source) => {
+        const generated = staticThumbnails ? undefined : thumbnails[source.path]
+        const cover =
+          source.thumbnail === "url" ? source.url : source.staticThumbnailUrl
         return {
           contentType: source.contentType,
           createdAt: source.createdAt,
@@ -360,15 +371,8 @@ export function useFileSystemDemoItems({
           kind: "file",
           path: source.path,
           previewAspectRatio: source.previewAspectRatio,
-          previewImageUrls:
-            source.thumbnail === "url"
-              ? [source.url]
-              : staticThumbnails && source.staticThumbnailUrl
-                ? [source.staticThumbnailUrl]
-                : (thumbnails[source.path]?.urls ?? null),
-          previewPageCount: staticThumbnails
-            ? undefined
-            : thumbnails[source.path]?.pageCount,
+          previewImageUrls: generated?.urls ?? (cover ? [cover] : null),
+          previewPageCount: generated?.pageCount,
           size: source.size,
           updatedAt: source.updatedAt,
           url: source.url,
@@ -426,56 +430,27 @@ export function useFileSystemDemoItems({
     []
   )
 
-  const thumbnailGenerators = !staticThumbnails && (
-    <>
-      {DEMO_SOURCES.filter(
-        (source) => source.thumbnail === "pdf" && !thumbnails[source.path]
-      ).map((source) => (
-        <PdfThumbnailUrlGenerator
+  const thumbnailGenerators =
+    !staticThumbnails &&
+    DEMO_SOURCES.map((source) => {
+      if (
+        source.thumbnail === "url" ||
+        thumbnails[source.path] ||
+        (thumbnailPath !== undefined && source.path !== thumbnailPath)
+      )
+        return null
+      const Generator = thumbnailGeneratorsByKind[source.thumbnail]
+      return (
+        <Generator
           key={source.path}
           url={source.url}
-          onUrls={(dataUrls, pageCount) =>
-            setPathThumbnails(source.path, dataUrls, pageCount)
-          }
-        />
-      ))}
-      {DEMO_SOURCES.filter(
-        (source) => source.thumbnail === "docx" && !thumbnails[source.path]
-      ).map((source) => (
-        <DocxThumbnailUrlGenerator
-          key={source.path}
           fileName={source.path.split("/").pop() ?? source.path}
-          url={source.url}
-          onUrls={(dataUrls, pageCount) =>
-            setPathThumbnails(source.path, dataUrls, pageCount)
+          onUrls={(urls, pageCount) =>
+            setPathThumbnails(source.path, urls, pageCount)
           }
         />
-      ))}
-      {DEMO_SOURCES.filter(
-        (source) => source.thumbnail === "xlsx" && !thumbnails[source.path]
-      ).map((source) => (
-        <XlsxThumbnailUrlGenerator
-          key={source.path}
-          fileName={source.path.split("/").pop() ?? source.path}
-          url={source.url}
-          onUrls={(dataUrls, pageCount) =>
-            setPathThumbnails(source.path, dataUrls, pageCount)
-          }
-        />
-      ))}
-      {DEMO_SOURCES.filter(
-        (source) => source.thumbnail === "pptx" && !thumbnails[source.path]
-      ).map((source) => (
-        <PptxThumbnailUrlGenerator
-          key={source.path}
-          url={source.url}
-          onUrls={(dataUrls, pageCount) =>
-            setPathThumbnails(source.path, dataUrls, pageCount)
-          }
-        />
-      ))}
-    </>
-  )
+      )
+    })
 
   return { items, loadPreviewImageUrl, thumbnailGenerators }
 }
@@ -512,8 +487,9 @@ export function FileSystemFinderBlock({
   heightClassName?: string
   staticThumbnails?: boolean
 }) {
+  const [thumbnailPath, setThumbnailPath] = React.useState<string | null>(null)
   const { items, loadPreviewImageUrl, thumbnailGenerators } =
-    useFileSystemDemoItems({ staticThumbnails })
+    useFileSystemDemoItems({ staticThumbnails, thumbnailPath })
 
   return (
     <div className="flex h-full min-h-0 bg-background">
@@ -522,6 +498,9 @@ export function FileSystemFinderBlock({
         title="Documents"
         className={cn("min-h-0 flex-1 rounded-none border-0", heightClassName)}
         defaultView={defaultView}
+        onSelectionChange={(item) =>
+          setThumbnailPath(item?.kind === "file" ? item.path : null)
+        }
         loadPreviewImageUrl={loadPreviewImageUrl}
       />
       {thumbnailGenerators}

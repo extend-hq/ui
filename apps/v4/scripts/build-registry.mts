@@ -43,7 +43,7 @@ const registry = JSON.parse(
 const manifest = JSON.parse(
   await readFile(path.join(appRoot, "package.json"), "utf8")
 ) as { dependencies: Record<string, string> }
-const owners = new Map<string, string>()
+const owners = new Map<string, string[]>()
 for (const item of registry.items)
   for (const file of item.files ?? []) {
     const target = file.target
@@ -51,7 +51,7 @@ for (const item of registry.items)
       .replace(/^@lib\//, "@/lib/")
       .replace(/\.(tsx?|jsx?)$/, "")
     if (target && !target.startsWith("@/components/ui/"))
-      owners.set(target, item.name)
+      owners.set(target, [...(owners.get(target) ?? []), item.name])
   }
 
 for (const family of ["base", "radix"] as const) {
@@ -120,11 +120,12 @@ for (const family of ["base", "radix"] as const) {
         )
           continue
         const modulePath = statement.moduleSpecifier.text
+        const moduleOwners = owners.get(modulePath)
         if (modulePath.startsWith("@/components/ui/"))
           registryDependencies.add(modulePath.slice("@/components/ui/".length))
         else if (modulePath === "@/lib/utils") registryDependencies.add("utils")
-        else if (owners.has(modulePath) && owners.get(modulePath) !== item.name)
-          registryDependencies.add(`@extend/${owners.get(modulePath)}`)
+        else if (moduleOwners && !moduleOwners.includes(item.name))
+          registryDependencies.add(`@extend/${moduleOwners.at(-1)}`)
         else if (!modulePath.startsWith("@/") && !modulePath.startsWith(".")) {
           const packageName = modulePath.startsWith("@")
             ? modulePath.split("/").slice(0, 2).join("/")

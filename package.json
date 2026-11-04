@@ -35,7 +35,7 @@
       "@types/react-dom": "19.2.2"
     },
     "patchedDependencies": {
-      "@extend-ai/react-docx@0.12.0": "patches/@extend-ai__react-docx@0.12.0.patch"
+      "@extend-ai/react-docx@0.13.4": "patches/@extend-ai__react-docx@0.13.4.patch"
     }
   }
 }

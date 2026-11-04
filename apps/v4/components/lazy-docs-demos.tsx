@@ -121,7 +121,7 @@ export const OcrBlocksDemo = dynamic(() =>
 )
 
 export const OcrBlocksSource = dynamic(() =>
-  import("@/components/layout-blocks-docs").then(
+  import("@/components/layout-blocks-source-code").then(
     (module) => module.OcrBlocksSource
   )
 )

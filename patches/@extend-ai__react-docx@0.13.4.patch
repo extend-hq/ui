@@ -1,8 +1,7 @@
 diff --git a/dist/index.cjs b/dist/index.cjs
-index 6e5b4facab5b3ee7bbe9faf21e51f6571a92c020..2215135e1e6e28f36421d96548ce1aac66e2d88a 100644
 --- a/dist/index.cjs
 +++ b/dist/index.cjs
-@@ -13506,7 +13506,7 @@ function fontMetricProfileKey() {
+@@ -15899,7 +15899,7 @@
    const ratio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
    const viewportScale = typeof window !== "undefined" ? window.visualViewport?.scale ?? 1 : 1;
    const hasDom = typeof document !== "undefined" && Boolean(document.body);
@@ -12,10 +11,9 @@ index 6e5b4facab5b3ee7bbe9faf21e51f6571a92c020..2215135e1e6e28f36421d96548ce1aac
  function bodyZoomScale() {
    let scale = 1;
 diff --git a/dist/index.js b/dist/index.js
-index f1c26fc1a7005acc436ce4d4395c6c1a8c72a169..51f2bd857558321ab5d55ca7c6dd83b1a1a7a4d7 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -12420,7 +12420,7 @@ function fontMetricProfileKey() {
+@@ -14582,7 +14582,7 @@
    const ratio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
    const viewportScale = typeof window !== "undefined" ? window.visualViewport?.scale ?? 1 : 1;
    const hasDom = typeof document !== "undefined" && Boolean(document.body);

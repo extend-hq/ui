@@ -1,120 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { useVirtualizer } from "@tanstack/react-virtual"
 import ReactMarkdown from "react-markdown"
 import rehypeRaw from "rehype-raw"
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize"
 import remarkGfm from "remark-gfm"
 
-import type { RegistryIconProps } from "@/lib/registry-icon-props"
 import { cn } from "@/lib/utils"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { IconPlaceholder } from "@/components/icon-placeholder"
-
-function AlignBoxBottomCenterGlyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="AlignVerticalJustifyEnd"
-      tabler="IconAlignBoxBottomCenter"
-      hugeicons="AlignBoxBottomCenterIcon"
-      phosphor="AlignBottomIcon"
-      remixicon="RiAlignBottom"
-      {...props}
-    />
-  )
-}
-
-function Heading01Glyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="Heading1"
-      tabler="IconH1"
-      hugeicons="Heading01Icon"
-      phosphor="TextHOneIcon"
-      remixicon="RiH1"
-      {...props}
-    />
-  )
-}
-
-function ImageCompositionGlyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="Image"
-      tabler="IconPhoto"
-      hugeicons="ImageCompositionIcon"
-      phosphor="ImageSquareIcon"
-      remixicon="RiImageLine"
-      {...props}
-    />
-  )
-}
-
-function LeftToRightListBulletGlyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="Columns3Icon"
-      tabler="IconLayoutColumns"
-      hugeicons="LeftToRightListBulletIcon"
-      phosphor="ColumnsIcon"
-      remixicon="RiLayoutColumnLine"
-      {...props}
-    />
-  )
-}
-
-function ParagraphGlyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="Pilcrow"
-      tabler="IconPilcrow"
-      hugeicons="ParagraphIcon"
-      phosphor="ParagraphIcon"
-      remixicon="RiParagraph"
-      {...props}
-    />
-  )
-}
-
-function Table01Glyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="Table"
-      tabler="IconTable"
-      hugeicons="Table01Icon"
-      phosphor="TableIcon"
-      remixicon="RiTableLine"
-      {...props}
-    />
-  )
-}
-
-function TextCenterlineCenterTopGlyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="PanelTop"
-      tabler="IconLayoutNavbar"
-      hugeicons="TextCenterlineCenterTopIcon"
-      phosphor="AlignTopSimpleIcon"
-      remixicon="RiLayoutTopLine"
-      {...props}
-    />
-  )
-}
-
-function TextNumberSignGlyph(props: RegistryIconProps) {
-  return (
-    <IconPlaceholder
-      lucide="Hash"
-      tabler="IconHash"
-      hugeicons="TextNumberSignIcon"
-      phosphor="HashIcon"
-      remixicon="RiHashtag"
-      {...props}
-    />
-  )
-}
+import {
+  LayoutBlocksPanel,
+  layoutBlockStyles,
+  type LayoutBlockType,
+} from "@/components/extend/layout-blocks-panel"
 
 export type Point = {
   x: number
@@ -128,15 +25,7 @@ export type BoundingBox = {
   bottom: number
 }
 
-export type OcrBlockType =
-  | "heading"
-  | "paragraph"
-  | "list"
-  | "table"
-  | "figure"
-  | "header"
-  | "footer"
-  | "page_number"
+export type OcrBlockType = LayoutBlockType
 
 export type ParsedOcrBlock = {
   id: string
@@ -182,12 +71,6 @@ export type HighlightArea = {
 }
 
 export const PDF_URL = "/samples/attention.pdf"
-const OCR_BLOCK_ROW_MIN_ESTIMATE = 92
-const OCR_BLOCK_ROW_VERTICAL_CHROME = 62
-const OCR_BLOCK_LINE_HEIGHT = 20
-const OCR_BLOCK_ESTIMATED_CHARS_PER_LINE = 42
-const OCR_BLOCK_ROW_GAP = 8
-const OCR_BLOCK_LIST_PADDING = 12
 const OCR_MARKDOWN_SCHEMA = {
   ...defaultSchema,
   attributes: {
@@ -208,30 +91,6 @@ const OCR_MARKDOWN_REMARK_PLUGINS: NonNullable<
   React.ComponentProps<typeof ReactMarkdown>["remarkPlugins"]
 > = [remarkGfm]
 const OCR_MARKDOWN_FIGURE_CAPTION_PATTERN = /<\/?caption>/gi
-
-function getEstimatedOcrBlockRowHeight(block: OcrBlock) {
-  const plainText = block.text
-    .replace(OCR_MARKDOWN_FIGURE_CAPTION_PATTERN, "")
-    .replace(/<[^>]*>/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-  const explicitLineCount = block.text.split(/\n+/).filter(Boolean).length
-  const wrappedLineCount = Math.max(
-    explicitLineCount,
-    Math.ceil(plainText.length / OCR_BLOCK_ESTIMATED_CHARS_PER_LINE)
-  )
-  const contentHeight = Math.max(1, wrappedLineCount) * OCR_BLOCK_LINE_HEIGHT
-  const typeExtraHeight =
-    block.type === "figure" ? 44 : block.type === "table" ? 28 : 0
-
-  return Math.max(
-    OCR_BLOCK_ROW_MIN_ESTIMATE,
-    OCR_BLOCK_ROW_VERTICAL_CHROME +
-      contentHeight +
-      typeExtraHeight +
-      OCR_BLOCK_ROW_GAP
-  )
-}
 
 export const ATTENTION_OCR_OUTPUT = {
   chunks: [
@@ -8038,87 +7897,6 @@ export const ATTENTION_OCR_OUTPUT = {
   ],
 } satisfies ParsedOcrOutput
 
-const BLOCK_STYLES: Record<
-  OcrBlockType,
-  {
-    label: string
-    icon: React.ComponentType<RegistryIconProps>
-    overlay: string
-    mutedOverlay: string
-    ring: string
-    badge: string
-  }
-> = {
-  heading: {
-    label: "Heading",
-    icon: Heading01Glyph,
-    overlay: "border-violet-500/70 bg-violet-500/10",
-    mutedOverlay: "border-violet-500/35 bg-violet-500/5",
-    ring: "border-violet-500/60 bg-violet-500/5 text-violet-600",
-    badge:
-      "bg-violet-50 text-violet-600 dark:bg-violet-300/10 dark:text-violet-300",
-  },
-  paragraph: {
-    label: "Paragraph",
-    icon: ParagraphGlyph,
-    overlay: "border-blue-500/70 bg-blue-500/10",
-    mutedOverlay: "border-blue-500/35 bg-blue-500/5",
-    ring: "border-blue-500/60 bg-blue-500/5 text-blue-600",
-    badge: "bg-blue-50 text-blue-600 dark:bg-blue-300/10 dark:text-blue-300",
-  },
-  list: {
-    label: "List",
-    icon: LeftToRightListBulletGlyph,
-    overlay: "border-emerald-500/70 bg-emerald-500/10",
-    mutedOverlay: "border-emerald-500/35 bg-emerald-500/5",
-    ring: "border-emerald-500/60 bg-emerald-500/5 text-emerald-600",
-    badge:
-      "bg-emerald-50 text-emerald-600 dark:bg-emerald-300/10 dark:text-emerald-300",
-  },
-  table: {
-    label: "Table",
-    icon: Table01Glyph,
-    overlay: "border-amber-500/70 bg-amber-500/10",
-    mutedOverlay: "border-amber-500/35 bg-amber-500/5",
-    ring: "border-amber-500/60 bg-amber-500/5 text-amber-700",
-    badge:
-      "bg-amber-50 text-amber-600 dark:bg-amber-300/10 dark:text-amber-300",
-  },
-  figure: {
-    label: "Figure",
-    icon: ImageCompositionGlyph,
-    overlay: "border-rose-500/70 bg-rose-500/10",
-    mutedOverlay: "border-rose-500/35 bg-rose-500/5",
-    ring: "border-rose-500/60 bg-rose-500/5 text-rose-600",
-    badge: "bg-rose-50 text-rose-600 dark:bg-rose-300/10 dark:text-rose-300",
-  },
-  header: {
-    label: "Header",
-    icon: TextCenterlineCenterTopGlyph,
-    overlay: "border-cyan-500/70 bg-cyan-500/10",
-    mutedOverlay: "border-cyan-500/35 bg-cyan-500/5",
-    ring: "border-cyan-500/60 bg-cyan-500/5 text-cyan-700",
-    badge: "bg-cyan-50 text-cyan-600 dark:bg-cyan-300/10 dark:text-cyan-300",
-  },
-  footer: {
-    label: "Footer",
-    icon: AlignBoxBottomCenterGlyph,
-    overlay: "border-slate-500/70 bg-slate-500/10",
-    mutedOverlay: "border-slate-500/35 bg-slate-500/5",
-    ring: "border-slate-500/60 bg-slate-500/5 text-slate-700",
-    badge:
-      "bg-slate-50 text-slate-600 dark:bg-slate-300/10 dark:text-slate-300",
-  },
-  page_number: {
-    label: "Page number",
-    icon: TextNumberSignGlyph,
-    overlay: "border-zinc-500/70 bg-zinc-500/10",
-    mutedOverlay: "border-zinc-500/35 bg-zinc-500/5",
-    ring: "border-zinc-500/60 bg-zinc-500/5 text-zinc-700",
-    badge: "bg-zinc-50 text-zinc-600 dark:bg-zinc-300/10 dark:text-zinc-300",
-  },
-}
-
 function getBlockType(block: ParsedOcrBlock): OcrBlockType | undefined {
   if (block.type === "heading" || block.type === "section_heading") {
     return "heading"
@@ -8292,11 +8070,35 @@ const OcrBlockMarkdown = React.memo(function OcrBlockMarkdown({
               {...props}
             />
           ),
+          h2: ({ node: _node, ...props }) => (
+            <h2
+              className="my-0 text-[15px] leading-5 font-semibold text-foreground"
+              {...props}
+            />
+          ),
+          h3: ({ node: _node, ...props }) => (
+            <h3
+              className="my-0 text-sm leading-5 font-semibold text-foreground"
+              {...props}
+            />
+          ),
           p: ({ node: _node, ...props }) => (
             <p className="my-0 text-[13px] leading-5" {...props} />
           ),
+          strong: ({ node: _node, ...props }) => (
+            <strong className="font-semibold text-foreground" {...props} />
+          ),
+          em: ({ node: _node, ...props }) => (
+            <em className="text-foreground" {...props} />
+          ),
+          ul: ({ node: _node, ...props }) => (
+            <ul className="my-0 list-disc space-y-0.5 pl-4" {...props} />
+          ),
           ol: ({ node: _node, ...props }) => (
             <ol className="my-0 list-decimal space-y-0.5 pl-4" {...props} />
+          ),
+          li: ({ node: _node, ...props }) => (
+            <li className="pl-0.5 text-[13px] leading-5" {...props} />
           ),
           table: ({ node: _node, ...props }) => (
             <div className="overflow-hidden rounded-md border bg-background">
@@ -8322,7 +8124,10 @@ const OcrBlockMarkdown = React.memo(function OcrBlockMarkdown({
             />
           ),
           th: ({ node: _node, ...props }) => (
-            <th className="border-b bg-muted px-2 py-1 text-left" {...props} />
+            <th
+              className="border-b bg-muted px-2 py-1 text-left font-medium"
+              {...props}
+            />
           ),
           td: ({ node: _node, ...props }) => (
             <td className="border-t px-2 py-1" {...props} />
@@ -8335,54 +8140,9 @@ const OcrBlockMarkdown = React.memo(function OcrBlockMarkdown({
   )
 })
 
-const OcrBlockButton = React.memo(function OcrBlockButton({
-  block,
-  isActive,
-  onFocusBlock,
-}: {
-  block: OcrBlock
-  isActive: boolean
-  onFocusBlock: (block: OcrBlock) => void
-}) {
-  const style = BLOCK_STYLES[block.type]
-
-  return (
-    <button
-      type="button"
-      onMouseEnter={() => onFocusBlock(block)}
-      onFocus={() => onFocusBlock(block)}
-      className={cn(
-        "w-full rounded-lg border bg-background p-3 text-left hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        isActive && style.ring
-      )}
-    >
-      <div className="min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <div
-              className={cn(
-                "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-                style.badge
-              )}
-            >
-              <style.icon className="size-3.5" />
-              {style.label}
-            </div>
-            <div className="truncate text-xs text-muted-foreground">
-              {Math.round(block.confidence * 100)}%
-            </div>
-          </div>
-          <div className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            p. {block.page}
-          </div>
-        </div>
-        <div className="mt-2 text-sm text-foreground/90">
-          <OcrBlockMarkdown text={block.text} />
-        </div>
-      </div>
-    </button>
-  )
-})
+export function renderOcrBlockText(text: string) {
+  return <OcrBlockMarkdown text={text} />
+}
 
 export const OcrBlockOverlay = React.memo(function OcrBlockOverlay({
   block,
@@ -8395,13 +8155,13 @@ export const OcrBlockOverlay = React.memo(function OcrBlockOverlay({
   pageHeight?: number
   pageWidth?: number
 }) {
-  const style = BLOCK_STYLES[block.type]
+  const style = layoutBlockStyles[block.type]
 
   return (
     <div
       className={cn(
-        "pointer-events-none absolute z-10 border",
-        isActive ? style.overlay : style.mutedOverlay
+        "pointer-events-none absolute z-10 border transition-[opacity,box-shadow]",
+        isActive ? style.overlay : cn("opacity-55", style.mutedOverlay)
       )}
       style={blockToArea(
         block,
@@ -8413,122 +8173,13 @@ export const OcrBlockOverlay = React.memo(function OcrBlockOverlay({
   )
 })
 
-export function OcrBlocksPanel({
-  activeBlockId,
-  blocks,
-  className,
-  onBlockFocus,
-}: {
+export function OcrBlocksPanel(props: {
   activeBlockId?: string
   blocks: OcrBlock[]
   className?: string
   onBlockFocus?: (block: OcrBlock) => void
 }) {
-  const scrollViewportRef = React.useRef<HTMLDivElement | null>(null)
-  const [localActiveBlockId, setLocalActiveBlockId] = React.useState(
-    activeBlockId ?? blocks[0]?.id
-  )
-  const firstBlock = blocks[0]
-  const focusedBlockId = activeBlockId ?? localActiveBlockId
-  const activeBlock =
-    blocks.find((block) => block.id === focusedBlockId) ?? firstBlock
-  const focusedBlockIdRef = React.useRef(focusedBlockId)
-
-  React.useEffect(() => {
-    focusedBlockIdRef.current = focusedBlockId
-  }, [focusedBlockId])
-
-  const estimateBlockSize = React.useCallback(
-    (index: number) => {
-      const block = blocks[index]
-      return block
-        ? getEstimatedOcrBlockRowHeight(block)
-        : OCR_BLOCK_ROW_MIN_ESTIMATE
-    },
-    [blocks]
-  )
-  const virtualizer = useVirtualizer({
-    count: blocks.length,
-    estimateSize: estimateBlockSize,
-    getItemKey: (index) => blocks[index]?.id ?? index,
-    getScrollElement: () => scrollViewportRef.current,
-    overscan: 6,
-  })
-
-  const focusBlock = React.useCallback(
-    (block: OcrBlock) => {
-      if (block.id === focusedBlockIdRef.current) return
-
-      focusedBlockIdRef.current = block.id
-      setLocalActiveBlockId(block.id)
-      onBlockFocus?.(block)
-    },
-    [onBlockFocus]
-  )
-
-  React.useEffect(() => {
-    if (!firstBlock) return
-    if (
-      activeBlockId ||
-      blocks.some((block) => block.id === localActiveBlockId)
-    ) {
-      return
-    }
-
-    setLocalActiveBlockId(firstBlock.id)
-  }, [activeBlockId, blocks, firstBlock, localActiveBlockId])
-
-  return (
-    <aside
-      className={cn("flex h-[420px] min-h-0 flex-col bg-background", className)}
-    >
-      <ScrollArea
-        className="min-h-0 flex-1"
-        scrollFade
-        viewportRef={scrollViewportRef}
-      >
-        {blocks.length ? (
-          <div
-            className="relative"
-            style={{
-              height: virtualizer.getTotalSize() + OCR_BLOCK_LIST_PADDING * 2,
-            }}
-          >
-            {virtualizer.getVirtualItems().map((virtualRow) => {
-              const block = blocks[virtualRow.index]
-              if (!block) return null
-
-              return (
-                <div
-                  key={virtualRow.key}
-                  ref={virtualizer.measureElement}
-                  data-index={virtualRow.index}
-                  className="absolute top-0 right-3 left-3 pb-2 [contain:layout_paint]"
-                  style={{
-                    transform: `translateY(${
-                      virtualRow.start + OCR_BLOCK_LIST_PADDING
-                    }px)`,
-                  }}
-                >
-                  <OcrBlockButton
-                    block={block}
-                    isActive={block.id === activeBlock?.id}
-                    onFocusBlock={focusBlock}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="p-3">
-            <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-              No layout blocks found.
-            </div>
-          </div>
-        )}
-      </ScrollArea>
-    </aside>
-  )
+  return <LayoutBlocksPanel {...props} renderText={renderOcrBlockText} />
 }
 
 export function OcrBlocks() {

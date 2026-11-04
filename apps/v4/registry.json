@@ -747,7 +747,7 @@
       "title": "DOCX Viewer",
       "description": "A DOCX viewer with upload, zoom, theme controls, and read-only rendering.",
       "dependencies": [
-        "@extend-ai/react-docx@0.12.0",
+        "@extend-ai/react-docx@0.13.4",
         "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
@@ -774,7 +774,7 @@
       "type": "registry:ui",
       "title": "DOCX Editor",
       "description": "A DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
-      "dependencies": ["@extend-ai/react-docx@0.12.0"],
+      "dependencies": ["@extend-ai/react-docx@0.13.4"],
       "registryDependencies": [
         "@extend/document-viewer-sidebar",
         "@extend/file-thumbnail",
@@ -885,18 +885,33 @@
       ]
     },
     {
+      "name": "layout-blocks-panel",
+      "type": "registry:ui",
+      "title": "Layout Blocks Panel",
+      "description": "A virtualized list of layout blocks with typed badges and source navigation.",
+      "dependencies": ["@tanstack/react-virtual@^3.13.26"],
+      "registryDependencies": ["utils"],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/extend/layout-blocks-panel.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/layout-blocks-panel.tsx"
+        }
+      ]
+    },
+    {
       "name": "layout-blocks",
       "type": "registry:ui",
       "title": "Layout Blocks",
       "description": "A structured layout review panel with typed blocks and confidence cards.",
       "dependencies": [
-        "@tanstack/react-virtual@^3.13.26",
         "react-markdown@^10.1.0",
         "rehype-raw@^7.0.0",
         "rehype-sanitize@^6.0.0",
         "remark-gfm@^4.0.1"
       ],
-      "registryDependencies": ["utils"],
+      "registryDependencies": ["@extend/layout-blocks-panel", "utils"],
       "categories": ["documents"],
       "files": [
         {
@@ -1056,6 +1071,25 @@
           "path": "registry/new-york-v4/blocks/excel-editor.tsx",
           "type": "registry:component",
           "target": "@components/blocks/excel-editor.tsx"
+        }
+      ]
+    },
+    {
+      "name": "docx-layout-blocks",
+      "type": "registry:block",
+      "title": "DOCX Layout Blocks",
+      "description": "A read-only DOCX viewer with typed layout blocks and source highlights.",
+      "registryDependencies": [
+        "@extend/docx-viewer",
+        "@extend/layout-blocks-panel",
+        "@extend/pdf-block-resizable-shell"
+      ],
+      "categories": ["documents", "blocks"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/blocks/docx-layout-blocks.tsx",
+          "type": "registry:component",
+          "target": "@components/blocks/docx-layout-blocks.tsx"
         }
       ]
     },
