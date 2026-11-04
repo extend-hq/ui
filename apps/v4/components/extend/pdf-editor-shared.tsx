@@ -1948,7 +1948,7 @@ export function ensurePdfExtension(fileName: string) {
 export function getPdfFileName(fileName: string | undefined, src?: string) {
   if (fileName?.trim()) return ensurePdfExtension(fileName.trim())
 
-  if (src && !src.startsWith("blob:") && !src.startsWith("data:")) {
+  if (src && !/^(blob|data):/i.test(src)) {
     const pathname = src.split(/[?#]/)[0] ?? ""
     const rawName = pathname.split("/").pop() || ""
 

@@ -7,6 +7,15 @@ let sharedEnginePromise: Promise<PdfEngine> | null = null
 const pdfDocumentCache = new Map<string, Promise<PdfDocumentObject>>()
 const thumbnailUrlCache = new Map<string, Promise<string | null>>()
 
+export function getPdfSourceUrl(src: string) {
+  // Raw base64 must start with the encoded PDF header to distinguish it from a path.
+  if (/^\s*JVBERi0/.test(src) && !/[^A-Za-z0-9+/=\s]/.test(src)) {
+    return `data:application/pdf;base64,${src.replace(/\s/g, "")}`
+  }
+
+  return src
+}
+
 export function loadSharedPdfEngine() {
   sharedEnginePromise ??= import("@embedpdf/engines/pdfium-worker-engine").then(
     ({ createPdfiumEngine }) => createPdfiumEngine(PDFIUM_WASM_URL, {})

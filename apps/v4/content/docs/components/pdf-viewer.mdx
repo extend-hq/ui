@@ -74,9 +74,15 @@ prop for your library.
 
 The PDFViewer component renders a scrollable PDF surface with toolbar controls, lazy page rendering, uploads, and page-level extension hooks.
 
+Pass a relative path, an absolute URL, a raw base64 string, or a PDF data URL
+(`data:application/pdf;base64,…`) to **`src`**. You can pass base64 directly
+when the decoded bytes start with the `%PDF-` header. Use `fileName` to name
+downloads from inline sources. The default is `document.pdf`.
+
 | Prop                        | Type                                                                      | Default                                    | Required |
 | --------------------------- | ------------------------------------------------------------------------- | ------------------------------------------ | -------- |
 | `src`                       | `string`                                                                  | `-`                                        | No       |
+| `fileName`                  | `string`                                                                  | Inferred from the URL or `document.pdf`    | No       |
 | `className`                 | `string`                                                                  | `-`                                        | No       |
 | `defaultZoom`               | `number \| "fit-page" \| "fit-width" \| "automatic"`                      | `1`                                        | No       |
 | `resolveScrollAreaViewport` | `(container: HTMLDivElement) => HTMLDivElement \| null`                   | Finds `[data-slot="scroll-area-viewport"]` | No       |

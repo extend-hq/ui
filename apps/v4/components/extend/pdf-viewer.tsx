@@ -64,7 +64,7 @@ import {
 } from "@embedpdf/plugin-zoom/react"
 import { flushSync } from "react-dom"
 
-import { loadSharedPdfEngine } from "@/lib/pdf-thumbnail-utils"
+import { getPdfSourceUrl, loadSharedPdfEngine } from "@/lib/pdf-thumbnail-utils"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -130,12 +130,17 @@ export type PDFViewerZoomLevel = number | "fit-page" | "fit-width" | "automatic"
 export type PDFViewerProps = {
   className?: string
   defaultZoom?: PDFViewerZoomLevel
+  /** Optional name for PDF downloads. */
   fileName?: string
   resolveScrollAreaViewport?: PDFViewerScrollAreaViewportResolver
   showDownload?: boolean
   showToolbar?: boolean
   showRotateControls?: boolean
   showUpload?: boolean
+  /**
+   * A path, URL, PDF data URL, or raw base64 string.
+   * Raw base64 is recognized by the encoded %PDF- header.
+   */
   src?: string
   toolbarActions?: React.ReactNode
   pageClassName?: (pageNumber: number) => string | undefined
@@ -279,6 +284,7 @@ function ensurePdfExtension(fileName: string) {
 
 function getPdfDownloadFileName(fileName: string | undefined, src: string) {
   if (fileName?.trim()) return ensurePdfExtension(fileName.trim())
+  if (/^data:/i.test(src)) return "document.pdf"
 
   const pathname = src.split(/[?#]/)[0] ?? ""
   const rawName = pathname.split("/").pop() || "document.pdf"
@@ -2806,7 +2812,8 @@ function PDFViewerDocumentLoader({
     documentManager
       .openDocumentUrl({
         url: pdfFile,
-        mode: pdfFile.startsWith("blob:") ? "full-fetch" : "auto",
+        name: /^data:/i.test(pdfFile) ? "document.pdf" : undefined,
+        mode: /^(blob|data):/i.test(pdfFile) ? "full-fetch" : "auto",
       })
       .wait((response) => {
         response.task.wait((openedDocument) => {
@@ -2888,7 +2895,10 @@ export const PDFViewer = React.forwardRef<PDFViewerHandle, PDFViewerProps>(
     }>(() => ({ src, url: null }))
     const uploadedPdfUrl =
       uploadedPdfFile.src === src ? uploadedPdfFile.url : null
-    const pdfFile = uploadedPdfUrl ?? src ?? ""
+    const pdfFile = React.useMemo(
+      () => uploadedPdfUrl ?? getPdfSourceUrl(src ?? ""),
+      [uploadedPdfUrl, src]
+    )
 
     React.useEffect(
       () => () => {

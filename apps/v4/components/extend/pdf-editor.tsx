@@ -127,7 +127,7 @@ import {
   ZoomPluginPackage,
 } from "@embedpdf/plugin-zoom/react"
 
-import { loadSharedPdfEngine } from "@/lib/pdf-thumbnail-utils"
+import { getPdfSourceUrl, loadSharedPdfEngine } from "@/lib/pdf-thumbnail-utils"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -331,7 +331,11 @@ export type PDFEditorHandle = {
 
 export type PDFEditorProps = {
   className?: string
-  /** A URL, or the PDF bytes as an ArrayBuffer, Uint8Array, Blob, or File. */
+  /**
+   * A path, URL, PDF data URL, or raw base64 string.
+   * Raw base64 is recognized by the encoded %PDF- header.
+   * Also accepts PDF bytes as an ArrayBuffer, Uint8Array, Blob, or File.
+   */
   src?: string | ArrayBuffer | Uint8Array | Blob
   fileName?: string
   defaultZoom?: PDFEditorZoomLevel
@@ -492,11 +496,12 @@ function useEditorSource(
   const immediateSource = React.useMemo<EditorSource | null>(() => {
     const key = `${sourceId}-${input.version}`
     if (typeof input.src === "string") {
+      const url = getPdfSourceUrl(input.src)
       return {
         key,
         kind: "url",
-        url: input.src,
-        name: getPdfFileName(input.fileName, input.src),
+        url,
+        name: getPdfFileName(input.fileName, url),
       }
     }
     if (input.src instanceof ArrayBuffer || input.src instanceof Uint8Array) {
@@ -3936,7 +3941,7 @@ function PdfEditorDocumentLoader({
         ? documentManager.openDocumentUrl({
             url: source.url,
             name: source.name,
-            mode: source.url.startsWith("blob:") ? "full-fetch" : "auto",
+            mode: /^(blob|data):/i.test(source.url) ? "full-fetch" : "auto",
             autoActivate: previousIds.length === 0,
           })
         : documentManager.openDocumentBuffer({

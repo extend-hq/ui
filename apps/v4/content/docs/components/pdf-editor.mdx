@@ -110,6 +110,12 @@ The ribbon below the main toolbar switches between five modes. Each mode exposes
 
 ### PDFEditor
 
+Pass a relative path, an absolute URL, a raw base64 string, or a PDF data URL
+(`data:application/pdf;base64,…`) to **`src`**. You can pass base64 directly
+when the decoded bytes start with the `%PDF-` header. The same prop accepts an
+`ArrayBuffer`, `Uint8Array`, `Blob`, or `File`. Use `fileName` to name
+downloads from inline sources. The default is `document.pdf`.
+
 | Prop                          | Type                                                                         | Default                                    | Required |
 | ----------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ | -------- |
 | `src`                         | `string \| ArrayBuffer \| Uint8Array \| Blob`                                | `-`                                        | No       |
