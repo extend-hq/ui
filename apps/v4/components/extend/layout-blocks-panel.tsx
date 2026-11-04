@@ -378,11 +378,10 @@ export function LayoutBlocksPanel<Block extends LayoutBlockItem>({
 
   const focusBlock = React.useCallback(
     (block: Block) => {
-      if (block.id === focusedBlockId) return
       setLocalActiveBlockId(block.id)
       onBlockFocus?.(block)
     },
-    [focusedBlockId, onBlockFocus]
+    [onBlockFocus]
   )
 
   return (

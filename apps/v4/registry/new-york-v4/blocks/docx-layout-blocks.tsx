@@ -65,8 +65,8 @@ function BlockLayout({
     blocks: DocumentBlock[]
     error?: string
   }>()
-  const [selectedId, setSelectedId] = React.useState<string>()
-  const [previewId, setPreviewId] = React.useState<string>()
+  const [activeId, setActiveId] = React.useState<string>()
+  const pendingReveal = React.useRef<DocumentBlock | null>(null)
 
   React.useEffect(() => {
     if (!model) return
@@ -90,6 +90,7 @@ function BlockLayout({
     )
     return () => {
       current = false
+      pendingReveal.current = null
     }
   }, [model])
 
@@ -105,9 +106,47 @@ function BlockLayout({
       })) ?? [],
     [blocks]
   )
-  const active =
-    blocks?.find((block) => block.id === (previewId ?? selectedId)) ??
-    blocks?.[0]
+  const active = blocks?.find((block) => block.id === activeId) ?? blocks?.[0]
+
+  const scrollToMountedBlock = React.useCallback(() => {
+    const block = pendingReveal.current
+    const viewport = viewportRef.current
+    const source = block?.sourceRefs[0]
+    if (!viewport || !block || !source) return
+
+    const target =
+      viewport.querySelector(
+        `[data-docx-block-highlight="${CSS.escape(block.id)}"]`
+      ) ??
+      viewport.querySelector(
+        `[data-docx-source-id="${CSS.escape(source.nodeId)}"]`
+      )
+    if (!target) return
+
+    pendingReveal.current = null
+    const bounds = target.getBoundingClientRect()
+    const frame = viewport.getBoundingClientRect()
+    viewport.scrollBy({
+      top: bounds.top - frame.top - viewport.clientHeight / 4,
+      left:
+        bounds.left < frame.left || bounds.right > frame.right
+          ? bounds.left - frame.left
+          : 0,
+      behavior: "instant",
+    })
+  }, [viewportRef])
+
+  function focusBlock({ block }: { block: DocumentBlock }) {
+    setActiveId(block.id)
+    pendingReveal.current = block
+    scrollToMountedBlock()
+
+    // Ask the viewer to mount the source page. Its next geometry update finishes the scroll.
+    const source = pendingReveal.current?.sourceRefs[0]
+    if (source && viewportRef.current)
+      revealDocxSource(viewportRef.current, source.nodeId)
+  }
+
   const message =
     loadError ||
     parsed?.error ||
@@ -130,6 +169,7 @@ function BlockLayout({
               blocks={blocks}
               block={active}
               colorForBlock={blockColor}
+              onGeometry={scrollToMountedBlock}
             />
           ) : null}
         </>
@@ -142,14 +182,7 @@ function BlockLayout({
           blocks={rows}
           activeBlockId={active?.id}
           emptyMessage={message}
-          onBlockFocus={(row) => setPreviewId(row.id)}
-          onBlockBlur={() => setPreviewId(undefined)}
-          onBlockSelect={({ block }) => {
-            setSelectedId(block.id)
-            const source = block.sourceRefs[0]
-            if (viewportRef.current && source)
-              revealDocxSource(viewportRef.current, source)
-          }}
+          onBlockFocus={focusBlock}
         />
       }
     />
