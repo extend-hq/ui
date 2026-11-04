@@ -1,17 +1,9 @@
 "use client"
 
 import * as React from "react"
-import {
-  Download01Icon,
-  FilePenIcon,
-  Pen01Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import type SignaturePad from "signature_pad"
 
 import { cn } from "@/lib/utils"
-import { PDFViewer } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,6 +15,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer } from "@/components/extend/pdf-viewer"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 type BoundingBox = {
   x: number
@@ -129,11 +124,22 @@ function SignatureDialog({
     [fieldBbox]
   )
 
-  React.useEffect(() => {
+  const [previousOpen, setPreviousOpen] = React.useState(open)
+  if (previousOpen !== open) {
+    setPreviousOpen(open)
     if (!open) {
       setGuideSize(null)
-      return
+      setIsReady(false)
+      setHasSignature(false)
     }
+  }
+  const canInitialize = Boolean(
+    open && guideSize && guideSize.width > 1 && guideSize.height > 1
+  )
+  if (!canInitialize && isReady) setIsReady(false)
+
+  React.useEffect(() => {
+    if (!open) return
 
     let frameId = 0
     let resizeObserver: ResizeObserver | null = null
@@ -196,10 +202,6 @@ function SignatureDialog({
     if (!open || !guideSize || guideSize.width <= 1 || guideSize.height <= 1) {
       signaturePadRef.current?.off()
       signaturePadRef.current = null
-      setIsReady(false)
-      if (!open) {
-        setHasSignature(false)
-      }
       return
     }
 
@@ -395,7 +397,14 @@ function SignatureFieldOverlay({
         />
       ) : (
         <span className="flex size-full items-center justify-center gap-1.5 px-2 text-[11px] font-medium text-blue-700 dark:text-blue-300">
-          <HugeiconsIcon icon={Pen01Icon} className="size-3.5" />
+          <IconPlaceholder
+            lucide="Pen"
+            tabler="IconPencil"
+            hugeicons="Pen01Icon"
+            phosphor="PenIcon"
+            remixicon="RiPencilLine"
+            className="size-3.5"
+          />
           Signature
         </span>
       )}
@@ -475,7 +484,14 @@ function SignatureFieldsPanel({
           <div className="rounded-lg border bg-background p-3">
             <div className="flex items-start gap-3">
               <div className="grid size-9 shrink-0 place-items-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-300">
-                <HugeiconsIcon icon={FilePenIcon} className="size-4" />
+                <IconPlaceholder
+                  lucide="FilePen"
+                  tabler="IconFilePencil"
+                  hugeicons="FilePenIcon"
+                  phosphor="NotePencilIcon"
+                  remixicon="RiFileEditLine"
+                  className="size-4"
+                />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
@@ -503,7 +519,14 @@ function SignatureFieldsPanel({
                     className="flex-1"
                     onClick={onSign}
                   >
-                    <HugeiconsIcon icon={Pen01Icon} className="size-4" />
+                    <IconPlaceholder
+                      lucide="Pen"
+                      tabler="IconPencil"
+                      hugeicons="Pen01Icon"
+                      phosphor="PenIcon"
+                      remixicon="RiPencilLine"
+                      className="size-4"
+                    />
                     {field.imageDataUrl ? "Edit" : "Sign"}
                   </Button>
                   {field.imageDataUrl ? (
@@ -526,7 +549,14 @@ function SignatureFieldsPanel({
             disabled={!canExport || isDownloading}
             onClick={onDownload}
           >
-            <HugeiconsIcon icon={Download01Icon} className="size-4" />
+            <IconPlaceholder
+              lucide="Download"
+              tabler="IconDownload"
+              hugeicons="Download01Icon"
+              phosphor="DownloadSimpleIcon"
+              remixicon="RiDownload2Line"
+              className="size-4"
+            />
             {isDownloading ? "Exporting..." : "Export signed PDF"}
           </Button>
         </div>
@@ -557,10 +587,8 @@ export function ESignatureBlock({ file }: { file?: string }) {
         autoSaveId="pdf-block-e-signature"
         left={
           <PDFViewer
-            file={file}
+            src={file}
             defaultZoom={DEFAULT_ZOOM}
-            pageWidth={PAGE_WIDTH}
-            pageHeight={PAGE_HEIGHT}
             toolbarActions={
               <Button
                 type="button"
@@ -569,7 +597,14 @@ export function ESignatureBlock({ file }: { file?: string }) {
                 disabled={!file || !field.imageDataUrl || isDownloading}
                 onClick={handleDownload}
               >
-                <HugeiconsIcon icon={Download01Icon} className="size-4" />
+                <IconPlaceholder
+                  lucide="Download"
+                  tabler="IconDownload"
+                  hugeicons="Download01Icon"
+                  phosphor="DownloadSimpleIcon"
+                  remixicon="RiDownload2Line"
+                  className="size-4"
+                />
                 Download
               </Button>
             }

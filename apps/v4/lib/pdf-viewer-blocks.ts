@@ -72,23 +72,43 @@ export const PDF_VIEWER_BLOCKS = [
     viewHref: "/view/blocks/document-splits",
   },
   {
-    id: "excel-document-splits",
-    title: "Excel Document Splits",
+    id: "excel-editor",
+    title: "Excel Editor",
     description:
-      "Workbook sheets split into draggable groups with thumbnails from the XLSX viewer.",
-    command: getRegistryAddCommand("excel-document-splits"),
-    docsHref: "/docs/components/xlsx-viewer",
-    viewHref: "/view/blocks/excel-document-splits",
+      "A full workbook editor with cell formatting, merge tools, sheets, zoom, and export controls.",
+    command: getRegistryAddCommand("excel-editor"),
+    docsHref: "/docs/components/xlsx-editor",
+    viewHref: "/view/blocks/excel-editor",
+  },
+  {
+    id: "pdf-editor-block",
+    title: "PDF Editor",
+    badge: "New",
+    description:
+      "A full PDF editor with annotations, comments, redaction, forms, signatures, stamps, page organization, security, print, and export.",
+    command: getRegistryAddCommand("pdf-editor-block"),
+    docsHref: "/docs/components/pdf-editor",
+    viewHref: "/view/blocks/pdf-editor-block",
+    previewHeightClassName: "h-[760px]",
   },
   {
     id: "docx-editor-block",
     title: "DOCX Editor",
-    badge: "Experimental",
     description:
       "A Word-style document editor with formatting controls, page thumbnails, and DOCX export.",
     command: getRegistryAddCommand("docx-editor-block"),
     docsHref: "/docs/components/docx-editor",
     viewHref: "/view/blocks/docx-editor-block",
+    previewHeightClassName: "h-[720px]",
+  },
+  {
+    id: "docx-layout-blocks",
+    title: "DOCX Layout Blocks",
+    description:
+      "Inspect parsed layout blocks in the read-only DOCX viewer and select a block to reveal its source.",
+    command: getRegistryAddCommand("docx-layout-blocks"),
+    docsHref: "/docs/components/docx-viewer#layout-blocks",
+    viewHref: "/view/blocks/docx-layout-blocks",
     previewHeightClassName: "h-[720px]",
   },
 ] as const satisfies readonly PdfViewerBlockConfig[]

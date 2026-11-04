@@ -10,7 +10,6 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useDocsSearch } from "fumadocs-core/search/client"
 
-import { type ColorPalette } from "@/lib/colors"
 import { trackEvent } from "@/lib/events"
 import { showMcpDocs } from "@/lib/flags"
 import { getCurrentBase, getPagesFromFolder } from "@/lib/page-tree"
@@ -58,13 +57,11 @@ function getShadcnAddCommand(
 
 export function CommandMenu({
   tree,
-  colors: _colors,
   blocks,
   navItems,
   ...props
 }: React.ComponentProps<typeof Dialog> & {
   tree: typeof source.pageTree
-  colors: ColorPalette[]
   blocks?: { name: string; description: string; categories: string[] }[]
   navItems?: { href: string; label: string }[]
 }) {
@@ -122,6 +119,8 @@ export function CommandMenu({
     [setSearch, trackSearchQuery]
   )
 
+  if (!open && renderDelayedGroups) setRenderDelayedGroups(false)
+
   // Cleanup timeout on unmount.
   React.useEffect(() => {
     if (open) {
@@ -133,8 +132,6 @@ export function CommandMenu({
         cancelAnimationFrame(frame)
       }
     }
-
-    setRenderDelayedGroups(false)
   }, [open])
 
   React.useEffect(() => {

@@ -3,13 +3,9 @@
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
-import {
-  ArrowRight01Icon,
-  MoreHorizontalIcon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 export function Breadcrumb({
   ...props
@@ -100,7 +96,15 @@ export function BreadcrumbSeparator({
       role="presentation"
       {...props}
     >
-      {children ?? <HugeiconsIcon icon={ArrowRight01Icon} />}
+      {children ?? (
+        <IconPlaceholder
+          lucide="ArrowRight"
+          tabler="IconArrowRight"
+          hugeicons="ArrowRight01Icon"
+          phosphor="ArrowRightIcon"
+          remixicon="RiArrowRightLine"
+        />
+      )}
     </li>
   )
 }
@@ -117,7 +121,14 @@ export function BreadcrumbEllipsis({
       role="presentation"
       {...props}
     >
-      <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+      <IconPlaceholder
+        lucide="Ellipsis"
+        tabler="IconDots"
+        hugeicons="MoreHorizontalIcon"
+        phosphor="DotsThreeIcon"
+        remixicon="RiMoreLine"
+        className="size-4"
+      />
       <span className="sr-only">More</span>
     </span>
   )

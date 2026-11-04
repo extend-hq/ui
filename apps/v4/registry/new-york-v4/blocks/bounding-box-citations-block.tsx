@@ -15,9 +15,9 @@ import {
   type ReviewField,
   type ReviewLocation,
   type ReviewMetadataEntry,
-} from "@/components/ui/bounding-box-citations"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
+} from "@/components/extend/bounding-box-citations"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer, type PDFViewerHandle } from "@/components/extend/pdf-viewer"
 
 const DEFAULT_ZOOM = 1
 
@@ -59,10 +59,9 @@ export function HumanReviewBlock({
   const activeLocation =
     hoverLocation ?? getReviewFieldLocation(activeField, resolveFieldLocation)
 
-  React.useEffect(() => {
-    if (activeFieldKey || !fields[0]) return
+  if (!activeFieldKey && fields[0]) {
     setActiveFieldKey(fields[0].key)
-  }, [activeFieldKey, fields])
+  }
 
   const focusField = React.useCallback(
     (field: ReviewField) => {
@@ -103,7 +102,7 @@ export function HumanReviewBlock({
       left={
         <PDFViewer
           ref={viewerRef}
-          file={file}
+          src={file}
           defaultZoom={DEFAULT_ZOOM}
           renderPageOverlay={({ pageNumber }) =>
             activeLocation?.page === pageNumber ? (

@@ -1,6 +1,5 @@
-import Link from "next/link"
-
 import { getPagesFromFolder, type PageTreeFolder } from "@/lib/page-tree"
+import { IntentLink as Link } from "@/components/intent-link"
 
 export function ComponentsList({
   componentsFolder,

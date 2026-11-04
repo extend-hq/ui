@@ -33,8 +33,18 @@ npx shadcn@latest add @extend/e-signature
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 pdf-lib@^1.17.1 signature_pad@^5.1.3
+npm install pdf-lib@^1.17.1 signature_pad@^5.1.3
 ```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
 
 <Step>Copy and paste the following code into your project.</Step>
 

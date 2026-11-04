@@ -29,14 +29,18 @@ export const blockIds = [
   "pdf-dropzone",
   "e-signature",
   "document-splits",
-  "excel-document-splits",
+  "excel-editor",
   "docx-editor-block",
+  "docx-layout-blocks",
+  "pdf-editor-block",
   "file-system",
 ]
 
 const blockCodeDependencies: Record<string, string[]> = {
   "pdf-dropzone": ["file-upload", "pdf-viewer", "file-thumbnail"],
   "layout-blocks": [
+    "layout-blocks-panel",
+    "layout-blocks",
     "pdf-block-resizable-shell",
     "pdf-viewer",
     "file-thumbnail",
@@ -52,12 +56,15 @@ const blockCodeDependencies: Record<string, string[]> = {
     "pdf-block-resizable-shell",
     "pdf-viewer",
   ],
-  "excel-document-splits": [
-    "file-thumbnail",
+  "excel-editor": ["xlsx-editor"],
+  "docx-layout-blocks": [
+    "docx-viewer",
+    "layout-blocks-panel",
     "pdf-block-resizable-shell",
-    "xlsx-viewer",
+    "file-thumbnail",
   ],
   "docx-editor-block": ["docx-editor", "file-thumbnail"],
+  "pdf-editor-block": ["pdf-editor", "document-viewer-sidebar", "color-picker"],
   "file-system": [
     "file-system",
     "file-thumbnail",
@@ -199,6 +206,10 @@ function resolveSourceFilePath(filePath: string) {
 
   if (filePath.startsWith("hooks/")) {
     return path.join(appRoot, "hooks", filePath.slice("hooks/".length))
+  }
+
+  if (filePath.startsWith("lib/")) {
+    return path.join(appRoot, "lib", filePath.slice("lib/".length))
   }
 
   if (filePath.startsWith("registry/")) {

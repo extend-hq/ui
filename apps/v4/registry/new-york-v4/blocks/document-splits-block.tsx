@@ -8,9 +8,9 @@ import {
   INITIAL_SPLITS,
   type DocumentSplit,
   type DocumentSplitPageId,
-} from "@/components/ui/document-splits"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
+} from "@/components/extend/document-splits"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer, type PDFViewerHandle } from "@/components/extend/pdf-viewer"
 
 export function DocumentSplitsBlock({
   file,
@@ -26,9 +26,11 @@ export function DocumentSplitsBlock({
   const viewerRef = React.useRef<PDFViewerHandle>(null)
   const uploadedPdfUrlRef = React.useRef<string | null>(null)
 
-  React.useEffect(() => {
+  const [previousFile, setPreviousFile] = React.useState(file)
+  if (!Object.is(previousFile, file)) {
+    setPreviousFile(file)
     setPdfFile(file)
-  }, [file])
+  }
 
   React.useEffect(() => {
     return () => {
@@ -70,7 +72,7 @@ export function DocumentSplitsBlock({
       left={
         <PDFViewer
           ref={viewerRef}
-          file={pdfFile}
+          src={pdfFile}
           defaultZoom={1}
           onDocumentLoadSuccess={handleDocumentLoadSuccess}
           onPdfUpload={handlePdfUpload}

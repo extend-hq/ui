@@ -33,11 +33,22 @@ npx shadcn@latest add @extend/file-system
 </Step>
 
 ```bash
-npm install @pierre/trees @hugeicons/react @hugeicons/core-free-icons
+npm install @pierre/trees
 ```
 
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
+
 <Step>
-  Copy `components/ui/file-system.tsx` from the registry item into your project.
+  Copy `components/extend/file-system.tsx` from the registry item into your
+  project.
 </Step>
 
 <FileSystemSource />
@@ -120,7 +131,7 @@ For large buckets, pass `hasChildren: true` on folder entries and provide `loadC
 - **Columns** — Miller columns with a preview-and-metadata pane for the selected file.
 - **Gallery** — a large preview with an information sidebar and a filmstrip of the current folder.
 
-Double-clicking a folder navigates into it. Double-clicking a file (in any view, including the list tree) opens the built-in viewer dialog — PDF, DOCX, and XLSX files open in their respective viewers, and images open in an image dialog; other file types open their resolved URL in a new tab. Pass `onFileOpen` to replace this behavior entirely. The registry item depends on the [PDF Viewer](/docs/components/pdf-viewer), [DOCX Viewer](/docs/components/docx-viewer), and [Excel Viewer](/docs/components/xlsx-viewer), so installing `@extend/file-system` brings the full preview experience.
+Double-clicking a folder navigates into it. Double-clicking a file (in any view, including the list tree) opens the built-in viewer dialog — PDF, DOCX, PowerPoint (`.pptx`), and XLSX files open in their respective viewers, and images open in an image dialog; other file types open their resolved URL in a new tab. Pass `onFileOpen` to replace this behavior entirely. The registry item depends on the [PDF Viewer](/docs/components/pdf-viewer), [DOCX Viewer](/docs/components/docx-viewer), [PowerPoint Viewer](/docs/components/pptx-viewer), and [Excel Viewer](/docs/components/xlsx-viewer), so installing `@extend/file-system` brings the full preview experience.
 
 The list view tree is derived from file paths, so lazy folders (`hasChildren` without loaded entries) appear there after their contents have been fetched — open them from the icon or column views first, or list them eagerly.
 
@@ -137,7 +148,7 @@ Finder-style shortcuts work everywhere in the component: <kbd>⌘↑</kbd> goes 
 
 When the component is narrower than 480px, the toolbar swaps the tabs view switcher for a compact select.
 
-The gallery view embeds the full viewers — PDF, DOCX, and XLSX files render in their toolbar-less viewer (the XLSX sheet switcher stays), and images scale to fill the stage. While arrow keys are scrubbing the filmstrip the stage shows a spinner; the full viewer mounts once the selection settles, so holding an arrow key stays smooth.
+The gallery view embeds the full viewers — PDF, DOCX, PowerPoint, and XLSX files render in their toolbar-less viewer (the XLSX sheet switcher stays), and images scale to fill the stage. While arrow keys are scrubbing the filmstrip the stage shows a spinner; the full viewer mounts once the selection settles, so holding an arrow key stays smooth.
 
 ### Multi-Page Thumbnails
 

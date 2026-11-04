@@ -1,6 +1,7 @@
 import { type Metadata } from "next"
 import Link from "next/link"
 
+import { absoluteUrl } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   PageActions,
@@ -16,7 +17,11 @@ const description =
 export const metadata: Metadata = {
   title,
   description,
+  alternates: {
+    canonical: absoluteUrl("/blocks"),
+  },
   openGraph: {
+    url: absoluteUrl("/blocks"),
     images: [
       {
         url: `/og?title=${encodeURIComponent(

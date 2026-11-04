@@ -1,21 +1,21 @@
 import type React from "react"
-import { Loading03Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 export function Spinner({
   className,
   ...props
-}: Omit<
-  React.ComponentProps<typeof HugeiconsIcon>,
-  "icon"
->): React.ReactElement {
+}: React.ComponentProps<"svg">): React.ReactElement {
   return (
-    <HugeiconsIcon
+    <IconPlaceholder
+      lucide="Loader2"
+      tabler="IconLoader"
+      hugeicons="Loading03Icon"
+      phosphor="SpinnerIcon"
+      remixicon="RiLoaderLine"
       aria-label="Loading"
       className={cn("animate-spin", className)}
-      icon={Loading03Icon}
       role="status"
       {...props}
     />

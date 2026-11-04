@@ -1,4 +1,5 @@
 import nextVitals from "eslint-config-next/core-web-vitals"
+import reactHooks from "eslint-plugin-react-hooks"
 import tseslint from "typescript-eslint"
 
 const eslintConfig = tseslint.config(
@@ -7,7 +8,12 @@ const eslintConfig = tseslint.config(
   ...nextVitals.map((config) =>
     config.name === "next/typescript"
       ? { ...config, plugins: {} }
-      : config
+      : config.plugins?.["react-hooks"]
+        ? {
+            ...config,
+            plugins: { ...config.plugins, "react-hooks": reactHooks },
+          }
+        : config
   ),
   ...tseslint.configs.recommended,
   {
@@ -38,6 +44,14 @@ const eslintConfig = tseslint.config(
       ],
     },
   },
+  {
+    files: [
+      "components/**/*.{ts,tsx}",
+      "hooks/**/*.{ts,tsx}",
+      "registry/**/*.{ts,tsx}",
+    ],
+    rules: reactHooks.configs.flat.recommended.rules,
+  }
 )
 
 export default eslintConfig

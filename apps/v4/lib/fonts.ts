@@ -26,36 +26,43 @@ const fontMono = FontMono({
 const fontInter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  preload: false,
 })
 
 const fontNotoSans = FontNotoSans({
   subsets: ["latin"],
   variable: "--font-noto-sans",
+  preload: false,
 })
 
 const fontNotoSerif = FontNotoSerif({
   subsets: ["latin"],
   variable: "--font-noto-serif",
+  preload: false,
 })
 
 const fontNotoSansArabic = FontNotoSansArabic({
   subsets: ["latin"],
   variable: "--font-ar",
+  preload: false,
 })
 
 const fontNotoSansHebrew = FontNotoSansHebrew({
   subsets: ["latin"],
   variable: "--font-he",
+  preload: false,
 })
 
 const fontLora = FontLora({
   subsets: ["latin"],
   variable: "--font-lora",
+  preload: false,
 })
 
 const fontPlayfairDisplay = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair-display",
+  preload: false,
 })
 
 export const fontVariables = cn(

@@ -1,10 +1,24 @@
 "use client"
 
 import * as React from "react"
-import { FileUploadIcon } from "@hugeicons/core-free-icons"
 
-import { PDFViewer } from "@/components/ui/pdf-viewer"
-import { FileUpload } from "@/components/ui/file-upload"
+import { type RegistryIconProps } from "@/lib/registry-icon-props"
+import { FileUpload } from "@/components/extend/file-upload"
+import { PDFViewer } from "@/components/extend/pdf-viewer"
+import { IconPlaceholder } from "@/components/icon-placeholder"
+
+function FileUploadGlyph(props: RegistryIconProps) {
+  return (
+    <IconPlaceholder
+      lucide="FileUp"
+      tabler="IconFileUpload"
+      hugeicons="FileUploadIcon"
+      phosphor="FileArrowUpIcon"
+      remixicon="RiFileUploadLine"
+      {...props}
+    />
+  )
+}
 
 const PDF_ACCEPT = "application/pdf,.pdf"
 const PDF_UPLOAD_DROPZONE_SELECTOR = "[data-pdf-upload-dropzone]"
@@ -64,7 +78,7 @@ export function PdfDropzoneBlock() {
         <div data-pdf-upload-dropzone className="w-full max-w-xl">
           <FileUpload
             accept={PDF_ACCEPT}
-            acceptedFileTypes={[{ label: "PDF", icon: FileUploadIcon }]}
+            acceptedFileTypes={[{ label: "PDF", icon: FileUploadGlyph }]}
             browseLabel="Browse PDF"
             className="w-full"
             description="PDF files only"
@@ -83,9 +97,9 @@ export function PdfDropzoneBlock() {
     <div className="h-full min-h-[680px] bg-background">
       <PDFViewer
         key={pdfFile.url}
-        file={pdfFile.url}
+        src={pdfFile.url}
         defaultZoom={1}
-        downloadFileName={pdfFile.name}
+        fileName={pdfFile.name}
         onPdfUpload={(file) => loadPdf([file])}
         toolbarActions={
           <div className="hidden max-w-40 truncate text-xs text-muted-foreground sm:block">

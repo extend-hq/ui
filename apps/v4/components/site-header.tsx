@@ -1,9 +1,9 @@
 import Link from "next/link"
 
-import { getColors } from "@/lib/colors"
 import { siteConfig } from "@/lib/config"
 import { source } from "@/lib/source"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { CommandMenu } from "@/components/command-menu"
 import { EXTEND_DEPLOY_CTA_HREF } from "@/components/extend-deploy-cta"
 import { GitHubLink } from "@/components/github-link"
@@ -11,10 +11,8 @@ import { Icons } from "@/components/icons"
 import { MainNav } from "@/components/main-nav"
 import { MobileNav } from "@/components/mobile-nav"
 import { ModeSwitcher } from "@/components/mode-switcher"
-import { Separator } from "@/components/ui/separator"
 
 export function SiteHeader() {
-  const colors = getColors()
   const pageTree = source.pageTree
 
   return (
@@ -49,7 +47,7 @@ export function SiteHeader() {
                 />
               }
             >
-              <span className="whitespace-nowrap text-xs text-muted-foreground">
+              <span className="text-xs whitespace-nowrap text-muted-foreground">
                 Built by Extend AI
               </span>
             </Button>
@@ -58,11 +56,7 @@ export function SiteHeader() {
               className="mr-2 hidden h-4 self-center md:block"
             />
             <div className="hidden w-full flex-1 md:flex md:w-auto md:flex-none">
-              <CommandMenu
-                tree={pageTree}
-                colors={colors}
-                navItems={siteConfig.navItems}
-              />
+              <CommandMenu tree={pageTree} navItems={siteConfig.navItems} />
             </div>
             <Separator
               orientation="vertical"

@@ -4,7 +4,6 @@ import * as React from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import {
-  CodeIcon,
   FullScreenIcon,
   LaptopIcon,
   Refresh01Icon,
@@ -13,13 +12,14 @@ import {
   TerminalIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { prepareFileTreeInput } from "@pierre/trees"
-import { FileTree as PierreFileTree, useFileTree } from "@pierre/trees/react"
 import type { PanelImperativeHandle } from "react-resizable-panels"
 
+import type {
+  BlockCodeFile,
+  LoadedBlockCodeFile,
+} from "@/lib/block-code-samples"
 import {
   PDF_VIEWER_BLOCKS,
-  type PdfViewerBlockId,
   type PdfViewerBlockMetadata,
 } from "@/lib/pdf-viewer-blocks"
 import { cn } from "@/lib/utils"
@@ -32,26 +32,15 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import type { BlockCodeLoadState } from "@/components/block-code-panel"
 import {
-  CodeHeaderCopyButton,
+  BlockPreviewPlaceholder,
+  blockPreviews,
+} from "@/components/block-previews"
+import {
   CopyButtonIcon,
   copyToClipboardWithMeta,
 } from "@/components/copy-button"
-import { HighlightedCodeBlock } from "@/components/highlighted-code-block"
-
-type BlockCodeFile = {
-  sourcePath: string
-  targetPath: string
-  language: string
-}
-
-type LoadedBlockCodeFile = BlockCodeFile & {
-  content: string
-}
-
-type PdfViewerBlock = PdfViewerBlockMetadata & {
-  component: React.ComponentType
-}
 
 type BlockViewportSize = "desktop" | "tablet" | "mobile"
 type BlockView = "preview" | "code"
@@ -68,98 +57,14 @@ const blockViewportSizes: Array<{
 ]
 
 const BLOCK_VIEWPORT_HEIGHT_CLASS = "h-[680px]"
-const BLOCK_PREVIEW_LAZY_ROOT_MARGIN = "900px 0px"
+const SCROLL_SETTLE_MS = 150
+const MIN_VISIBLE_RATIO = 0.1
 
-// Every preview is a dynamic chunk so the page bundle stays free of the
-// heavy viewer engines; chunks load when the lazy preview mounts near the
-// viewport. Previews render with no props here — the explicit prop type
-// only pins next/dynamic's inference so optional-prop components stay
-// assignable to React.ComponentType.
-type BlockPreviewProps = {
-  defaultViewerZoom?: number
-  heightClassName?: string
-}
-
-const HumanReviewBlock = dynamic<
-  BlockPreviewProps & { showExpected?: boolean }
->(
+const BlockCodePanel = dynamic(
   () =>
-    import("@/components/bounding-box-citations-docs").then(
-      (mod) => mod.HumanReviewBlock
-    ),
-  { loading: () => <BlockPreviewPlaceholder /> }
+    import("@/components/block-code-panel").then((mod) => mod.BlockCodePanel),
+  { loading: () => <div className="h-full bg-code" /> }
 )
-
-const PdfDropzoneBlock = dynamic<BlockPreviewProps>(
-  () =>
-    import("@/components/pdf-dropzone-block").then(
-      (mod) => mod.PdfDropzoneBlock
-    ),
-  { loading: () => <BlockPreviewPlaceholder /> }
-)
-
-const OcrBlocksBlock = dynamic<BlockPreviewProps>(
-  () =>
-    import("@/components/layout-blocks-docs").then((mod) => mod.OcrBlocksBlock),
-  { loading: () => <BlockPreviewPlaceholder /> }
-)
-
-const ESignatureBlock = dynamic<BlockPreviewProps>(
-  () =>
-    import("@/components/e-signature-docs").then((mod) => mod.ESignatureBlock),
-  { loading: () => <BlockPreviewPlaceholder /> }
-)
-
-const DocumentSplitsBlock = dynamic<BlockPreviewProps>(
-  () =>
-    import("@/components/document-splitter-docs").then(
-      (mod) => mod.DocumentSplitsBlock
-    ),
-  { loading: () => <BlockPreviewPlaceholder /> }
-)
-
-const XlsxDocumentSplitsBlock = dynamic<BlockPreviewProps>(
-  () =>
-    import("@/components/document-splitter-docs").then(
-      (mod) => mod.XlsxDocumentSplitsBlock
-    ),
-  { loading: () => <BlockPreviewPlaceholder /> }
-)
-
-const DocxEditorBlock = dynamic<BlockPreviewProps>(
-  () =>
-    import("@/components/docx-editor-docs").then((mod) => mod.DocxEditorBlock),
-  { loading: () => <BlockPreviewPlaceholder /> }
-)
-
-const FileSystemFinderBlock = dynamic<BlockPreviewProps>(
-  () =>
-    import("@/components/file-system-docs").then(
-      (mod) => mod.FileSystemFinderBlock
-    ),
-  { loading: () => <BlockPreviewPlaceholder /> }
-)
-
-const blockComponents = {
-  "bounding-box-citations": () => <HumanReviewBlock showExpected={false} />,
-  "pdf-dropzone": PdfDropzoneBlock,
-  "layout-blocks": OcrBlocksBlock,
-  "e-signature": ESignatureBlock,
-  "document-splits": DocumentSplitsBlock,
-  "excel-document-splits": XlsxDocumentSplitsBlock,
-  "docx-editor-block": DocxEditorBlock,
-  "file-system": FileSystemFinderBlock,
-} satisfies Record<PdfViewerBlockId, React.ComponentType>
-
-const pdfViewerBlocks: PdfViewerBlock[] = PDF_VIEWER_BLOCKS.map((block) => ({
-  ...block,
-  component: blockComponents[block.id],
-}))
-
-type BlockCodeLoadState =
-  | { status: "loading" }
-  | { status: "error" }
-  | { status: "loaded"; files: LoadedBlockCodeFile[] }
 
 // File contents stay out of the page payload; they are fetched once per
 // block from the static /blocks/[block]/code route when the Code tab opens.
@@ -219,12 +124,18 @@ export function PdfViewerBlocks({
 }: {
   codeSamples: Record<string, BlockCodeFile[]>
 }) {
+  const [sectionRef, visibleBlocks] = useVisibleBlocks()
+  const isDesktopViewport = useMediaQuery("(min-width: 768px)")
+  const mounted = useMounted()
+  const showAll = mounted && !("IntersectionObserver" in window)
   return (
-    <section className="space-y-12">
-      {pdfViewerBlocks.map((block) => (
+    <section ref={sectionRef} className="space-y-12">
+      {PDF_VIEWER_BLOCKS.map((block) => (
         <PdfViewerBlockPreview
           key={block.id}
           block={block}
+          isDesktopViewport={isDesktopViewport}
+          inView={showAll || visibleBlocks.has(block.id)}
           codeSamples={codeSamples[block.id] ?? []}
         />
       ))}
@@ -234,45 +145,46 @@ export function PdfViewerBlocks({
 
 function PdfViewerBlockPreview({
   block,
+  inView,
+  isDesktopViewport,
   codeSamples,
 }: {
-  block: (typeof pdfViewerBlocks)[number]
+  inView: boolean
+  isDesktopViewport: boolean
+  block: PdfViewerBlockMetadata
   codeSamples: BlockCodeFile[]
 }) {
   const [previewKey, setPreviewKey] = React.useState(0)
   const [view, setView] = React.useState<BlockView>("preview")
-  const [hasOpenedCode, setHasOpenedCode] = React.useState(false)
-  const [codeScrollResetKey, setCodeScrollResetKey] = React.useState(0)
-  const [activeViewport, setActiveViewport] =
-    React.useState<BlockViewportSize>("desktop")
+  const [keepPreview, setKeepPreview] = React.useState(false)
+  const lastScrollGesture = React.useRef(-Infinity)
+  const [activeViewport, setActiveViewport] = React.useState(
+    blockViewportSizes[0]
+  )
   const [isCommandCopied, setIsCommandCopied] = React.useState(false)
   const [activeFile, setActiveFile] = React.useState<string | null>(
     codeSamples[0]?.targetPath ?? null
   )
-  const [articleRef, shouldMountPreview] = useLazyBlockPreview()
   const codeLoadState = useLoadedBlockCode(
     block.id,
-    hasOpenedCode && codeSamples.length > 0
+    view === "code" && codeSamples.length > 0
   )
-  const isMounted = useMounted()
   const previewPanelRef = React.useRef<PanelImperativeHandle>(null)
-  const Preview = block.component
-  const isDesktopViewport = useMediaQuery("(min-width: 768px)")
+  const Preview = blockPreviews[block.id]
   const previewHeightClassName =
     block.previewHeightClassName ?? BLOCK_VIEWPORT_HEIGHT_CLASS
 
-  function setBlockView(nextView: BlockView) {
-    if (nextView === "code") {
-      setHasOpenedCode(true)
-      setCodeScrollResetKey((key) => key + 1)
-    }
+  function retainPreview() {
+    if (!keepPreview) setKeepPreview(true)
+  }
 
-    setView(nextView)
+  function noteScrollGesture() {
+    lastScrollGesture.current = performance.now()
   }
 
   function resizeViewport(viewport: (typeof blockViewportSizes)[number]) {
     setView("preview")
-    setActiveViewport(viewport.id)
+    setActiveViewport(viewport)
     previewPanelRef.current?.resize(`${viewport.panelSize}%`)
   }
 
@@ -283,19 +195,12 @@ function PdfViewerBlockPreview({
     return () => window.clearTimeout(timer)
   }, [isCommandCopied])
 
-  React.useEffect(() => {
-    if (!codeSamples.length) {
-      setActiveFile(null)
-      return
-    }
-
-    if (
-      !activeFile ||
-      !codeSamples.some((sample) => sample.targetPath === activeFile)
-    ) {
-      setActiveFile(codeSamples[0]?.targetPath ?? null)
-    }
-  }, [activeFile, codeSamples])
+  const validActiveFile = codeSamples.some(
+    (sample) => sample.targetPath === activeFile
+  )
+    ? activeFile
+    : (codeSamples[0]?.targetPath ?? null)
+  if (activeFile !== validActiveFile) setActiveFile(validActiveFile)
 
   async function copyInstallCommand() {
     const copied = await copyToClipboardWithMeta(block.command, {
@@ -312,13 +217,13 @@ function PdfViewerBlockPreview({
   }
 
   return (
-    <article ref={articleRef} id={block.id} className="scroll-mt-24 space-y-2">
+    <article id={block.id} className="scroll-mt-24 space-y-2">
       <div
         data-view={view}
         className="group/block-preview overflow-hidden rounded-xl"
       >
         <div className="flex min-h-11 flex-wrap items-center gap-2 px-2 pb-2">
-          <BlockViewToggle view={view} onViewChange={setBlockView} />
+          <BlockViewToggle view={view} onViewChange={setView} />
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <a
               href={`#${block.id}`}
@@ -339,7 +244,7 @@ function PdfViewerBlockPreview({
                   key={viewport.id}
                   type="button"
                   variant={
-                    activeViewport === viewport.id ? "secondary" : "ghost"
+                    activeViewport.id === viewport.id ? "secondary" : "ghost"
                   }
                   size="icon-sm"
                   className="size-7"
@@ -357,7 +262,13 @@ function PdfViewerBlockPreview({
                 className="size-7"
                 title="Open Fullscreen Preview"
                 aria-label={`Open ${block.title} fullscreen preview`}
-                render={<Link href={block.viewHref} target="_blank" />}
+                render={
+                  <Link
+                    href={block.viewHref}
+                    prefetch={false}
+                    target="_blank"
+                  />
+                }
               >
                 <HugeiconsIcon icon={FullScreenIcon} className="size-4" />
               </Button>
@@ -368,7 +279,10 @@ function PdfViewerBlockPreview({
                 className="size-7"
                 title="Refresh Preview"
                 aria-label={`Refresh ${block.title} preview`}
-                onClick={() => setPreviewKey((value) => value + 1)}
+                onClick={() => {
+                  setKeepPreview(false)
+                  setPreviewKey((value) => value + 1)
+                }}
               >
                 <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
               </Button>
@@ -396,90 +310,129 @@ function PdfViewerBlockPreview({
             </Button>
           </div>
         </div>
-        <div className={view === "preview" ? "block" : "hidden"}>
-          <div
-            className={`relative hidden ${previewHeightClassName} box-content overflow-hidden rounded-xl border bg-muted/30 md:block`}
-          >
-            <div className="absolute inset-0 right-4 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:20px_20px]" />
+        <div
+          hidden={view !== "preview"}
+          className={cn(
+            "relative box-content overflow-hidden rounded-xl border bg-background",
+            previewHeightClassName
+          )}
+          onClickCapture={retainPreview}
+          onPointerDownCapture={(event) => {
+            if (event.pointerType !== "touch") retainPreview()
+          }}
+          onFocusCapture={retainPreview}
+          onWheelCapture={keepPreview ? undefined : noteScrollGesture}
+          onTouchMoveCapture={keepPreview ? undefined : noteScrollGesture}
+          onScrollCapture={() => {
+            if (
+              performance.now() - lastScrollGesture.current <
+              SCROLL_SETTLE_MS
+            )
+              retainPreview()
+          }}
+          onKeyDownCapture={retainPreview}
+          onChangeCapture={retainPreview}
+          onDropCapture={retainPreview}
+        >
+          {keepPreview || (inView && view === "preview") ? (
             <ResizablePanelGroup
               orientation="horizontal"
-              className="relative z-10 h-full"
+              className="h-full bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:20px_20px]"
             >
               <ResizablePanel
                 ref={previewPanelRef}
-                defaultSize="100%"
+                defaultSize={`${activeViewport.panelSize}%`}
                 minSize="30%"
                 className="min-w-0 overflow-hidden rounded-xl bg-background"
               >
-                <BlockPreviewSurface
-                  Preview={Preview}
-                  isMounted={isMounted}
-                  previewKey={previewKey}
-                  shouldRenderPreview={isDesktopViewport && shouldMountPreview}
-                />
+                <Preview key={previewKey} />
               </ResizablePanel>
-              <ResizableHandle className="relative w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-1.5 after:-translate-y-1/2 after:rounded-full after:bg-background after:shadow-sm after:ring-1 after:ring-border after:transition-all after:hover:h-10" />
-              <ResizablePanel defaultSize="0%" minSize="0%" />
+              {isDesktopViewport && (
+                <>
+                  <ResizableHandle className="relative w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-1.5 after:-translate-y-1/2 after:rounded-full after:bg-background after:shadow-sm after:ring-1 after:ring-border after:transition-all after:hover:h-10" />
+                  <ResizablePanel defaultSize="0%" minSize="0%" />
+                </>
+              )}
             </ResizablePanelGroup>
-          </div>
-          <div className="overflow-hidden rounded-xl border bg-background md:hidden">
-            <BlockPreviewSurface
-              Preview={Preview}
-              isMounted={isMounted}
-              previewKey={previewKey}
-              shouldRenderPreview={!isDesktopViewport && shouldMountPreview}
-            />
-          </div>
+          ) : (
+            <BlockPreviewPlaceholder />
+          )}
         </div>
-        {hasOpenedCode ? (
-          <div className={view === "code" ? "block" : "hidden"}>
-            <BlockCodePanel
-              codeSamples={codeSamples}
-              loadState={codeLoadState}
-              activeFile={activeFile}
-              onActiveFileChange={setActiveFile}
-              scrollResetKey={codeScrollResetKey}
-            />
+        {view === "code" && (
+          <div className={BLOCK_VIEWPORT_HEIGHT_CLASS}>
+            {inView && (
+              <BlockCodePanel
+                codeSamples={codeSamples}
+                loadState={codeLoadState}
+                activeFile={activeFile}
+                onActiveFileChange={setActiveFile}
+              />
+            )}
           </div>
-        ) : null}
+        )}
       </div>
     </article>
   )
 }
 
-function useLazyBlockPreview() {
-  const [node, setNode] = React.useState<HTMLElement | null>(null)
-  const [shouldMountPreview, setShouldMountPreview] = React.useState(false)
+function useVisibleBlocks() {
+  const sectionRef = React.useRef<HTMLElement>(null)
+  const [visibleBlocks, setVisibleBlocks] = React.useState<Set<string>>(
+    () => new Set()
+  )
 
   React.useEffect(() => {
-    if (shouldMountPreview) return
-    if (!node) return
+    const section = sectionRef.current
+    if (!section || !("IntersectionObserver" in window)) return
 
-    if (!("IntersectionObserver" in window)) {
-      setShouldMountPreview(true)
-      return
+    const visible = new Set<string>()
+    let dirty = false
+    let settleTimer: number | undefined
+
+    function publish() {
+      settleTimer = undefined
+      if (!dirty) return
+      dirty = false
+      const next = new Set(visible)
+      React.startTransition(() => setVisibleBlocks(next))
+    }
+
+    function onScroll() {
+      window.clearTimeout(settleTimer)
+      settleTimer = window.setTimeout(publish, SCROLL_SETTLE_MS)
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return
-
-        setShouldMountPreview(true)
-        observer.disconnect()
+      (entries) => {
+        for (const entry of entries) {
+          const id = entry.target.id
+          const inView =
+            entry.isIntersecting &&
+            (entry.intersectionRatio >= MIN_VISIBLE_RATIO ||
+              (entry.rootBounds?.height ?? window.innerHeight) <
+                entry.boundingClientRect.height * MIN_VISIBLE_RATIO)
+          if (visible.has(id) === inView) continue
+          if (inView) visible.add(id)
+          else visible.delete(id)
+          dirty = true
+        }
+        if (settleTimer === undefined) publish()
       },
-      { rootMargin: BLOCK_PREVIEW_LAZY_ROOT_MARGIN }
+      { threshold: [0, MIN_VISIBLE_RATIO] }
     )
 
-    observer.observe(node)
+    section
+      .querySelectorAll(":scope > article[id]")
+      .forEach((node) => observer.observe(node))
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("scroll", onScroll)
+      window.clearTimeout(settleTimer)
+    }
+  }, [])
 
-    return () => observer.disconnect()
-  }, [node, shouldMountPreview])
-
-  return [setNode, shouldMountPreview] as const
-}
-
-function BlockPreviewPlaceholder() {
-  return <div className="h-full min-h-[560px] bg-muted/20" />
+  return [sectionRef, visibleBlocks] as const
 }
 
 function BlockViewToggle({
@@ -516,233 +469,5 @@ function BlockViewToggle({
         )
       })}
     </div>
-  )
-}
-
-const BlockPreviewSurface = React.memo(function BlockPreviewSurface({
-  Preview,
-  isMounted,
-  previewKey,
-  shouldRenderPreview,
-}: {
-  Preview: React.ComponentType
-  isMounted: boolean
-  previewKey: number
-  shouldRenderPreview: boolean
-}) {
-  if (!isMounted || !shouldRenderPreview) {
-    return <BlockPreviewPlaceholder />
-  }
-
-  return <Preview key={previewKey} />
-})
-
-function BlockCodePanel({
-  codeSamples,
-  loadState,
-  activeFile,
-  onActiveFileChange,
-  scrollResetKey,
-}: {
-  codeSamples: BlockCodeFile[]
-  loadState: BlockCodeLoadState
-  activeFile: string | null
-  onActiveFileChange: (file: string) => void
-  scrollResetKey: React.Key
-}) {
-  const activeCodeSample =
-    codeSamples.find((sample) => sample.targetPath === activeFile) ??
-    codeSamples[0]
-
-  if (!activeCodeSample) {
-    return (
-      <div
-        className={`grid ${BLOCK_VIEWPORT_HEIGHT_CLASS} place-items-center rounded-xl border bg-code text-sm text-code-foreground`}
-      >
-        No source sample available.
-      </div>
-    )
-  }
-
-  const activeLoadedSample =
-    loadState.status === "loaded"
-      ? loadState.files.find(
-          (file) => file.targetPath === activeCodeSample.targetPath
-        )
-      : undefined
-
-  return (
-    <div
-      className={`flex ${BLOCK_VIEWPORT_HEIGHT_CLASS} overflow-hidden rounded-xl border bg-code text-code-foreground`}
-    >
-      <div className="hidden w-72 shrink-0 border-r bg-code md:block">
-        <div className="flex h-12 items-center border-b px-4 text-sm font-medium">
-          Files
-        </div>
-        <BlockFileTree
-          codeSamples={codeSamples}
-          activeFile={activeCodeSample.targetPath}
-          onActiveFileChange={onActiveFileChange}
-        />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-12 items-center gap-2 border-b px-4 text-sm">
-          <HugeiconsIcon icon={CodeIcon} className="size-4 opacity-70" />
-          <span className="truncate">{activeCodeSample.targetPath}</span>
-          {activeLoadedSample ? (
-            <CodeHeaderCopyButton
-              value={activeLoadedSample.content}
-              className="ml-auto"
-              event="copy_block_code"
-            />
-          ) : null}
-        </div>
-        {activeLoadedSample ? (
-          <BlockCodeContent
-            code={activeLoadedSample}
-            scrollResetKey={scrollResetKey}
-          />
-        ) : loadState.status === "error" ? (
-          <div className="grid min-h-0 flex-1 place-items-center text-sm text-code-foreground/70">
-            Failed to load source.
-          </div>
-        ) : (
-          <BlockCodeContentSkeleton />
-        )}
-      </div>
-    </div>
-  )
-}
-
-function BlockCodeContent({
-  code,
-  scrollResetKey,
-}: {
-  code: LoadedBlockCodeFile
-  scrollResetKey: React.Key
-}) {
-  return (
-    <HighlightedCodeBlock
-      code={code.content}
-      fileName={code.targetPath}
-      language={code.language}
-      lazy={false}
-      renderFallbackCode
-      scrollResetKey={scrollResetKey}
-      showCopy={false}
-      className="min-h-0 flex-1 rounded-none border-0"
-      maxHeightClassName="h-full max-h-none"
-    />
-  )
-}
-
-function BlockCodeContentSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="min-h-0 flex-1 animate-pulse space-y-3 overflow-hidden p-4"
-    >
-      {Array.from({ length: 14 }, (_, index) => (
-        <div
-          key={index}
-          className="h-3 rounded bg-code-foreground/10"
-          style={{ width: `${30 + ((index * 37) % 55)}%` }}
-        />
-      ))}
-    </div>
-  )
-}
-
-function BlockFileTree({
-  codeSamples,
-  activeFile,
-  onActiveFileChange,
-}: {
-  codeSamples: BlockCodeFile[]
-  activeFile: string
-  onActiveFileChange: (file: string) => void
-}) {
-  const paths = React.useMemo(
-    () => codeSamples.map((sample) => sample.targetPath),
-    [codeSamples]
-  )
-
-  return (
-    <PierreBlockFileTree
-      key={paths.join("\0")}
-      activeFile={activeFile}
-      paths={paths}
-      onActiveFileChange={onActiveFileChange}
-    />
-  )
-}
-
-function PierreBlockFileTree({
-  activeFile,
-  paths,
-  onActiveFileChange,
-}: {
-  activeFile: string
-  paths: string[]
-  onActiveFileChange: (file: string) => void
-}) {
-  const filePathSet = React.useMemo(() => new Set(paths), [paths])
-  const preparedInput = React.useMemo(
-    () =>
-      prepareFileTreeInput(paths, {
-        flattenEmptyDirectories: true,
-        sort: "default",
-      }),
-    [paths]
-  )
-  const { model } = useFileTree({
-    flattenEmptyDirectories: true,
-    initialExpansion: "open",
-    initialSelectedPaths: activeFile ? [activeFile] : [],
-    itemHeight: 28,
-    overscan: 12,
-    preparedInput,
-    unsafeCSS: `
-      button[data-type='item'][data-item-selected] {
-        background: var(--color-primary);
-        color: var(--color-primary-foreground);
-      }
-      button[data-type='item'][data-item-selected] *,
-      button[data-type='item'][data-item-selected] svg {
-        color: var(--color-primary-foreground) !important;
-      }
-    `,
-    onSelectionChange: (selectedPaths) => {
-      const nextPath = selectedPaths.find((path) => filePathSet.has(path))
-      if (nextPath) {
-        onActiveFileChange(nextPath)
-      }
-    },
-  })
-
-  React.useEffect(() => {
-    if (!activeFile) return
-
-    const item = model.getItem(activeFile)
-    if (!item) return
-
-    item.select()
-    model.scrollToPath(activeFile, { focus: false, offset: "nearest" })
-  }, [activeFile, model])
-
-  return (
-    <PierreFileTree
-      model={model}
-      className="block h-[calc(680px-3rem)]"
-      style={
-        {
-          "--trees-bg-override": "var(--color-code)",
-          "--trees-border-color-override": "var(--color-border)",
-          "--trees-fg-override":
-            "color-mix(in oklab, var(--color-code-foreground) 78%, transparent)",
-          "--trees-selected-bg-override": "var(--color-primary)",
-        } as React.CSSProperties
-      }
-    />
   )
 }

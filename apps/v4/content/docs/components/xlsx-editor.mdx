@@ -1,15 +1,18 @@
 ---
 title: React Excel Editor
-description: A React Excel editor component for editing XLSX workbooks with formula input, undo and redo, sheet controls, merge tools, export, and live grid updates.
+description: A React Excel editor component for editing XLSX workbooks with formula input, cell styles, undo and redo, sheet controls, merge tools, export, and live grid updates.
 component: true
 featured: true
 ---
 
-The React Excel Editor is an experimental spreadsheet editing surface built on top of `@extend-ai/react-xlsx`. It keeps the viewer shell familiar while enabling direct XLSX workbook mutations through the package editing API.
+The React Excel Editor is a spreadsheet editing surface built on top of `@extend-ai/react-xlsx`. It keeps the viewer shell familiar while enabling direct XLSX workbook mutations through the package editing API.
 
 <XlsxEditorDemo />
 
 ## Installation
+
+First configure the [style-aware registry](/docs#installation) in
+`components.json` so the CLI uses the primitives for your project.
 
 <CodeTabs>
 
@@ -32,16 +35,30 @@ npx shadcn@latest add @extend/xlsx-editor
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @base-ui/react@^1.4.1 @extend-ai/react-xlsx@^0.10.0 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 class-variance-authority@^0.7.1
+npm install @base-ui/react@^1.4.1 @extend-ai/react-xlsx@latest class-variance-authority@^0.7.1
 ```
 
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
+
 <Step>
-  Install the Excel Viewer component because the editor reuses its sheet tabs
-  and table header menu, plus the Group primitive used by the formula bar.
+  Install the Excel Viewer component for its sheet tabs, context menu, scroll
+  area, and table header menu, plus the icon prop types and UI primitives used
+  by the editor:
 </Step>
 
+The manual source uses Base UI primitives. Use the Command tab for a Radix
+project so the registry adapts the source to your primitive APIs.
+
 ```bash
-npx shadcn@latest add @extend/xlsx-viewer @extend/group
+npx shadcn@latest add @extend/xlsx-viewer @extend/registry-icon-props @extend/group @extend/color-picker @extend/toggle button dropdown-menu input select separator spinner tooltip utils
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -59,7 +76,9 @@ npx shadcn@latest add @extend/xlsx-viewer @extend/group
 ## Useful behaviors
 
 - Formula bar shows the selected cell's formula, or its display value when no formula is present.
+- Font family, font size, font effects, text color, fill color, borders, alignment, wrapping, shrink-to-fit, and number formats use persisted `react-xlsx` cell style APIs.
 - Undo, redo, merge, unmerge, sheet add/remove, and export are wired through `react-xlsx` editing APIs.
+- Right-click cells or headers for clipboard, editing, selection, merge, and table-sort commands. Shift+F10 opens the same menu from the keyboard; failed commands keep their error visible.
 - Sheet tabs, workbook loading, upload, zoom, table sorting, and dark workbook rendering match the Excel Viewer.
 - Large workbooks automatically fall back to read-only behavior above the editor threshold.
 
@@ -67,14 +86,12 @@ npx shadcn@latest add @extend/xlsx-viewer @extend/group
 
 ### XlsxEditorPreview
 
-The XlsxEditorPreview component renders an editable Excel workbook with upload, theme, zoom, formula editing, sheet controls, and export.
+The XlsxEditorPreview component renders an editable Excel workbook with upload, theme, zoom, formula editing, cell styling, sheet controls, and export.
 
 | Prop             | Type                        | Default | Required |
 | ---------------- | --------------------------- | ------- | -------- |
 | `className`      | `string`                    | `-`     | No       |
-| `defaultIsDark`  | `boolean`                   | `false` | No       |
 | `fileName`       | `string`                    | `-`     | No       |
-| `isDark`         | `boolean`                   | `-`     | No       |
-| `onIsDarkChange` | `(isDark: boolean) => void` | `-`     | No       |
-| `rounded`        | `boolean`                   | `false` | No       |
+| `isDark`         | `boolean`                   | `-`     | Yes      |
+| `onIsDarkChange` | `(isDark: boolean) => void` | `-`     | Yes      |
 | `src`            | `string`                    | `-`     | No       |

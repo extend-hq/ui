@@ -1,0 +1,24 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -15899,7 +15899,7 @@
+   const ratio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+   const viewportScale = typeof window !== "undefined" ? window.visualViewport?.scale ?? 1 : 1;
+   const hasDom = typeof document !== "undefined" && Boolean(document.body);
+-  return `${ratio}\0${viewportScale}\0${hasDom}`;
++  return [ratio, viewportScale, hasDom].join("\0");
+ }
+ function bodyZoomScale() {
+   let scale = 1;
+diff --git a/dist/index.js b/dist/index.js
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -14582,7 +14582,7 @@
+   const ratio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+   const viewportScale = typeof window !== "undefined" ? window.visualViewport?.scale ?? 1 : 1;
+   const hasDom = typeof document !== "undefined" && Boolean(document.body);
+-  return `${ratio}\0${viewportScale}\0${hasDom}`;
++  return [ratio, viewportScale, hasDom].join("\0");
+ }
+ function bodyZoomScale() {
+   let scale = 1;

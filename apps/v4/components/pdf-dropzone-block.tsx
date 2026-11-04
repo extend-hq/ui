@@ -3,7 +3,7 @@
 import * as React from "react"
 import { FileUploadIcon } from "@hugeicons/core-free-icons"
 
-import { PDFViewer } from "@/components/ui/pdf-viewer"
+import { PDFViewer } from "@/components/extend/pdf-viewer"
 import { FileUpload } from "@/components/file-upload-docs"
 
 const PDF_ACCEPT = "application/pdf,.pdf"
@@ -95,9 +95,9 @@ export function PdfDropzoneBlock({
     <div className="h-full min-h-[680px] bg-background">
       <PDFViewer
         key={pdfFile.url}
-        file={pdfFile.url}
+        src={pdfFile.url}
         defaultZoom={defaultViewerZoom}
-        downloadFileName={pdfFile.name}
+        fileName={pdfFile.name}
         onPdfUpload={(file) => loadPdf([file])}
         toolbarActions={
           <div className="hidden max-w-40 truncate text-xs text-muted-foreground sm:block">

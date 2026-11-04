@@ -1,15 +1,18 @@
 ---
 title: React DOCX Viewer
-description: A React DOCX viewer component for rendering Word documents with page thumbnails, zoom, themes, comments, sections, and review-friendly layout.
+description: A React DOCX viewer component for rendering Word documents with page thumbnails, zoom, themes, comments, sections, and review-friendly layout. Legacy .doc support is limited and experimental.
 component: true
 featured: true
 ---
 
-The React DOCX Viewer is for contracts, proposals, reports, and internal docs where Word document structure matters more than plain text extraction.
+The React DOCX Viewer is for contracts, proposals, reports, and internal docs where Word document structure matters more than plain text extraction. DOCX is the primary supported format; legacy .doc support is limited and experimental, and conversion to DOCX is recommended for best fidelity.
 
 <DocxViewerDemo />
 
 ## Installation
+
+First configure the [style-aware registry](/docs#installation) in
+`components.json` so the CLI uses the primitives for your project.
 
 <CodeTabs>
 
@@ -32,10 +35,32 @@ npx shadcn@latest add @extend/docx-viewer
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @extend-ai/react-docx@^0.7.0-alpha.6 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6
+npm install @extend-ai/react-docx@latest @tanstack/react-virtual@3.13.26
 ```
 
-<Step>Copy and paste the following code into your project.</Step>
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
+
+<Step>Install the shared components and UI primitives:</Step>
+
+The manual source uses Base UI primitives. Use the Command tab for a Radix
+project so the registry adapts the source to your primitive APIs.
+
+```bash
+npx shadcn@latest add @extend/document-viewer-sidebar @extend/file-thumbnail badge card button dropdown-menu input scroll-area select separator spinner tooltip utils
+```
+
+<Step>
+  Copy both files below into your project. The annotation card is shared by
+  the viewer and editor and renders comments and tracked changes.
+</Step>
 
 <DocxViewerSource />
 
@@ -52,21 +77,34 @@ npm install @extend-ai/react-docx@^0.7.0-alpha.6 @hugeicons/core-free-icons@^4.2
 - Preserve headings, lists, tables, images, headers, footers, and page breaks.
 - Expose document outline and section anchors.
 - Support comments, tracked-change surfaces, and copyable text.
+- Switch between numeric, fit-page, fit-width, and automatic zoom levels.
+- Treat legacy .doc files as limited/experimental; convert them to DOCX when fidelity matters.
 - Provide a predictable fallback state for unsupported Word features.
 
 ## API Reference
 
 ### DocxViewerPreview
 
-The DocxViewerPreview component renders a DOCX file with upload, theme, and zoom controls around the `@extend-ai/react-docx` viewer.
+The DocxViewerPreview component renders a DOCX file with upload, theme, and zoom controls around the `@extend-ai/react-docx` viewer. Legacy .doc support is limited and experimental.
 
-| Prop                          | Type                        | Default | Required |
-| ----------------------------- | --------------------------- | ------- | -------- |
-| `className`                   | `string`                    | `-`     | No       |
-| `defaultIsDark`               | `boolean`                   | `false` | No       |
-| `defaultThumbnailSidebarOpen` | `boolean`                   | `false` | No       |
-| `fileName`                    | `string`                    | `-`     | No       |
-| `isDark`                      | `boolean`                   | `-`     | No       |
-| `onIsDarkChange`              | `(isDark: boolean) => void` | `-`     | No       |
-| `rounded`                     | `boolean`                   | `false` | No       |
-| `src`                         | `string`                    | `-`     | No       |
+| Prop             | Type                                                 | Default | Required |
+| ---------------- | ---------------------------------------------------- | ------- | -------- |
+| `className`      | `string`                                             | `-`     | No       |
+| `defaultZoom`    | `number \| "fit-page" \| "fit-width" \| "automatic"` | `50`    | No       |
+| `fileName`       | `string`                                             | `-`     | No       |
+| `isDark`         | `boolean`                                            | `-`     | Yes      |
+| `layout`         | `React.ComponentType<DocxViewerLayoutProps>`          | `-`     | No       |
+| `onIsDarkChange` | `(isDark: boolean) => void`                          | `-`     | Yes      |
+| `showDownload`   | `boolean`                                            | `true`  | No       |
+| `showToolbar`    | `boolean`                                            | `true`  | No       |
+| `showUpload`     | `boolean`                                            | `true`  | No       |
+| `src`            | `string`                                             | `-`     | No       |
+| `toolbarActions` | `React.ReactNode`                                    | `-`     | No       |
+
+## Layout blocks
+
+[Open the DOCX Layout Blocks preview](/view/blocks/docx-layout-blocks) to inspect the parser output alongside the read-only viewer. Hover over a block, focus it with the keyboard, or tap it to scroll the document to its source. The list includes nested blocks.
+
+```bash
+pnpm dlx shadcn@latest add @extend/docx-layout-blocks
+```

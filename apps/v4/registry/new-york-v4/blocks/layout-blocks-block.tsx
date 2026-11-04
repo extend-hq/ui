@@ -4,21 +4,25 @@ import * as React from "react"
 
 import {
   ATTENTION_OCR_OUTPUT,
-  blockToArea,
+  blockToHighlightArea,
   getOcrBlocks,
   OcrBlockOverlay,
   OcrBlocksPanel,
   PDF_URL,
   type OcrBlock,
   type ParsedOcrOutput,
-} from "@/components/ui/layout-blocks"
-import { PDFViewer, type PDFViewerHandle } from "@/components/ui/pdf-viewer"
-import { PdfBlockResizableShell } from "@/components/pdf-block-resizable-shell"
+} from "@/components/extend/layout-blocks"
+import { PdfBlockResizableShell } from "@/components/extend/pdf-block-resizable-shell"
+import { PDFViewer, type PDFViewerHandle } from "@/components/extend/pdf-viewer"
 
 export function OcrBlocksBlock({
+  autoSaveId = "pdf-block-ocr",
+  defaultViewerZoom = 1,
   file = PDF_URL,
   output = ATTENTION_OCR_OUTPUT,
 }: {
+  autoSaveId?: string
+  defaultViewerZoom?: number
   file?: string
   output?: ParsedOcrOutput
 }) {
@@ -32,18 +36,14 @@ export function OcrBlocksBlock({
     activeBlockIdRef.current = activeBlockId
   }, [activeBlockId])
 
-  React.useEffect(() => {
-    if (!blocks.length || blocks.some((block) => block.id === activeBlockId)) {
-      return
-    }
-
+  if (blocks.length && !blocks.some((block) => block.id === activeBlockId)) {
     setActiveBlockId(blocks[0].id)
-  }, [activeBlockId, blocks])
+  }
 
   const focusBlock = React.useCallback((block: OcrBlock) => {
     if (block.id === activeBlockIdRef.current) return
 
-    const area = blockToArea(block)
+    const area = blockToHighlightArea(block)
 
     activeBlockIdRef.current = block.id
     setActiveBlockId(block.id)
@@ -61,7 +61,15 @@ export function OcrBlocksBlock({
 
   const activeOverlayBlockId = activeBlock?.id
   const renderPageOverlay = React.useCallback(
-    ({ pageNumber }: { pageNumber: number }) =>
+    ({
+      pageHeight,
+      pageNumber,
+      pageWidth,
+    }: {
+      pageHeight: number
+      pageNumber: number
+      pageWidth: number
+    }) =>
       blocks
         .filter((block) => block.page === pageNumber)
         .map((block) => (
@@ -69,6 +77,8 @@ export function OcrBlocksBlock({
             key={block.id}
             block={block}
             isActive={block.id === activeOverlayBlockId}
+            pageHeight={pageHeight}
+            pageWidth={pageWidth}
           />
         )),
     [activeOverlayBlockId, blocks]
@@ -76,12 +86,12 @@ export function OcrBlocksBlock({
 
   return (
     <PdfBlockResizableShell
-      autoSaveId="pdf-block-ocr"
+      autoSaveId={autoSaveId}
       left={
         <PDFViewer
           ref={viewerRef}
-          file={file}
-          defaultZoom={1}
+          src={file}
+          defaultZoom={defaultViewerZoom}
           renderPageOverlay={renderPageOverlay}
         />
       }

@@ -7,6 +7,7 @@ import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import { withUiBasePath } from "@/lib/zone-path"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { useMounted } from "@/hooks/use-mounted"
 
 const SMOKE_COLORS = ["#004CFF", "#FF8C00", "#FFB066", "#FFD29A"]
 
@@ -18,11 +19,7 @@ export function RootLiquidLogo({ className }: { className?: string }) {
   const isMobileViewport = useMediaQuery("max-md")
   const isCoarsePointer = useMediaQuery({ pointer: "coarse" })
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)")
-  const [isMounted, setIsMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useMounted()
 
   const isDarkMode = isMounted && resolvedTheme === "dark"
   const shouldUseLayeredBloom =

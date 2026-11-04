@@ -3,28 +3,29 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 
+import {
+  getPdfPageCount,
+  renderPdfThumbnailUrl,
+} from "@/lib/pdf-thumbnail-utils"
 import { cn } from "@/lib/utils"
 import { withUiBasePath } from "@/lib/zone-path"
+import { DocsViewCodeBlock } from "@/components/docs-code-block"
 import {
   FileSystem,
   type FileSystemItem,
   type FileSystemProps,
-} from "@/components/ui/file-system"
-import { DocsViewCodeBlock } from "@/components/docs-code-block"
-import { FileSystemSourceCode } from "@/components/file-system-source-code"
-import {
-  getPdfPageCount,
-  renderPdfThumbnailUrl,
-} from "@/components/pdf-thumbnail-utils"
+} from "@/components/extend/file-system"
 import { FileSystemBlock } from "@/registry/new-york-v4/blocks/file-system-block"
 
 const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 const XLSX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+const PPTX_MIME_TYPE =
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 const THUMBNAIL_WIDTH = 360
 
-type DemoThumbnailKind = "docx" | "pdf" | "url" | "xlsx"
+type DemoThumbnailKind = "docx" | "pdf" | "pptx" | "url" | "xlsx"
 
 type DemoSource = {
   contentType: string
@@ -33,6 +34,7 @@ type DemoSource = {
   /** Thumbnail aspect ratio; images use their natural ratio. */
   previewAspectRatio?: number
   size: number
+  staticThumbnailUrl?: string
   thumbnail: DemoThumbnailKind
   updatedAt: string
   url: string
@@ -46,6 +48,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 2215244,
     thumbnail: "pdf",
     updatedAt: "2026-03-24T21:43:00Z",
+    staticThumbnailUrl: withUiBasePath("/samples/thumbnails/attention.png"),
     url: withUiBasePath("/samples/attention.pdf"),
   },
   {
@@ -55,6 +58,7 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 842419,
     thumbnail: "pdf",
     updatedAt: "2026-02-03T19:11:00Z",
+    staticThumbnailUrl: withUiBasePath("/samples/thumbnails/knicks.png"),
     url: withUiBasePath("/samples/knicks.pdf"),
   },
   {
@@ -64,6 +68,9 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 39248,
     thumbnail: "pdf",
     updatedAt: "2026-04-05T21:56:00Z",
+    staticThumbnailUrl: withUiBasePath(
+      "/samples/thumbnails/loan-application.png"
+    ),
     url: withUiBasePath("/samples/loan-application.pdf"),
   },
   {
@@ -75,6 +82,7 @@ const DEMO_SOURCES: DemoSource[] = [
     // the thumbnail is generated client-side like the PDFs.
     thumbnail: "docx",
     updatedAt: "2026-03-24T17:43:00Z",
+    staticThumbnailUrl: withUiBasePath("/samples/thumbnails/demo.png"),
     url: withUiBasePath("/samples/demo.docx"),
   },
   {
@@ -85,7 +93,23 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 66655,
     thumbnail: "xlsx",
     updatedAt: "2026-02-24T08:52:48Z",
+    staticThumbnailUrl: withUiBasePath(
+      "/samples/thumbnails/crazy-chart-zoo.png"
+    ),
     url: withUiBasePath("/samples/crazy-chart-zoo.xlsx"),
+  },
+  {
+    contentType: PPTX_MIME_TYPE,
+    createdAt: "2026-07-16T17:31:45Z",
+    path: "Consulting proposal.pptx",
+    previewAspectRatio: 16 / 9,
+    size: 8840652,
+    thumbnail: "pptx",
+    updatedAt: "2026-07-16T17:31:45Z",
+    staticThumbnailUrl: withUiBasePath(
+      "/samples/thumbnails/consulting-proposal.png"
+    ),
+    url: withUiBasePath("/samples/demo.pptx"),
   },
   {
     contentType: "image/png",
@@ -114,6 +138,9 @@ const DEMO_SOURCES: DemoSource[] = [
     size: 80096,
     thumbnail: "pdf",
     updatedAt: "2026-04-05T21:57:02Z",
+    staticThumbnailUrl: withUiBasePath(
+      "/samples/thumbnails/bank-statement.png"
+    ),
     url: withUiBasePath("/samples/bank-statement-x4uhhi7t.pdf"),
   },
 ]
@@ -231,6 +258,14 @@ const XlsxThumbnailUrlGenerator = dynamic(
   { ssr: false }
 )
 
+const PptxThumbnailUrlGenerator = dynamic(
+  () =>
+    import("@/components/file-system-pptx-thumbnails").then(
+      (mod) => mod.PptxThumbnailUrlGenerator
+    ),
+  { ssr: false }
+)
+
 async function renderPdfPageThumbnail(url: string, pageIndex: number) {
   return renderPdfThumbnailUrl({
     pageIndex,
@@ -276,6 +311,13 @@ function PdfThumbnailUrlGenerator({
   return null
 }
 
+const thumbnailGeneratorsByKind = {
+  docx: DocxThumbnailUrlGenerator,
+  pdf: PdfThumbnailUrlGenerator,
+  pptx: PptxThumbnailUrlGenerator,
+  xlsx: XlsxThumbnailUrlGenerator,
+}
+
 type DemoThumbnails = {
   pageCount: number
   urls: string[]
@@ -286,57 +328,31 @@ type DemoThumbnails = {
 // a hidden DOCX import + pagination, XLSX sheet paints).
 const demoThumbnailCache = new Map<string, DemoThumbnails>()
 
-// The hidden DOCX generator imports and paginates the whole 1.3MB demo.docx
-// on the main thread — by far the heaviest job on the page. Its output is
-// only gallery thumbnails, so hold it until the visible viewers have parsed.
-const DOCX_GENERATOR_DELAY_MS = 1200
-
-function useDeferredDocxGeneration() {
-  const [isReady, setIsReady] = React.useState(false)
-
-  React.useEffect(() => {
-    let idleCallbackId: number | null = null
-    let timeoutId: number | null = window.setTimeout(() => {
-      timeoutId = null
-
-      const markReady = () => setIsReady(true)
-
-      if ("requestIdleCallback" in window) {
-        idleCallbackId = window.requestIdleCallback(markReady, {
-          timeout: 4000,
-        })
-      } else {
-        markReady()
-      }
-    }, DOCX_GENERATOR_DELAY_MS)
-
-    return () => {
-      if (timeoutId !== null) window.clearTimeout(timeoutId)
-      if (idleCallbackId !== null && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleCallbackId)
-      }
-    }
-  }, [])
-
-  return isReady
-}
-
-export function useFileSystemDemoItems() {
+export function useFileSystemDemoItems({
+  staticThumbnails = false,
+  thumbnailPath,
+}: { staticThumbnails?: boolean; thumbnailPath?: string | null } = {}) {
   const [thumbnails, setThumbnails] = React.useState<
     Record<string, DemoThumbnails>
   >(() => Object.fromEntries(demoThumbnailCache))
-  const canGenerateDocx = useDeferredDocxGeneration()
   const setPathThumbnails = React.useCallback(
     (path: string, urls: string[], pageCount: number) => {
-      if (!demoThumbnailCache.has(path)) {
-        demoThumbnailCache.set(path, { pageCount, urls })
-      }
+      const nextThumbnails = { pageCount, urls }
+
+      demoThumbnailCache.set(path, nextThumbnails)
       React.startTransition(() => {
-        setThumbnails((previous) =>
-          previous[path]
-            ? previous
-            : { ...previous, [path]: { pageCount, urls } }
-        )
+        setThumbnails((previous) => {
+          const current = previous[path]
+
+          if (
+            current?.pageCount === pageCount &&
+            current.urls.length >= urls.length
+          ) {
+            return previous
+          }
+
+          return { ...previous, [path]: nextThumbnails }
+        })
       })
     },
     []
@@ -345,6 +361,9 @@ export function useFileSystemDemoItems() {
   const items = React.useMemo<FileSystemItem[]>(
     () => [
       ...DEMO_SOURCES.map<FileSystemItem>((source) => {
+        const generated = staticThumbnails ? undefined : thumbnails[source.path]
+        const cover =
+          source.thumbnail === "url" ? source.url : source.staticThumbnailUrl
         return {
           contentType: source.contentType,
           createdAt: source.createdAt,
@@ -352,11 +371,8 @@ export function useFileSystemDemoItems() {
           kind: "file",
           path: source.path,
           previewAspectRatio: source.previewAspectRatio,
-          previewImageUrls:
-            source.thumbnail === "url"
-              ? [source.url]
-              : (thumbnails[source.path]?.urls ?? null),
-          previewPageCount: thumbnails[source.path]?.pageCount,
+          previewImageUrls: generated?.urls ?? (cover ? [cover] : null),
+          previewPageCount: generated?.pageCount,
           size: source.size,
           updatedAt: source.updatedAt,
           url: source.url,
@@ -364,11 +380,11 @@ export function useFileSystemDemoItems() {
       }),
       ...AURORA_ITEMS,
     ],
-    [thumbnails]
+    [thumbnails, staticThumbnails]
   )
 
-  // PDF previews render on demand; data URLs are memoized per page so
-  // revisiting a page is instant without shipping generated thumbnail assets.
+  // Document previews render on demand and are memoized per page so revisiting
+  // a page is instant without shipping generated thumbnail assets.
   const lazyPageCacheRef = React.useRef(
     new Map<string, Promise<string | null>>()
   )
@@ -378,13 +394,35 @@ export function useFileSystemDemoItems() {
         (demoSource) => demoSource.path === file.path
       )
 
-      if (source?.thumbnail !== "pdf") return Promise.resolve(null)
+      if (!source) return Promise.resolve(null)
 
       const cacheKey = `${source.url}#${pageIndex}`
       let pagePromise = lazyPageCacheRef.current.get(cacheKey)
 
       if (!pagePromise) {
-        pagePromise = renderPdfPageThumbnail(source.url, pageIndex)
+        if (source.thumbnail === "pdf") {
+          pagePromise = renderPdfPageThumbnail(source.url, pageIndex)
+        } else if (source.thumbnail === "docx") {
+          pagePromise = import("@/components/file-system-docx-thumbnails").then(
+            (module) =>
+              module
+                .renderDocxThumbnailUrl({
+                  fileName: source.path.split("/").pop() ?? source.path,
+                  pageIndex,
+                  url: source.url,
+                })
+                .then((thumbnail) => thumbnail?.url ?? null)
+          )
+        } else if (source.thumbnail === "pptx") {
+          pagePromise = import("@/components/file-system-pptx-thumbnails").then(
+            (module) =>
+              module
+                .renderPptxThumbnailUrl({ pageIndex, url: source.url })
+                .then((thumbnail) => thumbnail?.url ?? null)
+          )
+        } else {
+          return Promise.resolve(null)
+        }
         lazyPageCacheRef.current.set(cacheKey, pagePromise)
       }
       return pagePromise
@@ -392,48 +430,27 @@ export function useFileSystemDemoItems() {
     []
   )
 
-  const thumbnailGenerators = (
-    <>
-      {DEMO_SOURCES.filter(
-        (source) => source.thumbnail === "pdf" && !thumbnails[source.path]
-      ).map((source) => (
-        <PdfThumbnailUrlGenerator
+  const thumbnailGenerators =
+    !staticThumbnails &&
+    DEMO_SOURCES.map((source) => {
+      if (
+        source.thumbnail === "url" ||
+        thumbnails[source.path] ||
+        (thumbnailPath !== undefined && source.path !== thumbnailPath)
+      )
+        return null
+      const Generator = thumbnailGeneratorsByKind[source.thumbnail]
+      return (
+        <Generator
           key={source.path}
           url={source.url}
-          onUrls={(dataUrls, pageCount) =>
-            setPathThumbnails(source.path, dataUrls, pageCount)
-          }
-        />
-      ))}
-      {DEMO_SOURCES.filter(
-        (source) =>
-          source.thumbnail === "docx" &&
-          canGenerateDocx &&
-          !thumbnails[source.path]
-      ).map((source) => (
-        <DocxThumbnailUrlGenerator
-          key={source.path}
           fileName={source.path.split("/").pop() ?? source.path}
-          url={source.url}
-          onUrls={(dataUrls, pageCount) =>
-            setPathThumbnails(source.path, dataUrls, pageCount)
+          onUrls={(urls, pageCount) =>
+            setPathThumbnails(source.path, urls, pageCount)
           }
         />
-      ))}
-      {DEMO_SOURCES.filter(
-        (source) => source.thumbnail === "xlsx" && !thumbnails[source.path]
-      ).map((source) => (
-        <XlsxThumbnailUrlGenerator
-          key={source.path}
-          fileName={source.path.split("/").pop() ?? source.path}
-          url={source.url}
-          onUrls={(dataUrls, pageCount) =>
-            setPathThumbnails(source.path, dataUrls, pageCount)
-          }
-        />
-      ))}
-    </>
-  )
+      )
+    })
 
   return { items, loadPreviewImageUrl, thumbnailGenerators }
 }
@@ -464,12 +481,15 @@ export function FileSystemDemo() {
 export function FileSystemFinderBlock({
   defaultView,
   heightClassName = "h-[680px]",
+  staticThumbnails = false,
 }: {
   defaultView?: FileSystemProps["defaultView"]
   heightClassName?: string
+  staticThumbnails?: boolean
 }) {
+  const [thumbnailPath, setThumbnailPath] = React.useState<string | null>(null)
   const { items, loadPreviewImageUrl, thumbnailGenerators } =
-    useFileSystemDemoItems()
+    useFileSystemDemoItems({ staticThumbnails, thumbnailPath })
 
   return (
     <div className="flex h-full min-h-0 bg-background">
@@ -478,6 +498,9 @@ export function FileSystemFinderBlock({
         title="Documents"
         className={cn("min-h-0 flex-1 rounded-none border-0", heightClassName)}
         defaultView={defaultView}
+        onSelectionChange={(item) =>
+          setThumbnailPath(item?.kind === "file" ? item.path : null)
+        }
         loadPreviewImageUrl={loadPreviewImageUrl}
       />
       {thumbnailGenerators}
@@ -487,7 +510,7 @@ export function FileSystemFinderBlock({
 
 const fileSystemDemoCode = `"use client"
 
-import { FileSystem, type FileSystemItem } from "@/components/ui/file-system"
+import { FileSystem, type FileSystemItem } from "@/components/extend/file-system"
 
 // Flat manifest — maps 1:1 from S3/R2 ListObjectsV2:
 //   Contents[].Key          -> file.key / file.path
@@ -528,7 +551,3 @@ export function DocumentsBrowser() {
     />
   )
 }`
-
-export function FileSystemSource() {
-  return <FileSystemSourceCode />
-}

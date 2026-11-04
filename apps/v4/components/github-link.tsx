@@ -3,8 +3,8 @@ import Link from "next/link"
 
 import { siteConfig } from "@/lib/config"
 import { Button } from "@/components/ui/button"
-import { Icons } from "@/components/icons"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Icons } from "@/components/icons"
 
 const GITHUB_REPO = "extend-hq/ui"
 
@@ -53,7 +53,7 @@ export async function StarsCount() {
 
   const formattedCount =
     json.stargazers_count >= 1000
-      ? `${Math.round(json.stargazers_count / 1000)}k`
+      ? `${(json.stargazers_count / 1000).toFixed(1)}k`
       : json.stargazers_count.toLocaleString()
 
   return (

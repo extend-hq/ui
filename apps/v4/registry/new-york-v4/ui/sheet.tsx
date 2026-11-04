@@ -5,12 +5,11 @@ import { isValidElement } from "react"
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
-import { Cancel01Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 export const Sheet: typeof SheetPrimitive.Root = SheetPrimitive.Root
 
@@ -134,7 +133,13 @@ export function SheetPopup({
               render={<Button size="icon" variant="ghost" />}
               {...closeProps}
             >
-              <HugeiconsIcon icon={Cancel01Icon} />
+              <IconPlaceholder
+                lucide="X"
+                tabler="IconX"
+                hugeicons="Cancel01Icon"
+                phosphor="XIcon"
+                remixicon="RiCloseLine"
+              />
             </SheetPrimitive.Close>
           )}
         </SheetPrimitive.Popup>

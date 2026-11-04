@@ -1,8 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Search01Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { Command as CommandPrimitive } from "cmdk"
 
 import { cn } from "@/lib/utils"
@@ -13,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 function Command({
   className,
@@ -71,8 +70,12 @@ function CommandInput({
       data-slot="command-input-wrapper"
       className="flex h-9 items-center gap-2 border-b px-3"
     >
-      <HugeiconsIcon
-        icon={Search01Icon}
+      <IconPlaceholder
+        lucide="Search"
+        tabler="IconSearch"
+        hugeicons="Search01Icon"
+        phosphor="MagnifyingGlassIcon"
+        remixicon="RiSearchLine"
         className="size-4 shrink-0 opacity-50"
       />
       <CommandPrimitive.Input

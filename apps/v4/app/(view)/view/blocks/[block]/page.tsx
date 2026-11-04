@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { getPdfViewerBlock, PDF_VIEWER_BLOCKS } from "@/lib/pdf-viewer-blocks"
+import { absoluteUrl } from "@/lib/utils"
 import { PdfViewerBlockFullscreen } from "@/components/pdf-viewer-block-fullscreen"
 
 export const dynamic = "force-static"
@@ -27,6 +28,12 @@ export async function generateMetadata({
   return {
     title: block.title,
     description: block.description,
+    alternates: {
+      canonical: absoluteUrl(`/view/blocks/${block.id}`),
+    },
+    openGraph: {
+      url: absoluteUrl(`/view/blocks/${block.id}`),
+    },
   }
 }
 

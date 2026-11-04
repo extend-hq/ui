@@ -35,11 +35,7 @@
       "type": "registry:ui",
       "title": "Accordion",
       "description": "A vertically stacked set of expandable content panels.",
-      "dependencies": [
-        "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -82,11 +78,7 @@
       "type": "registry:ui",
       "title": "Autocomplete",
       "description": "An autocomplete input built on Base UI primitives.",
-      "dependencies": [
-        "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["input", "scroll-area", "utils"],
       "files": [
         {
@@ -119,11 +111,7 @@
       "type": "registry:ui",
       "title": "Breadcrumb",
       "description": "Navigation breadcrumbs for page hierarchy.",
-      "dependencies": [
-        "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -182,15 +170,36 @@
       ]
     },
     {
+      "name": "color-picker",
+      "type": "registry:ui",
+      "title": "Color Picker",
+      "description": "An OKLCH-aware popover color picker with OKLCH, HSL, RGB, and hex input formats.",
+      "registryDependencies": [
+        "button",
+        "popover",
+        "select",
+        "tooltip",
+        "utils"
+      ],
+      "files": [
+        {
+          "path": "components/ui/color-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/color-picker.tsx"
+        },
+        {
+          "path": "lib/color-picker-utils.ts",
+          "type": "registry:lib",
+          "target": "@lib/color-picker-utils.ts"
+        }
+      ]
+    },
+    {
       "name": "command",
       "type": "registry:ui",
       "title": "Command",
       "description": "A command menu surface powered by cmdk.",
-      "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
-        "cmdk@^1.1.1"
-      ],
+      "dependencies": ["cmdk@^1.1.1"],
       "registryDependencies": ["dialog", "utils"],
       "files": [
         {
@@ -205,11 +214,7 @@
       "type": "registry:ui",
       "title": "Dialog",
       "description": "An accessible modal dialog built on Base UI.",
-      "dependencies": [
-        "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["button", "scroll-area", "utils"],
       "files": [
         {
@@ -220,15 +225,26 @@
       ]
     },
     {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "title": "Context Menu",
+      "description": "A context menu built on Base UI with nested menus and keyboard navigation.",
+      "dependencies": ["@base-ui/react@^1.4.1"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/ui/context-menu.tsx",
+          "type": "registry:ui",
+          "target": "@ui/context-menu.tsx"
+        }
+      ]
+    },
+    {
       "name": "dropdown-menu",
       "type": "registry:ui",
       "title": "Dropdown Menu",
       "description": "A dropdown menu built on Base UI menu primitives.",
-      "dependencies": [
-        "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -322,8 +338,6 @@
       "description": "A select control built on Base UI.",
       "dependencies": [
         "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
         "class-variance-authority@^0.7.1"
       ],
       "registryDependencies": ["utils"],
@@ -355,11 +369,7 @@
       "type": "registry:ui",
       "title": "Sheet",
       "description": "A side sheet built on Base UI dialog primitives.",
-      "dependencies": [
-        "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
+      "dependencies": ["@base-ui/react@^1.4.1"],
       "registryDependencies": ["button", "scroll-area", "utils"],
       "files": [
         {
@@ -376,8 +386,6 @@
       "description": "A responsive application sidebar with menu, rail, and provider primitives.",
       "dependencies": [
         "@base-ui/react@^1.4.1",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
         "class-variance-authority@^0.7.1"
       ],
       "registryDependencies": [
@@ -416,12 +424,7 @@
       "type": "registry:ui",
       "title": "Sonner",
       "description": "A themed toast provider for Sonner.",
-      "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
-        "next-themes@0.4.6",
-        "sonner@^2.0.0"
-      ],
+      "dependencies": ["next-themes@0.4.6", "sonner@^2.0.0"],
       "files": [
         {
           "path": "registry/new-york-v4/ui/sonner.tsx",
@@ -435,16 +438,27 @@
       "type": "registry:ui",
       "title": "Spinner",
       "description": "A compact loading spinner using Hugeicons.",
-      "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
       "registryDependencies": ["utils"],
       "files": [
         {
           "path": "registry/new-york-v4/ui/spinner.tsx",
           "type": "registry:ui",
           "target": "@ui/spinner.tsx"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "A binary toggle control built on Base UI.",
+      "dependencies": ["@base-ui/react@^1.4.1"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/ui/switch.tsx",
+          "type": "registry:ui",
+          "target": "@ui/switch.tsx"
         }
       ]
     },
@@ -464,6 +478,21 @@
       ]
     },
     {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "A toast provider built on Base UI.",
+      "dependencies": ["@base-ui/react@^1.4.1"],
+      "registryDependencies": ["button", "utils"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/ui/toast.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toast.tsx"
+        }
+      ]
+    },
+    {
       "name": "tooltip",
       "type": "registry:ui",
       "title": "Tooltip",
@@ -479,15 +508,26 @@
       ]
     },
     {
+      "name": "toggle",
+      "type": "registry:ui",
+      "title": "Toggle",
+      "description": "A two-state command button and grouped toggle controls.",
+      "dependencies": ["@base-ui/react@^1.4.1"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "components/ui/toggle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toggle.tsx"
+        }
+      ]
+    },
+    {
       "name": "resizable",
       "type": "registry:ui",
       "title": "Resizable",
       "description": "Resizable panel primitives using react-resizable-panels.",
-      "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
-        "react-resizable-panels@^4.11.2"
-      ],
+      "dependencies": ["react-resizable-panels@^4.11.2"],
       "registryDependencies": ["utils"],
       "files": [
         {
@@ -502,13 +542,13 @@
       "type": "registry:component",
       "title": "PDF Block Resizable Shell",
       "description": "A reusable resizable left document viewer and right review panel shell for PDF-style blocks.",
-      "registryDependencies": ["resizable", "utils"],
+      "registryDependencies": ["utils"],
       "categories": ["documents", "blocks"],
       "files": [
         {
-          "path": "components/pdf-block-resizable-shell.tsx",
+          "path": "components/extend/pdf-block-resizable-shell.tsx",
           "type": "registry:component",
-          "target": "@components/pdf-block-resizable-shell.tsx"
+          "target": "@components/extend/pdf-block-resizable-shell.tsx"
         }
       ]
     },
@@ -517,18 +557,14 @@
       "type": "registry:ui",
       "title": "File Upload",
       "description": "A drag-and-drop file upload surface with accepted file type icons and a compact file list.",
-      "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
-        "border-beam@^1.0.1"
-      ],
-      "registryDependencies": ["card", "@extend/file-thumbnail", "utils"],
+      "dependencies": ["border-beam@^1.0.1"],
+      "registryDependencies": ["@extend/file-thumbnail", "utils"],
       "categories": ["documents"],
       "files": [
         {
-          "path": "registry/new-york-v4/ui/file-upload.tsx",
+          "path": "components/extend/file-upload.tsx",
           "type": "registry:ui",
-          "target": "@ui/file-upload.tsx"
+          "target": "@components/extend/file-upload.tsx"
         }
       ]
     },
@@ -540,9 +576,9 @@
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/file-thumbnail.tsx",
+          "path": "components/extend/file-thumbnail.tsx",
           "type": "registry:ui",
-          "target": "@ui/file-thumbnail.tsx"
+          "target": "@components/extend/file-thumbnail.tsx"
         }
       ]
     },
@@ -551,34 +587,21 @@
       "type": "registry:ui",
       "title": "File System (Finder)",
       "description": "A macOS Finder-style file browser for flat object-store manifests with icon, list, column, and gallery views.",
-      "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
-        "@pierre/trees@1.0.0-beta.4"
-      ],
+      "dependencies": ["@pierre/trees@1.0.0-beta.4"],
       "registryDependencies": [
-        "button",
-        "command",
-        "dialog",
         "@extend/docx-viewer",
-        "dropdown-menu",
         "@extend/file-thumbnail",
-        "input",
         "@extend/pdf-viewer",
-        "popover",
-        "scroll-area",
-        "select",
-        "spinner",
-        "tabs",
+        "@extend/pptx-viewer",
         "utils",
         "@extend/xlsx-viewer"
       ],
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/file-system.tsx",
+          "path": "components/extend/file-system.tsx",
           "type": "registry:ui",
-          "target": "@ui/file-system.tsx"
+          "target": "@components/extend/file-system.tsx"
         }
       ]
     },
@@ -586,7 +609,7 @@
       "name": "file-system-block",
       "type": "registry:block",
       "title": "File System (Finder)",
-      "description": "A Finder-style file browser block that opens PDF, DOCX, XLSX, and image files in large viewer dialogs.",
+      "description": "A Finder-style file browser block that opens PDF, DOCX, PowerPoint, XLSX, and image files in large viewer dialogs.",
       "registryDependencies": ["@extend/file-system"],
       "categories": ["documents", "blocks"],
       "files": [
@@ -603,47 +626,118 @@
       "title": "PDF Viewer",
       "description": "A PDF viewer with page virtualization, thumbnails, search, zoom, rotation, upload, and page overlay hooks.",
       "dependencies": [
-        "@embedpdf/core@^2.14.4",
-        "@embedpdf/engines@^2.14.4",
-        "@embedpdf/models@^2.14.4",
-        "@embedpdf/plugin-document-manager@^2.14.4",
-        "@embedpdf/plugin-interaction-manager@^2.14.4",
-        "@embedpdf/plugin-render@^2.14.4",
-        "@embedpdf/plugin-rotate@^2.14.4",
-        "@embedpdf/plugin-scroll@^2.14.4",
-        "@embedpdf/plugin-search@^2.14.4",
-        "@embedpdf/plugin-selection@^2.14.4",
-        "@embedpdf/plugin-thumbnail@^2.14.4",
-        "@embedpdf/plugin-tiling@^2.14.4",
-        "@embedpdf/plugin-viewport@^2.14.4",
-        "@embedpdf/plugin-zoom@^2.14.4",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
+        "@embedpdf/core@^2.15.0",
+        "@embedpdf/engines@^2.15.0",
+        "@embedpdf/models@^2.15.0",
+        "@embedpdf/plugin-document-manager@^2.15.0",
+        "@embedpdf/plugin-interaction-manager@^2.15.0",
+        "@embedpdf/plugin-render@^2.15.0",
+        "@embedpdf/plugin-rotate@^2.15.0",
+        "@embedpdf/plugin-scroll@^2.15.0",
+        "@embedpdf/plugin-search@^2.15.0",
+        "@embedpdf/plugin-selection@^2.15.0",
+        "@embedpdf/plugin-thumbnail@^2.15.0",
+        "@embedpdf/plugin-tiling@^2.15.0",
+        "@embedpdf/plugin-viewport@^2.15.0",
+        "@embedpdf/plugin-zoom@^2.15.0",
         "pdf-lib@^1.17.1"
       ],
-      "registryDependencies": [
-        "button",
-        "@extend/document-viewer-sidebar",
-        "input",
-        "popover",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip",
-        "utils"
-      ],
+      "registryDependencies": ["@extend/document-viewer-sidebar", "utils"],
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/pdf-viewer.tsx",
+          "path": "components/extend/pdf-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/pdf-viewer.tsx"
+          "target": "@components/extend/pdf-viewer.tsx"
         },
         {
-          "path": "components/pdf-thumbnail-utils.ts",
-          "type": "registry:component",
-          "target": "@components/pdf-thumbnail-utils.ts"
+          "path": "lib/pdf-thumbnail-utils.ts",
+          "type": "registry:lib",
+          "target": "@lib/pdf-thumbnail-utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "pdf-editor",
+      "type": "registry:ui",
+      "title": "PDF Editor",
+      "description": "A PDF editor with annotations, comments, redaction, form filling and design, signatures, rubber stamps, page organization, security, printing, and export.",
+      "registryDependencies": ["@extend/pdf-editor-core"],
+      "categories": ["documents"]
+    },
+    {
+      "name": "pdf-editor-core",
+      "type": "registry:ui",
+      "title": "PDF Editor Core",
+      "description": "Shared PDF editor behavior and state for the Base UI and Radix UI artifacts.",
+      "dependencies": [
+        "@embedpdf/core@^2.15.0",
+        "@embedpdf/engines@^2.15.0",
+        "@embedpdf/models@^2.15.0",
+        "@embedpdf/plugin-annotation@^2.15.0",
+        "@embedpdf/plugin-attachment@^2.15.0",
+        "@embedpdf/plugin-bookmark@^2.15.0",
+        "@embedpdf/plugin-capture@^2.15.0",
+        "@embedpdf/plugin-document-manager@^2.15.0",
+        "@embedpdf/plugin-export@^2.15.0",
+        "@embedpdf/plugin-form@^2.15.0",
+        "@embedpdf/plugin-fullscreen@^2.15.0",
+        "@embedpdf/plugin-history@^2.15.0",
+        "@embedpdf/plugin-interaction-manager@^2.15.0",
+        "@embedpdf/plugin-pan@^2.15.0",
+        "@embedpdf/plugin-print@^2.15.0",
+        "@embedpdf/plugin-redaction@^2.15.0",
+        "@embedpdf/plugin-render@^2.15.0",
+        "@embedpdf/plugin-rotate@^2.15.0",
+        "@embedpdf/plugin-scroll@^2.15.0",
+        "@embedpdf/plugin-search@^2.15.0",
+        "@embedpdf/plugin-selection@^2.15.0",
+        "@embedpdf/plugin-signature@^2.15.0",
+        "@embedpdf/plugin-spread@^2.15.0",
+        "@embedpdf/plugin-stamp@^2.15.0",
+        "@embedpdf/plugin-thumbnail@^2.15.0",
+        "@embedpdf/plugin-tiling@^2.15.0",
+        "@embedpdf/plugin-viewport@^2.15.0",
+        "@embedpdf/plugin-zoom@^2.15.0",
+        "pdf-lib@^1.17.1"
+      ],
+      "registryDependencies": ["@extend/document-viewer-sidebar", "resizable"],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/extend/pdf-editor.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-workspace.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-workspace.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-shared.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-shared.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-dialogs.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-dialogs.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-properties.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-properties.tsx"
+        },
+        {
+          "path": "components/extend/pdf-editor-panels.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/pdf-editor-panels.tsx"
+        },
+        {
+          "path": "lib/pdf-thumbnail-utils.ts",
+          "type": "registry:lib",
+          "target": "@lib/pdf-thumbnail-utils.ts"
         }
       ]
     },
@@ -653,27 +747,25 @@
       "title": "DOCX Viewer",
       "description": "A DOCX viewer with upload, zoom, theme controls, and read-only rendering.",
       "dependencies": [
-        "@extend-ai/react-docx@^0.7.0-alpha.6",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
+        "@extend-ai/react-docx@0.13.6",
+        "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
-        "button",
         "@extend/document-viewer-sidebar",
         "@extend/file-thumbnail",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip",
         "utils"
       ],
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/docx-viewer.tsx",
+          "path": "components/extend/docx-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/docx-viewer.tsx"
+          "target": "@components/extend/docx-viewer.tsx"
+        },
+        {
+          "path": "components/extend/docx-annotation-card.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/docx-annotation-card.tsx"
         }
       ]
     },
@@ -681,32 +773,24 @@
       "name": "docx-editor",
       "type": "registry:ui",
       "title": "DOCX Editor",
-      "description": "An experimental DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
-      "dependencies": [
-        "@base-ui/react@^1.4.1",
-        "@extend-ai/react-docx@^0.7.0-alpha.6",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
+      "description": "A DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
+      "dependencies": ["@extend-ai/react-docx@0.13.6"],
       "registryDependencies": [
-        "button",
         "@extend/document-viewer-sidebar",
-        "dropdown-menu",
         "@extend/file-thumbnail",
-        "input",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip",
         "utils"
       ],
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/docx-editor.tsx",
+          "path": "components/extend/docx-editor.tsx",
           "type": "registry:ui",
-          "target": "@ui/docx-editor.tsx"
+          "target": "@components/extend/docx-editor.tsx"
+        },
+        {
+          "path": "components/extend/docx-annotation-card.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/docx-annotation-card.tsx"
         }
       ]
     },
@@ -715,28 +799,37 @@
       "type": "registry:ui",
       "title": "Excel Viewer",
       "description": "An XLSX viewer with workbook loading, thumbnails, sheet tabs, upload, zoom, and theme controls.",
+      "dependencies": ["@extend-ai/react-xlsx@0.20.1"],
+      "registryDependencies": ["utils"],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/extend/xlsx-viewer.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/xlsx-viewer.tsx"
+        }
+      ]
+    },
+    {
+      "name": "pptx-viewer",
+      "type": "registry:ui",
+      "title": "PowerPoint Viewer",
+      "description": "A PowerPoint viewer with slide navigation, zoom, upload, download, custom scroll areas, and virtualized thumbnails.",
       "dependencies": [
-        "@extend-ai/react-xlsx@^0.10.0",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
+        "@extend-ai/react-pptx@0.2.2",
+        "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
-        "button",
-        "dropdown-menu",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tabs",
-        "tooltip",
+        "@extend/document-viewer-sidebar",
+        "@extend/file-thumbnail",
         "utils"
       ],
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/xlsx-viewer.tsx",
+          "path": "components/extend/pptx-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/xlsx-viewer.tsx"
+          "target": "@components/extend/pptx-viewer.tsx"
         }
       ]
     },
@@ -744,30 +837,15 @@
       "name": "xlsx-editor",
       "type": "registry:ui",
       "title": "Excel Editor",
-      "description": "An experimental XLSX editor with formula input, undo and redo, sheet controls, export, and live workbook mutation.",
-      "dependencies": [
-        "@extend-ai/react-xlsx@^0.10.0",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
-      ],
-      "registryDependencies": [
-        "button",
-        "@extend/group",
-        "input",
-        "scroll-area",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip",
-        "utils",
-        "@extend/xlsx-viewer"
-      ],
+      "description": "An XLSX editor with formula input, undo and redo, sheet controls, export, and live workbook mutation.",
+      "dependencies": ["@extend-ai/react-xlsx@0.20.1"],
+      "registryDependencies": ["utils", "@extend/xlsx-viewer"],
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/xlsx-editor.tsx",
+          "path": "components/extend/xlsx-editor.tsx",
           "type": "registry:ui",
-          "target": "@ui/xlsx-editor.tsx"
+          "target": "@components/extend/xlsx-editor.tsx"
         }
       ]
     },
@@ -775,27 +853,19 @@
       "name": "csv-viewer",
       "type": "registry:ui",
       "title": "CSV Viewer",
-      "description": "A CSV and TSV viewer with parsing, upload, zoom, theme-aware grid rendering, and Glide Data Grid.",
+      "description": "A CSV and TSV viewer with parsing, upload, search, zoom, theme-aware grid rendering, and Glide Data Grid.",
       "dependencies": [
         "@glideapps/glide-data-grid@6.0.4-alpha24",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
         "papaparse@^5.5.3"
       ],
       "devDependencies": ["@types/papaparse@^5.5.2"],
-      "registryDependencies": [
-        "button",
-        "select",
-        "separator",
-        "spinner",
-        "tooltip"
-      ],
+      "registryDependencies": [],
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/csv-viewer.tsx",
+          "path": "components/extend/csv-viewer.tsx",
           "type": "registry:ui",
-          "target": "@ui/csv-viewer.tsx"
+          "target": "@components/extend/csv-viewer.tsx"
         }
       ]
     },
@@ -804,7 +874,6 @@
       "type": "registry:block",
       "title": "PDF Dropzone",
       "description": "A PDF-only upload dropzone that opens the dropped file in the shared PDF viewer.",
-      "dependencies": ["@hugeicons/core-free-icons@^4.2.0"],
       "registryDependencies": ["@extend/file-upload", "@extend/pdf-viewer"],
       "categories": ["documents", "blocks"],
       "files": [
@@ -816,26 +885,39 @@
       ]
     },
     {
+      "name": "layout-blocks-panel",
+      "type": "registry:ui",
+      "title": "Layout Blocks Panel",
+      "description": "A virtualized list of layout blocks with typed badges and source navigation.",
+      "dependencies": ["@tanstack/react-virtual@^3.13.26"],
+      "registryDependencies": ["utils"],
+      "categories": ["documents"],
+      "files": [
+        {
+          "path": "components/extend/layout-blocks-panel.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/layout-blocks-panel.tsx"
+        }
+      ]
+    },
+    {
       "name": "layout-blocks",
       "type": "registry:ui",
       "title": "Layout Blocks",
       "description": "A structured layout review panel with typed blocks and confidence cards.",
       "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
-        "@tanstack/react-virtual@^3.13.26",
         "react-markdown@^10.1.0",
         "rehype-raw@^7.0.0",
         "rehype-sanitize@^6.0.0",
         "remark-gfm@^4.0.1"
       ],
-      "registryDependencies": ["scroll-area", "utils"],
+      "registryDependencies": ["@extend/layout-blocks-panel", "utils"],
       "categories": ["documents"],
       "files": [
         {
-          "path": "registry/new-york-v4/ui/layout-blocks.tsx",
+          "path": "components/extend/layout-blocks.tsx",
           "type": "registry:ui",
-          "target": "@ui/layout-blocks.tsx"
+          "target": "@components/extend/layout-blocks.tsx"
         }
       ]
     },
@@ -863,18 +945,10 @@
       "type": "registry:block",
       "title": "E-Signature",
       "description": "A PDF signature review block with field overlays and signing actions.",
-      "dependencies": [
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
-        "pdf-lib@^1.17.1",
-        "signature_pad@^5.1.3"
-      ],
+      "dependencies": ["pdf-lib@^1.17.1", "signature_pad@^5.1.3"],
       "registryDependencies": [
-        "button",
-        "dialog",
         "@extend/pdf-block-resizable-shell",
         "@extend/pdf-viewer",
-        "scroll-area",
         "utils"
       ],
       "categories": ["documents", "blocks"],
@@ -893,24 +967,15 @@
       "description": "An extraction citation panel connected to source bounding boxes and editable values.",
       "dependencies": [
         "@glideapps/glide-data-grid@6.0.4-alpha24",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
         "@pierre/diffs@^1.1.22"
       ],
-      "registryDependencies": [
-        "button",
-        "input",
-        "scroll-area",
-        "tabs",
-        "tooltip",
-        "utils"
-      ],
+      "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
         {
-          "path": "registry/new-york-v4/ui/bounding-box-citations.tsx",
+          "path": "components/extend/bounding-box-citations.tsx",
           "type": "registry:ui",
-          "target": "@ui/bounding-box-citations.tsx"
+          "target": "@components/extend/bounding-box-citations.tsx"
         }
       ]
     },
@@ -923,25 +988,16 @@
         "@dnd-kit/core@^6.3.1",
         "@dnd-kit/sortable@^10.0.0",
         "@dnd-kit/utilities@^3.2.2",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6",
         "@pierre/diffs@^1.2.7",
         "next-themes@0.4.6"
       ],
-      "registryDependencies": [
-        "button",
-        "collapsible",
-        "dropdown-menu",
-        "scroll-area",
-        "tabs",
-        "utils"
-      ],
+      "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
         {
-          "path": "registry/new-york-v4/ui/schema-builder.tsx",
+          "path": "components/extend/schema-builder.tsx",
           "type": "registry:ui",
-          "target": "@ui/schema-builder.tsx"
+          "target": "@components/extend/schema-builder.tsx"
         }
       ]
     },
@@ -972,22 +1028,15 @@
       "dependencies": [
         "@dnd-kit/core@^6.3.1",
         "@dnd-kit/sortable@^10.0.0",
-        "@dnd-kit/utilities@^3.2.2",
-        "@hugeicons/core-free-icons@^4.2.0",
-        "@hugeicons/react@^1.1.6"
+        "@dnd-kit/utilities@^3.2.2"
       ],
-      "registryDependencies": [
-        "button",
-        "@extend/file-thumbnail",
-        "scroll-area",
-        "utils"
-      ],
+      "registryDependencies": ["@extend/file-thumbnail", "utils"],
       "categories": ["documents"],
       "files": [
         {
-          "path": "registry/new-york-v4/ui/document-splits.tsx",
+          "path": "components/extend/document-splits.tsx",
           "type": "registry:ui",
-          "target": "@ui/document-splits.tsx"
+          "target": "@components/extend/document-splits.tsx"
         }
       ]
     },
@@ -1011,23 +1060,36 @@
       ]
     },
     {
-      "name": "excel-document-splits",
+      "name": "excel-editor",
       "type": "registry:block",
-      "title": "Excel Document Splits",
-      "description": "A workbook review block with sheet groups and the shared XLSX viewer.",
+      "title": "Excel Editor",
+      "description": "A full Excel editor block with workbook upload, cell formatting, merge tools, sheets, zoom, and export controls.",
+      "registryDependencies": ["@extend/xlsx-editor"],
+      "categories": ["documents", "blocks"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/blocks/excel-editor.tsx",
+          "type": "registry:component",
+          "target": "@components/blocks/excel-editor.tsx"
+        }
+      ]
+    },
+    {
+      "name": "docx-layout-blocks",
+      "type": "registry:block",
+      "title": "DOCX Layout Blocks",
+      "description": "A read-only DOCX viewer with typed layout blocks and source highlights.",
       "registryDependencies": [
-        "@extend/file-thumbnail",
-        "@extend/pdf-block-resizable-shell",
-        "scroll-area",
-        "utils",
-        "@extend/xlsx-viewer"
+        "@extend/docx-viewer",
+        "@extend/layout-blocks-panel",
+        "@extend/pdf-block-resizable-shell"
       ],
       "categories": ["documents", "blocks"],
       "files": [
         {
-          "path": "registry/new-york-v4/blocks/excel-document-splits.tsx",
+          "path": "registry/new-york-v4/blocks/docx-layout-blocks.tsx",
           "type": "registry:component",
-          "target": "@components/blocks/excel-document-splits.tsx"
+          "target": "@components/blocks/docx-layout-blocks.tsx"
         }
       ]
     },
@@ -1047,6 +1109,21 @@
       ]
     },
     {
+      "name": "pdf-editor-block",
+      "type": "registry:block",
+      "title": "PDF Editor",
+      "description": "A full PDF editor block with annotation, redaction, form, signature, stamp, page organization, security, print, and export tools.",
+      "registryDependencies": ["@extend/pdf-editor"],
+      "categories": ["documents", "blocks"],
+      "files": [
+        {
+          "path": "registry/new-york-v4/blocks/pdf-editor-block.tsx",
+          "type": "registry:component",
+          "target": "@components/blocks/pdf-editor-block.tsx"
+        }
+      ]
+    },
+    {
       "name": "document-viewer-sidebar",
       "type": "registry:ui",
       "title": "Document Viewer Sidebar",
@@ -1055,9 +1132,99 @@
       "categories": ["documents"],
       "files": [
         {
-          "path": "components/ui/document-viewer-sidebar.tsx",
+          "path": "components/extend/document-viewer-sidebar.tsx",
           "type": "registry:ui",
-          "target": "@ui/document-viewer-sidebar.tsx"
+          "target": "@components/extend/document-viewer-sidebar.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-color-popover",
+      "type": "registry:ui",
+      "title": "Color Picker Popover",
+      "files": [
+        {
+          "path": "registry/bases/base/document-color-popover.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-color-popover.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-controls",
+      "type": "registry:ui",
+      "title": "document-controls",
+      "files": [
+        {
+          "path": "registry/extend/document-controls.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-controls.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-scroll-area",
+      "type": "registry:ui",
+      "title": "document-scroll-area",
+      "files": [
+        {
+          "path": "registry/bases/base/document-scroll-area.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-scroll-area.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-preview-card",
+      "type": "registry:ui",
+      "title": "document-preview-card",
+      "files": [
+        {
+          "path": "components/extend/document-preview-card.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-preview-card.tsx"
+        }
+      ]
+    },
+    {
+      "name": "document-color-picker",
+      "type": "registry:ui",
+      "title": "document-color-picker",
+      "files": [
+        {
+          "path": "components/ui/color-picker.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/document-color-picker.tsx"
+        },
+        {
+          "path": "lib/color-picker-utils.ts",
+          "type": "registry:lib",
+          "target": "@lib/color-picker-utils.ts"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "document-toast",
+      "type": "registry:ui",
+      "title": "document-toast",
+      "files": [
+        {
+          "path": "components/extend/ui-toast.tsx",
+          "type": "registry:ui",
+          "target": "@components/extend/ui-toast.tsx"
+        }
+      ]
+    },
+    {
+      "name": "registry-icon-props",
+      "type": "registry:ui",
+      "title": "registry-icon-props",
+      "files": [
+        {
+          "path": "lib/registry-icon-props.ts",
+          "type": "registry:lib",
+          "target": "@lib/registry-icon-props.ts"
         }
       ]
     }

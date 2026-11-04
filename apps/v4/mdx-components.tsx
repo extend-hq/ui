@@ -5,6 +5,7 @@ import Link from "next/link"
 import { type PageTreeFolder } from "@/lib/page-tree"
 import { source } from "@/lib/source"
 import { cn } from "@/lib/utils"
+import { withUiBasePath } from "@/lib/zone-path"
 import {
   Accordion,
   AccordionContent,
@@ -16,44 +17,50 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  HumanReviewDemo,
-  HumanReviewSource,
-} from "@/components/bounding-box-citations-docs"
 import { Callout } from "@/components/callout"
 import { CodeBlockCommand } from "@/components/code-block-command"
 import { CodeCollapsibleWrapper } from "@/components/code-collapsible-wrapper"
 import { CodeTabs } from "@/components/code-tabs"
 import { ComponentsList } from "@/components/components-list"
 import { CopyButton } from "@/components/copy-button"
-import { CsvViewerDemo, CsvViewerSource } from "@/components/csv-viewer-docs"
 import { DocsMdxCodeBlock } from "@/components/docs-code-block"
+import { FileSystemSource } from "@/components/file-system-source-code"
+import { getIconForLanguageExtension } from "@/components/icons"
 import {
+  CsvViewerDemo,
+  CsvViewerSource,
   DocumentSplitsDemo,
   DocumentSplitsSource,
-} from "@/components/document-splitter-docs"
-import {
   DocumentViewerSidebarDemo,
   DocumentViewerSidebarSource,
-} from "@/components/document-viewer-sidebar-docs"
-import { DocxEditorDemo, DocxEditorSource } from "@/components/docx-editor-docs"
-import { DocxViewerDemo, DocxViewerSource } from "@/components/docx-viewer-docs"
-import { ESignatureDemo, ESignatureSource } from "@/components/e-signature-docs"
-import { FileSystemDemo, FileSystemSource } from "@/components/file-system-docs"
-import {
+  DocxEditorDemo,
+  DocxEditorSource,
+  DocxViewerDemo,
+  DocxViewerSource,
+  ESignatureDemo,
+  ESignatureSource,
+  FileSystemDemo,
   FileThumbnailDemo,
   FileThumbnailSource,
-} from "@/components/file-thumbnail-docs"
-import { FileUploadDemo, FileUploadSource } from "@/components/file-upload-docs"
-import { getIconForLanguageExtension } from "@/components/icons"
-import { OcrBlocksDemo, OcrBlocksSource } from "@/components/layout-blocks-docs"
-import { PdfViewerDemo, PdfViewerSource } from "@/components/pdf-viewer-docs"
-import {
+  FileUploadDemo,
+  FileUploadSource,
+  HumanReviewDemo,
+  HumanReviewSource,
+  OcrBlocksDemo,
+  OcrBlocksSource,
+  PdfEditorDemo,
+  PdfEditorSource,
+  PdfViewerDemo,
+  PdfViewerSource,
+  PptxViewerDemo,
   SchemaBuilderDemo,
-  SchemaBuilderSource,
-} from "@/components/schema-builder-docs"
-import { XlsxEditorDemo, XlsxEditorSource } from "@/components/xlsx-editor-docs"
-import { XlsxViewerDemo, XlsxViewerSource } from "@/components/xlsx-viewer-docs"
+  XlsxEditorDemo,
+  XlsxEditorSource,
+  XlsxViewerDemo,
+  XlsxViewerSource,
+} from "@/components/lazy-docs-demos"
+import { PptxViewerSource } from "@/components/pptx-viewer-docs"
+import { SchemaBuilderSource } from "@/components/schema-builder-docs"
 
 // Wrapper component that passes the components folder from the server.
 // This is only used on /docs/components/ index page, so default to radix.
@@ -72,6 +79,10 @@ function ComponentsListWrapper() {
       currentBase="radix"
     />
   )
+}
+
+function withMdxHrefBasePath(href: string | undefined) {
+  return href ? withUiBasePath(href) : href
 }
 
 export const mdxComponents = {
@@ -137,9 +148,10 @@ export const mdxComponents = {
       {...props}
     />
   ),
-  a: ({ className, ...props }: React.ComponentProps<"a">) => (
+  a: ({ className, href, ...props }: React.ComponentProps<"a">) => (
     <a
       className={cn("font-medium underline underline-offset-4", className)}
+      href={withMdxHrefBasePath(href)}
       {...props}
     />
   ),
@@ -398,8 +410,12 @@ export const mdxComponents = {
   SchemaBuilderSource,
   OcrBlocksDemo,
   OcrBlocksSource,
+  PdfEditorDemo,
+  PdfEditorSource,
   PdfViewerDemo,
   PdfViewerSource,
+  PptxViewerDemo,
+  PptxViewerSource,
   XlsxEditorDemo,
   XlsxEditorSource,
   XlsxViewerDemo,

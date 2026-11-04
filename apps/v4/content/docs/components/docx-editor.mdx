@@ -5,11 +5,14 @@ component: true
 featured: true
 ---
 
-The React DOCX Editor is an experimental document editing surface built on top of `@extend-ai/react-docx`. It keeps the viewer shell familiar while enabling direct Word document mutations through the package editor API.
+The React DOCX Editor is a document editing surface built on top of `@extend-ai/react-docx`. It keeps the viewer shell familiar while enabling direct Word document mutations through the package editor API.
 
 <DocxEditorDemo />
 
 ## Installation
+
+First configure the [style-aware registry](/docs#installation) in
+`components.json` so the CLI uses the primitives for your project.
 
 <CodeTabs>
 
@@ -32,19 +35,35 @@ npx shadcn@latest add @extend/docx-editor
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @base-ui/react@^1.4.1 @extend-ai/react-docx@^0.7.0-alpha.6 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6
+npm install @base-ui/react@^1.4.1 @extend-ai/react-docx@latest
+```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
+
+<Step>
+  Install the shared components, icon prop types, and UI primitives used by
+  the editor:
+</Step>
+
+The manual source uses Base UI primitives. Use the Command tab for a Radix
+project so the registry adapts the source to your primitive APIs.
+
+```bash
+npx shadcn@latest add @extend/document-viewer-sidebar @extend/document-preview-card @extend/file-thumbnail @extend/registry-icon-props @extend/color-picker @extend/toggle badge card button context-menu dropdown-menu input scroll-area select separator spinner tooltip utils
 ```
 
 <Step>
-  Install the File Thumbnail component because the editor reuses it for the page
-  thumbnail rail.
+  Copy both files below into your project. The annotation card is shared by
+  the viewer and editor and renders comments and tracked changes.
 </Step>
-
-```bash
-npx shadcn@latest add @extend/file-thumbnail
-```
-
-<Step>Copy and paste the following code into your project.</Step>
 
 <DocxEditorSource />
 
@@ -59,6 +78,7 @@ npx shadcn@latest add @extend/file-thumbnail
 ## Useful behaviors
 
 - Toolbar controls cover import, export, undo, redo, zoom, theme, read-only mode, tracked changes, text styles, color, highlight, links, alignment, lists, borders, images, and tables.
+- Right-click menus use your local `@/components/ui/context-menu` components, including nested image actions, checked options, keyboard shortcuts, and destructive table commands. Customize that component to match your application.
 - Page thumbnails stay in the left rail and scroll the editor viewport to the selected page.
 - The editor uses `useDocxEditor` and `DocxEditorViewer`, so mutations flow through the public `react-docx` controller API.
 - Uploaded files replace the current document while URL-loaded DOCX files are fetched from the provided `src`.
@@ -72,9 +92,7 @@ The DocxEditorPreview component renders an editable DOCX file with upload, toolb
 | Prop             | Type                        | Default | Required |
 | ---------------- | --------------------------- | ------- | -------- |
 | `className`      | `string`                    | `-`     | No       |
-| `defaultIsDark`  | `boolean`                   | `false` | No       |
 | `fileName`       | `string`                    | `-`     | No       |
-| `isDark`         | `boolean`                   | `-`     | No       |
-| `onIsDarkChange` | `(isDark: boolean) => void` | `-`     | No       |
-| `rounded`        | `boolean`                   | `false` | No       |
+| `isDark`         | `boolean`                   | `-`     | Yes      |
+| `onIsDarkChange` | `(isDark: boolean) => void` | `-`     | Yes      |
 | `src`            | `string`                    | `-`     | No       |

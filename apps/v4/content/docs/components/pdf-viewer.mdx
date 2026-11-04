@@ -36,8 +36,18 @@ npx shadcn@latest add @extend/pdf-viewer
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @embedpdf/core@^2.14.4 @embedpdf/engines@^2.14.4 @embedpdf/models@^2.14.4 @embedpdf/plugin-document-manager@^2.14.4 @embedpdf/plugin-interaction-manager@^2.14.4 @embedpdf/plugin-render@^2.14.4 @embedpdf/plugin-rotate@^2.14.4 @embedpdf/plugin-scroll@^2.14.4 @embedpdf/plugin-search@^2.14.4 @embedpdf/plugin-selection@^2.14.4 @embedpdf/plugin-thumbnail@^2.14.4 @embedpdf/plugin-tiling@^2.14.4 @embedpdf/plugin-viewport@^2.14.4 @embedpdf/plugin-zoom@^2.14.4 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6 pdf-lib@^1.17.1
+npm install @embedpdf/core@^2.15.0 @embedpdf/engines@^2.15.0 @embedpdf/models@^2.15.0 @embedpdf/plugin-document-manager@^2.15.0 @embedpdf/plugin-interaction-manager@^2.15.0 @embedpdf/plugin-render@^2.15.0 @embedpdf/plugin-rotate@^2.15.0 @embedpdf/plugin-scroll@^2.15.0 @embedpdf/plugin-search@^2.15.0 @embedpdf/plugin-selection@^2.15.0 @embedpdf/plugin-thumbnail@^2.15.0 @embedpdf/plugin-tiling@^2.15.0 @embedpdf/plugin-viewport@^2.15.0 @embedpdf/plugin-zoom@^2.15.0 pdf-lib@^1.17.1
 ```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
 
 <Step>Copy and paste the following code into your project.</Step>
 
@@ -53,7 +63,7 @@ npm install @embedpdf/core@^2.14.4 @embedpdf/engines@^2.14.4 @embedpdf/models@^2
 
 ## Useful behaviors
 
-- Zoom, rotate, and download actions.
+- Numeric, fit-page, fit-width, and automatic zoom modes, plus rotate and download actions.
 - PDFium-backed page rendering for long PDFs.
 - Optional OCR block overlays, e-signature fields, search highlights, and page overlays.
 - Text selection, copy, search, and thumbnail navigation.
@@ -64,25 +74,35 @@ npm install @embedpdf/core@^2.14.4 @embedpdf/engines@^2.14.4 @embedpdf/models@^2
 
 The PDFViewer component renders a scrollable PDF surface with toolbar controls, lazy page rendering, uploads, and page-level extension hooks.
 
-| Prop                          | Type                                                                      | Default | Required |
-| ----------------------------- | ------------------------------------------------------------------------- | ------- | -------- |
-| `file`                        | `string`                                                                  | `-`     | No       |
-| `className`                   | `string`                                                                  | `-`     | No       |
-| `defaultThumbnailSidebarOpen` | `boolean`                                                                 | `false` | No       |
-| `defaultZoom`                 | `number`                                                                  | `1`     | No       |
-| `pageWidth`                   | `number`                                                                  | `-`     | No       |
-| `pageHeight`                  | `number`                                                                  | `-`     | No       |
-| `showDownload`                | `boolean`                                                                 | `true`  | No       |
-| `showToolbar`                 | `boolean`                                                                 | `true`  | No       |
-| `showRotateControls`          | `boolean`                                                                 | `true`  | No       |
-| `showUpload`                  | `boolean`                                                                 | `true`  | No       |
-| `toolbarActions`              | `React.ReactNode`                                                         | `-`     | No       |
-| `pageClassName`               | `(pageNumber: number) => string \| undefined`                             | `-`     | No       |
-| `renderPageOverlay`           | `(props: PDFViewerPageOverlayProps) => React.ReactNode`                   | `-`     | No       |
-| `onActivePageChange`          | `(pageNumber: number) => void`                                            | `-`     | No       |
-| `onDocumentLoadSuccess`       | `(numPages: number) => void`                                              | `-`     | No       |
-| `onPdfUpload`                 | `(file: File) => void`                                                    | `-`     | No       |
-| `onPagePointerDown`           | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
-| `onPagePointerMove`           | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
-| `onPagePointerUp`             | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
-| `onPagePointerCancel`         | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`     | No       |
+Pass a relative path, an absolute URL, a raw base64 string, or a PDF data URL
+(`data:application/pdf;base64,…`) to **`src`**. You can pass base64 directly
+when the decoded bytes start with the `%PDF-` header. Use `fileName` to name
+downloads from inline sources. The default is `document.pdf`.
+
+| Prop                        | Type                                                                      | Default                                    | Required |
+| --------------------------- | ------------------------------------------------------------------------- | ------------------------------------------ | -------- |
+| `src`                       | `string`                                                                  | `-`                                        | No       |
+| `fileName`                  | `string`                                                                  | Inferred from the URL or `document.pdf`    | No       |
+| `className`                 | `string`                                                                  | `-`                                        | No       |
+| `defaultZoom`               | `number \| "fit-page" \| "fit-width" \| "automatic"`                      | `1`                                        | No       |
+| `resolveScrollAreaViewport` | `(container: HTMLDivElement) => HTMLDivElement \| null`                   | Finds `[data-slot="scroll-area-viewport"]` | No       |
+| `showDownload`              | `boolean`                                                                 | `true`                                     | No       |
+| `showToolbar`               | `boolean`                                                                 | `true`                                     | No       |
+| `showRotateControls`        | `boolean`                                                                 | `true`                                     | No       |
+| `showUpload`                | `boolean`                                                                 | `true`                                     | No       |
+| `toolbarActions`            | `React.ReactNode`                                                         | `-`                                        | No       |
+| `pageClassName`             | `(pageNumber: number) => string \| undefined`                             | `-`                                        | No       |
+| `renderPageOverlay`         | `(props: PDFViewerPageOverlayProps) => React.ReactNode`                   | `-`                                        | No       |
+| `onActivePageChange`        | `(pageNumber: number) => void`                                            | `-`                                        | No       |
+| `onDocumentLoadSuccess`     | `(numPages: number) => void`                                              | `-`                                        | No       |
+| `onPdfUpload`               | `(file: File) => void`                                                    | `-`                                        | No       |
+| `onPagePointerDown`         | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`                                        | No       |
+| `onPagePointerMove`         | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`                                        | No       |
+| `onPagePointerUp`           | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`                                        | No       |
+| `onPagePointerCancel`       | `(event: React.PointerEvent<HTMLDivElement>, pageNumber: number) => void` | `-`                                        | No       |
+
+The viewer works with the standard `components/ui/scroll-area` component. It
+looks for the conventional `data-slot="scroll-area-viewport"` element and gives
+that element to EmbedPDF. If your ScrollArea uses different markup, pass
+`resolveScrollAreaViewport` to return its actual scrolling viewport from the
+provided container.

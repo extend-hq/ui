@@ -33,6 +33,9 @@
     "overrides": {
       "@types/react": "19.2.2",
       "@types/react-dom": "19.2.2"
+    },
+    "patchedDependencies": {
+      "@extend-ai/react-docx@0.13.6": "patches/@extend-ai__react-docx@0.13.6.patch"
     }
   }
 }

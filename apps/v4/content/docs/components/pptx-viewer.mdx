@@ -1,0 +1,87 @@
+---
+title: React PowerPoint Viewer
+description: A React PowerPoint viewer component for rendering PPTX and legacy PPT presentations with virtualized slide thumbnails, navigation, zoom, and custom scroll areas.
+component: true
+featured: true
+---
+
+The React PowerPoint Viewer renders presentations directly in the browser as a continuously scrollable, virtualized slide deck with keyboard-accessible navigation, zoom controls, and a virtualized thumbnail rail. Its canvas uses the app's `background` theme token so it follows light and dark mode automatically. It supports both modern `.pptx` files and legacy `.ppt` files without requiring a server-side conversion step.
+
+<PptxViewerDemo />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @extend/pptx-viewer
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install @extend-ai/react-pptx@latest @tanstack/react-virtual@^3.13.12
+```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<PptxViewerSource />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Useful behaviors
+
+- Render `.pptx` and legacy `.ppt` files directly in the browser.
+- Keep the current slide synchronized across the header controls and thumbnail rail.
+- Virtualize large thumbnail rails and prefetch only nearby slide previews.
+- Scroll continuously through virtualized slides using the shared scroll area and custom scrollbar styling.
+- Collapse the shared thumbnail sidebar into an overlay on narrower viewer widths.
+- Switch between numeric, fit-page, fit-width, and automatic zoom levels.
+- Upload, download, jump to a slide number, and inject custom toolbar actions.
+
+## API Reference
+
+### PptxViewerPreview
+
+The `PptxViewerPreview` component wraps `@extend-ai/react-pptx` with the shared document-viewer sidebar, scroll area, header controls, upload, and download behavior.
+
+| Prop                          | Type                                                 | Default | Required |
+| ----------------------------- | ---------------------------------------------------- | ------- | -------- |
+| `className`                   | `string`                                             | `-`     | No       |
+| `defaultThumbnailSidebarOpen` | `boolean`                                            | `false` | No       |
+| `defaultZoom`                 | `number \| "fit-page" \| "fit-width" \| "automatic"` | `100`   | No       |
+| `fileName`                    | `string`                                             | `-`     | No       |
+| `initialSlide`                | `number`                                             | `1`     | No       |
+| `showDownload`                | `boolean`                                            | `true`  | No       |
+| `showToolbar`                 | `boolean`                                            | `true`  | No       |
+| `showUpload`                  | `boolean`                                            | `true`  | No       |
+| `src`                         | `string`                                             | `-`     | No       |
+| `toolbarActions`              | `React.ReactNode`                                    | `-`     | No       |

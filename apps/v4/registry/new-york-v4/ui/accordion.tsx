@@ -2,10 +2,9 @@
 
 import type React from "react"
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion"
-import { ArrowDown01Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "@/lib/utils"
+import { IconPlaceholder } from "@/components/icon-placeholder"
 
 export function Accordion(
   props: AccordionPrimitive.Root.Props
@@ -42,10 +41,14 @@ export function AccordionTrigger({
         {...props}
       >
         {children}
-        <HugeiconsIcon
+        <IconPlaceholder
+          lucide="ChevronDown"
+          tabler="IconChevronDown"
+          hugeicons="ArrowDown01Icon"
+          phosphor="CaretDownIcon"
+          remixicon="RiArrowDownSLine"
           className="pointer-events-none size-4 shrink-0 translate-y-0.5 opacity-80 transition-transform duration-200 ease-in-out"
           data-slot="accordion-indicator"
-          icon={ArrowDown01Icon}
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>

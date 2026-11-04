@@ -11,6 +11,10 @@ The React Excel Viewer is the core spreadsheet preview for XLSX workbooks, finan
 
 ## Installation
 
+First configure the [style-aware registry](/docs#installation) in
+`components.json`. Its URL must include `{style}` so the CLI installs the
+Base UI or Radix version that matches your project.
+
 <CodeTabs>
 
 <TabsList>
@@ -32,7 +36,28 @@ npx shadcn@latest add @extend/xlsx-viewer
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @extend-ai/react-xlsx@^0.10.0 @hugeicons/core-free-icons@^4.2.0 @hugeicons/react@^1.1.6
+npm install @extend-ai/react-xlsx@latest
+```
+
+<Step>Install the icon library configured in your `components.json`:</Step>
+
+The component source references icons through the shadcn CLI's
+`IconPlaceholder`, which supports every `iconLibrary` the CLI does: `lucide`,
+`tabler`, `hugeicons`, `phosphor`, and `remixicon`. Installing with the CLI
+replaces each placeholder with the matching icon from your configured library,
+so make sure that library's package is installed. When copying the source
+manually, replace each `IconPlaceholder` element with the icon named by the
+prop for your library.
+
+<Step>
+  Install the UI primitives used by the viewer, sheet tabs, and menus:
+</Step>
+
+The manual source uses Base UI primitives. Use the Command tab for a Radix
+project so the registry adapts the source to your primitive APIs.
+
+```bash
+npx shadcn@latest add button context-menu dropdown-menu input popover scroll-area select separator spinner tabs tooltip utils
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -52,6 +77,7 @@ npm install @extend-ai/react-xlsx@^0.10.0 @hugeicons/core-free-icons@^4.2.0 @hug
 - Sheet tabs, grid virtualization, column resizing, and frozen rows or columns.
 - Formula/value display modes and formatted cell rendering.
 - Search across sheets and cell ranges.
+- Right-click cells or headers for Copy and selection commands, or press Shift+F10 at the active cell.
 - Optional metadata for workbook properties, hidden sheets, and named ranges.
 
 ## API Reference
@@ -63,9 +89,7 @@ The XlsxViewerPreview component renders an Excel workbook with upload, theme, zo
 | Prop             | Type                        | Default | Required |
 | ---------------- | --------------------------- | ------- | -------- |
 | `className`      | `string`                    | `-`     | No       |
-| `defaultIsDark`  | `boolean`                   | `false` | No       |
 | `fileName`       | `string`                    | `-`     | No       |
-| `isDark`         | `boolean`                   | `-`     | No       |
-| `onIsDarkChange` | `(isDark: boolean) => void` | `-`     | No       |
-| `rounded`        | `boolean`                   | `false` | No       |
+| `isDark`         | `boolean`                   | `-`     | Yes      |
+| `onIsDarkChange` | `(isDark: boolean) => void` | `-`     | Yes      |
 | `src`            | `string`                    | `-`     | No       |

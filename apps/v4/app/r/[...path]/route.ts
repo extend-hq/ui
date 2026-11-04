@@ -1,6 +1,11 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
+import {
+  getRegistryFamily,
+  styleRegistryDependencies,
+} from "@/lib/registry-style"
+
 export const dynamic = "force-dynamic"
 
 type RegistryCatalog = {
@@ -9,6 +14,7 @@ type RegistryCatalog = {
 }
 
 type RegistryItem = {
+  name: string
   registryDependencies?: string[]
   [key: string]: unknown
 }
@@ -21,36 +27,25 @@ class RegistryJsonNotFoundError extends Error {
 
 const registryJsonCache = new Map<string, Promise<unknown>>()
 
-function getRegistryItemNames(registry: RegistryCatalog) {
-  return new Set(registry.items.map((item) => item.name))
-}
-
-function isExternalDependency(dependency: string) {
-  return (
-    dependency.startsWith("http://") ||
-    dependency.startsWith("https://") ||
-    dependency.startsWith("@")
-  )
-}
-
-function rewriteLocalRegistryDependencies(
-  item: RegistryItem,
-  localItemNames: Set<string>,
-  origin: string
-) {
-  if (!item.registryDependencies) return item
-
-  return {
-    ...item,
-    registryDependencies: item.registryDependencies.map((dependency) =>
-      !isExternalDependency(dependency) && localItemNames.has(dependency)
-        ? `${origin}/r/${dependency}.json`
-        : dependency
-    ),
-  }
-}
-
 function parseRegistryPath(pathSegments: string[]) {
+  if (pathSegments.length === 3 && pathSegments[0] === "styles") {
+    const [, style, segment] = pathSegments
+
+    if (!/^[a-z0-9-]+$/.test(style)) return null
+
+    // The shadcn CLI derives the index URL by substituting "registry" for
+    // {name}, so the catalog must also resolve under a style prefix.
+    if (segment === "registry.json") {
+      return { type: "catalog" as const }
+    }
+
+    const match = /^([a-z0-9-]+)\.json$/.exec(segment)
+
+    if (!match) return null
+
+    return { name: match[1], style, type: "item" as const }
+  }
+
   if (pathSegments.length !== 1) return null
 
   const [segment] = pathSegments
@@ -63,7 +58,7 @@ function parseRegistryPath(pathSegments: string[]) {
 
   if (!match) return null
 
-  return { name: match[1], type: "item" as const }
+  return { name: match[1], style: undefined, type: "item" as const }
 }
 
 function isFileNotFoundError(error: unknown) {
@@ -91,7 +86,10 @@ function getRegistryDirectories() {
 async function readRegistryJson<T>(fileName: string): Promise<T> {
   for (const registryDirectory of getRegistryDirectories()) {
     try {
-      const file = await readFile(path.join(registryDirectory, fileName), "utf8")
+      const file = await readFile(
+        path.join(registryDirectory, fileName),
+        "utf8"
+      )
 
       return JSON.parse(file) as T
     } catch (error) {
@@ -116,7 +114,7 @@ function loadBuiltRegistryJson<T>(fileName: string) {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   context: {
     params: Promise<{ path?: string[] }>
   }
@@ -135,18 +133,25 @@ export async function GET(
       )
     }
 
-    const [registry, item] = await Promise.all([
-      loadBuiltRegistryJson<RegistryCatalog>("registry.json"),
-      loadBuiltRegistryJson<RegistryItem>(`${parsedPath.name}.json`),
-    ])
+    const family = parsedPath.style ? getRegistryFamily(parsedPath.style) : null
 
-    return Response.json(
-      rewriteLocalRegistryDependencies(
-        item,
-        getRegistryItemNames(registry),
-        new URL(request.url).origin
+    if (parsedPath.style && !family) {
+      return Response.json(
+        { error: `Registry style "${parsedPath.style}" is not supported.` },
+        { status: 404 }
       )
+    }
+
+    const builtItem = await loadBuiltRegistryJson<RegistryItem>(
+      family
+        ? `bases/${family}/${parsedPath.name}.json`
+        : `${parsedPath.name}.json`
     )
+    const item = parsedPath.style
+      ? styleRegistryDependencies(builtItem, parsedPath.style)
+      : builtItem
+
+    return Response.json(item)
   } catch (error) {
     if (error instanceof RegistryJsonNotFoundError) {
       return Response.json(

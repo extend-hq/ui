@@ -1,9 +1,9 @@
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.extend.ai/ui"
+const canonicalUrl = "https://www.extend.ai/ui"
 
 export const siteConfig = {
   name: "Extend UI",
-  url: appUrl,
-  ogImage: `${appUrl}/opengraph-image.png`,
+  url: canonicalUrl,
+  ogImage: `${canonicalUrl}/opengraph-image.png`,
   description:
     "Open source UI primitives for building document processing products with viewers, review surfaces, and validation workflows.",
   links: {
