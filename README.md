@@ -3,6 +3,10 @@
 [Extend UI](https://www.extend.ai/ui) is a set of open-source components for
 document agents, user-facing document flows, and internal tools.
 
+<p align="center">
+  <a href="https://trendshift.io/repositories/50020?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-50020" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/50020/daily?language=TypeScript" alt="extend-hq%2Fui | Trendshift" width="250" height="55"/></a>
+</p>
+
 ![Extend UI document components](apps/v4/public/extend-ui-readme.png)
 
 The library includes 14 components and examples for PDF, DOCX, and XLSX
