@@ -747,7 +747,7 @@
       "title": "DOCX Viewer",
       "description": "A DOCX viewer with upload, zoom, theme controls, and read-only rendering.",
       "dependencies": [
-        "@extend-ai/react-docx@0.13.6",
+        "@extend-ai/react-docx@0.14.7",
         "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
@@ -774,7 +774,7 @@
       "type": "registry:ui",
       "title": "DOCX Editor",
       "description": "A DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
-      "dependencies": ["@extend-ai/react-docx@0.13.6"],
+      "dependencies": ["@extend-ai/react-docx@0.14.7"],
       "registryDependencies": [
         "@extend/document-viewer-sidebar",
         "@extend/file-thumbnail",
@@ -799,7 +799,7 @@
       "type": "registry:ui",
       "title": "Excel Viewer",
       "description": "An XLSX viewer with workbook loading, thumbnails, sheet tabs, upload, zoom, and theme controls.",
-      "dependencies": ["@extend-ai/react-xlsx@0.20.1"],
+      "dependencies": ["@extend-ai/react-xlsx@0.20.9"],
       "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
@@ -816,7 +816,7 @@
       "title": "PowerPoint Viewer",
       "description": "A PowerPoint viewer with slide navigation, zoom, upload, download, custom scroll areas, and virtualized thumbnails.",
       "dependencies": [
-        "@extend-ai/react-pptx@0.2.2",
+        "@extend-ai/react-pptx@0.3.0",
         "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
@@ -838,7 +838,7 @@
       "type": "registry:ui",
       "title": "Excel Editor",
       "description": "An XLSX editor with formula input, undo and redo, sheet controls, export, and live workbook mutation.",
-      "dependencies": ["@extend-ai/react-xlsx@0.20.1"],
+      "dependencies": ["@extend-ai/react-xlsx@0.20.9"],
       "registryDependencies": ["utils", "@extend/xlsx-viewer"],
       "categories": ["documents"],
       "files": [
