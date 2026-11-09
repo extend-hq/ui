@@ -15,6 +15,7 @@ import {
 
 import { renderPdfThumbnailUrl } from "@/lib/pdf-thumbnail-utils"
 import { withUiBasePath } from "@/lib/zone-path"
+import { useMounted } from "@/hooks/use-mounted"
 import { Button } from "@/components/ui/button"
 import {
   DocsSourceCodeBlock,
@@ -449,6 +450,8 @@ function FileThumbnailExample({
   file: DemoFile
   previewAspectRatio?: number
 }) {
+  const mounted = useMounted()
+
   return (
     <div className={className}>
       {file.kind === "image" ? (
@@ -464,10 +467,19 @@ function FileThumbnailExample({
         />
       ) : null}
       {file.kind === "docx" ? (
-        <DocxThumbnailPreview
-          file={file}
-          previewAspectRatio={previewAspectRatio}
-        />
+        mounted ? (
+          <DocxThumbnailPreview
+            file={file}
+            previewAspectRatio={previewAspectRatio}
+          />
+        ) : (
+          <FileThumbnail
+            file={file}
+            previewAspectRatio={previewAspectRatio ?? 0.77}
+            previewClassName="bg-white"
+            isLoading
+          />
+        )
       ) : null}
       {file.kind === "xlsx" ? (
         <XlsxThumbnailPreview

@@ -130,8 +130,8 @@ importers:
         specifier: 0.3.0
         version: 0.3.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-xlsx':
-        specifier: 0.20.9
-        version: 0.20.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.20.11
+        version: 0.20.11(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@glideapps/glide-data-grid':
         specifier: 6.0.4-alpha24
         version: 6.0.4-alpha24(lodash@4.18.1)(marked@16.4.2)(react-dom@19.2.3(react@19.2.3))(react-responsive-carousel@3.2.23)(react@19.2.3)
@@ -1496,8 +1496,8 @@ packages:
       react: '>=18.2 <20'
       react-dom: '>=18.2 <20'
 
-  '@extend-ai/react-xlsx@0.20.9':
-    resolution: {integrity: sha512-3lW+Gi2ZjSeWfaicLdS6wt2ZcLxLJT0SJstlHK/E0uE1dqXZI+9Hud7apWkF5PLV5nSqjgZcWDXnzoJBOOQ29w==}
+  '@extend-ai/react-xlsx@0.20.11':
+    resolution: {integrity: sha512-nsCUjKTCV/0tlreje//UaDHVzZgT62seWxAGtnsGgqeSdDRjzc1y6EB19pLMs3S7YTF+UeerXCJOWyad3VgQWw==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -7586,7 +7586,7 @@ snapshots:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 
-  '@extend-ai/react-xlsx@0.20.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-xlsx@0.20.11(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@dukelib/sheets-wasm': 0.1.24
       csstype: 3.2.3
