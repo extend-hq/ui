@@ -747,7 +747,7 @@
       "title": "DOCX Viewer",
       "description": "A DOCX viewer with upload, zoom, theme controls, and read-only rendering.",
       "dependencies": [
-        "@extend-ai/react-docx@0.14.7",
+        "@extend-ai/react-docx@0.14.8",
         "@tanstack/react-virtual@^3.13.12"
       ],
       "registryDependencies": [
@@ -774,7 +774,7 @@
       "type": "registry:ui",
       "title": "DOCX Editor",
       "description": "A DOCX editor with a Word-style toolbar, page thumbnails, import, export, and live document mutation.",
-      "dependencies": ["@extend-ai/react-docx@0.14.7"],
+      "dependencies": ["@extend-ai/react-docx@0.14.8"],
       "registryDependencies": [
         "@extend/document-viewer-sidebar",
         "@extend/file-thumbnail",

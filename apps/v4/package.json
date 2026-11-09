@@ -55,7 +55,7 @@
     "@embedpdf/plugin-viewport": "^2.15.0",
     "@embedpdf/plugin-zoom": "^2.15.0",
     "@embedpdf/utils": "2.15.0",
-    "@extend-ai/react-docx": "0.14.7",
+    "@extend-ai/react-docx": "0.14.8",
     "@extend-ai/react-pptx": "0.3.0",
     "@extend-ai/react-xlsx": "0.20.9",
     "@glideapps/glide-data-grid": "6.0.4-alpha24",
