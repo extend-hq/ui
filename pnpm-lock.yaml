@@ -124,14 +124,14 @@ importers:
         specifier: 2.15.0
         version: 2.15.0(preact@11.0.0-beta.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(svelte@5.56.3(@typescript-eslint/types@8.59.1))(vue@3.5.38(typescript@5.9.2))
       '@extend-ai/react-docx':
-        specifier: 0.14.8
-        version: 0.14.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.14.10
+        version: 0.14.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-pptx':
-        specifier: 0.3.0
-        version: 0.3.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.5.0
+        version: 0.5.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@extend-ai/react-xlsx':
-        specifier: 0.20.11
-        version: 0.20.11(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: 0.22.0
+        version: 0.22.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@glideapps/glide-data-grid':
         specifier: 6.0.4-alpha24
         version: 6.0.4-alpha24(lodash@4.18.1)(marked@16.4.2)(react-dom@19.2.3(react@19.2.3))(react-responsive-carousel@3.2.23)(react@19.2.3)
@@ -596,9 +596,6 @@ packages:
   '@dotenvx/dotenvx@1.69.1':
     resolution: {integrity: sha512-kwQB5KcAegxw/+NGUgXAo5ovyOSjlMhoXSSnSEpDhoHJwzMcMO0HE1U0VCYZ7jbAeCMGamed9XdWzOA5ixtTNg==}
     hasBin: true
-
-  '@dukelib/sheets-wasm@0.1.24':
-    resolution: {integrity: sha512-nqAJwmMXCZahWrO5/7SVPSazhhXaPk3F6HyzAoQRKFGpl0ySiHft5Lx2Xq0xVPWlIE4p3HBSQHovBiSoCEeb2Q==}
 
   '@ecies/ciphers@0.2.6':
     resolution: {integrity: sha512-patgsRPKGkhhoBjETV4XxD0En4ui5fbX0hzayqI3M8tvNMGUoUvmyYAIWwlxBc1KX5cturfqByYdj5bYGRpN9g==}
@@ -1479,8 +1476,8 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@extend-ai/react-docx@0.14.8':
-    resolution: {integrity: sha512-+fjZkNkEsTgFH7zYNUm5LO2kGh0GDDxIe9XmQqv3M0T/ezKxYKwli3rgsz/omvu5qLDYg0UP7hQxEPovjTED/w==}
+  '@extend-ai/react-docx@0.14.10':
+    resolution: {integrity: sha512-h3f38mmrn35o0ssohK1kt78XOdgJ8c3CtbhsRUaI88xj36O0byT+MdsGZltBx2q6+JTRNpGO9FcqRFK8xEEyIA==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -1490,14 +1487,14 @@ packages:
       react-dom:
         optional: true
 
-  '@extend-ai/react-pptx@0.3.0':
-    resolution: {integrity: sha512-j/VCvCi/SuvxG8Z8Q3oUubi4npMGtVb1WVyzlerky48Bj0idI+lU41m/UqV8M9C+DlVL5NitBWQncXmnzZhOCg==}
+  '@extend-ai/react-pptx@0.5.0':
+    resolution: {integrity: sha512-LQLyzK4SD3vZgN+AeUVnxfUBhvT0OQxMBTHzgE6XSZyoFK/Jw2Ai6PBn4LMadcl+SrOEt2I53ifcgZ3P9COGJA==}
     peerDependencies:
       react: '>=18.2 <20'
       react-dom: '>=18.2 <20'
 
-  '@extend-ai/react-xlsx@0.20.11':
-    resolution: {integrity: sha512-nsCUjKTCV/0tlreje//UaDHVzZgT62seWxAGtnsGgqeSdDRjzc1y6EB19pLMs3S7YTF+UeerXCJOWyad3VgQWw==}
+  '@extend-ai/react-xlsx@0.22.0':
+    resolution: {integrity: sha512-1BRmxIx3Su1i+esMy93SA/7mKqCEYnTEylIvDmeniY/09Lbf9lINKJonM5be0ZkTBo4T/R2WQig7Jdc2vNPvig==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -6911,8 +6908,6 @@ snapshots:
       which: 4.0.0
       yocto-spinner: 1.2.0
 
-  '@dukelib/sheets-wasm@0.1.24': {}
-
   '@ecies/ciphers@0.2.6(@noble/ciphers@1.3.0)':
     dependencies:
       '@noble/ciphers': 1.3.0
@@ -7571,7 +7566,7 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@extend-ai/react-docx@0.14.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-docx@0.14.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@chenglou/pretext': 1.0.0
       csstype: 3.2.3
@@ -7581,14 +7576,13 @@ snapshots:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 
-  '@extend-ai/react-pptx@0.3.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-pptx@0.5.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 
-  '@extend-ai/react-xlsx@0.20.11(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@extend-ai/react-xlsx@0.22.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
-      '@dukelib/sheets-wasm': 0.1.24
       csstype: 3.2.3
       fflate: 0.8.3
     optionalDependencies:

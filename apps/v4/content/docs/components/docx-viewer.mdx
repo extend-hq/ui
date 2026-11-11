@@ -35,7 +35,7 @@ npx shadcn@latest add @extend/docx-viewer
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @extend-ai/react-docx@latest @tanstack/react-virtual@3.13.26
+npm install @extend-ai/react-docx@0.14.10 @tanstack/react-virtual@3.13.26
 ```
 
 <Step>Install the icon library configured in your `components.json`:</Step>
@@ -58,8 +58,8 @@ npx shadcn@latest add @extend/document-viewer-sidebar @extend/file-thumbnail bad
 ```
 
 <Step>
-  Copy both files below into your project. The annotation card is shared by
-  the viewer and editor and renders comments and tracked changes.
+  Copy both files below into your project. The annotation card is shared by the
+  viewer and editor and renders comments and tracked changes.
 </Step>
 
 <DocxViewerSource />
@@ -93,7 +93,7 @@ The DocxViewerPreview component renders a DOCX file with upload, theme, and zoom
 | `defaultZoom`    | `number \| "fit-page" \| "fit-width" \| "automatic"` | `50`    | No       |
 | `fileName`       | `string`                                             | `-`     | No       |
 | `isDark`         | `boolean`                                            | `-`     | Yes      |
-| `layout`         | `React.ComponentType<DocxViewerLayoutProps>`          | `-`     | No       |
+| `layout`         | `React.ComponentType<DocxViewerLayoutProps>`         | `-`     | No       |
 | `onIsDarkChange` | `(isDark: boolean) => void`                          | `-`     | Yes      |
 | `showDownload`   | `boolean`                                            | `true`  | No       |
 | `showToolbar`    | `boolean`                                            | `true`  | No       |
