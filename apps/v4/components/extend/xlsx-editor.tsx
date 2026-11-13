@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  useXlsxPivotTableEditor,
   useXlsxViewer,
   useXlsxViewerController,
   useXlsxViewerEditing,
@@ -13,6 +14,7 @@ import {
   type XlsxCellBorderEdgeInput,
   type XlsxCellRange,
   type XlsxCellStyleInput,
+  type XlsxPivotTableEditor,
   type XlsxSheetData,
   type XlsxTableHeaderMenuRenderProps,
 } from "@extend-ai/react-xlsx"
@@ -51,8 +53,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
+  renderWorkbookChartLoading,
+  renderWorkbookFormControl,
+  renderWorkbookImageSelection,
+} from "@/components/extend/xlsx-controls"
+import { WorkbookPivotControls } from "@/components/extend/xlsx-pivot-controls"
+import { WorkbookPivotHeaderMenu } from "@/components/extend/xlsx-pivot-header"
+import {
   renderXlsxContextMenu,
-  renderXlsxScroller,
   WorkbookSheetTabs,
   WorkbookTableHeaderMenu,
   XLSX_CONTEXT_MENU_CLASS_NAME,
@@ -1312,12 +1320,14 @@ function EditorToolbar({
   isDark,
   onIsDarkChange,
   onUploadClick,
+  pivotEditor,
   showNightRenderToggle,
   workbookIdentity,
 }: {
   isDark: boolean
   onIsDarkChange: (checked: boolean) => void
   onUploadClick: () => void
+  pivotEditor: XlsxPivotTableEditor
   showNightRenderToggle: boolean
   workbookIdentity: string
 }) {
@@ -2220,6 +2230,43 @@ function EditorToolbar({
             />
           </div>
           <ToolbarSeparator />
+          <div
+            role="group"
+            aria-label="Pivot table controls"
+            className="flex shrink-0 items-center gap-1"
+          >
+            <ToolbarIconButton
+              label="Insert pivot table"
+              disabled={!hasWorkbook || readOnly || pivotEditor.dirty}
+              onClick={pivotEditor.create}
+            >
+              <IconPlaceholder
+                lucide="Table2"
+                tabler="IconTablePlus"
+                hugeicons="TableIcon"
+                phosphor="TableIcon"
+                remixicon="RiTableLine"
+                className="size-4"
+              />
+            </ToolbarIconButton>
+            <ToolbarIconButton
+              label="Pivot fields"
+              active={pivotEditor.open}
+              aria-pressed={pivotEditor.open}
+              disabled={!hasWorkbook}
+              onClick={() => pivotEditor.setOpen(!pivotEditor.open)}
+            >
+              <IconPlaceholder
+                lucide="ListFilter"
+                tabler="IconListDetails"
+                hugeicons="ColumnsThreeCogIcon"
+                phosphor="ListBulletsIcon"
+                remixicon="RiListSettingsLine"
+                className="size-4"
+              />
+            </ToolbarIconButton>
+          </div>
+          <ToolbarSeparator />
           <div className="flex shrink-0 items-center gap-1">
             <ToolbarTooltip label="Add sheet">
               <Button
@@ -2428,11 +2475,12 @@ export function XlsxEditorSurface({
   workbookIdentity: string
 }) {
   const { error } = useXlsxViewer()
+  const pivotEditor = useXlsxPivotTableEditor()
 
   return (
     <div
       className={cn(
-        "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
+        "flex h-[900px] min-h-0 flex-col overflow-hidden bg-background sm:h-[640px]",
         className
       )}
     >
@@ -2440,6 +2488,7 @@ export function XlsxEditorSurface({
         isDark={isDark}
         onIsDarkChange={onIsDarkChange}
         onUploadClick={onUploadClick}
+        pivotEditor={pivotEditor}
         showNightRenderToggle={showNightRenderToggle}
         workbookIdentity={workbookIdentity}
       />
@@ -2447,7 +2496,7 @@ export function XlsxEditorSurface({
         <div className="min-h-0 flex-1 bg-muted/20">
           <XlsxViewer
             allowResizeInReadOnly
-            className="h-full min-h-0 min-w-0"
+            className="h-full min-h-0 min-w-0 [&_[data-xlsx-pivot-toggle]]:rounded-sm! [&_[data-xlsx-pivot-toggle]]:border-border! [&_[data-xlsx-pivot-toggle]]:bg-background! [&_[data-xlsx-pivot-toggle]]:text-foreground!"
             height="100%"
             isDark={isDark}
             readOnly={false}
@@ -2466,7 +2515,6 @@ export function XlsxEditorSurface({
               </div>
             }
             loadingState={<EditorLoadingSurface />}
-            renderScroller={renderXlsxScroller}
             errorState={
               <div className="grid h-full w-full min-w-full place-items-center p-6 text-sm text-destructive">
                 {error?.message ?? "Unable to edit workbook."}
@@ -2476,6 +2524,17 @@ export function XlsxEditorSurface({
             contextMenuStyle={xlsxContextMenuStyle}
             renderContextMenu={renderXlsxContextMenu}
             renderTableHeaderMenu={renderTableHeaderMenu}
+            showPivotTableControls
+            pivotTableEditor={pivotEditor}
+            renderPivotTableControls={({ editor }) => (
+              <WorkbookPivotControls editor={editor} />
+            )}
+            renderPivotTableHeaderMenu={(props) => (
+              <WorkbookPivotHeaderMenu {...props} />
+            )}
+            renderChartLoading={renderWorkbookChartLoading}
+            renderFormControl={renderWorkbookFormControl}
+            renderImageSelection={renderWorkbookImageSelection}
           />
         </div>
         <WorkbookSheetTabs workbookIdentity={workbookIdentity} />
@@ -2598,7 +2657,7 @@ function XlsxEditorContent({
     return (
       <div
         className={cn(
-          "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
+          "flex h-[900px] min-h-0 flex-col overflow-hidden bg-background sm:h-[640px]",
           className
         )}
       >
@@ -2643,7 +2702,7 @@ function XlsxEditorContent({
     return (
       <div
         className={cn(
-          "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
+          "flex h-[900px] min-h-0 flex-col overflow-hidden bg-background sm:h-[640px]",
           className
         )}
       >
@@ -2685,7 +2744,7 @@ function XlsxEditorContent({
     return (
       <div
         className={cn(
-          "flex h-[640px] min-h-0 flex-col overflow-hidden bg-background",
+          "flex h-[900px] min-h-0 flex-col overflow-hidden bg-background sm:h-[640px]",
           className
         )}
       >

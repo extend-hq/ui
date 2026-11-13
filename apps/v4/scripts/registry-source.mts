@@ -172,6 +172,12 @@ export function transformRegistrySource(
           )
         }
         if (!imports.length) return undefined
+        if (
+          modulePath === "@/components/ui/context-menu" &&
+          /<ContextMenu(?:Sub)?Content\b[^>]*\bportalProps=/.test(content)
+        ) {
+          modulePath = "@/components/extend/workbook-menu"
+        }
         modulePath =
           modulePath === "@/components/ui/scroll-area" &&
           !needsEnhancedScrollArea

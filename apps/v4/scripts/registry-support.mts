@@ -12,6 +12,14 @@ export async function getRegistrySupport(
 ) {
   const files = [
     [
+      "@/components/extend/workbook-menu",
+      "registry/new-york-v4/ui/context-menu.tsx",
+    ],
+    [
+      "@/components/extend/workbook-select",
+      "registry/new-york-v4/ui/select.tsx",
+    ],
+    [
       "@/components/extend/document-controls",
       "registry/extend/document-controls.tsx",
     ],
@@ -28,7 +36,17 @@ export async function getRegistrySupport(
   return new Map(
     await Promise.all(
       files.map(async ([name, file]) => {
-        const content = await readFile(path.join(appRoot, file), "utf8")
+        let content = await readFile(path.join(appRoot, file), "utf8")
+        if (name.endsWith("workbook-select")) {
+          content = content.replace(
+            /\b(Select(?:Trigger|Content|Item|Value|Button|Group|Label|Separator|ScrollUpButton|ScrollDownButton|Primitive)?)\b/g,
+            "Workbook$1"
+          )
+          content = content.replace(
+            "import { WorkbookSelect as WorkbookSelectPrimitive }",
+            "import { Select as WorkbookSelectPrimitive }"
+          )
+        }
         return [
           name,
           name.endsWith("document-controls")

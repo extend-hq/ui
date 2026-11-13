@@ -35,7 +35,7 @@ npx shadcn@latest add @extend/xlsx-editor
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @base-ui/react@^1.4.1 @extend-ai/react-xlsx@0.22.0 class-variance-authority@^0.7.1
+npm install @base-ui/react@^1.4.1 @extend-ai/react-xlsx@0.23.0 class-variance-authority@^0.7.1
 ```
 
 <Step>Install the icon library configured in your `components.json`:</Step>
@@ -80,6 +80,8 @@ npx shadcn@latest add @extend/xlsx-viewer @extend/registry-icon-props @extend/gr
 - Undo, redo, merge, unmerge, sheet add/remove, and export are wired through `react-xlsx` editing APIs.
 - Right-click cells or headers for clipboard, editing, selection, merge, and table-sort commands. Shift+F10 opens the same menu from the keyboard; failed commands keep their error visible.
 - Sheet tabs, workbook loading, upload, zoom, table sorting, and dark workbook rendering match the Excel Viewer.
+- Pivot fields support creation, field placement, filtering, grouping, calculated fields, chart insertion, refresh, and source details using the same themed controls as the toolbar.
+- Chart and image context menus include nested commands and checked selections. Form controls, chart loading states, and image resize handles follow the component theme.
 - Large workbooks automatically fall back to read-only behavior above the editor threshold.
 
 ## API Reference

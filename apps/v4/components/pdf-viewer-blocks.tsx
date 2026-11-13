@@ -20,12 +20,12 @@ import type {
 } from "@/lib/block-code-samples"
 import {
   PDF_VIEWER_BLOCKS,
+  type PdfViewerBlockId,
   type PdfViewerBlockMetadata,
 } from "@/lib/pdf-viewer-blocks"
 import { cn } from "@/lib/utils"
 import { withUiBasePath } from "@/lib/zone-path"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { useMounted } from "@/hooks/use-mounted"
 import { Button } from "@/components/ui/button"
 import {
   ResizableHandle,
@@ -33,10 +33,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import type { BlockCodeLoadState } from "@/components/block-code-panel"
-import {
-  BlockPreviewPlaceholder,
-  blockPreviews,
-} from "@/components/block-previews"
+import { blockPreviews } from "@/components/block-previews"
 import {
   CopyButtonIcon,
   copyToClipboardWithMeta,
@@ -57,8 +54,6 @@ const blockViewportSizes: Array<{
 ]
 
 const BLOCK_VIEWPORT_HEIGHT_CLASS = "h-[680px]"
-const SCROLL_SETTLE_MS = 150
-const MIN_VISIBLE_RATIO = 0.1
 
 const BlockCodePanel = dynamic(
   () =>
@@ -124,18 +119,19 @@ export function PdfViewerBlocks({
 }: {
   codeSamples: Record<string, BlockCodeFile[]>
 }) {
-  const [sectionRef, visibleBlocks] = useVisibleBlocks()
+  const [activeBlockId, setActiveBlockId] =
+    React.useState<PdfViewerBlockId | null>(null)
   const isDesktopViewport = useMediaQuery("(min-width: 768px)")
-  const mounted = useMounted()
-  const showAll = mounted && !("IntersectionObserver" in window)
   return (
-    <section ref={sectionRef} className="space-y-12">
+    <section className="space-y-12">
       {PDF_VIEWER_BLOCKS.map((block) => (
         <PdfViewerBlockPreview
           key={block.id}
           block={block}
           isDesktopViewport={isDesktopViewport}
-          inView={showAll || visibleBlocks.has(block.id)}
+          isActive={activeBlockId === block.id}
+          onActivate={() => setActiveBlockId(block.id)}
+          onDeactivate={() => setActiveBlockId(null)}
           codeSamples={codeSamples[block.id] ?? []}
         />
       ))}
@@ -145,19 +141,21 @@ export function PdfViewerBlocks({
 
 function PdfViewerBlockPreview({
   block,
-  inView,
+  isActive,
+  onActivate,
+  onDeactivate,
   isDesktopViewport,
   codeSamples,
 }: {
-  inView: boolean
+  isActive: boolean
+  onActivate: () => void
+  onDeactivate: () => void
   isDesktopViewport: boolean
   block: PdfViewerBlockMetadata
   codeSamples: BlockCodeFile[]
 }) {
   const [previewKey, setPreviewKey] = React.useState(0)
   const [view, setView] = React.useState<BlockView>("preview")
-  const [keepPreview, setKeepPreview] = React.useState(false)
-  const lastScrollGesture = React.useRef(-Infinity)
   const [activeViewport, setActiveViewport] = React.useState(
     blockViewportSizes[0]
   )
@@ -174,12 +172,9 @@ function PdfViewerBlockPreview({
   const previewHeightClassName =
     block.previewHeightClassName ?? BLOCK_VIEWPORT_HEIGHT_CLASS
 
-  function retainPreview() {
-    if (!keepPreview) setKeepPreview(true)
-  }
-
-  function noteScrollGesture() {
-    lastScrollGesture.current = performance.now()
+  function changeView(nextView: BlockView) {
+    setView(nextView)
+    if (nextView === "code" && isActive) onDeactivate()
   }
 
   function resizeViewport(viewport: (typeof blockViewportSizes)[number]) {
@@ -223,7 +218,7 @@ function PdfViewerBlockPreview({
         className="group/block-preview overflow-hidden rounded-xl"
       >
         <div className="flex min-h-11 flex-wrap items-center gap-2 px-2 pb-2">
-          <BlockViewToggle view={view} onViewChange={setView} />
+          <BlockViewToggle view={view} onViewChange={changeView} />
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <a
               href={`#${block.id}`}
@@ -279,8 +274,8 @@ function PdfViewerBlockPreview({
                 className="size-7"
                 title="Refresh Preview"
                 aria-label={`Refresh ${block.title} preview`}
+                disabled={!isActive || view !== "preview"}
                 onClick={() => {
-                  setKeepPreview(false)
                   setPreviewKey((value) => value + 1)
                 }}
               >
@@ -316,25 +311,8 @@ function PdfViewerBlockPreview({
             "relative box-content overflow-hidden rounded-xl border bg-background",
             previewHeightClassName
           )}
-          onClickCapture={retainPreview}
-          onPointerDownCapture={(event) => {
-            if (event.pointerType !== "touch") retainPreview()
-          }}
-          onFocusCapture={retainPreview}
-          onWheelCapture={keepPreview ? undefined : noteScrollGesture}
-          onTouchMoveCapture={keepPreview ? undefined : noteScrollGesture}
-          onScrollCapture={() => {
-            if (
-              performance.now() - lastScrollGesture.current <
-              SCROLL_SETTLE_MS
-            )
-              retainPreview()
-          }}
-          onKeyDownCapture={retainPreview}
-          onChangeCapture={retainPreview}
-          onDropCapture={retainPreview}
         >
-          {keepPreview || (inView && view === "preview") ? (
+          {isActive && view === "preview" ? (
             <ResizablePanelGroup
               orientation="horizontal"
               className="h-full bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-[size:20px_20px]"
@@ -355,84 +333,40 @@ function PdfViewerBlockPreview({
               )}
             </ResizablePanelGroup>
           ) : (
-            <BlockPreviewPlaceholder />
+            <div className="relative flex h-full items-center justify-center overflow-hidden">
+              <img
+                src={withUiBasePath(`/images/blocks/${block.id}.webp`)}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+                className="pointer-events-none absolute inset-0 h-full w-full scale-[1.02] object-cover object-top blur-[2px] select-none dark:brightness-90"
+              />
+              <div className="absolute inset-0 bg-background/10" />
+              <Button
+                type="button"
+                size="lg"
+                aria-label={`Start ${block.title} preview`}
+                onClick={onActivate}
+              >
+                Click to start
+              </Button>
+            </div>
           )}
         </div>
         {view === "code" && (
           <div className={BLOCK_VIEWPORT_HEIGHT_CLASS}>
-            {inView && (
-              <BlockCodePanel
-                codeSamples={codeSamples}
-                loadState={codeLoadState}
-                activeFile={activeFile}
-                onActiveFileChange={setActiveFile}
-              />
-            )}
+            <BlockCodePanel
+              codeSamples={codeSamples}
+              loadState={codeLoadState}
+              activeFile={activeFile}
+              onActiveFileChange={setActiveFile}
+            />
           </div>
         )}
       </div>
     </article>
   )
-}
-
-function useVisibleBlocks() {
-  const sectionRef = React.useRef<HTMLElement>(null)
-  const [visibleBlocks, setVisibleBlocks] = React.useState<Set<string>>(
-    () => new Set()
-  )
-
-  React.useEffect(() => {
-    const section = sectionRef.current
-    if (!section || !("IntersectionObserver" in window)) return
-
-    const visible = new Set<string>()
-    let dirty = false
-    let settleTimer: number | undefined
-
-    function publish() {
-      settleTimer = undefined
-      if (!dirty) return
-      dirty = false
-      const next = new Set(visible)
-      React.startTransition(() => setVisibleBlocks(next))
-    }
-
-    function onScroll() {
-      window.clearTimeout(settleTimer)
-      settleTimer = window.setTimeout(publish, SCROLL_SETTLE_MS)
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const id = entry.target.id
-          const inView =
-            entry.isIntersecting &&
-            (entry.intersectionRatio >= MIN_VISIBLE_RATIO ||
-              (entry.rootBounds?.height ?? window.innerHeight) <
-                entry.boundingClientRect.height * MIN_VISIBLE_RATIO)
-          if (visible.has(id) === inView) continue
-          if (inView) visible.add(id)
-          else visible.delete(id)
-          dirty = true
-        }
-        if (settleTimer === undefined) publish()
-      },
-      { threshold: [0, MIN_VISIBLE_RATIO] }
-    )
-
-    section
-      .querySelectorAll(":scope > article[id]")
-      .forEach((node) => observer.observe(node))
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => {
-      observer.disconnect()
-      window.removeEventListener("scroll", onScroll)
-      window.clearTimeout(settleTimer)
-    }
-  }, [])
-
-  return [sectionRef, visibleBlocks] as const
 }
 
 function BlockViewToggle({

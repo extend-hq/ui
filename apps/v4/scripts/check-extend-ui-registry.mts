@@ -250,7 +250,7 @@ async function checkFamily(family: Family) {
         .map((name) => name.match(/^(@[^/]+\/[^@]+|[^@]+)/)![0])
     )
     const files = [...closure.values()].flatMap((item) => item.files ?? [])
-    if (entry === "xlsx-viewer") assert.equal(files.length, 1)
+    if (entry === "xlsx-viewer") assert.equal(files.length, 4)
     const modules = new Set(
       files.map((file) =>
         file.target
@@ -404,14 +404,30 @@ async function checkFamily(family: Family) {
         `Unresolved icon in ${filename}`
       )
   }
-  await writeFile(
-    path.join(directory, "src/App.tsx"),
-    'import { PDFEditor } from "./components/extend/pdf-editor"\nexport default function App() { return <PDFEditor src="/fixture.pdf" className="h-svh" defaultMode="annotate" persistSignatures={false} /> }\n'
-  )
-  await cp(
-    path.join(appRoot, "public/samples/attention.pdf"),
-    path.join(directory, "public/fixture.pdf")
-  )
+  if (selectedItems.includes("pdf-editor")) {
+    await writeFile(
+      path.join(directory, "src/App.tsx"),
+      'import { PDFEditor } from "./components/extend/pdf-editor"\nexport default function App() { return <PDFEditor src="/fixture.pdf" className="h-svh" defaultMode="annotate" persistSignatures={false} /> }\n'
+    )
+    await cp(
+      path.join(appRoot, "public/samples/attention.pdf"),
+      path.join(directory, "public/fixture.pdf")
+    )
+  } else {
+    const previews = selectedItems.flatMap((name) =>
+      name === "xlsx-editor"
+        ? [{ name, component: "XlsxEditorPreview" }]
+        : name === "docx-editor"
+          ? [{ name, component: "DocxEditorPreview" }]
+          : []
+    )
+    await writeFile(
+      path.join(directory, "src/App.tsx"),
+      `${previews.map(({ name, component }) => `import { ${component} } from "./components/extend/${name}"`).join("\n")}
+export default function App() { return <>${previews.map(({ component }) => `<${component} isDark={false} onIsDarkChange={() => {}} />`).join("")}</> }
+`
+    )
+  }
   await run("npm", ["run", "build"], directory)
   console.log(
     `PASS ${name}: ${selectedItems.length} public entries, all icon libraries, unchanged consumer primitives, production build`

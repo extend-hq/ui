@@ -58,6 +58,7 @@ function ContextMenuContent({
   align = "center",
   alignOffset,
   anchor,
+  positionMethod,
   portalProps,
   children,
   ...props
@@ -68,6 +69,7 @@ function ContextMenuContent({
   align?: ContextMenuPrimitive.Positioner.Props["align"]
   alignOffset?: ContextMenuPrimitive.Positioner.Props["alignOffset"]
   anchor?: ContextMenuPrimitive.Positioner.Props["anchor"]
+  positionMethod?: ContextMenuPrimitive.Positioner.Props["positionMethod"]
 }): React.ReactElement {
   return (
     <ContextMenuPrimitive.Portal {...portalProps}>
@@ -75,6 +77,7 @@ function ContextMenuContent({
         align={align}
         alignOffset={alignOffset}
         anchor={anchor}
+        positionMethod={positionMethod}
         className="z-50"
         data-slot="context-menu-positioner"
         side={side}
@@ -82,7 +85,7 @@ function ContextMenuContent({
       >
         <ContextMenuPrimitive.Popup
           className={cn(
-            "relative flex origin-(--transform-origin) rounded-lg border bg-popover shadow-lg/5 outline-none not-dark:bg-clip-padding not-[class*='w-']:min-w-32 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] focus:outline-none dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+            "relative flex origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground shadow-lg/5 outline-none not-dark:bg-clip-padding not-[class*='w-']:min-w-32 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] focus:outline-none dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
             className
           )}
           data-slot="context-menu-content"

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  useXlsxPivotTableEditor,
   useXlsxViewer,
   useXlsxViewerController,
   useXlsxViewerThumbnails,
@@ -9,7 +10,6 @@ import {
   XlsxViewer,
   XlsxViewerProvider,
   type XlsxCellAddress,
-  type XlsxContextMenuRenderProps,
   type XlsxScrollerRenderProps,
   type XlsxSheetData,
   type XlsxTableHeaderMenuRenderProps,
@@ -20,16 +20,10 @@ import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-} from "@/components/ui/context-menu"
-import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -56,66 +50,27 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  renderWorkbookChartLoading,
+  renderWorkbookContextMenu,
+  renderWorkbookFormControl,
+  renderWorkbookImageSelection,
+} from "@/components/extend/xlsx-controls"
+import { WorkbookPivotControls } from "@/components/extend/xlsx-pivot-controls"
+import { WorkbookPivotHeaderMenu } from "@/components/extend/xlsx-pivot-header"
 import { IconPlaceholder } from "@/components/icon-placeholder"
 
-export const XLSX_CONTEXT_MENU_CLASS_NAME =
-  "origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground shadow-lg/5 outline-none not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]"
-
+export const XLSX_CONTEXT_MENU_CLASS_NAME = "[&>div[role=alert]]:hidden"
 export const xlsxContextMenuStyle = {
-  background: "var(--popover)",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius-lg, var(--radius))",
-  boxShadow: "var(--tw-shadow)",
-  color: "var(--popover-foreground)",
-  font: "inherit",
-  minWidth: "min(14rem, calc(100vw - 16px))",
+  background: "transparent",
+  border: "none",
+  boxShadow: "none",
   padding: 0,
+  minWidth: 0,
 } satisfies NonNullable<
   React.ComponentProps<typeof XlsxViewer>["contextMenuStyle"]
 >
-
-export function renderXlsxContextMenu({
-  actions,
-  runAction,
-  busy,
-}: XlsxContextMenuRenderProps) {
-  return (
-    <div className="p-1">
-      {actions.map((action, index) => (
-        <React.Fragment key={action.id}>
-          {action.separatorBefore && index > 0 ? (
-            <ContextMenuSeparator />
-          ) : null}
-          <button
-            type="button"
-            role="menuitem"
-            tabIndex={-1}
-            disabled={busy || action.disabled}
-            data-action={action.id}
-            className={cn(
-              "flex min-h-8 w-full cursor-default items-center gap-2 rounded-sm px-2 py-1 text-left text-base text-foreground outline-none select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-64 sm:min-h-7 sm:text-sm",
-              action.destructive && "text-destructive-foreground"
-            )}
-            onPointerMove={(event) =>
-              event.currentTarget.focus({ preventScroll: true })
-            }
-            onClick={(event) => {
-              event.currentTarget
-                .closest<HTMLElement>('[role="menu"]')
-                ?.focus({ preventScroll: true })
-              void runAction(action.id)
-            }}
-          >
-            {action.label}
-            {action.shortcut ? (
-              <ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>
-            ) : null}
-          </button>
-        </React.Fragment>
-      ))}
-    </div>
-  )
-}
+export const renderXlsxContextMenu = renderWorkbookContextMenu
 
 const XLSX_LOADING_INDICATOR_DELAY_MS = 300
 const XLSX_DROPDOWN_Z_INDEX_CLASS = "z-40"
@@ -672,24 +627,24 @@ export function WorkbookTableHeaderMenu({
         align="end"
         className={cn("w-40", XLSX_DROPDOWN_Z_INDEX_CLASS)}
       >
-        <DropdownMenuRadioGroup
-          value={direction ?? ""}
-          onValueChange={(value) => {
-            if (value === "ascending") {
-              sortAscending()
-            } else {
-              sortDescending()
-            }
+        <DropdownMenuCheckboxItem
+          checked={direction === "ascending"}
+          onCheckedChange={() => {
+            sortAscending()
             setOpen(false)
           }}
         >
-          <DropdownMenuRadioItem value="ascending">
-            Sort ascending
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="descending">
-            Sort descending
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
+          Sort ascending
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={direction === "descending"}
+          onCheckedChange={() => {
+            sortDescending()
+            setOpen(false)
+          }}
+        >
+          Sort descending
+        </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -1443,6 +1398,7 @@ export function XlsxWorkbookSurface({
   workbookIdentity: string
 }) {
   const { error } = useXlsxViewer()
+  const pivotEditor = useXlsxPivotTableEditor()
   const viewportRef = React.useRef<HTMLDivElement | null>(null)
   const renderSearchableScroller = React.useCallback(
     ({ children, viewportProps }: XlsxScrollerRenderProps) => (
@@ -1483,7 +1439,7 @@ export function XlsxWorkbookSurface({
           <XlsxViewer
             experimentalCanvas
             allowResizeInReadOnly
-            className="h-full min-h-0 min-w-0"
+            className="h-full min-h-0 min-w-0 [&_[data-xlsx-pivot-toggle]]:rounded-sm! [&_[data-xlsx-pivot-toggle]]:border-border! [&_[data-xlsx-pivot-toggle]]:bg-background! [&_[data-xlsx-pivot-toggle]]:text-foreground!"
             height="100%"
             isDark={isDark}
             readOnly
@@ -1512,6 +1468,17 @@ export function XlsxWorkbookSurface({
             contextMenuStyle={xlsxContextMenuStyle}
             renderContextMenu={renderXlsxContextMenu}
             renderTableHeaderMenu={renderTableHeaderMenu}
+            showPivotTableControls
+            pivotTableEditor={pivotEditor}
+            renderPivotTableControls={({ editor }) => (
+              <WorkbookPivotControls editor={editor} />
+            )}
+            renderPivotTableHeaderMenu={(props) => (
+              <WorkbookPivotHeaderMenu {...props} />
+            )}
+            renderChartLoading={renderWorkbookChartLoading}
+            renderFormControl={renderWorkbookFormControl}
+            renderImageSelection={renderWorkbookImageSelection}
           />
         </div>
         <WorkbookSheetTabs workbookIdentity={workbookIdentity} />
@@ -1849,7 +1816,8 @@ function XlsxWorkbookLoadedViewer({
         fileName,
         maxFileSizeBytes: XLSX_MAX_FILE_SIZE_BYTES,
         readOnly: true,
-        useWorker: true,
+        // Read-only worker mode omits the workbook needed for table sorting.
+        useWorker: false,
       }),
       [fileName, workbookBuffer]
     )
