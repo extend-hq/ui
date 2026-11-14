@@ -32,9 +32,13 @@ if (!["docx", "xlsx", "pptx", "pdf", "slides"].includes(kind)) {
     "Only deck folders and DOCX, XLSX, PPTX and PDF files are supported"
   )
 }
-// A spreadsheet ships as source (source/build.mjs); the other kinds as the
-// Vite bundle.
-const dist = path.join(root, kind === "xlsx" ? "dist-xlsx" : "dist")
+// A spreadsheet, a PDF or a deck ships as source (source/build.mjs); the
+// other kinds as the Vite bundle.
+const sourceKinds = ["xlsx", "pdf", "slides"]
+const dist = path.join(
+  root,
+  sourceKinds.includes(kind) ? `dist-${kind}` : "dist"
+)
 const output = process.argv[3] ? path.resolve(process.argv[3]) : dist
 
 const name = path.basename(source)

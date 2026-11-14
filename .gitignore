@@ -13,7 +13,7 @@ coverage
 out/
 build
 apps/v4/experiments/artifact-template/dist/
-apps/v4/experiments/artifact-template/dist-xlsx/
+apps/v4/experiments/artifact-template/dist-*/
 
 # misc
 .DS_Store

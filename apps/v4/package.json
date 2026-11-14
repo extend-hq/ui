@@ -17,7 +17,7 @@
     "registry:check-extend-ui": "node scripts/check-extend-ui-registry.mts",
     "registry:test": "node --test scripts/registry-source.test.mts",
     "registry:validate": "shadcn registry validate",
-    "artifact-template:build": "vite build --config experiments/artifact-template/vite.config.ts && node experiments/artifact-template/source/build.mjs",
+    "artifact-template:build": "vite build --config experiments/artifact-template/vite.config.ts && node experiments/artifact-template/source/build.mjs xlsx && node experiments/artifact-template/source/build.mjs pdf && node experiments/artifact-template/source/build.mjs slides",
     "artifact-template:stage": "node experiments/artifact-template/stage.mjs",
     "postinstall": "fumadocs-mdx"
   },

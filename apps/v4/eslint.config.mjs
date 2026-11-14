@@ -26,7 +26,7 @@ const eslintConfig = tseslint.config(
       ".source/**",
       "**/__index__.tsx",
       "experiments/artifact-template/dist/**",
-      "experiments/artifact-template/dist-xlsx/**",
+      "experiments/artifact-template/dist-*/**",
     ],
   },
   {

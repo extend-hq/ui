@@ -1,10 +1,12 @@
-// Builds the spreadsheet template as source: dist-xlsx/ holds the page, the
-// loader, the real TSX/TS files under src/ (at their repository paths), and
-// what an agent never edits: the npm packages prebuilt in vendor/, the calc
-// core's wasm, and the CSS for first paint. stage.mjs adds the document.
-// Run by `pnpm --filter v4 artifact-template:build`.
+// Builds one kind's template as source: `node build.mjs xlsx|pdf|slides`
+// writes dist-<kind>/ with the page, the loader, the real TSX/TS files under
+// src/ (at their repository paths), and what an agent never edits: the npm
+// packages prebuilt in vendor/, the engine's wasm, and the CSS for first
+// paint. stage.mjs adds the document. Run by
+// `pnpm --filter v4 artifact-template:build`.
 import { createHash } from "node:crypto"
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs"
+import { createRequire } from "node:module"
 import {
   copyFile,
   mkdir,
@@ -27,31 +29,70 @@ const template = path.dirname(here)
 const v4 = path.resolve(template, "../..")
 const repo = path.resolve(v4, "../..")
 const xlsx = path.join(repo, "engines/react-xlsx/packages/react-xlsx")
-const out = path.join(template, "dist-xlsx")
 const served = (file) =>
   "src/" + path.relative(repo, file).split(path.sep).join("/")
 const onDisk = (file) => path.join(repo, file.slice("src/".length))
+// A wasm file from an npm package is not source: it ships content-named in
+// vendor/, and its ?url import has an alias to it.
+const packageWasm = (spec) => {
+  const file = createRequire(path.join(v4, "package.json")).resolve(spec)
+  const hash = createHash("sha256").update(readFileSync(file)).digest("hex")
+  return [`vendor/${path.basename(file, ".wasm")}-${hash.slice(0, 12)}.wasm`, file]
+}
 
+// main.tsx and webmcp.ts load each document kind lazily; a site leaves out
+// the other kinds. workers: the source files the page starts as workers.
+const kinds = {
+  xlsx: {
+    lazy: ["./xlsx-artifact", "@extend-ai/react-xlsx/agent"],
+    aliases: {
+      "@extend-ai/react-xlsx": served(path.join(xlsx, "src/index.ts")),
+      "@extend-ai/react-xlsx/agent": served(path.join(xlsx, "src/agent.ts")),
+      "@extend-ai/react-xlsx/duke_sheets_wasm_bg.wasm": served(
+        path.join(xlsx, "vendor/sheets-wasm/duke_sheets_wasm_bg.wasm")
+      ),
+    },
+    workers: [served(path.join(xlsx, "src/xlsx-worker.ts"))],
+    engines: ["@extend-ai/react-xlsx"],
+  },
+  pdf: {
+    lazy: ["@/components/extend/pdf-editor"],
+    aliases: {
+      // As in vite.config.ts: the page's one shared pdfium engine.
+      "@/lib/pdf-thumbnail-utils": served(path.join(template, "src/pdf-engine.ts")),
+    },
+    wasm: { "@embedpdf/pdfium/pdfium.wasm": packageWasm("@embedpdf/pdfium/pdfium.wasm") },
+    workers: [],
+    engines: [],
+  },
+  slides: {
+    lazy: ["@/components/extend/slides/slides-editor"],
+    aliases: {},
+    workers: [],
+    engines: [],
+  },
+}
+const kind = process.argv[2]
+if (!kinds[kind])
+  throw new Error(`Usage: node build.mjs ${Object.keys(kinds).join("|")}`)
+const own = kinds[kind]
+const out = path.join(template, `dist-${kind}`)
 const entry = served(path.join(template, "src/main.tsx"))
-const worker = served(path.join(xlsx, "src/xlsx-worker.ts"))
+const wasm = Object.entries(own.wasm ?? {})
 const config = {
   aliases: {
-    "@extend-ai/react-xlsx": served(path.join(xlsx, "src/index.ts")),
-    "@extend-ai/react-xlsx/agent": served(path.join(xlsx, "src/agent.ts")),
-    "@extend-ai/react-xlsx/duke_sheets_wasm_bg.wasm": served(
-      path.join(xlsx, "vendor/sheets-wasm/duke_sheets_wasm_bg.wasm")
-    ),
+    ...own.aliases,
+    ...Object.fromEntries(wasm.map(([spec, [file]]) => [spec, file])),
   },
   prefixes: [["@/", served(v4) + "/"]],
 }
-// main.tsx and webmcp.ts load the other document kinds lazily; a spreadsheet
-// site leaves them out.
 const otherKinds = [
   "@/components/extend/docx-editor",
   "@/components/extend/pptx-viewer",
-  "@/components/extend/slides/slides-editor",
-  "@/components/extend/pdf-editor",
   "@extend-ai/react-docx/agent",
+  ...Object.values(kinds).flatMap((other) =>
+    other === own ? [] : other.lazy
+  ),
 ]
 const left = otherKinds.map((spec) => resolve(spec, entry, config, () => false))
 const absent = left.filter((r) => r.missing).map((r) => r.missing)
@@ -92,8 +133,9 @@ function graph(start) {
   return linked
 }
 const page = graph(entry)
-const workerGraph = graph(worker)
-const modules = [...new Set([...page.modules, ...workerGraph.modules])]
+const workerGraphs = own.workers.map(graph)
+const linked = [page, ...workerGraphs]
+const modules = [...new Set(linked.flatMap((graph) => graph.modules))]
 // name -> a module that imports it
 function packagesOf(linked) {
   const packages = new Map()
@@ -129,10 +171,11 @@ const named = async (name, extension, body) => {
 // type-only imports name (sucrase drops those), for an agent to read. CSS
 // packages (tailwindcss) are served from vendor/css.
 const sourceFiles = new Set([...modules, ...page.css])
-for (const linked of [page, workerGraph])
-  for (const file of linked.modules)
-    for (const id of Object.values(linked.maps[file]))
-      if (id.endsWith("?url")) sourceFiles.add(id.slice(0, -"?url".length))
+for (const { modules, maps } of linked)
+  for (const file of modules)
+    for (const id of Object.values(maps[file]))
+      if (id.endsWith("?url") && id.startsWith("src/"))
+        sourceFiles.add(id.slice(0, -"?url".length))
 const typeQueue = [...modules]
 while (typeQueue.length) {
   const file = typeQueue.pop()
@@ -150,6 +193,7 @@ for (const file of sourceFiles) {
   await mkdir(path.dirname(path.join(out, file)), { recursive: true })
   await copyFile(onDisk(file), path.join(out, file))
 }
+for (const [, [file, disk]] of wasm) await copyFile(disk, path.join(out, file))
 const cssPackages = {}
 for (const sheet of page.css)
   for (const spec of entries.get(sheet).specs)
@@ -264,12 +308,22 @@ const cssKey = sha1(
 
 const manifest = {
   entry,
-  workers: { [worker]: await vendor(packagesOf(workerGraph), "vendor-worker") },
+  workers: Object.fromEntries(
+    await Promise.all(
+      own.workers.map(async (worker, i) => [
+        worker,
+        await vendor(packagesOf(workerGraphs[i]), "vendor-worker"),
+      ])
+    )
+  ),
   config,
   files: [...sourceFiles].sort(),
   absent,
   vendor: await vendor(
-    packagesOf({ modules, maps: { ...workerGraph.maps, ...page.maps } }),
+    packagesOf({
+      modules,
+      maps: Object.assign({}, ...linked.map((graph) => graph.maps).reverse()),
+    }),
     "vendor"
   ),
   compiler: await bundle(
@@ -309,6 +363,9 @@ await write(
 )
 await copyFile(path.join(here, "loader.js"), path.join(out, "loader.js"))
 await copyFile(path.join(here, "resolve.js"), path.join(out, "resolve.js"))
-await copyFile(path.join(here, "template.md"), path.join(out, "template.md"))
-await write("template.json", templateJson(["@extend-ai/react-xlsx"]))
-console.log(`dist-xlsx: ${modules.length} modules, version ${manifest.version}`)
+await copyFile(
+  path.join(here, `template-${kind}.md`),
+  path.join(out, "template.md")
+)
+await write("template.json", templateJson(own.engines))
+console.log(`dist-${kind}: ${modules.length} modules, version ${manifest.version}`)

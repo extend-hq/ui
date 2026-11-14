@@ -34,8 +34,8 @@ yet guaranteed.
 
 ## Make a release
 
-A spreadsheet release is source, not this bundle: see
-[Spreadsheet releases are source](#spreadsheet-releases-are-source). The
+A spreadsheet, PDF or slides release is source, not this bundle: see
+[Spreadsheet, PDF and slides releases are source](#spreadsheet-pdf-and-slides-releases-are-source). The
 steps below are the same for it, and its files are listed there.
 
 From the repository root, with Node and pnpm installed:
@@ -85,12 +85,14 @@ the four document types are in RuntimeVM's pinned content-type table
 and no bundle path is hidden from serving (no leading `.`, no `node_modules`).
 The bundle is about 19 MiB in 30 files, mostly the XLSX and PDF engines.
 
-## Spreadsheet releases are source
+## Spreadsheet, PDF and slides releases are source
 
-A spreadsheet release holds the template's real TSX/TS files, so an agent
+A spreadsheet, PDF or slides release holds the template's real TSX/TS files, so an agent
 that copies the site (`cool copy`) changes the editor by editing a file, with
 no build anywhere. `pnpm --filter v4 artifact-template:build` also runs
-[`source/build.mjs`](./source/build.mjs), which writes `dist-xlsx/`;
+[`source/build.mjs`](./source/build.mjs) once per kind, which writes
+`dist-xlsx/`, `dist-pdf/` and `dist-slides/`, each with only its own
+editor's source;
 `stage.mjs` copies it and adds the document as for the other kinds:
 
 ```text
@@ -100,10 +102,11 @@ loader-manifest.json     # entry, worker, aliases, files, vendor and CSS names
 src/apps/v4/...          # the page and editor source, at repository paths
 src/engines/react-xlsx/packages/react-xlsx/...   # the grid, and its calc wasm
 vendor/vendor-*.js       # npm packages, prebuilt; vendor-worker-*.js for the worker
+vendor/pdfium-*.wasm     # a PDF release: pdfium, from npm (its ?url import has an alias)
 vendor/compiler-*.js     # sucrase and compile.js, for the loader's workers
 vendor/tailwind-*.js     # Tailwind and postcss-nested, for a CSS rebuild
 vendor/app-*.css         # the CSS for first paint; vendor/css/ Tailwind's own
-template.md              # for an agent: where the data and each UI part are
+template.md              # for an agent: where the data and each UI part are (source/template-<kind>.md)
 template.json, artifact.json, cool.json, document/<file>
 ```
 
@@ -112,7 +115,7 @@ If-None-Match and compiles the changed ones with sucrase in up to four
 workers ([`compile.js`](./source/compile.js), a pure function of the source).
 Then it links the imports afresh against the files the site has now
 ([`resolve.js`](./source/resolve.js), the same `link` the build uses) and
-runs one script per entry: the page and the calc worker. A local import that
+runs one script per entry: the page and, for a spreadsheet, the calc worker. A local import that
 names no listed file is looked for on the site on every load, so a new file
 needs no manifest entry, and uploading a missing file fixes the next load.
 
