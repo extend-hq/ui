@@ -6,7 +6,6 @@
 // `pnpm --filter v4 artifact-template:build`.
 import { createHash } from "node:crypto"
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs"
-import { createRequire } from "node:module"
 import {
   copyFile,
   mkdir,
@@ -15,6 +14,7 @@ import {
   rm,
   writeFile,
 } from "node:fs/promises"
+import { createRequire } from "node:module"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import * as esbuild from "esbuild"
@@ -37,7 +37,10 @@ const onDisk = (file) => path.join(repo, file.slice("src/".length))
 const packageWasm = (spec) => {
   const file = createRequire(path.join(v4, "package.json")).resolve(spec)
   const hash = createHash("sha256").update(readFileSync(file)).digest("hex")
-  return [`vendor/${path.basename(file, ".wasm")}-${hash.slice(0, 12)}.wasm`, file]
+  return [
+    `vendor/${path.basename(file, ".wasm")}-${hash.slice(0, 12)}.wasm`,
+    file,
+  ]
 }
 
 // main.tsx and webmcp.ts load each document kind lazily; a site leaves out
@@ -59,9 +62,15 @@ const kinds = {
     lazy: ["@/components/extend/pdf-editor"],
     aliases: {
       // As in vite.config.ts: the page's one shared pdfium engine.
-      "@/lib/pdf-thumbnail-utils": served(path.join(template, "src/pdf-engine.ts")),
+      "@/lib/pdf-thumbnail-utils": served(
+        path.join(template, "src/pdf-engine.ts")
+      ),
     },
-    wasm: { "@embedpdf/pdfium/pdfium.wasm": packageWasm("@embedpdf/pdfium/pdfium.wasm") },
+    wasm: {
+      "@embedpdf/pdfium/pdfium.wasm": packageWasm(
+        "@embedpdf/pdfium/pdfium.wasm"
+      ),
+    },
     workers: [],
     engines: [],
   },
@@ -90,9 +99,7 @@ const otherKinds = [
   "@/components/extend/docx-editor",
   "@/components/extend/pptx-viewer",
   "@extend-ai/react-docx/agent",
-  ...Object.values(kinds).flatMap((other) =>
-    other === own ? [] : other.lazy
-  ),
+  ...Object.values(kinds).flatMap((other) => (other === own ? [] : other.lazy)),
 ]
 const left = otherKinds.map((spec) => resolve(spec, entry, config, () => false))
 const absent = left.filter((r) => r.missing).map((r) => r.missing)
@@ -368,4 +375,6 @@ await copyFile(
   path.join(out, "template.md")
 )
 await write("template.json", templateJson(own.engines))
-console.log(`dist-${kind}: ${modules.length} modules, version ${manifest.version}`)
+console.log(
+  `dist-${kind}: ${modules.length} modules, version ${manifest.version}`
+)
