@@ -75,7 +75,8 @@ await page.goto(`http://127.0.0.1:${server.address().port}/`)
 await page.waitForFunction(() => window.__video, { timeout: 30000 })
 // The film is the picture alone: no controls, no pointer.
 await page.addStyleTag({ content: '.controls, .start { display: none !important } * { cursor: none !important }' })
-const duration = await page.evaluate(() => window.__video.duration)
+const { duration, unmatched } = await page.evaluate(() => ({ duration: window.__video.duration, unmatched: window.__video.unmatched }))
+if (unmatched.length) console.warn(`video.json: each el must match exactly one element; these do not, so they are left out: ${unmatched.join(', ')}`)
 
 // shot is the page at a moment, once the comment script has drawn it.
 async function shot(ms) {

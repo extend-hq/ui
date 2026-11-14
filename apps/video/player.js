@@ -63,6 +63,19 @@ function plan(video) {
   return { drawings, shots, end }
 }
 
+// unmatched lists the `el` selectors of video.json that do not match exactly one element of the page: a mark on one
+// is not drawn, and a camera shot on one stays out.
+function unmatched(video) {
+  const selectors = (video.steps || []).flatMap((step) => [step.camera && step.camera.el, ...(step.marks || []).map((mark) => mark.el)])
+  return [...new Set(selectors.filter(Boolean))].filter((selector) => {
+    try {
+      return document.querySelectorAll(selector).length !== 1
+    } catch {
+      return true
+    }
+  })
+}
+
 // ---------------------------------------------------------------------------------------------------------------
 // The picture as of a moment.
 
@@ -329,6 +342,8 @@ async function start() {
   duration = typeof video.duration === 'number' ? video.duration * 1000 : Math.max(planned.end + TAIL_MS, animated)
   fit()
   frame()
+  const missing = unmatched(video)
+  if (missing.length) console.warn('video.json: each el must match exactly one element; these do not:', missing.join(', '))
   window.addEventListener('resize', () => {
     fit()
     frame()
@@ -349,7 +364,7 @@ async function start() {
     }
   })
   // For filming: the export seeks frame by frame and waits for this.
-  window.__video = { duration, seek: show }
+  window.__video = { duration, seek: show, unmatched: missing }
 }
 
 start()
