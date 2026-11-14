@@ -36,7 +36,7 @@
   ],
   "exclude": [
     "node_modules",
-    "experiments/artifact-template/dist-xlsx",
+    "experiments/artifact-template/dist-*",
     "experiments/artifact-template/dev/results"
   ]
 }

@@ -1,8 +1,8 @@
 # Office artifact template experiment
 
 This fork builds a static release for a Cool Computer artifact. Each release
-contains the viewer/editor (the Vite bundle, or for a spreadsheet the
-template's TSX source with `loader.js`), `template.json` naming its version,
+contains the viewer/editor (the Vite bundle, or for a spreadsheet, a PDF or
+a deck the template's TSX source with `loader.js`), `template.json` naming its version,
 one document, `artifact.json`, and `cool.json`. It runs in the browser without a computer VM or a RuntimeVM
 code change.
 
@@ -65,12 +65,12 @@ pnpm --filter v4 artifact-template:build
 pnpm --filter v4 artifact-template:stage /absolute/path/to/report.xlsx /absolute/path/to/new-release-directory
 ```
 
-The stage command accepts `.xlsx`, `.docx`, `.pptx`, and `.pdf`. A
-spreadsheet release is the template's TypeScript source, run in the browser
-with no build (see [Spreadsheet releases are source](./ARCHITECTURE.md#spreadsheet-releases-are-source));
+The stage command accepts `.xlsx`, `.docx`, `.pptx`, `.pdf` and a deck folder. A
+spreadsheet, PDF or slides release is the template's TypeScript source, run in the browser
+with no build (see [Spreadsheet, PDF and slides releases are source](./ARCHITECTURE.md#spreadsheet-pdf-and-slides-releases-are-source));
 the other kinds are the Vite bundle. An omitted output directory stages
-directly into `apps/v4/experiments/artifact-template/dist` (`dist-xlsx` for a
-spreadsheet); a specified output directory must not already exist. Rebuild after changing source. The release is a complete
+directly into `apps/v4/experiments/artifact-template/dist` (`dist-xlsx`, `dist-pdf` or `dist-slides`
+for those kinds); a specified output directory must not already exist. Rebuild after changing source. The release is a complete
 static directory; Vite emits relative asset URLs so it works at an artifact
 root or a local preview subpath. The stage command checks the 25 MiB per-asset,
 20,000-file, and 1 GiB total limits. A failed stage removes a newly created
