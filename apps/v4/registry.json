@@ -799,7 +799,7 @@
       "type": "registry:ui",
       "title": "Excel Viewer",
       "description": "An XLSX viewer with workbook loading, thumbnails, sheet tabs, upload, zoom, and theme controls.",
-      "dependencies": ["@extend-ai/react-xlsx@0.23.2", "@base-ui/react@^1.4.1"],
+      "dependencies": ["@extend-ai/react-xlsx@0.24.1", "@base-ui/react@^1.4.1"],
       "registryDependencies": ["utils"],
       "categories": ["documents"],
       "files": [
@@ -853,7 +853,7 @@
       "type": "registry:ui",
       "title": "Excel Editor",
       "description": "An XLSX editor with formula input, undo and redo, sheet controls, export, and live workbook mutation.",
-      "dependencies": ["@extend-ai/react-xlsx@0.23.2"],
+      "dependencies": ["@extend-ai/react-xlsx@0.24.1"],
       "registryDependencies": ["utils", "@extend/xlsx-viewer"],
       "categories": ["documents"],
       "files": [

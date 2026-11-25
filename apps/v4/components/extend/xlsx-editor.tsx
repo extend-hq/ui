@@ -6,6 +6,7 @@ import {
   useXlsxViewer,
   useXlsxViewerController,
   useXlsxViewerEditing,
+  useXlsxViewerLayout,
   useXlsxViewerSelection,
   useXlsxViewerZoom,
   XlsxViewer,
@@ -881,6 +882,131 @@ function ToolbarIconButton({
 
 function ToolbarSeparator() {
   return <Separator orientation="vertical" className="mx-1 h-4 self-center" />
+}
+
+function WorksheetLayoutMenu({
+  label,
+  icon,
+  disabled,
+  active,
+  children,
+}: {
+  label: string
+  icon: React.ReactNode
+  disabled: boolean
+  active?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <DropdownMenu>
+      <ToolbarTooltip label={label}>
+        <DropdownMenuTrigger asChild disabled={disabled}>
+          <Button
+            type="button"
+            variant={active ? "secondary" : "ghost"}
+            size="icon-sm"
+            aria-label={label}
+          >
+            {icon}
+          </Button>
+        </DropdownMenuTrigger>
+      </ToolbarTooltip>
+      <DropdownMenuContent
+        align="start"
+        className={cn("w-48", XLSX_DROPDOWN_Z_INDEX_CLASS)}
+      >
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function FreezePanesControl() {
+  const { activeSheet, readOnly } = useXlsxViewer()
+  const layout = useXlsxViewerLayout()
+
+  if (readOnly) return null
+
+  return (
+    <WorksheetLayoutMenu
+      label="Freeze panes"
+      active={Boolean(layout.frozenPanes)}
+      disabled={!activeSheet || !layout.canChangeFreezePanes}
+      icon={
+        <IconPlaceholder
+          lucide="PanelsTopLeft"
+          tabler="IconTable"
+          hugeicons="LayoutTable01Icon"
+          phosphor="TableIcon"
+          remixicon="RiTableLine"
+          className="size-4"
+        />
+      }
+    >
+      <DropdownMenuItem
+        disabled={!layout.canFreezePanes}
+        onClick={() => layout.freezePanes()}
+      >
+        Freeze at selection
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => layout.freezePanes({ row: 1, col: 0 })}>
+        Freeze top row
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => layout.freezePanes({ row: 0, col: 1 })}>
+        Freeze first column
+      </DropdownMenuItem>
+      {layout.frozenPanes ? (
+        <DropdownMenuItem onClick={layout.unfreezePanes}>
+          Unfreeze panes
+        </DropdownMenuItem>
+      ) : null}
+    </WorksheetLayoutMenu>
+  )
+}
+
+function WorksheetVisibilityControl() {
+  const { activeSheet, readOnly } = useXlsxViewer()
+  const { selectionRanges } = useXlsxViewerSelection()
+  const layout = useXlsxViewerLayout()
+
+  if (readOnly) return null
+
+  return (
+    <WorksheetLayoutMenu
+      label="Hide and unhide"
+      disabled={!layout.canChangeVisibility || selectionRanges.length === 0}
+      icon={
+        <IconPlaceholder
+          lucide="EyeOff"
+          tabler="IconEyeOff"
+          hugeicons="ViewOffIcon"
+          phosphor="EyeSlashIcon"
+          remixicon="RiEyeOffLine"
+          className="size-4"
+        />
+      }
+    >
+      <DropdownMenuItem onClick={() => layout.hideRows()}>
+        Hide rows
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => layout.hideColumns()}>
+        Hide columns
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        disabled={!activeSheet?.hiddenRows?.length}
+        onClick={() => layout.unhideRows()}
+      >
+        Unhide rows
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        disabled={!activeSheet?.hiddenCols?.length}
+        onClick={() => layout.unhideColumns()}
+      >
+        Unhide columns
+      </DropdownMenuItem>
+    </WorksheetLayoutMenu>
+  )
 }
 
 function StyleDropdownItem({
@@ -1804,6 +1930,7 @@ function EditorToolbar({
         <div className="min-w-0 flex-1" />
         <TooltipProvider>
           <div className="flex shrink-0 items-center gap-1">
+            <FreezePanesControl />
             {showNightRenderToggle ? (
               <>
                 <ToolbarTooltip
@@ -2228,6 +2355,7 @@ function EditorToolbar({
               onMergeCells={mergeSelectedCells}
               onUnmergeCells={unmergeSelectedCells}
             />
+            <WorksheetVisibilityControl />
           </div>
           <ToolbarSeparator />
           <div
